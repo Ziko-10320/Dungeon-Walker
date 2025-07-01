@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: -18074943179913428}
   - component: {fileID: -7398951445229093351}
   m_Layer: 4
-  m_Name: Capsule
+  m_Name: Water Bullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.3265, y: -1.9029, z: 0}
-  m_LocalScale: {x: 0.9613, y: 0.1201, z: 1}
+  m_LocalScale: {x: 1.3625, y: 0.9625, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -76,8 +76,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 20
-  m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
-  m_Color: {r: 0.2216981, g: 0.38397992, b: 1, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 93e4d85ec1440e946a3645630b05f505, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -119,8 +119,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -3.302974e-10, y: -0.022177422}
-  m_Size: {x: 1.0000001, y: 2.01554}
+  m_Offset: {x: 0.020956416, y: 0.11428305}
+  m_Size: {x: 0.72807765, y: 0.4373481}
   m_Direction: 1
 --- !u!50 &-18074943179913428
 Rigidbody2D:
@@ -161,3 +161,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2de2c6766fbf05644b03219ee4e14585, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  BulletSpeed: 20
+  destroyTime: 1
+  collisionLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  waterExplosionParticleSystem: {fileID: 1304636697112898753, guid: 707916ef30aa4254d8b2448578bf38bf, type: 3}

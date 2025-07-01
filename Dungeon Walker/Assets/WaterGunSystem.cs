@@ -7,6 +7,8 @@ public class WaterGunSystem : MonoBehaviour
     [SerializeField] private GameObject Arm;
     [SerializeField] private GameObject bullet;
     [SerializeField] private Transform bulletSpawnPoint;
+    public ParticleSystem WaterFlash;
+    public ParticleSystem WaterFlash2;
     private Vector2 direction;
     private Vector2 worldPosition;
 
@@ -64,7 +66,7 @@ public class WaterGunSystem : MonoBehaviour
     }
     private void HandleGunShoot()
     {
-        if (Mouse.current.rightButton.wasPressedThisFrame)
+        if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             // Pass the calculated 'direction' to the bullet
             bulletInst = Instantiate(bullet, bulletSpawnPoint.position, Quaternion.identity); // Use Quaternion.identity for initial rotation
@@ -73,6 +75,8 @@ public class WaterGunSystem : MonoBehaviour
             {
                 bulletBehavior.SetDirection(direction); // Set the direction of the bullet
             }
+            WaterFlash.Play();
+            WaterFlash2.Play();
         }
     }
 }
