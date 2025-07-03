@@ -16,8 +16,8 @@ public class FleaFollow : MonoBehaviour
     [SerializeField] private Rigidbody2D rb; // Reference to the Flea's Rigidbody2D
     [SerializeField] private Animator fleaAnimator; // Reference to the Flea's Animator
 
-    // Animator parameter hash for performance
-    private int isWalkingHash;
+    // We will directly use the string "IsWalking" for the Animator parameter
+    // private int isWalkingHash; // No longer needed
 
     void Awake()
     {
@@ -25,11 +25,11 @@ public class FleaFollow : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
 
-        // Get the hash for the IsWalking parameter for efficient access
-        if (fleaAnimator != null)
-        {
-            isWalkingHash = Animator.StringToHash("IsWalking");
-        }
+        // No need to get hash here anymore
+        // if (fleaAnimator != null)
+        // {
+        //     isWalkingHash = Animator.StringToHash("IsWalking");
+        // }
 
         // Find the player if not assigned (useful for quick setup, but assigning in Inspector is better)
         if (playerTransform == null)
@@ -59,10 +59,10 @@ public class FleaFollow : MonoBehaviour
             Vector2 direction = (playerTransform.position - transform.position).normalized;
             rb.velocity = direction * moveSpeed;
 
-            // Set walking animation
+            // Set walking animation using the string name directly
             if (fleaAnimator != null)
             {
-                fleaAnimator.SetBool(isWalkingHash, true);
+                fleaAnimator.SetBool("IsWalking", true); // Using string "IsWalking"
             }
 
             // Handle flipping
@@ -73,10 +73,10 @@ public class FleaFollow : MonoBehaviour
             // Stop moving if within stopping distance
             rb.velocity = Vector2.zero;
 
-            // Set idle animation
+            // Set idle animation using the string name directly
             if (fleaAnimator != null)
             {
-                fleaAnimator.SetBool(isWalkingHash, false);
+                fleaAnimator.SetBool("IsWalking", false); // Using string "IsWalking"
             }
         }
     }

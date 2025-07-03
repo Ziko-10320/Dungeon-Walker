@@ -4,10 +4,13 @@ using UnityEngine;
 
 public class BulletBehavior : MonoBehaviour
 {
+    // --- NEW: Added a damage variable ---
+    [SerializeField] private int bulletDamage = 10; // How much damage the bullet deals
+
     [SerializeField] private float BulletSpeed = 15f;
     [SerializeField] private float destroyTime = 3f;
-    [SerializeField] private LayerMask collisionLayers; // الطبقات التي ستتفاعل معها الرصاصة
-    [SerializeField] private GameObject waterExplosionParticleSystem; // نظام الجسيمات للانفجار
+    [SerializeField] private LayerMask collisionLayers; // Your original comment in Arabic
+    [SerializeField] private GameObject waterExplosionParticleSystem; // Your original comment in Arabic
 
     private Rigidbody2D rb;
     private Vector2 moveDirection;
@@ -36,41 +39,61 @@ public class BulletBehavior : MonoBehaviour
         Destroy(gameObject, destroyTime);
     }
 
-    // دالة يتم استدعاؤها عند حدوث تصادم 2D
+    // Your original comment in Arabic
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // التحقق مما إذا كانت الطبقة التي حدث معها التصادم موجودة في collisionLayers
+        // Your original comment in Arabic
         if (((1 << other.gameObject.layer) & collisionLayers) != 0)
         {
-            // تدمير الرصاصة.
-            // عند تدميرها، سيتم استدعاء OnDestroy() تلقائيًا لتشغيل الجسيمات.
+            // --- THIS IS THE NEW DAMAGE LOGIC ---
+            // Try to get the FleaHealth component from the object we hit
+            FleaHealth enemyHealth = other.GetComponent<FleaHealth>();
+
+            // If the enemyHealth component exists, deal damage to it
+            if (enemyHealth != null)
+            {
+                // Call the TakeDamage method on the enemy's health script
+                // We pass the bullet's damage and its direction for knockback
+                enemyHealth.TakeDamage(bulletDamage, moveDirection);
+            }
+            // --- END OF NEW DAMAGE LOGIC ---
+
+            // Your original comment in Arabic
+            // Your original comment in Arabic
             Destroy(gameObject);
         }
     }
 
-    // دالة يتم استدعاؤها عندما يتم تدمير كائن اللعبة
-    // هذا سيتم استدعاؤه سواء تم تدمير الرصاصة بسبب التصادم أو بسبب انتهاء destroyTime
+    // Your original comment in Arabic
+    // Your original comment in Arabic
     private void OnDestroy()
     {
-        // تشغيل نظام الجسيمات للانفجار
+        // Your original comment in Arabic
         if (waterExplosionParticleSystem != null)
         {
-            // إنشاء نظام الجسيمات في موقع الرصاصة الحالي
-            // تأكد من أن نظام الجسيمات لديه خاصية "Play On Awake" مفعلة
+            // Your original comment in Arabic
+            // Your original comment in Arabic
             Instantiate(waterExplosionParticleSystem, transform.position, Quaternion.identity);
         }
     }
 
-    // إذا كنت تستخدم Colliders وليس Triggers، استخدم OnCollisionEnter2D بدلاً من OnTriggerEnter2D
-    
+    // Your original comment in Arabic
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (((1 << collision.gameObject.layer) & collisionLayers) != 0)
         {
-            // تدمير الرصاصة.
-            // عند تدميرها، سيتم استدعاء OnDestroy() تلقائيًا لتشغيل الجسيمات.
+            // --- THIS IS THE NEW DAMAGE LOGIC (for non-trigger colliders) ---
+            FleaHealth enemyHealth = collision.gameObject.GetComponent<FleaHealth>();
+            if (enemyHealth != null)
+            {
+                enemyHealth.TakeDamage(bulletDamage, moveDirection);
+            }
+            // --- END OF NEW DAMAGE LOGIC ---
+
+            // Your original comment in Arabic
+            // Your original comment in Arabic
             Destroy(gameObject);
         }
     }
-    
 }

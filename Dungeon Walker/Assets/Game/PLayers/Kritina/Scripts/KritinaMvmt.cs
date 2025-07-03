@@ -21,7 +21,8 @@ public class KritinaMovement : MonoBehaviour
     [Header("Particle System")]
     public ParticleSystem dust;  
     public ParticleSystem dustLand;
-    
+
+    private PlayerDash playerDash;
 
     private Rigidbody2D rb;
     public bool isFacingRight = true;
@@ -32,10 +33,16 @@ public class KritinaMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        playerDash = GetComponent<PlayerDash>();
     }
 
     void Update()
     {
+        if (playerDash != null && playerDash.IsDashing)
+        {
+            moveDirection = 0; // Stop taking move input while dashing
+            return; // Exit Update early to prevent jump input, etc.
+        }
         // Input
         moveDirection = Input.GetAxisRaw("Horizontal");
         bool isMoving = Mathf.Abs(moveDirection) > 0.1f;
@@ -75,6 +82,12 @@ public class KritinaMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+
+        if (playerDash != null && playerDash.IsDashing)
+        {
+            return; // Exit FixedUpdate immediately.
+        }
+
         // Move the player directly via Rigidbody
         rb.velocity = new Vector2(moveDirection * moveSpeed, rb.velocity.y);
 

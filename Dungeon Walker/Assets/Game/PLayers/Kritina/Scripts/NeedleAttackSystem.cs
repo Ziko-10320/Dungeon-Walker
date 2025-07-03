@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class NeedleAttackSystem : MonoBehaviour
@@ -8,7 +9,7 @@ public class NeedleAttackSystem : MonoBehaviour
     [SerializeField] private Animator playerAnimator; // Reference to the player's Animator
     [SerializeField] private string attackTriggerName = "NeedleAttack"; // Name of the Trigger in the Animator
     [SerializeField] private float attackCooldown = 1.0f; // Cooldown duration for the attack (in seconds)
-    [SerializeField] private int attackDamage = 20; // Damage amount dealt by the attack
+    [SerializeField] private int damage = 20; // Damage amount dealt by the attack
 
     [Header("Damage Area Settings")]
     [SerializeField] private Transform attackPoint; // Origin point of the attack (usually in front of the player)
@@ -53,12 +54,19 @@ public class NeedleAttackSystem : MonoBehaviour
         // Apply damage to each detected enemy
         foreach (Collider2D enemy in hitEnemies)
         {
-            // Here you would call a function to apply damage to the enemy
-            // For example, if the enemy has an EnemyHealth script:
-            // enemy.GetComponent<EnemyHealth>()?.TakeDamage(attackDamage);
+            FleaHealth fleaHealth = enemy.GetComponent<FleaHealth>();
+            if (fleaHealth != null)
+            {
+                // Calculate the direction of the knockback
+                Vector2 attackDirection = (Vector2)(enemy.transform.position - attackPoint.position).normalized;
+                Debug.Log("Attack direction: " + attackDirection);
 
-            // For testing purposes, we can print the enemy's name
-            Debug.Log("Hit " + enemy.name + " for " + attackDamage + " damage!");
+                // Deal damage to the mushroom
+                fleaHealth.TakeDamage(damage, attackDirection);
+            }
+
+                // For testing purposes, we can print the enemy's name
+                Debug.Log("Hit " + enemy.name + " for " + damage + " damage!");
         }
 
         canDealDamage = false; // Disable damage application after it's been dealt
