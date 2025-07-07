@@ -51,13 +51,19 @@ public class FleaFollow : MonoBehaviour
     {
         if (playerTransform == null) return;
 
-        float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
+        // --- MODIFIED: Calculate distance based only on X-axis for stopping ---
+        // We want to stop if the X distance is within stoppingDistance
+        float xDistanceToPlayer = Mathf.Abs(playerTransform.position.x - transform.position.x);
 
-        if (distanceToPlayer > stoppingDistance)
+        if (xDistanceToPlayer > stoppingDistance) // Check X distance for movement decision
         {
-            // Move towards the player
-            Vector2 direction = (playerTransform.position - transform.position).normalized;
-            rb.velocity = direction * moveSpeed;
+            // --- MODIFIED: Calculate direction only for X-axis movement ---
+            // Create a target position that matches the flea's current Y, but player's X
+            Vector2 targetPositionXOnly = new Vector2(playerTransform.position.x, transform.position.y);
+            Vector2 direction = (targetPositionXOnly - (Vector2)transform.position).normalized;
+
+            // Apply velocity only in the X direction, keeping current Y velocity
+            rb.velocity = new Vector2(direction.x * moveSpeed, rb.velocity.y);
 
             // Set walking animation using the string name directly
             if (fleaAnimator != null)
@@ -70,8 +76,8 @@ public class FleaFollow : MonoBehaviour
         }
         else
         {
-            // Stop moving if within stopping distance
-            rb.velocity = Vector2.zero;
+            // Stop moving if within stopping distance (only X velocity needs to be zeroed)
+            rb.velocity = new Vector2(0f, rb.velocity.y); // Keep current Y velocity
 
             // Set idle animation using the string name directly
             if (fleaAnimator != null)
@@ -100,6 +106,12 @@ public class FleaFollow : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, stoppingDistance);
+        // --- MODIFIED: Visualize stopping distance as a line on the X-axis ---
+        // Draw a line to show the X-axis stopping range
+        Vector3 leftStop = new Vector3(transform.position.x - stoppingDistance, transform.position.y, transform.position.z);
+        Vector3 rightStop = new Vector3(transform.position.x + stoppingDistance, transform.position.y, transform.position.z);
+        Gizmos.DrawLine(leftStop, rightStop);
+        Gizmos.DrawWireSphere(leftStop, 0.1f); // Mark the ends
+        Gizmos.DrawWireSphere(rightStop, 0.1f);
     }
 }
