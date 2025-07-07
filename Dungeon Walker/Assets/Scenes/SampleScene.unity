@@ -41065,6 +41065,7 @@ MonoBehaviour:
   jumpPower: 25
   jumpReleaseCutMultiplier: 0.3
   jumpBufferTime: 0
+  maxJumps: 2
   groundCheckPoint: {fileID: 1722899740}
   groundLayer:
     serializedVersion: 2
@@ -41133,7 +41134,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1032792826}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: afdbd143d91c5de44893b22e2c9ea60a, type: 3}
   m_Name: 
@@ -41279,19 +41280,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c72100c839f2384c9ad92f5831f8f4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rb: {fileID: 1032792828}
-  animator: {fileID: 1032792830}
-  movementScript: {fileID: 1032792827}
-  dashScript: {fileID: 1032792835}
-  ledgeGrabPoint: {fileID: 763325823}
-  whatIsLedge:
-    serializedVersion: 2
-    m_Bits: 768
-  wallCheckDistance: 0.44
-  ledgeCheckDistance: -0.28
-  ledgeHangOffset: {x: 0.43, y: 0}
-  climbUpOffset: {x: 0, y: 0}
-  climbUpDuration: 0.2
 --- !u!114 &1032792839
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41299,27 +41287,27 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1032792826}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87f14019ff7a8f841aa0648e12de97b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Gun: {fileID: 3387814552292375304}
   Arm: {fileID: 1121773338}
-  projectileSpawnPoint: {fileID: 0}
-  LaunchEffect: {fileID: 0}
-  maxAimAngle: 180
+  projectileSpawnPoint: {fileID: 970968591}
+  launcherAimPoint: {fileID: 1199712288}
+  minDistancePoint: {fileID: 1056928076}
+  maxUpwardAngle: 180
+  maxDownwardAngle: 180
   playerTransform: {fileID: 1032792831}
   minDistanceToAim: 1
-  projectilePrefabs: []
-  fireRate: 1.5
-  minLaunchSpeed: 5
-  maxLaunchSpeed: 25
-  mouseDistanceToPowerMultiplier: 1
-  maxMouseDistanceForPower: 10
-  useAmmoSystem: 0
-  maxAmmo: 12
-  reloadTime: 2
+  launcherRotationOffsetRight: 53.8
+  launcherRotationOffsetLeft: 125
+  independentLauncherRotation: 1
+  rotationSpeed: 15
+  useInstantRotation: 1
+  autoCalibrate: 1
+  showCalibrationDebug: 1
 --- !u!1 &1033065374
 GameObject:
   m_ObjectHideFlags: 0
@@ -41824,6 +41812,37 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1056928075
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1056928076}
+  m_Layer: 0
+  m_Name: MinDIstancePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1056928076
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1056928075}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.093, y: 0.122, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7191203989061070209}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1058153137
 GameObject:
   m_ObjectHideFlags: 0
@@ -52476,6 +52495,37 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1199712287
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1199712288}
+  m_Layer: 0
+  m_Name: 'AimPoint '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1199712288
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1199712287}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.035, y: 0.085, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7191203989061070209}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1202817203
 GameObject:
   m_ObjectHideFlags: 0
@@ -85974,6 +86024,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 970968591}
+  - {fileID: 1199712288}
+  - {fileID: 1056928076}
   m_Father: {fileID: 1121773339}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 1.292}
 --- !u!1660057539 &9223372036854775807
