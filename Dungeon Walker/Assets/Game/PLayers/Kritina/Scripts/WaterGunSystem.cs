@@ -1,151 +1,313 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections; // Required for Coroutines
+using System.Collections;
 
 public class WaterGunSystem : MonoBehaviour
 {
+    [Header("COMPONENT REFERENCES")]
     [SerializeField] private GameObject Gun;
     [SerializeField] private GameObject Arm;
-    [SerializeField] private GameObject bullet;
+    [SerializeField] private Transform playerTransform;
     [SerializeField] private Transform bulletSpawnPoint;
-    public ParticleSystem WaterFlash;
-    public ParticleSystem WaterFlash2;
-    private Vector2 direction;
-    private Vector2 worldPosition;
+    [SerializeField] private Transform launcherAimPoint; // Point d'origine de la visée
+    [SerializeField] private Transform minDistancePoint; // Transform pour visualiser la distance minimale
 
-    private GameObject bulletInst;
+    [Header("PROJECTILE & EFFECTS")]
+    [SerializeField] private GameObject bulletPrefab;
+    [SerializeField] private ParticleSystem destructionEffectPrefab;
+    [SerializeField] private ParticleSystem muzzleFlashEffect;
+    [SerializeField] private float bulletSpeed = 25f;
+    [SerializeField] private float bulletLifetime = 3f;
+    [SerializeField] private int bulletDamage = 15;
+    [SerializeField] private LayerMask damageableLayers;
+    [SerializeField] private LayerMask collisionLayers;
 
-    [Tooltip("Maximum angle (in degrees) the gun/arm can rotate forward")]
-    public float maxAimAngle = 80f;
+    [Header("AIMING & ROTATION (FROM ROBUST LAUNCHER)")]
+    [Tooltip("Angle maximum de visée vers le haut")]
+    [SerializeField] private float maxUpwardAngle = 80f;
+    [Tooltip("Angle maximum de visée vers le bas")]
+    [SerializeField] private float maxDownwardAngle = 80f;
+    [Tooltip("Distance minimale pour que la visée s'active")]
+    [SerializeField] private float minDistanceToAim = 0.8f;
+    [Tooltip("Vitesse de rotation de l'arme (pour une rotation fluide)")]
+    [SerializeField] private float rotationSpeed = 25f;
+    [Tooltip("Utiliser une rotation instantanée pour une réactivité maximale")]
+    [SerializeField] private bool useInstantRotation = true;
 
-    [Tooltip("Reference to the player's transform for flip detection")]
-    public Transform playerTransform; // Assign your player here
+    [Header("LAUNCHER CALIBRATION")]
+    [Tooltip("Offset de rotation pour l'arme quand le joueur regarde à DROITE")]
+    public float launcherRotationOffsetRight = 0f;
+    [Tooltip("Offset de rotation pour l'arme quand le joueur regarde à GAUCHE")]
+    public float launcherRotationOffsetLeft = 0f;
+    [Tooltip("Offset de rotation pour la TRAJECTOIRE quand le joueur regarde à DROITE")]
+    public float trajectoryRotationOffsetRight = 0f;
+    [Tooltip("Offset de rotation pour la TRAJECTOIRE quand le joueur regarde à GAUCHE")]
+    public float trajectoryRotationOffsetLeft = 0f;
 
-    [Tooltip("Minimum distance required to rotate gun/arm")]
-    public float minDistanceToAim = 0.5f;
+    [Header("FIRING & AMMO SYSTEM")]
+    [SerializeField] private float fireRate = 0.2f;
+    [SerializeField] private int maxAmmo = 30;
+    [SerializeField] private float reloadTime = 1.5f;
 
-    // --- NEW: Firing Rate and Ammo System Variables ---
-    [Header("Firing & Ammo System")]
-    [SerializeField] private float fireRate = 0.5f; // Time between shots (e.g., 0.5 seconds)
-    [SerializeField] private int maxAmmo = 12; // Maximum bullets before reload
-    [SerializeField] private float reloadTime = 2.0f; // Time it takes to reload
+    // --- CORE AIMING VARIABLES (FROM ROBUST LAUNCHER) ---
+    private Vector2 mouseWorldPosition;
+    private Vector2 aimFromPosition;
+    private Vector2 aimDirection;
+    private bool isPlayerFacingRight = true;
+    private float worldArmRotation = 0f;
+    private float worldLauncherRotation = 0f;
+    private float worldTrajectoryRotation = 0f;
 
-    private float nextFireTime = 0f; // Time when the next shot is allowed
-    private int currentAmmo; // Current ammo count
-    private bool isReloading = false; // Is the gun currently reloading?
+    // --- AMMO & STATE VARIABLES ---
+    private int currentAmmo;
+    private bool isReloading = false;
+    private float nextFireTime = 0f;
 
     void Awake()
     {
-        currentAmmo = maxAmmo; // Initialize current ammo
+        currentAmmo = maxAmmo;
     }
 
     void Update()
     {
-        HandleGunAndArmRotation();
-        HandleGunShoot();
+        // La séquence d'update la plus fiable, directement tirée du launcher
+        HandleAiming();
+        ApplyRotation();
+        HandleShooting();
+        UpdateMinDistancePointPosition(); // Mise à jour du point de visualisation
     }
 
-    private void HandleGunAndArmRotation()
+    private void HandleAiming()
     {
-        // Get mouse position in world space
-        worldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-        Vector2 gunPosition = Gun.transform.position;
+        // 1. Mettre à jour la direction du joueur
+        UpdatePlayerFacingDirection();
 
-        // Calculate direction from gun to mouse
-        direction = (worldPosition - gunPosition).normalized;
+        // 2. Obtenir la position de la souris
+        mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
-        // Only rotate if mouse is far enough away
-        float distance = (worldPosition - gunPosition).magnitude;
+        // 3. Définir le point d'origine de la visée
+        aimFromPosition = launcherAimPoint != null ? (Vector2)launcherAimPoint.position : (Vector2)Gun.transform.position;
 
-        if (distance > minDistanceToAim)
+        // 4. Calculer la direction et l'angle vers la souris
+        Vector2 directionToMouse = (mouseWorldPosition - aimFromPosition);
+        aimDirection = directionToMouse.normalized; // Stocker la direction normalisée
+
+        // Si la souris est dans la zone morte, on ne met pas à jour les angles
+        if (directionToMouse.magnitude < minDistanceToAim)
         {
-            // Determine current forward direction based on player scale
-            Vector2 forwardDirection = playerTransform.localScale.x > 0 ? Vector2.right : Vector2.left;
+            return;
+        }
 
-            // Calculate angle between current forward and mouse direction
-            float angle = Vector2.SignedAngle(forwardDirection, direction);
+        // 5. Calculer l'angle en degrés
+        float worldAngleToMouse = Mathf.Atan2(directionToMouse.y, directionToMouse.x) * Mathf.Rad2Deg;
 
-            // Clamp angle to prevent aiming behind
-            float clampedAngle = Mathf.Clamp(angle, -maxAimAngle, maxAimAngle);
+        // 6. Brider l'angle avec la logique exacte du launcher
+        float clampedWorldAngle = ClampWorldAngle(worldAngleToMouse);
 
-            // Apply clamped rotation
-            Quaternion targetRotation = Quaternion.Euler(0, 0, clampedAngle);
-            Gun.transform.rotation = targetRotation;
-            Arm.transform.rotation = targetRotation;
+        // 7. Définir les rotations finales en appliquant les offsets
+        worldArmRotation = clampedWorldAngle;
+        float currentLauncherOffset = isPlayerFacingRight ? launcherRotationOffsetRight : launcherRotationOffsetLeft;
+        worldLauncherRotation = clampedWorldAngle + currentLauncherOffset;
+        float currentTrajectoryOffset = isPlayerFacingRight ? trajectoryRotationOffsetRight : trajectoryRotationOffsetLeft;
+        worldTrajectoryRotation = clampedWorldAngle + currentTrajectoryOffset;
+    }
+
+    private void UpdatePlayerFacingDirection()
+    {
+        if (playerTransform != null)
+        {
+            isPlayerFacingRight = playerTransform.localScale.x > 0;
+        }
+    }
+
+    // LA LOGIQUE DE CLAMPING QUI MARCHE ENFIN
+    private float ClampWorldAngle(float worldAngle)
+    {
+        // Normalise l'angle pour qu'il soit toujours entre -180 et 180
+        worldAngle = (worldAngle + 180f) % 360f - 180f;
+
+        if (isPlayerFacingRight)
+        {
+            return Mathf.Clamp(worldAngle, -maxDownwardAngle, maxUpwardAngle);
         }
         else
         {
-            // Optional: freeze rotation or snap back to default
-            Gun.transform.localRotation = Quaternion.identity;
-            Arm.transform.localRotation = Quaternion.identity;
+            // Quand on est à gauche, on veut que l'angle soit entre (180 - maxUpwardAngle) et (180 + maxDownwardAngle)
+            // On convertit l'angle de visée en son équivalent "gauche"
+            float leftEquivAngle = 180 + worldAngle;
+            leftEquivAngle = Mathf.Clamp(leftEquivAngle, 180 - maxUpwardAngle, 180 + maxDownwardAngle);
+            // On le reconvertit en son équivalent "world"
+            return leftEquivAngle - 180;
         }
     }
 
-    private void HandleGunShoot()
+    private void ApplyRotation()
     {
-        // Allow shooting only if:
-        // 1. Left mouse button is pressed (based on your provided code)
-        // 2. Gun is not reloading
-        // 3. Enough time has passed since the last shot
-        if (Mouse.current.leftButton.wasPressedThisFrame && !isReloading && Time.time >= nextFireTime)
+        if (Vector2.Distance(mouseWorldPosition, aimFromPosition) < minDistanceToAim)
         {
+            return;
+        }
+
+        Quaternion armTargetRotation = Quaternion.Euler(0, 0, worldArmRotation);
+        Quaternion gunTargetRotation = Quaternion.Euler(0, 0, worldLauncherRotation);
+
+        if (useInstantRotation)
+        {
+            Arm.transform.rotation = armTargetRotation;
+            Gun.transform.rotation = gunTargetRotation;
+        }
+        else
+        {
+            Arm.transform.rotation = Quaternion.Slerp(Arm.transform.rotation, armTargetRotation, rotationSpeed * Time.deltaTime);
+            Gun.transform.rotation = Quaternion.Slerp(Gun.transform.rotation, gunTargetRotation, rotationSpeed * Time.deltaTime);
+        }
+    }
+
+    private void HandleShooting()
+    {
+        if (Keyboard.current.rKey.wasPressedThisFrame && !isReloading && currentAmmo < maxAmmo)
+        {
+            StartCoroutine(Reload());
+            return;
+        }
+
+        if (Mouse.current.leftButton.isPressed && !isReloading && Time.time >= nextFireTime)
+        {
+            if (Vector2.Distance(mouseWorldPosition, aimFromPosition) < minDistanceToAim) return;
+
             if (currentAmmo > 0)
             {
-                // Shoot the bullet
-                bulletInst = Instantiate(bullet, bulletSpawnPoint.position, Quaternion.identity);
-                BulletBehavior bulletBehavior = bulletInst.GetComponent<BulletBehavior>();
-                if (bulletBehavior != null)
-                {
-                    bulletBehavior.SetDirection(direction); // Set the direction of the bullet
-                }
-
-                // Play shooting effects
-                if (WaterFlash != null) WaterFlash.Play();
-                if (WaterFlash2 != null) WaterFlash2.Play();
-
-                currentAmmo--; // Decrease ammo
-                nextFireTime = Time.time + fireRate; // Set time for next shot
-
-                // If ammo runs out, start reloading
-                if (currentAmmo <= 0)
-                {
-                    StartCoroutine(Reload());
-                }
+                Shoot();
+                currentAmmo--;
+                nextFireTime = Time.time + fireRate;
+                if (currentAmmo <= 0) StartCoroutine(Reload());
             }
             else
             {
-                // If player tries to shoot with 0 ammo, start reload if not already reloading
-                if (!isReloading)
-                {
-                    StartCoroutine(Reload());
-                }
+                StartCoroutine(Reload());
             }
         }
     }
 
-    // Coroutine for reloading
+    private void Shoot()
+    {
+        if (muzzleFlashEffect != null) muzzleFlashEffect.Play();
+
+        Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation);
+        Vector2 shootDirection = shootRotation * Vector2.right;
+
+        GameObject bulletInstance = Instantiate(bulletPrefab, bulletSpawnPoint.position, shootRotation);
+        WaterBullet bulletScript = bulletInstance.AddComponent<WaterBullet>();
+        bulletScript.Initialize(shootDirection, bulletSpeed, bulletLifetime, bulletDamage, damageableLayers, collisionLayers, destructionEffectPrefab);
+    }
+
     private IEnumerator Reload()
     {
-        isReloading = true; // Set reloading state to true
-        Debug.Log("Reloading started...");
-
-        // Wait for reload duration
+        if (isReloading) yield break;
+        isReloading = true;
+        Debug.Log("Reloading...");
         yield return new WaitForSeconds(reloadTime);
-
-        currentAmmo = maxAmmo; // Refill ammo
-        isReloading = false; // End reloading state
-        Debug.Log("Reloading complete. Current ammo: " + currentAmmo);
+        currentAmmo = maxAmmo;
+        isReloading = false;
+        Debug.Log("Reload complete!");
     }
 
-    // You can add public methods to get current ammo or reloading status for UI display
-    public int GetCurrentAmmo()
+    private void UpdateMinDistancePointPosition()
     {
-        return currentAmmo;
+        if (minDistancePoint == null) return;
+        minDistancePoint.position = aimFromPosition + (aimDirection.normalized * minDistanceToAim);
     }
 
-    public bool IsReloading()
+    public int GetCurrentAmmo() => currentAmmo;
+    public int GetMaxAmmo() => maxAmmo;
+    public bool IsReloading() => isReloading;
+
+    private void OnDrawGizmos()
     {
-        return isReloading;
+        Vector2 origin = launcherAimPoint != null ? (Vector2)launcherAimPoint.position : (Gun != null ? (Vector2)Gun.transform.position : Vector2.zero);
+        if (origin == Vector2.zero) return;
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(origin, mouseWorldPosition);
+        Gizmos.color = (Vector2.Distance(mouseWorldPosition, origin) < minDistanceToAim) ? Color.red : Color.cyan;
+        Gizmos.DrawWireSphere(origin, minDistanceToAim);
+
+        if (bulletSpawnPoint != null)
+        {
+            Gizmos.color = Color.green;
+            Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation);
+            Gizmos.DrawRay(bulletSpawnPoint.position, shootRotation * Vector2.right * 3f);
+        }
     }
 }
 
+public class WaterBullet : MonoBehaviour
+{
+    private Vector2 direction;
+    private float speed;
+    private float lifetime;
+    private int damage;
+    private LayerMask damageableLayers;
+    private LayerMask collisionLayers;
+    private ParticleSystem destructionEffectPrefab;
+    private Rigidbody2D rb;
+    private bool hasHit = false;
+
+    public void Initialize(Vector2 dir, float spd, float life, int dmg, LayerMask dmgLayers, LayerMask colLayers, ParticleSystem destructionFx)
+    {
+        direction = dir.normalized;
+        speed = spd;
+        lifetime = life;
+        damage = dmg;
+        damageableLayers = dmgLayers;
+        collisionLayers = colLayers;
+        destructionEffectPrefab = destructionFx;
+
+        rb = GetComponent<Rigidbody2D>() ?? gameObject.AddComponent<Rigidbody2D>();
+        rb.gravityScale = 0;
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        if (GetComponent<Collider2D>() == null)
+        {
+            var collider = gameObject.AddComponent<CircleCollider2D>();
+            collider.isTrigger = true;
+            collider.radius = 0.1f;
+        }
+
+        Destroy(gameObject, lifetime);
+    }
+
+    void FixedUpdate()
+    {
+        if (rb != null) rb.velocity = direction * speed;
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (hasHit) return;
+
+        if ((((1 << other.gameObject.layer) & damageableLayers) != 0) || (((1 << other.gameObject.layer) & collisionLayers) != 0))
+        {
+            hasHit = true;
+
+            var enemyHealth = other.GetComponent<FleaHealth>();
+            if (enemyHealth != null)
+            {
+                Vector2 attackDirection = (other.transform.position - transform.position).normalized;
+                enemyHealth.TakeDamage(damage, attackDirection);
+            }
+
+            HandleDestruction();
+        }
+    }
+
+    private void HandleDestruction()
+    {
+        if (destructionEffectPrefab != null)
+        {
+            Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
+        }
+        Destroy(gameObject);
+    }
+}

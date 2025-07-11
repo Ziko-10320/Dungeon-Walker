@@ -15,12 +15,52 @@ public class RobustLauncherSystem : MonoBehaviour
     [SerializeField] private Transform trajectoryVisualPoint; // Transform point for trajectory visualization (controls green line)
 
     [Header("Ball Prefabs")]
-    [Tooltip("Green ball prefab")]
-    [SerializeField] private GameObject greenBallPrefab;
-    [Tooltip("Orange ball prefab")]
     [SerializeField] private GameObject orangeBallPrefab;
     [Tooltip("Blue ball prefab")]
     [SerializeField] private GameObject blueBallPrefab;
+    [Tooltip("Green ball prefab")]
+    [SerializeField] private GameObject greenBallPrefab;
+
+    [Header("Explosion Effects")]
+    [Tooltip("Orange ball main explosion particle system prefab")]
+    [SerializeField] private GameObject orangeExplosionPrefab;
+    [Tooltip("Orange ball additional explosion particle system 1 prefab")]
+    [SerializeField] private GameObject orangeExplosionPrefab2;
+    [Tooltip("Orange ball additional explosion particle system 2 prefab")]
+    [SerializeField] private GameObject orangeExplosionPrefab3;
+    [Tooltip("Orange ball additional explosion particle system 3 prefab")]
+    [SerializeField] private GameObject orangeExplosionPrefab4;
+
+    [Tooltip("Blue ball main explosion particle system prefab")]
+    [SerializeField] private GameObject blueExplosionPrefab;
+    [Tooltip("Blue ball additional explosion particle system 1 prefab")]
+    [SerializeField] private GameObject blueExplosionPrefab2;
+    [Tooltip("Blue ball additional explosion particle system 2 prefab")]
+    [SerializeField] private GameObject blueExplosionPrefab3;
+    [Tooltip("Blue ball additional explosion particle system 3 prefab")]
+    [SerializeField] private GameObject blueExplosionPrefab4;
+
+    [Tooltip("Green ball main explosion particle system prefab")]
+    [SerializeField] private GameObject greenExplosionPrefab;
+    [Tooltip("Green ball additional explosion particle system 1 prefab")]
+    [SerializeField] private GameObject greenExplosionPrefab2;
+    [Tooltip("Green ball additional explosion particle system 2 prefab")]
+    [SerializeField] private GameObject greenExplosionPrefab3;
+    [Tooltip("Green ball additional explosion particle system 3 prefab")]
+    [SerializeField] private GameObject greenExplosionPrefab4;
+
+    [Tooltip("Scale multiplier for explosion effects")]
+    public float explosionScale = 1f;
+    [Tooltip("Scale multiplier for additional explosion effects")]
+    public float additionalExplosionsScale = 0.7f;
+    [Tooltip("Delay between main and additional explosions")]
+    public float explosionDelay = 0.05f;
+    [Tooltip("Random offset for additional explosions")]
+    public float explosionRandomOffset = 0.5f;
+    [Tooltip("Enable explosion effects")]
+    public bool enableExplosionEffects = true;
+    [Tooltip("Show explosion debug info")]
+    public bool showExplosionDebug = false;
 
     [Header("Ball Preview System")]
     [Tooltip("Transform where the next ball preview will be positioned")]
@@ -64,44 +104,20 @@ public class RobustLauncherSystem : MonoBehaviour
     [Tooltip("Show damage debug info")]
     public bool showDamageDebug = false;
 
-    [Header("Explosion Effects")]
-    [Tooltip("Green ball explosion particle system prefab")]
-    [SerializeField] private GameObject greenExplosionPrefab;
-    [Tooltip("Orange ball explosion particle system prefab")]
-    [SerializeField] private GameObject orangeExplosionPrefab;
-    [Tooltip("Blue ball explosion particle system prefab")]
-    [SerializeField] private GameObject blueExplosionPrefab;
-    [Tooltip("Main explosion particle system prefab (fallback)")]
-    [SerializeField] private GameObject genericExplosionPrefab;
-    [Tooltip("Additional explosion particle system 1 (fallback)")]
-    [SerializeField] private GameObject genericExplosionPrefab2;
-    [Tooltip("Additional explosion particle system 2 (fallback)")]
-    [SerializeField] private GameObject genericExplosionPrefab3;
-    [Tooltip("Additional explosion particle system 3 (fallback)")]
-    [SerializeField] private GameObject genericExplosionPrefab4;
-    [Tooltip("Scale of the main explosion")]
-    public float explosionScale = 1f;
-    [Tooltip("Scale of additional explosions")]
-    public float additionalExplosionsScale = 0.8f;
-    [Tooltip("Delay between additional explosions")]
-    public float explosionDelay = 0.1f;
-    [Tooltip("Random offset for additional explosions")]
-    public float explosionRandomOffset = 0.5f;
-    [Tooltip("Duration before explosion effects are destroyed")]
-    public float explosionDuration = 3f;
-    [Tooltip("Show explosion debug info")]
-    public bool showExplosionDebug = false;
-
     [Header("Sound Effects")]
-    [Tooltip("Main explosion sound")]
-    public AudioClip explosionSound;
-    [Tooltip("Additional explosion sounds")]
-    public AudioClip[] additionalExplosionSounds;
-    [Tooltip("Volume of explosion sounds")]
+    [Tooltip("Main explosion sound effect")]
+    [SerializeField] private AudioClip explosionSound;
+    [Tooltip("Additional explosion sound effects (played with delay)")]
+    [SerializeField] private AudioClip[] additionalExplosionSounds;
+    [Tooltip("Volume for explosion sounds")]
     [Range(0f, 1f)]
-    public float explosionVolume = 0.8f;
+    public float explosionVolume = 1f;
+    [Tooltip("Delay between main and additional explosion sounds")]
+    public float soundExplosionDelay = 0.1f;
     [Tooltip("Enable sound effects")]
     public bool enableSoundEffects = true;
+
+
 
     [Header("Curved Trajectory Settings")]
     [Tooltip("Enable curved trajectory aiming")]
@@ -184,6 +200,7 @@ public class RobustLauncherSystem : MonoBehaviour
 
     // Core aiming variables
     private Vector2 aimDirection; // The direction we want to aim
+    private Vector2 mouseScreenPosition; // Mouse screen position
     private Vector2 mouseWorldPosition; // Mouse world position
     private Vector2 stabilizedMouseWorldPosition; // Stabilized mouse world position
     private bool isPlayerFacingRight = true; // Track player facing direction
@@ -209,21 +226,15 @@ public class RobustLauncherSystem : MonoBehaviour
     // Dynamic force system
     private float currentCalculatedForce = 10f; // Current calculated launch force
 
-    // Ball destruction and damage variables (from StableDamageExplodingBall)
-    private bool hasExploded = false;
-    private bool hasBeenDestroyed = false;
-    private SpriteRenderer currentBallRenderer;
-    private Collider2D currentBallCollider;
-    private Rigidbody2D currentBallRigidbody;
-    private float spawnTime;
-    private GameObject currentSpawnedBall; // Reference to the currently spawned ball
-    private string currentBallType; // To store the type of the currently spawned ball
+    // Ball destruction and damage variables
+    private List<GameObject> activeProjectiles = new List<GameObject>(); // Changed to a list to handle multiple balls in flight
 
     // Performance optimization variables
     private float lastTrajectoryUpdate = 0f;
     private float trajectoryUpdateInterval = 0.02f; // Update trajectory 50 times per second
 
     public ShakeData CameraShakeExplosion;
+
     void Start()
     {
         // Initialize ball prefabs array for optimized random selection
@@ -276,16 +287,18 @@ public class RobustLauncherSystem : MonoBehaviour
             lastTrajectoryUpdate = Time.time;
         }
 
-        // Check for auto-destruction of the currently spawned ball
-        if (currentSpawnedBall != null && enableTimeDestruction && Time.time - spawnTime >= ballLifetime)
+        // Handle destruction for all active projectiles based on lifetime
+        for (int i = activeProjectiles.Count - 1; i >= 0; i--)
         {
-            if (!hasBeenDestroyed)
+            GameObject projectile = activeProjectiles[i];
+            ProjectileLifecycleController lifecycleController = projectile.GetComponent<ProjectileLifecycleController>();
+            if (lifecycleController != null && enableTimeDestruction && !lifecycleController.hasBeenDestroyed && Time.time - lifecycleController.spawnTime >= ballLifetime)
             {
                 if (showDestructionDebug)
                 {
-                    Debug.Log($"Ball auto-destructed after {ballLifetime}s");
+                    Debug.Log($"Projectile auto-destructed after {ballLifetime}s");
                 }
-                DestroyBall(currentSpawnedBall.transform.position);
+                DestroyBall(projectile, projectile.transform.position); // Pass the specific projectile to destroy
             }
         }
     }
@@ -323,9 +336,9 @@ public class RobustLauncherSystem : MonoBehaviour
         // Create array with non-null prefabs for optimized random selection
         var validPrefabs = new System.Collections.Generic.List<GameObject>();
 
-        if (greenBallPrefab != null) validPrefabs.Add(greenBallPrefab);
         if (orangeBallPrefab != null) validPrefabs.Add(orangeBallPrefab);
         if (blueBallPrefab != null) validPrefabs.Add(blueBallPrefab);
+        if (greenBallPrefab != null) validPrefabs.Add(greenBallPrefab);
 
         ballPrefabs = validPrefabs.ToArray();
 
@@ -501,20 +514,14 @@ public class RobustLauncherSystem : MonoBehaviour
         GameObject selectedBallPrefab = ballPrefabs[nextBallIndex];
 
         // Spawn ball at projectile spawn point
-        currentSpawnedBall = Instantiate(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
+        GameObject newProjectile = Instantiate(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
+        activeProjectiles.Add(newProjectile); // Add to the list of active projectiles
 
-        // Get components of the spawned ball for destruction/damage logic
-        currentBallRenderer = currentSpawnedBall.GetComponent<SpriteRenderer>();
-        currentBallCollider = currentSpawnedBall.GetComponent<Collider2D>();
-        currentBallRigidbody = currentSpawnedBall.GetComponent<Rigidbody2D>();
-
-        // Record spawn time for auto-destruction
-        spawnTime = Time.time;
-        hasBeenDestroyed = false; // Reset destruction flag for new ball
-        hasExploded = false; // Reset explosion flag for new ball
-
-        // Store ball type for explosion effects
-        currentBallType = GetBallType(selectedBallPrefab);
+        // Add ProjectileLifecycleController to manage its state
+        ProjectileLifecycleController lifecycleController = newProjectile.AddComponent<ProjectileLifecycleController>();
+        lifecycleController.launcherSystem = this;
+        lifecycleController.spawnTime = Time.time;
+        lifecycleController.hasBeenDestroyed = false; // Reset for new projectile
 
         // Get launch direction - Use direct aim direction for accurate shooting
         Vector2 launchDirection = GetLauncherDirection();
@@ -524,7 +531,7 @@ public class RobustLauncherSystem : MonoBehaviour
         {
             float spreadAngle = Random.Range(-randomSpread, randomSpread);
             float currentAngle = Mathf.Atan2(launchDirection.y, launchDirection.x) * Mathf.Rad2Deg;
-            float newAngle = (currentAngle + spreadAngle) * Mathf.Rad2Deg;
+            float newAngle = (currentAngle + spreadAngle) * Mathf.Deg2Rad;
             launchDirection = new Vector2(Mathf.Cos(newAngle), Mathf.Sin(newAngle));
         }
 
@@ -532,13 +539,14 @@ public class RobustLauncherSystem : MonoBehaviour
         float forceToUse = useDynamicForce ? currentCalculatedForce : launchForce;
 
         // Apply force to ball (check for Rigidbody2D first)
-        if (currentBallRigidbody != null)
+        Rigidbody2D projectileRb = newProjectile.GetComponent<Rigidbody2D>();
+        if (projectileRb != null)
         {
-            currentBallRigidbody.AddForce(launchDirection * forceToUse, ForceMode2D.Impulse);
+            projectileRb.AddForce(launchDirection * forceToUse, ForceMode2D.Impulse);
         }
         else if (showBallDebug)
         {
-            Debug.LogWarning($"Ball prefab \'{selectedBallPrefab.name}\' doesn\'t have Rigidbody2D component!");
+            Debug.LogWarning($"Ball prefab \"{selectedBallPrefab.name}\" doesn\"t have Rigidbody2D component!");
         }
 
         if (showBallDebug)
@@ -547,20 +555,13 @@ public class RobustLauncherSystem : MonoBehaviour
         }
 
         // Add a component to handle collisions for destruction/damage
-        BallCollisionHandler collisionHandler = currentSpawnedBall.AddComponent<BallCollisionHandler>();
+        BallCollisionHandler collisionHandler = newProjectile.AddComponent<BallCollisionHandler>();
         collisionHandler.launcherSystem = this;
 
         // Prepare next ball
         PrepareNextBall();
     }
 
-    private string GetBallType(GameObject ballPrefab)
-    {
-        if (ballPrefab == greenBallPrefab) return "GreenBall";
-        if (ballPrefab == orangeBallPrefab) return "OrangeBall";
-        if (ballPrefab == blueBallPrefab) return "BlueBall";
-        return "GenericBall";
-    }
 
     private void PrepareNextBall()
     {
@@ -586,19 +587,21 @@ public class RobustLauncherSystem : MonoBehaviour
 
     private void HandleAiming()
     {
-        // Get raw mouse position
-        mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        // Get raw mouse screen position
+        mouseScreenPosition = Mouse.current.position.ReadValue();
 
-        // Stabilize mouse position if enabled
+        // Convert mouse screen position to world position
+        mouseWorldPosition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+
+        // Stabilize mouse world position if enabled
         if (enableAimStabilization)
         {
-            // To stabilize aiming, we need to calculate the aim direction relative to the launcher\'s current position,
+            // To stabilize aiming, we need to calculate the aim direction relative to the launcher\"s current position,
             // but the mouse position itself should not be directly affected by player movement.
-            // Instead of modifying mouseWorldPosition, we calculate the direction from the *current* launcherAimPoint
-            // to the *raw* mouseWorldPosition. This ensures the aim follows the mouse in world space,
-            // regardless of player movement, while the launcher itself moves with the player.
-            // The key is that `stabilizedMouseWorldPosition` should *not* be adjusted by player movement.
-            // It should simply be the raw mouse position in world coordinates.
+            // The `stabilizedMouseWorldPosition` should be the mouse\"s world position relative to the camera\"s view,
+            // not relative to the player\"s changing position.
+            // By simply using `mouseWorldPosition` (which is already relative to the camera\"s view),
+            // the aim will remain stable even if the player moves.
             stabilizedMouseWorldPosition = mouseWorldPosition;
         }
         else
@@ -975,34 +978,38 @@ public class RobustLauncherSystem : MonoBehaviour
     }
 
     // Methods integrated from StableDamageExplodingBall
-    public void DestroyBall(Vector2 explosionPosition)
+    public void DestroyBall(GameObject projectileToDestroy, Vector2 explosionPosition)
     {
-        if (hasBeenDestroyed || currentSpawnedBall == null)
-        {
-            return;
-        }
+        if (projectileToDestroy == null) return; // Ensure the projectile object exists
 
-        hasBeenDestroyed = true;
+        ProjectileLifecycleController lifecycleController = projectileToDestroy.GetComponent<ProjectileLifecycleController>();
+        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return; // Already marked for destruction
+
+        if (lifecycleController != null)
+        {
+            lifecycleController.hasBeenDestroyed = true; // Mark as destroyed
+        }
 
         if (showDestructionDebug)
         {
-            Debug.Log($"Destroying ball at {explosionPosition}");
+            Debug.Log($"Destroying projectile at {explosionPosition}");
         }
 
         // Handle explosion damage first
         HandleExplosionDamage(explosionPosition);
 
-        // Trigger camera shake
-        CameraShakerHandler.Shake(CameraShakeExplosion);
-
-        // Instant destruction - hide ball immediately
-        if (instantDestruction)
+        // Trigger camera shake if assigned
+        if (CameraShakeExplosion != null)
         {
-            HideBallInstantly();
+            CameraShakerHandler.Shake(CameraShakeExplosion);
         }
 
         // Create explosion effects
-        CreateExplosionEffects(explosionPosition, currentBallType);
+        if (enableExplosionEffects)
+        {
+            string ballType = GetBallType(projectileToDestroy);
+            CreateExplosionEffects(explosionPosition, ballType);
+        }
 
         // Play explosion sounds
         if (enableSoundEffects)
@@ -1010,38 +1017,34 @@ public class RobustLauncherSystem : MonoBehaviour
             PlayExplosionSounds(explosionPosition);
         }
 
-        // Destroy the ball GameObject
-        if (instantDestruction)
-        {
-            Destroy(currentSpawnedBall);
-        }
-        else
-        {
-            Destroy(currentSpawnedBall, 0.1f);
-        }
-        currentSpawnedBall = null; // Clear reference after destruction
+        // Remove from active projectiles list
+        activeProjectiles.Remove(projectileToDestroy);
+
+        // Destroy the projectile GameObject itself
+        // This is crucial: the ball GameObject must be destroyed AFTER its effects are triggered.
+        Destroy(projectileToDestroy);
     }
 
-    private void HideBallInstantly()
+    private void HideBallInstantly(GameObject projectile)
     {
-        if (currentSpawnedBall == null) return;
+        if (projectile == null) return;
 
         // Disable renderer immediately
-        SpriteRenderer sr = currentSpawnedBall.GetComponent<SpriteRenderer>();
+        SpriteRenderer sr = projectile.GetComponent<SpriteRenderer>();
         if (sr != null)
         {
             sr.enabled = false;
         }
 
         // Disable collider to prevent further collisions
-        Collider2D col = currentSpawnedBall.GetComponent<Collider2D>();
+        Collider2D col = projectile.GetComponent<Collider2D>();
         if (col != null)
         {
             col.enabled = false;
         }
 
         // Stop rigidbody movement
-        Rigidbody2D rb = currentSpawnedBall.GetComponent<Rigidbody2D>();
+        Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
             rb.velocity = Vector2.zero;
@@ -1049,64 +1052,113 @@ public class RobustLauncherSystem : MonoBehaviour
             rb.simulated = false;
         }
 
+        // Also disable any other MonoBehaviour scripts on the ball that might cause lingering behavior
+        MonoBehaviour[] scripts = projectile.GetComponents<MonoBehaviour>();
+        foreach (MonoBehaviour script in scripts)
+        {
+            if (script != null && script.GetType() != typeof(BallCollisionHandler) && script.GetType() != typeof(ProjectileLifecycleController))
+            {
+                script.enabled = false;
+            }
+        }
+
         if (showDestructionDebug)
         {
-            Debug.Log("Ball hidden instantly");
+            Debug.Log("Projectile hidden instantly");
         }
+    }
+
+    private string GetBallType(GameObject ballPrefab)
+    {
+        if (ballPrefab.name.Contains("Orange")) return "OrangeBall";
+        if (ballPrefab.name.Contains("Blue")) return "BlueBall";
+        if (ballPrefab.name.Contains("Green")) return "GreenBall";
+        // Add more ball types as needed based on their prefab names
+        return "GenericBall";
     }
 
     private void CreateExplosionEffects(Vector2 explosionPosition, string ballType)
     {
-        if (hasExploded)
-        {
-            return;
-        }
+        if (!enableExplosionEffects) return;
 
-        hasExploded = true;
-
-        GameObject selectedExplosionPrefab = null;
+        GameObject mainExplosionPrefab = null;
+        GameObject additionalExplosionPrefab1 = null;
+        GameObject additionalExplosionPrefab2 = null;
+        GameObject additionalExplosionPrefab3 = null;
 
         switch (ballType)
         {
-            case "GreenBall":
-                selectedExplosionPrefab = greenExplosionPrefab;
-                break;
             case "OrangeBall":
-                selectedExplosionPrefab = orangeExplosionPrefab;
+                mainExplosionPrefab = orangeExplosionPrefab;
+                additionalExplosionPrefab1 = orangeExplosionPrefab2;
+                additionalExplosionPrefab2 = orangeExplosionPrefab3;
+                additionalExplosionPrefab3 = orangeExplosionPrefab4;
                 break;
             case "BlueBall":
-                selectedExplosionPrefab = blueExplosionPrefab;
+                mainExplosionPrefab = blueExplosionPrefab;
+                additionalExplosionPrefab1 = blueExplosionPrefab2;
+                additionalExplosionPrefab2 = blueExplosionPrefab3;
+                additionalExplosionPrefab3 = blueExplosionPrefab4;
+                break;
+            case "GreenBall":
+                mainExplosionPrefab = greenExplosionPrefab;
+                additionalExplosionPrefab1 = greenExplosionPrefab2;
+                additionalExplosionPrefab2 = greenExplosionPrefab3;
+                additionalExplosionPrefab3 = greenExplosionPrefab4;
                 break;
             default:
-                selectedExplosionPrefab = genericExplosionPrefab; // Fallback to generic explosion
+                if (showExplosionDebug)
+                {
+                    Debug.LogWarning($"Unknown ball type: {ballType}. No specific explosion prefabs found.");
+                }
                 break;
         }
 
         // Create main explosion
-        if (selectedExplosionPrefab != null)
+        if (mainExplosionPrefab != null)
         {
-            CreateSingleExplosion(selectedExplosionPrefab, explosionPosition, explosionScale, 0f);
+            if (showExplosionDebug) Debug.Log($"Attempting to create main explosion from prefab: {mainExplosionPrefab.name}");
+            CreateSingleExplosion(mainExplosionPrefab, explosionPosition, explosionScale, 0f);
+        }
+        else if (showExplosionDebug)
+        {
+            Debug.LogWarning($"Main explosion prefab is null for {ballType}");
         }
 
-        // Create additional explosions with delays (using generic ones for now, can be extended)
-        if (genericExplosionPrefab2 != null)
+        // Create additional explosions with delays
+        if (additionalExplosionPrefab1 != null)
         {
-            StartCoroutine(CreateDelayedExplosion(genericExplosionPrefab2, explosionPosition, additionalExplosionsScale, explosionDelay));
+            if (showExplosionDebug) Debug.Log($"Attempting to create additional explosion 1 from prefab: {additionalExplosionPrefab1.name}");
+            StartCoroutine(CreateDelayedExplosion(additionalExplosionPrefab1, explosionPosition, additionalExplosionsScale, explosionDelay));
+        }
+        else if (showExplosionDebug)
+        {
+            Debug.LogWarning($"Additional explosion prefab 1 is null for {ballType}");
         }
 
-        if (genericExplosionPrefab3 != null)
+        if (additionalExplosionPrefab2 != null)
         {
-            StartCoroutine(CreateDelayedExplosion(genericExplosionPrefab3, explosionPosition, additionalExplosionsScale, explosionDelay * 2f));
+            if (showExplosionDebug) Debug.Log($"Attempting to create additional explosion 2 from prefab: {additionalExplosionPrefab2.name}");
+            StartCoroutine(CreateDelayedExplosion(additionalExplosionPrefab2, explosionPosition, additionalExplosionsScale, explosionDelay * 2f));
+        }
+        else if (showExplosionDebug)
+        {
+            Debug.LogWarning($"Additional explosion prefab 2 is null for {ballType}");
         }
 
-        if (genericExplosionPrefab4 != null)
+        if (additionalExplosionPrefab3 != null)
         {
-            StartCoroutine(CreateDelayedExplosion(genericExplosionPrefab4, explosionPosition, additionalExplosionsScale, explosionDelay * 3f));
+            if (showExplosionDebug) Debug.Log($"Attempting to create additional explosion 3 from prefab: {additionalExplosionPrefab3.name}");
+            StartCoroutine(CreateDelayedExplosion(additionalExplosionPrefab3, explosionPosition, additionalExplosionsScale, explosionDelay * 3f));
+        }
+        else if (showExplosionDebug)
+        {
+            Debug.LogWarning($"Additional explosion prefab 3 is null for {ballType}");
         }
 
         if (showExplosionDebug)
         {
-            Debug.Log($"Created explosion effects at {explosionPosition}");
+            Debug.Log($"Created explosion effects at {explosionPosition} for {ballType}");
         }
     }
 
@@ -1114,6 +1166,7 @@ public class RobustLauncherSystem : MonoBehaviour
     {
         if (explosionPrefab == null)
         {
+            Debug.LogError("explosionPrefab is null in CreateSingleExplosion!");
             return;
         }
 
@@ -1126,31 +1179,35 @@ public class RobustLauncherSystem : MonoBehaviour
         }
 
         // Instantiate explosion
-        GameObject explosion = Instantiate(explosionPrefab, finalPosition, Quaternion.identity);
-
-        // Scale explosion
-        explosion.transform.localScale = Vector3.one * scale;
+        GameObject explosionInstance = Instantiate(explosionPrefab, finalPosition, Quaternion.identity);
+        explosionInstance.name = explosionPrefab.name + "_PS_Instance"; // Give it a distinct name
+        if (showExplosionDebug) Debug.Log($"Instantiated explosion: {explosionInstance.name} at {finalPosition}");
 
         // Get particle system and play it
-        ParticleSystem particles = explosion.GetComponent<ParticleSystem>();
+        ParticleSystem particles = explosionInstance.GetComponent<ParticleSystem>();
         if (particles != null)
         {
-            particles.Play();
+            if (showExplosionDebug) Debug.Log($"Found ParticleSystem on {explosionInstance.name}. Playing...");
+            // Ensure Play On Awake is false for the prefab, as we control playing here
+            if (!particles.isPlaying)
+            {
+                particles.Play();
+            }
+            // Destroy the particle system GameObject after its duration
+            Destroy(explosionInstance, particles.main.duration + particles.main.startLifetime.constantMax); // Add startLifetime to duration
         }
-
-        // Auto-destroy explosion after duration
-        Destroy(explosion, explosionDuration);
-
-        if (showExplosionDebug)
+        else
         {
-            Debug.Log($"Created explosion at {finalPosition} with scale {scale}");
+            if (showExplosionDebug) Debug.LogWarning($"No ParticleSystem found on {explosionInstance.name}. Destroying after default duration.");
+            // If it\"s not a particle system, destroy it after a default duration
+            Destroy(explosionInstance, 3f); // Use a default duration if no particle system is found
         }
     }
 
     private IEnumerator CreateDelayedExplosion(GameObject explosionPrefab, Vector2 position, float scale, float delay)
     {
         yield return new WaitForSeconds(delay);
-        CreateSingleExplosion(explosionPrefab, position, scale, delay);
+        CreateSingleExplosion(explosionPrefab, position, scale, delay); // Pass delay to CreateSingleExplosion for offset calculation
     }
 
     private void PlayExplosionSounds(Vector2 explosionPosition)
@@ -1168,7 +1225,7 @@ public class RobustLauncherSystem : MonoBehaviour
             {
                 if (additionalExplosionSounds[i] != null)
                 {
-                    float soundDelay = explosionDelay * (i + 1);
+                    float soundDelay = soundExplosionDelay * (i + 1);
                     StartCoroutine(PlayDelayedSound(additionalExplosionSounds[i], explosionPosition, soundDelay));
                 }
             }
@@ -1195,7 +1252,7 @@ public class RobustLauncherSystem : MonoBehaviour
         // Destroy audio object after clip finishes
         Destroy(audioObject, clip.length + 0.1f);
 
-        if (showExplosionDebug)
+        if (showDestructionDebug)
         {
             Debug.Log($"Playing explosion sound at {position}");
         }
@@ -1208,9 +1265,10 @@ public class RobustLauncherSystem : MonoBehaviour
     }
 
     // Damage handling methods
-    public void HandleCollision(GameObject collidedObject, Vector2 contactPoint)
+    public void HandleCollision(GameObject collidedObject, Vector2 contactPoint, GameObject projectileGameObject)
     {
-        if (hasBeenDestroyed) return;
+        ProjectileLifecycleController lifecycleController = projectileGameObject.GetComponent<ProjectileLifecycleController>();
+        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return; // Already marked for destruction
 
         bool shouldDestroy = false;
 
@@ -1221,25 +1279,26 @@ public class RobustLauncherSystem : MonoBehaviour
                 shouldDestroy = true;
                 if (showDestructionDebug)
                 {
-                    Debug.Log($"Ball collided with destruction layer: {LayerMask.LayerToName(collidedObject.layer)}");
+                    Debug.Log($"Projectile collided with destruction layer: {LayerMask.LayerToName(collidedObject.layer)}");
                 }
             }
         }
 
         if (enableDamageSystem && damageOnCollision)
         {
-            HandleCollisionDamage(collidedObject, contactPoint);
+            HandleCollisionDamage(collidedObject, contactPoint, projectileGameObject);
         }
 
         if (shouldDestroy)
         {
-            DestroyBall(contactPoint);
+            DestroyBall(projectileGameObject, contactPoint);
         }
     }
 
-    public void HandleTrigger(GameObject triggeredObject)
+    public void HandleTrigger(GameObject triggeredObject, GameObject projectileGameObject)
     {
-        if (hasBeenDestroyed) return;
+        ProjectileLifecycleController lifecycleController = projectileGameObject.GetComponent<ProjectileLifecycleController>();
+        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return; // Already marked for destruction
 
         bool shouldDestroy = false;
 
@@ -1250,60 +1309,60 @@ public class RobustLauncherSystem : MonoBehaviour
                 shouldDestroy = true;
                 if (showDestructionDebug)
                 {
-                    Debug.Log($"Ball triggered with destruction layer: {LayerMask.LayerToName(triggeredObject.layer)}");
+                    Debug.Log($"Projectile triggered with destruction layer: {LayerMask.LayerToName(triggeredObject.layer)}");
                 }
             }
         }
 
         if (enableDamageSystem && damageOnCollision)
         {
-            HandleTriggerDamage(triggeredObject, currentSpawnedBall.transform.position);
+            HandleTriggerDamage(triggeredObject, projectileGameObject.transform.position, projectileGameObject);
         }
 
         if (shouldDestroy)
         {
-            DestroyBall(currentSpawnedBall.transform.position);
+            DestroyBall(projectileGameObject, projectileGameObject.transform.position);
         }
     }
 
-    private void HandleCollisionDamage(GameObject target, Vector2 impactPoint)
+    private void HandleCollisionDamage(GameObject target, Vector2 impactPoint, GameObject projectileGameObject)
     {
         if (((1 << target.layer) & enemyLayers) != 0)
         {
             FleaHealth enemyHealth = target.GetComponent<FleaHealth>();
             if (enemyHealth != null)
             {
-                Vector2 attackDirection = (target.transform.position - currentSpawnedBall.transform.position).normalized;
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 enemyHealth.TakeDamage((int)ballDamage, attackDirection);
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Ball dealt {ballDamage} damage to {target.name} at {impactPoint}");
+                    Debug.Log($"Projectile dealt {ballDamage} damage to {target.name} at {impactPoint}");
                 }
             }
             else if (showDamageDebug)
             {
-                Debug.LogWarning($"Enemy {target.name} doesn\'t have FleaHealth component!");
+                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth component!");
             }
         }
     }
 
-    private void HandleTriggerDamage(GameObject target, Vector2 impactPoint)
+    private void HandleTriggerDamage(GameObject target, Vector2 impactPoint, GameObject projectileGameObject)
     {
         if (((1 << target.layer) & enemyLayers) != 0)
         {
             FleaHealth enemyHealth = target.GetComponent<FleaHealth>();
             if (enemyHealth != null)
             {
-                Vector2 attackDirection = (target.transform.position - currentSpawnedBall.transform.position).normalized;
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 enemyHealth.TakeDamage((int)ballDamage, attackDirection);
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Ball dealt {ballDamage} trigger damage to {target.name} at {impactPoint}");
+                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to {target.name} at {impactPoint}");
                 }
             }
             else if (showDamageDebug)
             {
-                Debug.LogWarning($"Enemy {target.name} doesn\'t have FleaHealth component!");
+                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth component!");
             }
         }
     }
@@ -1383,8 +1442,8 @@ public class RobustLauncherSystem : MonoBehaviour
 
             // Draw GREEN LINE - actual projectile direction (controlled by trajectory offsets)
             Gizmos.color = Color.green;
-            Vector2 trajectoryPos = trajectoryVisualPoint != null ? trajectoryVisualPoint.position : gunPos;
-            Gizmos.DrawRay(trajectoryPos, GetLauncherDirection() * 4f);
+            Vector2 trajectoryGizmoOrigin = trajectoryVisualPoint != null ? trajectoryVisualPoint.position : projectileSpawnPoint.position;
+            Gizmos.DrawRay(trajectoryGizmoOrigin, GetLauncherDirection() * 4f);
 
             // Draw curved trajectory if enabled and calculated
             if (useCurvedTrajectory && trajectoryPoints.Count > 1)
@@ -1438,15 +1497,19 @@ public class RobustLauncherSystem : MonoBehaviour
         }
 
         // Gizmos for explosion damage radius and random offset
-        if (enableDamageSystem && damageOnExplosion && currentSpawnedBall != null)
+        if (enableDamageSystem && damageOnExplosion)
         {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(currentSpawnedBall.transform.position, explosionDamageRadius);
-
-            if (explosionRandomOffset > 0f)
+            // Iterate through active projectiles to draw their explosion radius
+            foreach (GameObject projectile in activeProjectiles)
             {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawWireSphere(currentSpawnedBall.transform.position, explosionRandomOffset);
+                if (projectile != null)
+                {
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawWireSphere(projectile.transform.position, explosionDamageRadius);
+
+                    // Note: explosionRandomOffset is no longer used for visual debug here
+                    // as it\"s handled by individual ball explosion scripts.
+                }
             }
         }
     }
@@ -1461,7 +1524,7 @@ public class BallCollisionHandler : MonoBehaviour
     {
         if (launcherSystem != null)
         {
-            launcherSystem.HandleCollision(collision.gameObject, collision.contacts[0].point);
+            launcherSystem.HandleCollision(collision.gameObject, collision.contacts[0].point, gameObject);
         }
     }
 
@@ -1469,8 +1532,42 @@ public class BallCollisionHandler : MonoBehaviour
     {
         if (launcherSystem != null)
         {
-            launcherSystem.HandleTrigger(other.gameObject);
+            launcherSystem.HandleTrigger(other.gameObject, gameObject);
         }
+    }
+}
+
+// New script to manage projectile lifecycle and state
+public class ProjectileLifecycleController : MonoBehaviour
+{
+    public RobustLauncherSystem launcherSystem;
+    public float spawnTime;
+    public bool hasBeenDestroyed = false;
+}
+
+// Simplified ParticleSystemLifecycle script (can be removed if not needed, or kept for generic particle systems)
+public class ParticleSystemLifecycle : MonoBehaviour
+{
+    void Start()
+    {
+        ParticleSystem ps = GetComponent<ParticleSystem>();
+        if (ps == null)
+        {
+            Debug.LogWarning($"ParticleSystemLifecycle: No ParticleSystem found on {gameObject.name}. Destroying this component.");
+            Destroy(this); // Destroy this component if no ParticleSystem is found
+            return;
+        }
+
+        // Ensure the particle system plays if it\"s not already playing
+        if (!ps.isPlaying)
+        {
+            ps.Play();
+        }
+
+        // Destroy the GameObject after the particle system has finished playing
+        // We add a small buffer to ensure all particles have faded out.
+        float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax + 0.1f;
+        Destroy(gameObject, totalDuration);
     }
 }
 
