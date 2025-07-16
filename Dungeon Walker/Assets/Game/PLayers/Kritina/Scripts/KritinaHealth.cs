@@ -68,13 +68,13 @@ public class PlayerHealth : MonoBehaviour
         // Start the new flash material effect
         StartCoroutine(FlashDamageEffect());
 
-        if (movementScript != null) movementScript.enabled = false;
-        if (dashScript != null) dashScript.enabled = false;
+        // if (movementScript != null) movementScript.enabled = false;
+        // if (dashScript != null) dashScript.enabled = false;
 
         yield return new WaitForSeconds(0.3f);
 
-        if (movementScript != null) movementScript.enabled = true;
-        if (dashScript != null) dashScript.enabled = true;
+        // if (movementScript != null) movementScript.enabled = true;
+        // if (dashScript != null) dashScript.enabled = true;
 
         yield return new WaitForSeconds(0.2f);
 

@@ -31,11 +31,12 @@ public class FleaHealth : MonoBehaviour
     // Array of SpriteRenderers for the parts of the mushroom
     public SpriteRenderer[] spriteRenderers;
 
-  
+
 
     // Private variables
     private int currentHealth;
     private bool isKnockedBack = false; // Is the mushroom currently being knocked back?
+    private bool isFlashing = false; // Added to prevent multiple flash coroutines
     //CameraShake
     public ShakeData CameraShakeDeath;
     void Start()
@@ -63,7 +64,10 @@ public class FleaHealth : MonoBehaviour
         }
 
         // Trigger flash damage effect
-        StartCoroutine(FlashDamage());
+        if (!isFlashing) // Only start new flash if not already flashing
+        {
+            StartCoroutine(FlashDamage());
+        }
 
         // Check if the mushroom is dead
         if (currentHealth <= 0)
@@ -129,8 +133,8 @@ public class FleaHealth : MonoBehaviour
         {
             InstantiateAndPlayParticleSystem(DeathMushroomParticules5, DeathMushroomSpawn5.position);
         }
-         // Trigger camera shake
-         CameraShakerHandler.Shake(CameraShakeDeath);
+        // Trigger camera shake
+        CameraShakerHandler.Shake(CameraShakeDeath);
 
         // Destroy the mushroom
         Destroy(gameObject);
@@ -150,9 +154,12 @@ public class FleaHealth : MonoBehaviour
     // Coroutine to handle the flash damage effect
     private IEnumerator FlashDamage()
     {
+        isFlashing = true;
+
         if (flashMaterial == null || spriteRenderers.Length == 0)
         {
             Debug.LogError("Flash material or SpriteRenderers are not assigned.");
+            isFlashing = false;
             yield break;
         }
 
@@ -229,5 +236,6 @@ public class FleaHealth : MonoBehaviour
                 Destroy(flashMaterialInstances[i]);
             }
         }
+        isFlashing = false;
     }
 }

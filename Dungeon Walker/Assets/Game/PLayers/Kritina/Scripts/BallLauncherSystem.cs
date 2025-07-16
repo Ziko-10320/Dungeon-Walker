@@ -1025,48 +1025,7 @@ public class RobustLauncherSystem : MonoBehaviour
         Destroy(projectileToDestroy);
     }
 
-    private void HideBallInstantly(GameObject projectile)
-    {
-        if (projectile == null) return;
 
-        // Disable renderer immediately
-        SpriteRenderer sr = projectile.GetComponent<SpriteRenderer>();
-        if (sr != null)
-        {
-            sr.enabled = false;
-        }
-
-        // Disable collider to prevent further collisions
-        Collider2D col = projectile.GetComponent<Collider2D>();
-        if (col != null)
-        {
-            col.enabled = false;
-        }
-
-        // Stop rigidbody movement
-        Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
-        if (rb != null)
-        {
-            rb.velocity = Vector2.zero;
-            rb.angularVelocity = 0f;
-            rb.simulated = false;
-        }
-
-        // Also disable any other MonoBehaviour scripts on the ball that might cause lingering behavior
-        MonoBehaviour[] scripts = projectile.GetComponents<MonoBehaviour>();
-        foreach (MonoBehaviour script in scripts)
-        {
-            if (script != null && script.GetType() != typeof(BallCollisionHandler) && script.GetType() != typeof(ProjectileLifecycleController))
-            {
-                script.enabled = false;
-            }
-        }
-
-        if (showDestructionDebug)
-        {
-            Debug.Log("Projectile hidden instantly");
-        }
-    }
 
     private string GetBallType(GameObject ballPrefab)
     {
@@ -1329,19 +1288,31 @@ public class RobustLauncherSystem : MonoBehaviour
     {
         if (((1 << target.layer) & enemyLayers) != 0)
         {
-            FleaHealth enemyHealth = target.GetComponent<FleaHealth>();
-            if (enemyHealth != null)
+            FleaHealth fleaHealth = target.GetComponent<FleaHealth>();
+            if (fleaHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                enemyHealth.TakeDamage((int)ballDamage, attackDirection);
+                fleaHealth.TakeDamage((int)ballDamage, attackDirection);
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Projectile dealt {ballDamage} damage to {target.name} at {impactPoint}");
+                    Debug.Log($"Projectile dealt {ballDamage} damage to Flea {target.name} at {impactPoint}");
                 }
             }
-            else if (showDamageDebug)
+
+            SprayerHealth sprayerHealth = target.GetComponent<SprayerHealth>();
+            if (sprayerHealth != null)
             {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth component!");
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
+                sprayerHealth.TakeDamage((int)ballDamage, attackDirection);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Projectile dealt {ballDamage} damage to Sprayer {target.name} at {impactPoint}");
+                }
+            }
+
+            if (fleaHealth == null && sprayerHealth == null && showDamageDebug)
+            {
+                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth or SprayerHealth component!");
             }
         }
     }
@@ -1350,19 +1321,31 @@ public class RobustLauncherSystem : MonoBehaviour
     {
         if (((1 << target.layer) & enemyLayers) != 0)
         {
-            FleaHealth enemyHealth = target.GetComponent<FleaHealth>();
-            if (enemyHealth != null)
+            FleaHealth fleaHealth = target.GetComponent<FleaHealth>();
+            if (fleaHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                enemyHealth.TakeDamage((int)ballDamage, attackDirection);
+                fleaHealth.TakeDamage((int)ballDamage, attackDirection);
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to {target.name} at {impactPoint}");
+                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to Flea {target.name} at {impactPoint}");
                 }
             }
-            else if (showDamageDebug)
+
+            SprayerHealth sprayerHealth = target.GetComponent<SprayerHealth>();
+            if (sprayerHealth != null)
             {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth component!");
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
+                sprayerHealth.TakeDamage((int)ballDamage, attackDirection);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to Sprayer {target.name} at {impactPoint}");
+                }
+            }
+
+            if (fleaHealth == null && sprayerHealth == null && showDamageDebug)
+            {
+                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth or SprayerHealth component!");
             }
         }
     }
@@ -1378,18 +1361,37 @@ public class RobustLauncherSystem : MonoBehaviour
 
         foreach (Collider2D enemyCollider in enemiesInRange)
         {
-            FleaHealth enemyHealth = enemyCollider.GetComponent<FleaHealth>();
-            if (enemyHealth != null)
+            FleaHealth fleaHealth = enemyCollider.GetComponent<FleaHealth>();
+            if (fleaHealth != null)
             {
                 float distance = Vector2.Distance(explosionCenter, enemyCollider.transform.position);
                 float damageMultiplier = 1f - (distance / explosionDamageRadius);
                 float explosionDamage = ballDamage * explosionDamageMultiplier * damageMultiplier;
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
-                enemyHealth.TakeDamage((int)explosionDamage, attackDirection);
+                fleaHealth.TakeDamage((int)explosionDamage, attackDirection);
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Explosion dealt {explosionDamage:F1} damage to {enemyCollider.name} (distance: {distance:F2})");
+                    Debug.Log($"Explosion dealt {explosionDamage:F1} damage to Flea {enemyCollider.name} (distance: {distance:F2})");
                 }
+            }
+
+            SprayerHealth sprayerHealth = enemyCollider.GetComponent<SprayerHealth>();
+            if (sprayerHealth != null)
+            {
+                float distance = Vector2.Distance(explosionCenter, enemyCollider.transform.position);
+                float damageMultiplier = 1f - (distance / explosionDamageRadius);
+                float explosionDamage = ballDamage * explosionDamageMultiplier * damageMultiplier;
+                Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
+                sprayerHealth.TakeDamage((int)explosionDamage, attackDirection);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Explosion dealt {explosionDamage:F1} damage to Sprayer {enemyCollider.name} (distance: {distance:F2})");
+                }
+            }
+
+            if (fleaHealth == null && sprayerHealth == null && showDamageDebug)
+            {
+                Debug.LogWarning($"Enemy {enemyCollider.name} doesn\"t have FleaHealth or SprayerHealth component!");
             }
         }
 
@@ -1570,6 +1572,5 @@ public class ParticleSystemLifecycle : MonoBehaviour
         Destroy(gameObject, totalDuration);
     }
 }
-
 
 

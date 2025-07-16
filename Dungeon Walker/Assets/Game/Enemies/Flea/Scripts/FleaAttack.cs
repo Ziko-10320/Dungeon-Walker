@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class FleaChargeAttack : MonoBehaviour
@@ -9,7 +8,6 @@ public class FleaChargeAttack : MonoBehaviour
     [SerializeField] private FleaFollow followScript;
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform playerTransform;
-    // NOTE: We are not using the damageHitbox in this version, as we are returning to the OverlapCircle logic.
 
     [Header("Attack Range & Timing")]
     [SerializeField] private float attackRange = 5f;
@@ -24,12 +22,16 @@ public class FleaChargeAttack : MonoBehaviour
     [SerializeField] private float chargeDrag = 5f;
     [SerializeField] private int attackDamage = 15;
     [SerializeField] private float knockbackForce = 20f;
+    [Tooltip("Nombre maximum de charges consécutives si l'attaque rate.")]
+    [SerializeField] private int maxConsecutiveCharges = 2;
+
+    [Header("Visual Effects")]
     public ParticleSystem BurstDust;
     public ParticleSystem BurstDust2;
 
     private bool playerInRange = false;
     private bool canAttack = true;
-    private bool isAttacking = false;
+    public bool isAttacking = false;
     private float decisionTimer = 0f;
     private float originalDrag;
 
@@ -83,97 +85,99 @@ public class FleaChargeAttack : MonoBehaviour
     {
         isAttacking = true;
         canAttack = false;
-
         if (followScript != null) followScript.enabled = false;
-        rb.velocity = Vector2.zero;
 
-        fleaAnimator.SetBool(isAnticipatingHash, true);
+        int chargesMade = 0;
+        bool hitPlayer = false;
 
-        Vector2 directionToPlayer = (playerTransform.position - transform.position).normalized;
-        FlipTowards(directionToPlayer);
-
-        yield return new WaitForSeconds(anticipationDuration);
-
-        if (BurstDust != null) BurstDust.Play();
-        if (BurstDust2 != null) BurstDust2.Play(); // Corrected this line
-
-        fleaAnimator.SetBool(isAnticipatingHash, false);
-        fleaAnimator.SetBool(isChargingHash, true);
-
-        rb.drag = 0f;
-        rb.AddForce(new Vector2(directionToPlayer.x * chargeForce, 0), ForceMode2D.Impulse);
-        rb.drag = chargeDrag;
-
-        float chargeTimer = 0f;
-        while (chargeTimer < chargeDuration)
+        while (chargesMade < maxConsecutiveCharges && !hitPlayer)
         {
-            // RESTORED: Using CheckForPlayerHit() during the charge
-            if (CheckForPlayerHit())
+            chargesMade++;
+            rb.velocity = Vector2.zero;
+
+            fleaAnimator.SetBool(isAnticipatingHash, true);
+            Vector2 directionToPlayer = (playerTransform.position - transform.position).normalized;
+            FlipTowards(directionToPlayer);
+            yield return new WaitForSeconds(anticipationDuration);
+
+            if (BurstDust != null) BurstDust.Play();
+            if (BurstDust2 != null) BurstDust2.Play();
+            fleaAnimator.SetBool(isAnticipatingHash, false);
+            fleaAnimator.SetBool(isChargingHash, true);
+
+            rb.drag = 0f;
+            rb.AddForce(new Vector2(directionToPlayer.x * chargeForce, 0), ForceMode2D.Impulse);
+            rb.drag = chargeDrag;
+
+            float chargeTimer = 0f;
+            while (chargeTimer < chargeDuration)
+            {
+                if (CheckForPlayerHit())
+                {
+                    hitPlayer = true;
+                    break;
+                }
+                chargeTimer += Time.deltaTime;
+                yield return null;
+            }
+
+            // --- CORRECTION APPLIQUÉE ICI ---
+            // On s'assure d'arrêter le mouvement et l'animation APRÈS la boucle de charge,
+            // que le joueur ait été touché (break) ou que le temps soit écoulé.
+            rb.velocity = Vector2.zero;
+            fleaAnimator.SetBool(isChargingHash, false); // <-- C'est la ligne clé !
+
+            if (hitPlayer)
             {
                 break;
             }
-            chargeTimer += Time.deltaTime;
-            yield return null;
+
+            if (chargesMade < maxConsecutiveCharges)
+            {
+                yield return new WaitForSeconds(0.2f);
+            }
         }
 
-        rb.velocity = Vector2.zero;
+        // --- Nettoyage final ---
         rb.drag = originalDrag;
-        fleaAnimator.SetBool(isChargingHash, false);
-
         if (followScript != null) followScript.enabled = true;
-
         isAttacking = false;
 
         yield return new WaitForSeconds(attackCooldown);
-
         canAttack = true;
         ResetDecisionTimer();
     }
 
-    // RESTORED: The CheckForPlayerHit method using OverlapCircle
     private bool CheckForPlayerHit()
     {
-        // Using a small circle overlap to detect the player
-        // Make sure your player is on the "Player" layer
         Collider2D playerHit = Physics2D.OverlapCircle(rb.position, 0.5f, LayerMask.GetMask("Player"));
-
         if (playerHit != null)
         {
-            Debug.Log("Flea hit the player via OverlapCircle!");
-
             PlayerHealth playerHealth = playerHit.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
                 Vector2 knockbackDirection = (playerHit.transform.position - transform.position).normalized;
                 knockbackDirection.y = 0.5f;
-
                 playerHealth.TakeDamage(attackDamage, knockbackForce, knockbackDirection.normalized);
             }
-            return true; // Hit was successful
+            return true;
         }
-        return false; // No hit
+        return false;
     }
 
-    // FIXED: The FlipTowards method with your original structure
     private void FlipTowards(Vector2 direction)
     {
-        // Flip the flea's scale
-        if (direction.x > 0 && transform.localScale.x < 0)
+        float scaleValue = Mathf.Abs(transform.localScale.x);
+        if (direction.x > 0)
         {
-            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+            transform.localScale = new Vector3(scaleValue, transform.localScale.y, transform.localScale.z);
         }
-        else if (direction.x < 0 && transform.localScale.x > 0)
+        else if (direction.x < 0)
         {
-            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+            transform.localScale = new Vector3(-scaleValue, transform.localScale.y, transform.localScale.z);
         }
 
-        // --- THIS IS THE FIXED PART ---
-        // Determine the target flip value based on the flea's CURRENT facing direction
-        // If localScale.x is positive, it's facing RIGHT, so particles should NOT be flipped (flip value = 0).
-        // If localScale.x is negative, it's facing LEFT, so particles SHOULD be flipped (flip value = 1).
         float targetFlipX = transform.localScale.x > 0 ? 0 : 1;
-
-        // Apply the calculated flip value to the particle systems
         if (BurstDust != null)
         {
             var renderer = BurstDust.GetComponent<ParticleSystemRenderer>();

@@ -1,117 +1,263 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 public class FleaFollow : MonoBehaviour
 {
-    [Header("Target Settings")]
-    [SerializeField] private Transform playerTransform; // Reference to the player's Transform
-    [SerializeField] private float stoppingDistance = 1.5f; // Distance at which the flea stops following
+    private enum AIState { Patrolling, Chasing, Fallen, Wandering }
+    private AIState currentState;
 
-    [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 3f; // Speed at which the flea moves
-    [SerializeField] private float flipBuffer = 0.1f; // Small buffer to prevent rapid flipping
+    [Header("Références Essentielles")]
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Animator fleaAnimator;
+    [SerializeField] private Transform playerTransform;
 
-    [Header("Component References")]
-    [SerializeField] private Rigidbody2D rb; // Reference to the Flea's Rigidbody2D
-    [SerializeField] private Animator fleaAnimator; // Reference to the Flea's Animator
+    [Header("Comportement Général")]
+    [SerializeField] private float patrolSpeed = 2f;
+    [SerializeField] private float chaseSpeed = 4f;
+    [SerializeField] private float stoppingDistance = 1.5f;
+    [Tooltip("Rayon de détection quand la puce est perdue ou en errance.")]
+    [SerializeField] private float detectionRadius = 7f;
 
-    // We will directly use the string "IsWalking" for the Animator parameter
-    // private int isWalkingHash; // No longer needed
+    [Header("Paramètres d'Errance")]
+    [Tooltip("Temps minimum/maximum que la puce marchera dans une direction en errance.")]
+    [SerializeField] private Vector2 wanderTimeRange = new Vector2(2f, 5f);
+    [SerializeField] private float wanderWaitTime = 1.5f;
+    private Coroutine wanderCoroutine;
+
+    [Header("Détection d'Environnement")]
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private Transform wallCheck;
+    [Tooltip("Distance pour les vérifications de sol et de mur.")]
+    [SerializeField] private float checkDistance = 0.2f;
+    [SerializeField] private LayerMask platformLayer;
+
+    private float currentMoveDirection = 1f;
+    private float initialYPosition;
+    private float timeSinceLastFlip = 0f;
+    private const float FLIP_COOLDOWN = 0.5f;
 
     void Awake()
     {
-        // Get component references if not assigned in Inspector
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
-
-        // No need to get hash here anymore
-        // if (fleaAnimator != null)
-        // {
-        //     isWalkingHash = Animator.StringToHash("IsWalking");
-        // }
-
-        // Find the player if not assigned (useful for quick setup, but assigning in Inspector is better)
-        if (playerTransform == null)
+        if (playerTransform == null || groundCheck == null || wallCheck == null)
         {
-            GameObject player = GameObject.FindGameObjectWithTag("Player"); // Ensure your player has the "Player" tag
-            if (player != null)
-            {
-                playerTransform = player.transform;
-            }
-            else
-            {
-                Debug.LogWarning("FleaFollow: Player not found! Please assign playerTransform or tag your player as 'Player'.", this);
-                enabled = false; // Disable script if no player found
-            }
+            Debug.LogError("ERREUR: Références manquantes !", this);
+            enabled = false;
+            return;
         }
     }
 
-    void FixedUpdate() // Use FixedUpdate for Rigidbody physics
+    void Start()
     {
-        if (playerTransform == null) return;
+        initialYPosition = transform.position.y;
+        ChangeState(AIState.Patrolling);
+    }
 
-        // --- MODIFIED: Calculate distance based only on X-axis for stopping ---
-        // We want to stop if the X distance is within stoppingDistance
-        float xDistanceToPlayer = Mathf.Abs(playerTransform.position.x - transform.position.x);
+    void Update()
+    {
+        timeSinceLastFlip += Time.deltaTime;
+        UpdateAIState();
+        ExecuteCurrentState();
+        UpdateAnimation();
+    }
 
-        if (xDistanceToPlayer > stoppingDistance) // Check X distance for movement decision
+    private void ChangeState(AIState newState)
+    {
+        if (currentState == newState) return;
+        currentState = newState;
+
+        if (wanderCoroutine != null)
         {
-            // --- MODIFIED: Calculate direction only for X-axis movement ---
-            // Create a target position that matches the flea's current Y, but player's X
-            Vector2 targetPositionXOnly = new Vector2(playerTransform.position.x, transform.position.y);
-            Vector2 direction = (targetPositionXOnly - (Vector2)transform.position).normalized;
+            StopCoroutine(wanderCoroutine);
+            wanderCoroutine = null;
+        }
+        if (currentState == AIState.Wandering)
+        {
+            wanderCoroutine = StartCoroutine(WanderRoutine());
+        }
+    }
 
-            // Apply velocity only in the X direction, keeping current Y velocity
-            rb.velocity = new Vector2(direction.x * moveSpeed, rb.velocity.y);
+    private void UpdateAIState()
+    {
+        if (transform.position.y < initialYPosition - 2f)
+        {
+            if (IsPlayerVisible()) ChangeState(AIState.Fallen);
+            else if (currentState != AIState.Wandering) ChangeState(AIState.Wandering);
+            return;
+        }
 
-            // Set walking animation using the string name directly
-            if (fleaAnimator != null)
-            {
-                fleaAnimator.SetBool("IsWalking", true); // Using string "IsWalking"
-            }
-
-            // Handle flipping
-            Flip(direction.x);
+        if (IsPlayerVisible())
+        {
+            if (transform.position.y > initialYPosition - 2f) ChangeState(AIState.Chasing);
+            else ChangeState(AIState.Fallen);
         }
         else
         {
-            // Stop moving if within stopping distance (only X velocity needs to be zeroed)
-            rb.velocity = new Vector2(0f, rb.velocity.y); // Keep current Y velocity
-
-            // Set idle animation using the string name directly
-            if (fleaAnimator != null)
+            if (currentState == AIState.Chasing || currentState == AIState.Fallen)
             {
-                fleaAnimator.SetBool("IsWalking", false); // Using string "IsWalking"
+                if (transform.position.y > initialYPosition - 2f) ChangeState(AIState.Patrolling);
+                else ChangeState(AIState.Wandering);
             }
         }
     }
 
-    void Flip(float directionX)
+    private void ExecuteCurrentState()
     {
-        // Check current facing direction based on localScale.x
-        // Assuming positive scale.x means facing right, negative means facing left
-        bool facingRight = transform.localScale.x > 0;
-
-        // If moving right and facing left, or moving left and facing right, then flip
-        if ((directionX > flipBuffer && !facingRight) || (directionX < -flipBuffer && facingRight))
+        switch (currentState)
         {
-            Vector3 currentScale = transform.localScale;
-            currentScale.x *= -1; // Invert the X scale
-            transform.localScale = currentScale;
+            case AIState.Patrolling: HandlePatrolling(); break;
+            case AIState.Chasing: HandleChasing(); break;
+            case AIState.Fallen: HandleFallen(); break;
+            case AIState.Wandering: break;
         }
     }
 
-    // Optional: Visualize stopping distance in the editor
+    private void HandlePatrolling()
+    {
+        if (IsBlocked() && timeSinceLastFlip > FLIP_COOLDOWN)
+        {
+            FlipDirection();
+        }
+        MoveInCurrentDirection(patrolSpeed);
+    }
+
+    private void HandleChasing()
+    {
+        if (IsBlocked())
+        {
+            StopMoving();
+            return;
+        }
+        if (Vector2.Distance(transform.position, playerTransform.position) < stoppingDistance)
+        {
+            StopMoving();
+            FaceTarget(playerTransform.position);
+        }
+        else
+        {
+            MoveTowards(playerTransform.position, chaseSpeed);
+        }
+    }
+
+    private void HandleFallen()
+    {
+        if (IsBlocked())
+        {
+            ChangeState(AIState.Wandering);
+            return;
+        }
+        MoveTowards(playerTransform.position, chaseSpeed);
+    }
+
+    private IEnumerator WanderRoutine()
+    {
+        while (true)
+        {
+            while (!IsBlocked())
+            {
+                MoveInCurrentDirection(patrolSpeed);
+                yield return null;
+            }
+            StopMoving();
+            yield return new WaitForSeconds(wanderWaitTime);
+            FlipDirection();
+        }
+    }
+
+    private void MoveTowards(Vector3 target, float speed)
+    {
+        float newDirection = Mathf.Sign(target.x - transform.position.x);
+        if (newDirection != currentMoveDirection && timeSinceLastFlip > FLIP_COOLDOWN)
+        {
+            currentMoveDirection = newDirection;
+            timeSinceLastFlip = 0f;
+        }
+        MoveInCurrentDirection(speed);
+    }
+
+    private void MoveInCurrentDirection(float speed)
+    {
+        rb.velocity = new Vector2(currentMoveDirection * speed, rb.velocity.y);
+        FaceCurrentDirection();
+    }
+
+    private void StopMoving()
+    {
+        rb.velocity = new Vector2(0, rb.velocity.y);
+    }
+
+    private void FlipDirection()
+    {
+        currentMoveDirection *= -1;
+        timeSinceLastFlip = 0f;
+    }
+
+    private void FaceCurrentDirection()
+    {
+        float scaleValue = Mathf.Abs(transform.localScale.x);
+        transform.localScale = new Vector3(currentMoveDirection * scaleValue, transform.localScale.y, transform.localScale.z);
+    }
+
+    private void FaceTarget(Vector3 target)
+    {
+        float directionToTarget = Mathf.Sign(target.x - transform.position.x);
+        if (directionToTarget != Mathf.Sign(transform.localScale.x) && timeSinceLastFlip > FLIP_COOLDOWN)
+        {
+            float scaleValue = Mathf.Abs(transform.localScale.x);
+            transform.localScale = new Vector3(directionToTarget * scaleValue, transform.localScale.y, transform.localScale.z);
+            timeSinceLastFlip = 0f;
+        }
+    }
+
+    private bool IsPlayerVisible()
+    {
+        return Vector2.Distance(transform.position, playerTransform.position) < detectionRadius;
+    }
+
+    private bool IsBlocked()
+    {
+        return !IsGroundAhead() || IsWallAhead();
+    }
+
+    private bool IsGroundAhead()
+    {
+        return Physics2D.Raycast(groundCheck.position, Vector2.down, checkDistance, platformLayer);
+    }
+
+    private bool IsWallAhead()
+    {
+        return Physics2D.Raycast(wallCheck.position, new Vector2(currentMoveDirection, 0), checkDistance, platformLayer);
+    }
+
+    private void UpdateAnimation()
+    {
+        fleaAnimator.SetBool("IsWalking", Mathf.Abs(rb.velocity.x) > 0.1f);
+    }
+
+    // --- GIZMOS MODIFIÉS ICI ---
     void OnDrawGizmosSelected()
     {
+        // Dessine la zone de détection comme une ligne horizontale.
         Gizmos.color = Color.yellow;
-        // --- MODIFIED: Visualize stopping distance as a line on the X-axis ---
-        // Draw a line to show the X-axis stopping range
-        Vector3 leftStop = new Vector3(transform.position.x - stoppingDistance, transform.position.y, transform.position.z);
-        Vector3 rightStop = new Vector3(transform.position.x + stoppingDistance, transform.position.y, transform.position.z);
-        Gizmos.DrawLine(leftStop, rightStop);
-        Gizmos.DrawWireSphere(leftStop, 0.1f); // Mark the ends
-        Gizmos.DrawWireSphere(rightStop, 0.1f);
+        Vector3 leftDetectPoint = transform.position - new Vector3(detectionRadius, 0, 0);
+        Vector3 rightDetectPoint = transform.position + new Vector3(detectionRadius, 0, 0);
+        Gizmos.DrawLine(leftDetectPoint, rightDetectPoint);
+        // Ajoute des petites sphères aux extrémités pour mieux les voir.
+        Gizmos.DrawWireSphere(leftDetectPoint, 0.2f);
+        Gizmos.DrawWireSphere(rightDetectPoint, 0.2f);
+
+
+        // Dessine les rayons de détection de l'environnement.
+        if (groundCheck != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * checkDistance);
+        }
+        if (wallCheck != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(wallCheck.position, wallCheck.position + new Vector3(checkDistance * currentMoveDirection, 0, 0));
+        }
     }
 }
