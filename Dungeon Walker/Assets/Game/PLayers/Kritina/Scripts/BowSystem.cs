@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
@@ -794,21 +793,45 @@ public class BowSystems : MonoBehaviour
     {
         if (((1 << target.layer) & enemyLayers) != 0)
         {
-            FleaHealth enemyHealth = target.GetComponent<FleaHealth>();
-            if (enemyHealth != null)
-            {
-                float damageToDeal = Mathf.Lerp(minArrowDamage, maxArrowDamage, chargePercentage);
+            float damageToDeal = Mathf.Lerp(minArrowDamage, maxArrowDamage, chargePercentage);
+            Vector2 attackDirection = (target.transform.position - arrowGameObject.transform.position).normalized;
 
-                Vector2 attackDirection = (target.transform.position - arrowGameObject.transform.position).normalized;
-                enemyHealth.TakeDamage((int)damageToDeal, attackDirection);
+            FleaHealth fleaHealth = target.GetComponent<FleaHealth>();
+            if (fleaHealth != null)
+            {
+                fleaHealth.TakeDamage((int)damageToDeal, attackDirection);
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Arrow dealt {damageToDeal} damage to {target.name} at {impactPoint}");
+                    Debug.Log($"Arrow dealt {damageToDeal} damage to Flea {target.name} at {impactPoint}");
                 }
+                return;
             }
-            else if (showDamageDebug)
+
+            SprayerHealth sprayerHealth = target.GetComponent<SprayerHealth>();
+            if (sprayerHealth != null)
             {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth component!");
+                sprayerHealth.TakeDamage((int)damageToDeal, attackDirection);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Arrow dealt {damageToDeal} damage to Sprayer {target.name} at {impactPoint}");
+                }
+                return;
+            }
+
+            FlyHealth flyHealth = target.GetComponent<FlyHealth>();
+            if (flyHealth != null)
+            {
+                flyHealth.TakeDamage((int)damageToDeal, attackDirection);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Arrow dealt {damageToDeal} damage to Fly {target.name} at {impactPoint}");
+                }
+                return;
+            }
+
+            if (showDamageDebug)
+            {
+                Debug.LogWarning($"Enemy {target.name} doesn\"t have a recognized health component (FleaHealth, SprayerHealth, or FlyHealth)!");
             }
         }
     }
@@ -817,21 +840,45 @@ public class BowSystems : MonoBehaviour
     {
         if (((1 << target.layer) & enemyLayers) != 0)
         {
-            FleaHealth enemyHealth = target.GetComponent<FleaHealth>();
-            if (enemyHealth != null)
-            {
-                float damageToDeal = Mathf.Lerp(minArrowDamage, maxArrowDamage, chargePercentage);
+            float damageToDeal = Mathf.Lerp(minArrowDamage, maxArrowDamage, chargePercentage);
+            Vector2 attackDirection = (target.transform.position - arrowGameObject.transform.position).normalized;
 
-                Vector2 attackDirection = (target.transform.position - arrowGameObject.transform.position).normalized;
-                enemyHealth.TakeDamage((int)damageToDeal, attackDirection);
+            FleaHealth fleaHealth = target.GetComponent<FleaHealth>();
+            if (fleaHealth != null)
+            {
+                fleaHealth.TakeDamage((int)damageToDeal, attackDirection);
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Arrow dealt {damageToDeal} trigger damage to {target.name} at {impactPoint}");
+                    Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Flea {target.name} at {impactPoint}");
                 }
+                return;
             }
-            else if (showDamageDebug)
+
+            SprayerHealth sprayerHealth = target.GetComponent<SprayerHealth>();
+            if (sprayerHealth != null)
             {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth component!");
+                sprayerHealth.TakeDamage((int)damageToDeal, attackDirection);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Sprayer {target.name} at {impactPoint}");
+                }
+                return;
+            }
+
+            FlyHealth flyHealth = target.GetComponent<FlyHealth>();
+            if (flyHealth != null)
+            {
+                flyHealth.TakeDamage((int)damageToDeal, attackDirection);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Fly {target.name} at {impactPoint}");
+                }
+                return;
+            }
+
+            if (showDamageDebug)
+            {
+                Debug.LogWarning($"Enemy {target.name} doesn\"t have a recognized health component (FleaHealth, SprayerHealth, or FlyHealth)!");
             }
         }
     }
