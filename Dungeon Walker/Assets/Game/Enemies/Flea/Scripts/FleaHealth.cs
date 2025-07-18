@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using FirstGearGames.SmoothCameraShaker;
+
 public class FleaHealth : MonoBehaviour
 {
     // Public variables for health and effects
@@ -31,7 +32,9 @@ public class FleaHealth : MonoBehaviour
     // Array of SpriteRenderers for the parts of the mushroom
     public SpriteRenderer[] spriteRenderers;
 
-
+    // Audio Variables
+    public AudioClip damageSound; // Sound to play when taking damage
+    private AudioSource audioSource; // Reference to the AudioSource component
 
     // Private variables
     private int currentHealth;
@@ -39,10 +42,22 @@ public class FleaHealth : MonoBehaviour
     private bool isFlashing = false; // Added to prevent multiple flash coroutines
     //CameraShake
     public ShakeData CameraShakeDeath;
+
     void Start()
     {
         // Initialize health
         currentHealth = maxHealth;
+        // Get or add the AudioSource component
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        // Configure AudioSource (optional, adjust as needed)
+        audioSource.playOnAwake = false; // Don\'t play sound on start
+        audioSource.spatialBlend = 1.0f; // 3D sound
+        audioSource.volume = 0.5f; // Default volume
     }
 
     // Method to take damage
@@ -50,6 +65,12 @@ public class FleaHealth : MonoBehaviour
     {
         // Reduce health
         currentHealth -= (int)damage;
+
+        // Play damage sound if assigned
+        if (damageSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(damageSound);
+        }
 
         // Apply knockback
         if (!isKnockedBack)
@@ -239,3 +260,5 @@ public class FleaHealth : MonoBehaviour
         isFlashing = false;
     }
 }
+
+

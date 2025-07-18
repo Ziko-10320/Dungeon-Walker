@@ -49,6 +49,10 @@ public class WaterGunSystem : MonoBehaviour
     [SerializeField] private int maxAmmo = 30;
     [SerializeField] private float reloadTime = 1.5f;
 
+    [Header("AUDIO")]
+    [SerializeField] private AudioClip shootSound;
+    private AudioSource audioSource;
+
     // --- CORE AIMING VARIABLES (FROM ROBUST LAUNCHER) ---
     private Vector2 mouseWorldPosition;
     private Vector2 aimFromPosition;
@@ -66,6 +70,11 @@ public class WaterGunSystem : MonoBehaviour
     void Awake()
     {
         currentAmmo = maxAmmo;
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     void Update()
@@ -192,6 +201,7 @@ public class WaterGunSystem : MonoBehaviour
     private void Shoot()
     {
         if (muzzleFlashEffect != null) muzzleFlashEffect.Play();
+        if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound);
 
         Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation);
         Vector2 shootDirection = shootRotation * Vector2.right;
@@ -253,6 +263,10 @@ public class WaterBullet : MonoBehaviour
     private Rigidbody2D rb;
     private bool hasHit = false;
 
+    [Header("AUDIO")]
+    [SerializeField] private AudioClip collisionSound;
+    private AudioSource audioSource;
+
     public void Initialize(Vector2 dir, float spd, float life, int dmg, LayerMask dmgLayers, LayerMask colLayers, ParticleSystem destructionFx)
     {
         direction = dir.normalized;
@@ -273,6 +287,12 @@ public class WaterBullet : MonoBehaviour
             var collider = gameObject.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
             collider.radius = 0.1f;
+        }
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
         }
 
         Destroy(gameObject, lifetime);
@@ -298,6 +318,8 @@ public class WaterBullet : MonoBehaviour
                 enemyHealth.TakeDamage(damage, attackDirection);
             }
 
+            if (audioSource != null && collisionSound != null) audioSource.PlayOneShot(collisionSound);
+
             HandleDestruction();
         }
     }
@@ -311,3 +333,5 @@ public class WaterBullet : MonoBehaviour
         Destroy(gameObject);
     }
 }
+
+

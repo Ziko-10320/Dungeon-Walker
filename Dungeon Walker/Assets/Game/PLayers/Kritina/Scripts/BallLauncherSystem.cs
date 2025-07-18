@@ -109,6 +109,8 @@ public class RobustLauncherSystem : MonoBehaviour
     [SerializeField] private AudioClip explosionSound;
     [Tooltip("Additional explosion sound effects (played with delay)")]
     [SerializeField] private AudioClip[] additionalExplosionSounds;
+    [Tooltip("Sound effect for shooting the launcher")]
+    [SerializeField] private AudioClip shootSound;
     [Tooltip("Volume for explosion sounds")]
     [Range(0f, 1f)]
     public float explosionVolume = 1f;
@@ -552,6 +554,12 @@ public class RobustLauncherSystem : MonoBehaviour
         if (showBallDebug)
         {
             Debug.Log($"Spawned {selectedBallPrefab.name} with force {forceToUse:F2} in direction {launchDirection}");
+        }
+
+        // Play shoot sound
+        if (enableSoundEffects && shootSound != null)
+        {
+            PlaySoundAtPosition(shootSound, projectileSpawnPoint.position, 0f, explosionVolume); // Use explosionVolume for now
         }
 
         // Add a component to handle collisions for destruction/damage
@@ -1174,7 +1182,7 @@ public class RobustLauncherSystem : MonoBehaviour
         // Play main explosion sound
         if (explosionSound != null)
         {
-            PlaySoundAtPosition(explosionSound, explosionPosition, 0f);
+            PlaySoundAtPosition(explosionSound, explosionPosition, 0f, explosionVolume);
         }
 
         // Play additional explosion sounds with delays
@@ -1185,13 +1193,13 @@ public class RobustLauncherSystem : MonoBehaviour
                 if (additionalExplosionSounds[i] != null)
                 {
                     float soundDelay = soundExplosionDelay * (i + 1);
-                    StartCoroutine(PlayDelayedSound(additionalExplosionSounds[i], explosionPosition, soundDelay));
+                    StartCoroutine(PlayDelayedSound(additionalExplosionSounds[i], explosionPosition, soundDelay, explosionVolume));
                 }
             }
         }
     }
 
-    private void PlaySoundAtPosition(AudioClip clip, Vector2 position, float delay)
+    private void PlaySoundAtPosition(AudioClip clip, Vector2 position, float delay, float volume)
     {
         if (clip == null)
         {
@@ -1199,12 +1207,12 @@ public class RobustLauncherSystem : MonoBehaviour
         }
 
         // Create temporary audio source
-        GameObject audioObject = new GameObject("ExplosionAudio");
+        GameObject audioObject = new GameObject("TempAudio");
         audioObject.transform.position = position;
 
         AudioSource audioSource = audioObject.AddComponent<AudioSource>();
         audioSource.clip = clip;
-        audioSource.volume = explosionVolume;
+        audioSource.volume = volume;
         audioSource.spatialBlend = 1f; // 3D sound
         audioSource.Play();
 
@@ -1213,14 +1221,14 @@ public class RobustLauncherSystem : MonoBehaviour
 
         if (showDestructionDebug)
         {
-            Debug.Log($"Playing explosion sound at {position}");
+            Debug.Log($"Playing sound {clip.name} at {position}");
         }
     }
 
-    private IEnumerator PlayDelayedSound(AudioClip clip, Vector2 position, float delay)
+    private IEnumerator PlayDelayedSound(AudioClip clip, Vector2 position, float delay, float volume)
     {
         yield return new WaitForSeconds(delay);
-        PlaySoundAtPosition(clip, position, delay);
+        PlaySoundAtPosition(clip, position, delay, volume);
     }
 
     // Damage handling methods

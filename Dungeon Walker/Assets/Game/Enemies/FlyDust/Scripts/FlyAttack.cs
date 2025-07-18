@@ -35,9 +35,24 @@ public class FlyAttack : MonoBehaviour
     public float delayBetweenProjectiles = 0.2f; // Delay between first and second projectile
     public Vector2 secondProjectileOffset = new Vector2(0f, 1f); // Offset for the second projectile relative to the player
 
+    // Attack Sound Variables
+    public AudioClip attackSoundClip; // Audio clip to play when attacking
+    private AudioSource audioSource; // Reference to the AudioSource component
+
     private Animator animator; // Reference to the Animator component
     private float nextAttackTime; // When the next attack can occur
     private Vector2 lastKnownPlayerPosition; // Store the last known player position
+
+    void Awake()
+    {
+        // Get or add the AudioSource component
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false; // Ensure it doesn\"t play automatically
+    }
 
     void Start()
     {
@@ -97,6 +112,12 @@ public class FlyAttack : MonoBehaviour
         {
             Debug.LogError("FlyAttack: Missing references for ThrowDust. Check dustProjectilePrefab, projectileSpawnPoint, or playerTransform.");
             return;
+        }
+
+        // Play attack sound if assigned
+        if (attackSoundClip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(attackSoundClip);
         }
 
         StartCoroutine(ThrowDustCoroutine());
@@ -343,3 +364,4 @@ public class FlyAttack : MonoBehaviour
         }
     }
 }
+

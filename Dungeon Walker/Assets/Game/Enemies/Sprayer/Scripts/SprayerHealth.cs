@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using FirstGearGames.SmoothCameraShaker;
+
 public class SprayerHealth : MonoBehaviour
 {
     // Public variables for health and effects
@@ -31,14 +32,29 @@ public class SprayerHealth : MonoBehaviour
     // Array of SpriteRenderers for the parts of the mushroom
     public SpriteRenderer[] spriteRenderers;
 
-
+    // Damage Sound Variables
+    public AudioClip damageSoundClip; // Audio clip to play when taking damage
 
     // Private variables
     private int currentHealth;
     private bool isKnockedBack = false; // Is the mushroom currently being knocked back?
     private bool isFlashing = false; // Added to prevent multiple flash coroutines
+    private AudioSource audioSource; // Reference to the AudioSource component
+
     //CameraShake
     public ShakeData CameraShakeDeath;
+
+    void Awake()
+    {
+        // Get or add the AudioSource component
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false; // Ensure it doesn't play automatically
+    }
+
     void Start()
     {
         // Initialize health
@@ -50,6 +66,12 @@ public class SprayerHealth : MonoBehaviour
     {
         // Reduce health
         currentHealth -= (int)damage;
+
+        // Play damage sound if assigned
+        if (damageSoundClip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(damageSoundClip);
+        }
 
         // Apply knockback
         if (!isKnockedBack)
@@ -239,4 +261,3 @@ public class SprayerHealth : MonoBehaviour
         isFlashing = false;
     }
 }
-

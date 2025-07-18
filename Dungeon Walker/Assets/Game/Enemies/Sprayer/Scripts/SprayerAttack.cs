@@ -21,9 +21,24 @@ public class SprayerAttack : MonoBehaviour
     // [SerializeField] private MonoBehaviour movementScript; // Removed: No longer needed to disable entire script
     [SerializeField] private SprayerFollow sprayerFollowScript; // Reference to the Sprayer\"s movement script
 
+    // Attack Sound Variables
+    public AudioClip attackSoundClip; // Audio clip to play when attacking
+    private AudioSource audioSource; // Reference to the AudioSource component
+
     private float lastAttackTime;
     private bool isAttacking = false;
     private float currentSprayerDirection = 1f; // 1 for right, -1 for left
+
+    void Awake()
+    {
+        // Get or add the AudioSource component
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false; // Ensure it doesn\'t play automatically
+    }
 
     void Start()
     {
@@ -84,6 +99,13 @@ public class SprayerAttack : MonoBehaviour
         lastAttackTime = Time.time;
         sprayParticles.Play();
         DisableMovement(); // Use the new method
+
+        // Play attack sound if assigned
+        if (attackSoundClip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(attackSoundClip);
+        }
+
         StartCoroutine(AttackRoutine());
     }
 
@@ -158,3 +180,4 @@ public class SprayerAttack : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }
+

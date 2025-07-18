@@ -71,6 +71,12 @@ public class BowSystems : MonoBehaviour
 
     [Header("Sound Effects")]
     public bool enableSoundEffects = true;
+    [Tooltip("Sound effect for shooting the arrow")]
+    [SerializeField] private AudioClip shootSound;
+    [Tooltip("Sound effect for arrow impact with walls")]
+    [SerializeField] private AudioClip wallImpactSound;
+    [Tooltip("Sound effect for arrow impact with enemies")]
+    [SerializeField] private AudioClip enemyImpactSound;
 
     [Header("Trajectory Settings")]
     [Tooltip("Gravity value for arrow fall-off (use Physics2D.gravity.y or custom)")]
@@ -353,6 +359,11 @@ public class BowSystems : MonoBehaviour
         if (showArrowDebug)
         {
             Debug.Log($"Spawned {arrowPrefab.name} with speed {arrowSpeed:F2}, damage {calculatedDamage:F2}, gravityScale {calculatedGravityScale:F2} in direction {launchDirection}");
+        }
+
+        if (enableSoundEffects && shootSound != null)
+        {
+            PlaySoundAtPosition(shootSound, arrowSpawnPoint.position, 1f); // Play shoot sound at full volume
         }
 
         ArrowCollisionHandler collisionHandler = newArrow.AddComponent<ArrowCollisionHandler>();
@@ -755,6 +766,10 @@ public class BowSystems : MonoBehaviour
 
         if (shouldDestroy)
         {
+            if (enableSoundEffects && wallImpactSound != null)
+            {
+                PlaySoundAtPosition(wallImpactSound, contactPoint, 1f);
+            }
             DestroyArrow(arrowGameObject, contactPoint);
         }
     }
@@ -804,6 +819,10 @@ public class BowSystems : MonoBehaviour
                 {
                     Debug.Log($"Arrow dealt {damageToDeal} damage to Flea {target.name} at {impactPoint}");
                 }
+                if (enableSoundEffects && enemyImpactSound != null)
+                {
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
+                }
                 return;
             }
 
@@ -815,6 +834,10 @@ public class BowSystems : MonoBehaviour
                 {
                     Debug.Log($"Arrow dealt {damageToDeal} damage to Sprayer {target.name} at {impactPoint}");
                 }
+                if (enableSoundEffects && enemyImpactSound != null)
+                {
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
+                }
                 return;
             }
 
@@ -825,6 +848,10 @@ public class BowSystems : MonoBehaviour
                 if (showDamageDebug)
                 {
                     Debug.Log($"Arrow dealt {damageToDeal} damage to Fly {target.name} at {impactPoint}");
+                }
+                if (enableSoundEffects && enemyImpactSound != null)
+                {
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
                 }
                 return;
             }
@@ -851,6 +878,10 @@ public class BowSystems : MonoBehaviour
                 {
                     Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Flea {target.name} at {impactPoint}");
                 }
+                if (enableSoundEffects && enemyImpactSound != null)
+                {
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
+                }
                 return;
             }
 
@@ -862,6 +893,10 @@ public class BowSystems : MonoBehaviour
                 {
                     Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Sprayer {target.name} at {impactPoint}");
                 }
+                if (enableSoundEffects && enemyImpactSound != null)
+                {
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
+                }
                 return;
             }
 
@@ -872,6 +907,10 @@ public class BowSystems : MonoBehaviour
                 if (showDamageDebug)
                 {
                     Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Fly {target.name} at {impactPoint}");
+                }
+                if (enableSoundEffects && enemyImpactSound != null)
+                {
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
                 }
                 return;
             }
@@ -946,6 +985,25 @@ public class BowSystems : MonoBehaviour
                 Gizmos.DrawLine(aimFromPos, minDistancePoint.position);
             }
         }
+    }
+
+    private void PlaySoundAtPosition(AudioClip clip, Vector2 position, float volume)
+    {
+        if (clip == null)
+        {
+            return;
+        }
+
+        GameObject audioObject = new GameObject("TempAudio");
+        audioObject.transform.position = position;
+
+        AudioSource audioSource = audioObject.AddComponent<AudioSource>();
+        audioSource.clip = clip;
+        audioSource.volume = volume;
+        audioSource.spatialBlend = 1f; // 3D sound
+        audioSource.Play();
+
+        Destroy(audioObject, clip.length + 0.1f);
     }
 }
 

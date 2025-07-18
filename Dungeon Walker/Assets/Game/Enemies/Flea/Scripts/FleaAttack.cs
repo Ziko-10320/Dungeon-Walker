@@ -22,12 +22,16 @@ public class FleaChargeAttack : MonoBehaviour
     [SerializeField] private float chargeDrag = 5f;
     [SerializeField] private int attackDamage = 15;
     [SerializeField] private float knockbackForce = 20f;
-    [Tooltip("Nombre maximum de charges consécutives si l'attaque rate.")]
+    [Tooltip("Nombre maximum de charges consécutives si l\'attaque rate.")]
     [SerializeField] private int maxConsecutiveCharges = 2;
 
     [Header("Visual Effects")]
     public ParticleSystem BurstDust;
     public ParticleSystem BurstDust2;
+
+    // Attack Sound Variables
+    public AudioClip attackSoundClip; // Audio clip to play when attacking
+    private AudioSource audioSource; // Reference to the AudioSource component
 
     private bool playerInRange = false;
     private bool canAttack = true;
@@ -53,6 +57,14 @@ public class FleaChargeAttack : MonoBehaviour
 
         isAnticipatingHash = Animator.StringToHash("IsAnticipating");
         isChargingHash = Animator.StringToHash("IsCharging");
+
+        // Get or add the AudioSource component
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false; // Ensure it doesn\'t play automatically
     }
 
     void Update()
@@ -86,6 +98,12 @@ public class FleaChargeAttack : MonoBehaviour
         isAttacking = true;
         canAttack = false;
         if (followScript != null) followScript.enabled = false;
+
+        // Play attack sound if assigned
+        if (attackSoundClip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(attackSoundClip);
+        }
 
         int chargesMade = 0;
         bool hitPlayer = false;
@@ -122,10 +140,10 @@ public class FleaChargeAttack : MonoBehaviour
             }
 
             // --- CORRECTION APPLIQUÉE ICI ---
-            // On s'assure d'arrêter le mouvement et l'animation APRÈS la boucle de charge,
+            // On s\'assure d\'arrêter le mouvement et l\'animation APRÈS la boucle de charge,
             // que le joueur ait été touché (break) ou que le temps soit écoulé.
             rb.velocity = Vector2.zero;
-            fleaAnimator.SetBool(isChargingHash, false); // <-- C'est la ligne clé !
+            fleaAnimator.SetBool(isChargingHash, false); // <-- C\'est la ligne clé !
 
             if (hitPlayer)
             {
@@ -196,3 +214,4 @@ public class FleaChargeAttack : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }
+
