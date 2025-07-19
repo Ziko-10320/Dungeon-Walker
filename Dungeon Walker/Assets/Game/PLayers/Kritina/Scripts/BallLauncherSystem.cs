@@ -1332,9 +1332,21 @@ public class RobustLauncherSystem : MonoBehaviour
                 return;
             }
 
-            if (fleaHealth == null && sprayerHealth == null && flyHealth == null && showDamageDebug)
+            InkHealth inkHealth = target.GetComponent<InkHealth>();
+            if (inkHealth != null)
             {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth, SprayerHealth, or FlyHealth component!");
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
+                inkHealth.TakeDamage((int)ballDamage, attackDirection);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Projectile dealt {ballDamage} damage to Ink {target.name} at {impactPoint}");
+                }
+                return;
+            }
+
+            if (fleaHealth == null && sprayerHealth == null && flyHealth == null && inkHealth == null && showDamageDebug)
+            {
+                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth, SprayerHealth, FlyHealth, or InkHealth component!");
             }
         }
     }
@@ -1379,9 +1391,21 @@ public class RobustLauncherSystem : MonoBehaviour
                 return;
             }
 
-            if (fleaHealth == null && sprayerHealth == null && flyHealth == null && showDamageDebug)
+            InkHealth inkHealth = target.GetComponent<InkHealth>();
+            if (inkHealth != null)
             {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth, SprayerHealth, or FlyHealth component!");
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
+                inkHealth.TakeDamage((int)ballDamage, attackDirection);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
+                }
+                return;
+            }
+
+            if (fleaHealth == null && sprayerHealth == null && flyHealth == null && inkHealth == null && showDamageDebug)
+            {
+                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth, SprayerHealth, FlyHealth, or InkHealth component!");
             }
         }
     }
@@ -1442,9 +1466,24 @@ public class RobustLauncherSystem : MonoBehaviour
                 continue;
             }
 
-            if (fleaHealth == null && sprayerHealth == null && flyHealth == null && showDamageDebug)
+            InkHealth inkHealth = enemyCollider.GetComponent<InkHealth>();
+            if (inkHealth != null)
             {
-                Debug.LogWarning($"Enemy {enemyCollider.name} doesn\"t have FleaHealth, SprayerHealth, or FlyHealth component!");
+                float distance = Vector2.Distance(explosionCenter, enemyCollider.transform.position);
+                float damageMultiplier = 1f - (distance / explosionDamageRadius);
+                float explosionDamage = ballDamage * explosionDamageMultiplier * damageMultiplier;
+                Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
+                inkHealth.TakeDamage((int)explosionDamage, attackDirection);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Explosion dealt {explosionDamage:F1} damage to Ink {enemyCollider.name} (distance: {distance:F2})");
+                }
+                continue;
+            }
+
+            if (fleaHealth == null && sprayerHealth == null && flyHealth == null && inkHealth == null && showDamageDebug)
+            {
+                Debug.LogWarning($"Enemy {enemyCollider.name} doesn\"t have FleaHealth, SprayerHealth, FlyHealth, or InkHealth component!");
             }
         }
 
@@ -1625,5 +1664,4 @@ public class ParticleSystemLifecycle : MonoBehaviour
         Destroy(gameObject, totalDuration);
     }
 }
-
 
