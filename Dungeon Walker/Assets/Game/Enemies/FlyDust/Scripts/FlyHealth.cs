@@ -51,7 +51,7 @@ public class FlyHealth : MonoBehaviour
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
-        audioSource.playOnAwake = false; // Ensure it doesn\'t play automatically
+        audioSource.playOnAwake = false; // Ensure it doesn\"t play automatically
     }
 
     void Start()
@@ -61,7 +61,7 @@ public class FlyHealth : MonoBehaviour
     }
 
     // Method to take damage
-    public void TakeDamage(int damage, Vector2 attackDirection)
+    public void TakeDamage(int damage, Vector2 attackDirection, float knockbackForce = 1f) // Added knockbackForce parameter
     {
         // Reduce health
         currentHealth -= (int)damage;
@@ -75,7 +75,7 @@ public class FlyHealth : MonoBehaviour
         // Apply knockback
         if (!isKnockedBack)
         {
-            StartCoroutine(ApplyKnockback(attackDirection));
+            StartCoroutine(ApplyKnockback(attackDirection, knockbackForce)); // Pass knockbackForce
         }
 
         // Play blood particle effect
@@ -98,16 +98,16 @@ public class FlyHealth : MonoBehaviour
     }
 
     // Coroutine to apply knockback using transform movement
-    private IEnumerator ApplyKnockback(Vector2 attackDirection)
+    private IEnumerator ApplyKnockback(Vector2 attackDirection, float force) // Added force parameter
     {
         isKnockedBack = true;
 
         // Use the attack direction directly for knockback
         float knockbackDirection = Mathf.Sign(attackDirection.x); // Same as the attack direction
 
-        // Calculate the target position for knockback
+        // Calculate the target position for knockback, scaled by force
         Vector3 startPosition = transform.position;
-        Vector3 endPosition = startPosition + new Vector3(knockbackDirection * knockbackDistance, 0, 0);
+        Vector3 endPosition = startPosition + new Vector3(knockbackDirection * knockbackDistance * force, 0, 0); // Apply force
 
         // Track elapsed time
         float elapsed = 0f;
@@ -260,5 +260,6 @@ public class FlyHealth : MonoBehaviour
         isFlashing = false;
     }
 }
+
 
 

@@ -55,13 +55,13 @@ public class FleaHealth : MonoBehaviour
         }
 
         // Configure AudioSource (optional, adjust as needed)
-        audioSource.playOnAwake = false; // Don\'t play sound on start
+        audioSource.playOnAwake = false; // Don\"t play sound on start
         audioSource.spatialBlend = 1.0f; // 3D sound
         audioSource.volume = 0.5f; // Default volume
     }
 
     // Method to take damage
-    public void TakeDamage(int damage, Vector2 attackDirection)
+    public void TakeDamage(int damage, Vector2 attackDirection, float knockbackForce = 1f) // Added knockbackForce parameter
     {
         // Reduce health
         currentHealth -= (int)damage;
@@ -75,7 +75,7 @@ public class FleaHealth : MonoBehaviour
         // Apply knockback
         if (!isKnockedBack)
         {
-            StartCoroutine(ApplyKnockback(attackDirection));
+            StartCoroutine(ApplyKnockback(attackDirection, knockbackForce)); // Pass knockbackForce
         }
 
         // Play blood particle effect
@@ -98,16 +98,16 @@ public class FleaHealth : MonoBehaviour
     }
 
     // Coroutine to apply knockback using transform movement
-    private IEnumerator ApplyKnockback(Vector2 attackDirection)
+    private IEnumerator ApplyKnockback(Vector2 attackDirection, float force) // Added force parameter
     {
         isKnockedBack = true;
 
         // Use the attack direction directly for knockback
         float knockbackDirection = Mathf.Sign(attackDirection.x); // Same as the attack direction
 
-        // Calculate the target position for knockback
+        // Calculate the target position for knockback, scaled by force
         Vector3 startPosition = transform.position;
-        Vector3 endPosition = startPosition + new Vector3(knockbackDirection * knockbackDistance, 0, 0);
+        Vector3 endPosition = startPosition + new Vector3(knockbackDirection * knockbackDistance * force, 0, 0); // Apply force
 
         // Track elapsed time
         float elapsed = 0f;
@@ -260,5 +260,6 @@ public class FleaHealth : MonoBehaviour
         isFlashing = false;
     }
 }
+
 
 
