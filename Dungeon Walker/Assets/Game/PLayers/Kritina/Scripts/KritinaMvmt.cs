@@ -27,8 +27,19 @@ public class KritinaMovement : MonoBehaviour
     public ParticleSystem dust;
     public ParticleSystem dustLand;
 
+    [Header("Sound Settings")]
+    public AudioClip jumpSoundClip;
+    [Range(0f, 1f)]
+    public float jumpVolume = 1f;
+    public AudioClip doubleJumpSoundClip;
+    [Range(0f, 1f)]
+    public float doubleJumpVolume = 1f;
+    public AudioClip landSoundClip;
+    [Range(0f, 1f)]
+    public float landVolume = 1f;
+
     private PlayerDash playerDash;
-    
+
 
     private Rigidbody2D rb;
     public bool isFacingRight = true;
@@ -40,12 +51,12 @@ public class KritinaMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         playerDash = GetComponent<PlayerDash>();
-       
+
     }
 
     void Update()
     {
-        
+
 
         if (playerDash != null && playerDash.IsDashing)
         {
@@ -67,15 +78,14 @@ public class KritinaMovement : MonoBehaviour
         {
             if (IsGrounded())
             {
-                PerformJump();
+                PerformJump(false); // First jump
             }
             else // Player is in the air
             {
                 // Check for double jump
-                if (jumpsRemaining > 1) // If maxJumps is 2, and we have 2 remaining, it's the first jump. If 1 remaining, it's the second.
+                if (jumpsRemaining > 0) // If maxJumps is 2, and we have 2 remaining, it's the first jump. If 1 remaining, it's the second.
                 {
-                    PerformJump(); // Perform the double jump
-                    jumpsRemaining--; // Consume a jump
+                    PerformJump(true); // Perform the double jump
                 }
                 else
                 {
@@ -97,7 +107,7 @@ public class KritinaMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        
+
 
         if (playerDash != null && playerDash.IsDashing)
         {
@@ -133,7 +143,7 @@ public class KritinaMovement : MonoBehaviour
 
             if (IsGrounded())
             {
-                PerformJump();
+                PerformJump(false);
                 jumpPressedInAir = false;
                 jumpBufferTimer = 0f;
             }
@@ -149,6 +159,7 @@ public class KritinaMovement : MonoBehaviour
         if (currentlyGrounded && !wasGroundedLastFrame)
         {
             PlayLandDust();
+            if (landSoundClip != null) AudioSource.PlayClipAtPoint(landSoundClip, transform.position, landVolume);
             // --- NEW: Reset jumps when landing ---
             jumpsRemaining = maxJumps;
         }
@@ -162,11 +173,20 @@ public class KritinaMovement : MonoBehaviour
         wasGroundedLastFrame = currentlyGrounded;
     }
 
-    void PerformJump()
+    void PerformJump(bool isDoubleJump)
     {
         rb.velocity = new Vector2(rb.velocity.x, 0);
         rb.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
         jumpsRemaining--; // Consume a jump when performing any jump
+
+        if (isDoubleJump)
+        {
+            if (doubleJumpSoundClip != null) AudioSource.PlayClipAtPoint(doubleJumpSoundClip, transform.position, doubleJumpVolume);
+        }
+        else
+        {
+            if (jumpSoundClip != null) AudioSource.PlayClipAtPoint(jumpSoundClip, transform.position, jumpVolume);
+        }
     }
 
     void Flip()
@@ -228,3 +248,5 @@ public class KritinaMovement : MonoBehaviour
         }
     }
 }
+
+

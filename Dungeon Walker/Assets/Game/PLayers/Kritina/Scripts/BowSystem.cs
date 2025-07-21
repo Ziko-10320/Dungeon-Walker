@@ -73,10 +73,19 @@ public class BowSystems : MonoBehaviour
     public bool enableSoundEffects = true;
     [Tooltip("Sound effect for shooting the arrow")]
     [SerializeField] private AudioClip shootSound;
+    [Tooltip("Volume for shoot sound")]
+    [Range(0f, 1f)]
+    public float shootSoundVolume = 1f;
     [Tooltip("Sound effect for arrow impact with walls")]
     [SerializeField] private AudioClip wallImpactSound;
+    [Tooltip("Volume for wall impact sound")]
+    [Range(0f, 1f)]
+    public float wallImpactSoundVolume = 1f;
     [Tooltip("Sound effect for arrow impact with enemies")]
     [SerializeField] private AudioClip enemyImpactSound;
+    [Tooltip("Volume for enemy impact sound")]
+    [Range(0f, 1f)]
+    public float enemyImpactSoundVolume = 1f;
 
     [Header("Trajectory Settings")]
     [Tooltip("Gravity value for arrow fall-off (use Physics2D.gravity.y or custom)")]
@@ -342,7 +351,7 @@ public class BowSystems : MonoBehaviour
         {
             float spreadAngle = Random.Range(-randomSpread, randomSpread);
             float currentAngle = Mathf.Atan2(launchDirection.y, launchDirection.x) * Mathf.Rad2Deg;
-            float newAngle = (currentAngle + spreadAngle) * Mathf.Deg2Rad;
+            float newAngle = (currentAngle + spreadAngle) * Mathf.Rad2Deg;
             launchDirection = new Vector2(Mathf.Cos(newAngle), Mathf.Sin(newAngle));
         }
 
@@ -363,7 +372,7 @@ public class BowSystems : MonoBehaviour
 
         if (enableSoundEffects && shootSound != null)
         {
-            PlaySoundAtPosition(shootSound, arrowSpawnPoint.position, 1f); // Play shoot sound at full volume
+            PlaySoundAtPosition(shootSound, arrowSpawnPoint.position, shootSoundVolume);
         }
 
         ArrowCollisionHandler collisionHandler = newArrow.AddComponent<ArrowCollisionHandler>();
@@ -768,7 +777,7 @@ public class BowSystems : MonoBehaviour
         {
             if (enableSoundEffects && wallImpactSound != null)
             {
-                PlaySoundAtPosition(wallImpactSound, contactPoint, 1f);
+                PlaySoundAtPosition(wallImpactSound, contactPoint, wallImpactSoundVolume);
             }
             DestroyArrow(arrowGameObject, contactPoint);
         }
@@ -821,7 +830,7 @@ public class BowSystems : MonoBehaviour
                 }
                 if (enableSoundEffects && enemyImpactSound != null)
                 {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                 }
                 return;
             }
@@ -836,7 +845,7 @@ public class BowSystems : MonoBehaviour
                 }
                 if (enableSoundEffects && enemyImpactSound != null)
                 {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                 }
                 return;
             }
@@ -851,7 +860,7 @@ public class BowSystems : MonoBehaviour
                 }
                 if (enableSoundEffects && enemyImpactSound != null)
                 {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                 }
                 return;
             }
@@ -880,7 +889,7 @@ public class BowSystems : MonoBehaviour
                 }
                 if (enableSoundEffects && enemyImpactSound != null)
                 {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                 }
                 return;
             }
@@ -895,7 +904,7 @@ public class BowSystems : MonoBehaviour
                 }
                 if (enableSoundEffects && enemyImpactSound != null)
                 {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                 }
                 return;
             }
@@ -910,7 +919,7 @@ public class BowSystems : MonoBehaviour
                 }
                 if (enableSoundEffects && enemyImpactSound != null)
                 {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, 1f);
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                 }
                 return;
             }
@@ -1057,3 +1066,5 @@ public class ArrowLifecycleController : MonoBehaviour
     public float spawnTime;
     public bool hasBeenDestroyed = false;
 }
+
+

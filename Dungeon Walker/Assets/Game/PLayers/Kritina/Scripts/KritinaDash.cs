@@ -13,6 +13,11 @@ public class PlayerDash : MonoBehaviour
     [SerializeField] private float dashDuration = 0.2f; // How long the dash lasts
     [SerializeField] private float dashCooldown = 1f; // Time between dashes
 
+    [Header("Sound Settings")]
+    public AudioClip dashSoundClip;
+    [Range(0f, 1f)]
+    public float dashVolume = 1f;
+
     // State variables
     private bool canDash = true;
     private bool isDashing = false;
@@ -71,6 +76,9 @@ public class PlayerDash : MonoBehaviour
         canDash = false;
         dashTimer = 0f;
 
+        // Play dash sound
+        if (dashSoundClip != null) AudioSource.PlayClipAtPoint(dashSoundClip, transform.position, dashVolume);
+
         // Prepare the Rigidbody for the dash
         rb.gravityScale = 0f;
 
@@ -105,3 +113,5 @@ public class PlayerDash : MonoBehaviour
         canDash = true;
     }
 }
+
+

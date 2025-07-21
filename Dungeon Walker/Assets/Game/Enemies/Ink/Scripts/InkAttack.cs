@@ -11,6 +11,10 @@ public class InkAttack : MonoBehaviour
     [SerializeField] private float inkBallKnockbackForce = 5f; // Knockback force of InkBall
     [SerializeField] private float inkBallLifetime = 3f; // How long the ink ball lasts before destroying itself
 
+    [Header("Audio Settings")]
+    [SerializeField] private AudioClip attackSound; // Assign the attack sound clip here
+    [SerializeField, Range(0f, 1f)] private float attackSoundVolume = 1f; // Volume slider for attack sound
+
     [Header("Aiming Settings")]
     [SerializeField] private Transform spawnPoint; // Where the InkBall will be spawned
     [SerializeField] private Transform aimPointLow; // Transform for low aim line
@@ -146,6 +150,12 @@ public class InkAttack : MonoBehaviour
     void Attack()
     {
         canAttack = false;
+
+        // Play attack sound
+        if (attackSound != null)
+        {
+            AudioSource.PlayClipAtPoint(attackSound, spawnPoint.position, attackSoundVolume);
+        }
 
         // Determine random aim (low or high) and apply offset
         Vector3 targetAimPosition;
@@ -355,4 +365,5 @@ public class InkBallBehavior : MonoBehaviour
         hasBeenDestroyed = true;
     }
 }
+
 

@@ -34,6 +34,8 @@ public class InkHealth : MonoBehaviour
 
     // Damage Sound Variables
     public AudioClip damageSoundClip; // Audio clip to play when taking damage
+    [Range(0f, 1f)]
+    public float damageSoundVolume = 1f; // Volume slider for damage sound
 
     [Header("Invincibility System")]
     [Tooltip("Enable the invincibility system")]
@@ -525,7 +527,7 @@ public class InkHealth : MonoBehaviour
         // Play damage sound if assigned
         if (damageSoundClip != null && audioSource != null)
         {
-            audioSource.PlayOneShot(damageSoundClip);
+            audioSource.PlayOneShot(damageSoundClip, damageSoundVolume);
         }
 
         // Apply knockback
@@ -726,3 +728,5 @@ public class InkHealth : MonoBehaviour
         isFlashing = false;
     }
 }
+
+

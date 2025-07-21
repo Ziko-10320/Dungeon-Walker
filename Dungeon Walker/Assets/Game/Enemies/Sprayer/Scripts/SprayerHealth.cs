@@ -34,6 +34,7 @@ public class SprayerHealth : MonoBehaviour
 
     // Damage Sound Variables
     public AudioClip damageSoundClip; // Audio clip to play when taking damage
+    [Range(0f, 1f)] public float damageSoundVolume = 0.7f; // Volume slider added here
 
     // Private variables
     private int currentHealth;
@@ -52,7 +53,8 @@ public class SprayerHealth : MonoBehaviour
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
-        audioSource.playOnAwake = false; // Ensure it doesn\"t play automatically
+        audioSource.playOnAwake = false; // Ensure it doesn't play automatically
+        audioSource.volume = damageSoundVolume; // Set initial volume
     }
 
     void Start()
@@ -62,7 +64,7 @@ public class SprayerHealth : MonoBehaviour
     }
 
     // Method to take damage
-    public void TakeDamage(int damage, Vector2 attackDirection, float knockbackForce = 1f) // Added knockbackForce parameter
+    public void TakeDamage(int damage, Vector2 attackDirection, float knockbackForce = 1f)
     {
         // Reduce health
         currentHealth -= (int)damage;
@@ -70,13 +72,14 @@ public class SprayerHealth : MonoBehaviour
         // Play damage sound if assigned
         if (damageSoundClip != null && audioSource != null)
         {
+            audioSource.volume = damageSoundVolume; // Apply volume
             audioSource.PlayOneShot(damageSoundClip);
         }
 
         // Apply knockback
         if (!isKnockedBack)
         {
-            StartCoroutine(ApplyKnockback(attackDirection, knockbackForce)); // Pass knockbackForce
+            StartCoroutine(ApplyKnockback(attackDirection, knockbackForce));
         }
 
         // Play blood particle effect
@@ -99,32 +102,24 @@ public class SprayerHealth : MonoBehaviour
     }
 
     // Coroutine to apply knockback using transform movement
-    private IEnumerator ApplyKnockback(Vector2 attackDirection, float force) // Added force parameter
+    private IEnumerator ApplyKnockback(Vector2 attackDirection, float force)
     {
         isKnockedBack = true;
 
-        // Use the attack direction directly for knockback
-        float knockbackDirection = Mathf.Sign(attackDirection.x); // Same as the attack direction
-
-        // Calculate the target position for knockback, scaled by force
+        float knockbackDirection = Mathf.Sign(attackDirection.x);
         Vector3 startPosition = transform.position;
-        Vector3 endPosition = startPosition + new Vector3(knockbackDirection * knockbackDistance * force, 0, 0); // Apply force
+        Vector3 endPosition = startPosition + new Vector3(knockbackDirection * knockbackDistance * force, 0, 0);
 
-        // Track elapsed time
         float elapsed = 0f;
 
         while (elapsed < knockbackDuration)
         {
-            // Move the mushroom toward the end position
             transform.position = Vector3.Lerp(startPosition, endPosition, elapsed / knockbackDuration);
-
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Ensure the final position is exact
         transform.position = endPosition;
-
         isKnockedBack = false;
     }
 
@@ -155,21 +150,18 @@ public class SprayerHealth : MonoBehaviour
         {
             InstantiateAndPlayParticleSystem(DeathMushroomParticules5, DeathMushroomSpawn5.position);
         }
+
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
 
         // Destroy the mushroom
         Destroy(gameObject);
-
     }
 
     // Helper method to instantiate and play a particle system
     private void InstantiateAndPlayParticleSystem(ParticleSystem particleSystem, Vector3 position)
     {
-        // Instantiate the particle system at the given position
         ParticleSystem instance = Instantiate(particleSystem, position, Quaternion.identity);
-
-        // Play the particle system
         instance.Play();
     }
 
@@ -185,7 +177,6 @@ public class SprayerHealth : MonoBehaviour
             yield break;
         }
 
-        // Create instances of the flash material for each sprite renderer
         Material[] originalMaterials = new Material[spriteRenderers.Length];
         Material[] flashMaterialInstances = new Material[spriteRenderers.Length];
 
@@ -193,22 +184,16 @@ public class SprayerHealth : MonoBehaviour
         {
             if (spriteRenderers[i] != null)
             {
-                // Store the original material
                 originalMaterials[i] = spriteRenderers[i].material;
-
-                // Create an instance of the flash material
                 flashMaterialInstances[i] = new Material(flashMaterial);
                 spriteRenderers[i].material = flashMaterialInstances[i];
             }
         }
 
-        // Gradually increase the flash amount to 1
         float elapsed = 0f;
         while (elapsed < flashDuration / 2)
         {
             float flashAmount = Mathf.Lerp(0, 1, elapsed / (flashDuration / 2));
-
-            // Update the flash amount for all material instances
             foreach (var material in flashMaterialInstances)
             {
                 if (material != null)
@@ -216,18 +201,14 @@ public class SprayerHealth : MonoBehaviour
                     material.SetFloat(flashAmountProperty, flashAmount);
                 }
             }
-
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Gradually decrease the flash amount back to 0
         elapsed = 0f;
         while (elapsed < flashDuration / 2)
         {
             float flashAmount = Mathf.Lerp(1, 0, elapsed / (flashDuration / 2));
-
-            // Update the flash amount for all material instances
             foreach (var material in flashMaterialInstances)
             {
                 if (material != null)
@@ -235,12 +216,10 @@ public class SprayerHealth : MonoBehaviour
                     material.SetFloat(flashAmountProperty, flashAmount);
                 }
             }
-
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Reset the flash amount to 0 explicitly
         foreach (var material in flashMaterialInstances)
         {
             if (material != null)
@@ -249,7 +228,6 @@ public class SprayerHealth : MonoBehaviour
             }
         }
 
-        // Restore the original materials and destroy the flash material instances
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
             if (spriteRenderers[i] != null)
@@ -258,6 +236,7 @@ public class SprayerHealth : MonoBehaviour
                 Destroy(flashMaterialInstances[i]);
             }
         }
+
         isFlashing = false;
     }
 }

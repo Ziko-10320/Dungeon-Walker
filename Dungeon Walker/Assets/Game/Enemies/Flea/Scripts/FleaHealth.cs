@@ -34,12 +34,15 @@ public class FleaHealth : MonoBehaviour
 
     // Audio Variables
     public AudioClip damageSound; // Sound to play when taking damage
+    [Range(0f, 1f)] public float damageSoundVolume = 0.7f; // Volume slider added here
+
     private AudioSource audioSource; // Reference to the AudioSource component
 
     // Private variables
     private int currentHealth;
     private bool isKnockedBack = false; // Is the mushroom currently being knocked back?
     private bool isFlashing = false; // Added to prevent multiple flash coroutines
+
     //CameraShake
     public ShakeData CameraShakeDeath;
 
@@ -47,6 +50,7 @@ public class FleaHealth : MonoBehaviour
     {
         // Initialize health
         currentHealth = maxHealth;
+
         // Get or add the AudioSource component
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
@@ -54,14 +58,14 @@ public class FleaHealth : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        // Configure AudioSource (optional, adjust as needed)
-        audioSource.playOnAwake = false; // Don\"t play sound on start
+        // Configure AudioSource
+        audioSource.playOnAwake = false; // Don't play sound on start
         audioSource.spatialBlend = 1.0f; // 3D sound
-        audioSource.volume = 0.5f; // Default volume
+        audioSource.volume = damageSoundVolume; // Set initial volume
     }
 
     // Method to take damage
-    public void TakeDamage(int damage, Vector2 attackDirection, float knockbackForce = 1f) // Added knockbackForce parameter
+    public void TakeDamage(int damage, Vector2 attackDirection, float knockbackForce = 1f)
     {
         // Reduce health
         currentHealth -= (int)damage;
@@ -69,13 +73,14 @@ public class FleaHealth : MonoBehaviour
         // Play damage sound if assigned
         if (damageSound != null && audioSource != null)
         {
+            audioSource.volume = damageSoundVolume; // Apply volume
             audioSource.PlayOneShot(damageSound);
         }
 
         // Apply knockback
         if (!isKnockedBack)
         {
-            StartCoroutine(ApplyKnockback(attackDirection, knockbackForce)); // Pass knockbackForce
+            StartCoroutine(ApplyKnockback(attackDirection, knockbackForce));
         }
 
         // Play blood particle effect
@@ -85,7 +90,7 @@ public class FleaHealth : MonoBehaviour
         }
 
         // Trigger flash damage effect
-        if (!isFlashing) // Only start new flash if not already flashing
+        if (!isFlashing)
         {
             StartCoroutine(FlashDamage());
         }
@@ -98,32 +103,24 @@ public class FleaHealth : MonoBehaviour
     }
 
     // Coroutine to apply knockback using transform movement
-    private IEnumerator ApplyKnockback(Vector2 attackDirection, float force) // Added force parameter
+    private IEnumerator ApplyKnockback(Vector2 attackDirection, float force)
     {
         isKnockedBack = true;
 
-        // Use the attack direction directly for knockback
-        float knockbackDirection = Mathf.Sign(attackDirection.x); // Same as the attack direction
-
-        // Calculate the target position for knockback, scaled by force
+        float knockbackDirection = Mathf.Sign(attackDirection.x);
         Vector3 startPosition = transform.position;
-        Vector3 endPosition = startPosition + new Vector3(knockbackDirection * knockbackDistance * force, 0, 0); // Apply force
+        Vector3 endPosition = startPosition + new Vector3(knockbackDirection * knockbackDistance * force, 0, 0);
 
-        // Track elapsed time
         float elapsed = 0f;
 
         while (elapsed < knockbackDuration)
         {
-            // Move the mushroom toward the end position
             transform.position = Vector3.Lerp(startPosition, endPosition, elapsed / knockbackDuration);
-
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Ensure the final position is exact
         transform.position = endPosition;
-
         isKnockedBack = false;
     }
 
@@ -154,21 +151,18 @@ public class FleaHealth : MonoBehaviour
         {
             InstantiateAndPlayParticleSystem(DeathMushroomParticules5, DeathMushroomSpawn5.position);
         }
+
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
 
         // Destroy the mushroom
         Destroy(gameObject);
-
     }
 
     // Helper method to instantiate and play a particle system
     private void InstantiateAndPlayParticleSystem(ParticleSystem particleSystem, Vector3 position)
     {
-        // Instantiate the particle system at the given position
         ParticleSystem instance = Instantiate(particleSystem, position, Quaternion.identity);
-
-        // Play the particle system
         instance.Play();
     }
 
@@ -184,7 +178,6 @@ public class FleaHealth : MonoBehaviour
             yield break;
         }
 
-        // Create instances of the flash material for each sprite renderer
         Material[] originalMaterials = new Material[spriteRenderers.Length];
         Material[] flashMaterialInstances = new Material[spriteRenderers.Length];
 
@@ -192,22 +185,16 @@ public class FleaHealth : MonoBehaviour
         {
             if (spriteRenderers[i] != null)
             {
-                // Store the original material
                 originalMaterials[i] = spriteRenderers[i].material;
-
-                // Create an instance of the flash material
                 flashMaterialInstances[i] = new Material(flashMaterial);
                 spriteRenderers[i].material = flashMaterialInstances[i];
             }
         }
 
-        // Gradually increase the flash amount to 1
         float elapsed = 0f;
         while (elapsed < flashDuration / 2)
         {
             float flashAmount = Mathf.Lerp(0, 1, elapsed / (flashDuration / 2));
-
-            // Update the flash amount for all material instances
             foreach (var material in flashMaterialInstances)
             {
                 if (material != null)
@@ -215,18 +202,14 @@ public class FleaHealth : MonoBehaviour
                     material.SetFloat(flashAmountProperty, flashAmount);
                 }
             }
-
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Gradually decrease the flash amount back to 0
         elapsed = 0f;
         while (elapsed < flashDuration / 2)
         {
             float flashAmount = Mathf.Lerp(1, 0, elapsed / (flashDuration / 2));
-
-            // Update the flash amount for all material instances
             foreach (var material in flashMaterialInstances)
             {
                 if (material != null)
@@ -234,12 +217,10 @@ public class FleaHealth : MonoBehaviour
                     material.SetFloat(flashAmountProperty, flashAmount);
                 }
             }
-
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Reset the flash amount to 0 explicitly
         foreach (var material in flashMaterialInstances)
         {
             if (material != null)
@@ -248,7 +229,6 @@ public class FleaHealth : MonoBehaviour
             }
         }
 
-        // Restore the original materials and destroy the flash material instances
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
             if (spriteRenderers[i] != null)
@@ -257,9 +237,7 @@ public class FleaHealth : MonoBehaviour
                 Destroy(flashMaterialInstances[i]);
             }
         }
+
         isFlashing = false;
     }
 }
-
-
-

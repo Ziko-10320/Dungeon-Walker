@@ -7,9 +7,9 @@ public class SprayerAttack : MonoBehaviour
     [SerializeField] private float attackRange = 3f;
     [SerializeField] private float attackCooldown = 2f;
     [SerializeField] private float damagePerSecond = 10f;
-    [SerializeField] private float damageDuration = 1f; // New: How long the damage is applied
-    [SerializeField] private float damageDelay = 0.3f; // New: Delay before damage starts
-    [SerializeField] private float damageInterval = 0.5f; // New: Time between damage ticks
+    [SerializeField] private float damageDuration = 1f;
+    [SerializeField] private float damageDelay = 0.3f;
+    [SerializeField] private float damageInterval = 0.5f;
     [SerializeField] private ParticleSystem sprayParticles;
 
     [Header("Damage Zone Settings")]
@@ -17,33 +17,34 @@ public class SprayerAttack : MonoBehaviour
     [SerializeField] private Vector2 damageZoneOffset = new Vector2(1f, 0f);
     [SerializeField] private LayerMask playerLayer;
     private Animator sprayerAnimator;
+
     [Header("Movement Control")]
-    // [SerializeField] private MonoBehaviour movementScript; // Removed: No longer needed to disable entire script
-    [SerializeField] private SprayerFollow sprayerFollowScript; // Reference to the Sprayer\"s movement script
+    [SerializeField] private SprayerFollow sprayerFollowScript;
 
-    // Attack Sound Variables
-    public AudioClip attackSoundClip; // Audio clip to play when attacking
-    private AudioSource audioSource; // Reference to the AudioSource component
+    [Header("Attack Sound Settings")]
+    [SerializeField] private AudioClip attackSoundClip;
+    [SerializeField][Range(0f, 1f)] private float attackSoundVolume = 0.7f; // Volume slider
 
+    private AudioSource audioSource;
     private float lastAttackTime;
     private bool isAttacking = false;
-    private float currentSprayerDirection = 1f; // 1 for right, -1 for left
+    private float currentSprayerDirection = 1f;
 
     void Awake()
     {
-        // Get or add the AudioSource component
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
-        audioSource.playOnAwake = false; // Ensure it doesn\'t play automatically
+        audioSource.playOnAwake = false;
+        audioSource.volume = attackSoundVolume; // Set initial volume
     }
 
     void Start()
     {
         if (sprayerAnimator == null) sprayerAnimator = GetComponent<Animator>();
-        lastAttackTime = -attackCooldown; // Allow immediate attack at start
+        lastAttackTime = -attackCooldown;
 
         if (sprayParticles == null)
         {
@@ -52,24 +53,18 @@ public class SprayerAttack : MonoBehaviour
             return;
         }
 
-        // if (movementScript == null)
-        // {
-        //     Debug.LogWarning("SprayerAttack: Movement script not assigned. Sprayer will not stop movement during attack.", this);
-        // }
-
         if (sprayerFollowScript == null)
         {
             Debug.LogError("SprayerAttack: SprayerFollow script not assigned. Damage zone and attack range will not flip correctly.", this);
             enabled = false;
             return;
         }
-        // Initialize currentSprayerDirection based on the SprayerFollow script\"s initial direction
+
         currentSprayerDirection = sprayerFollowScript.transform.localScale.x > 0 ? 1f : -1f;
     }
 
     void Update()
     {
-        // Update currentSprayerDirection based on the Sprayer\"s actual facing direction
         currentSprayerDirection = transform.localScale.x > 0 ? 1f : -1f;
 
         if (Time.time >= lastAttackTime + attackCooldown)
@@ -88,7 +83,6 @@ public class SprayerAttack : MonoBehaviour
 
     private bool IsPlayerInAttackRange()
     {
-        // Check if player is within the general circular attack range first
         Collider2D playerInRange = Physics2D.OverlapCircle(transform.position, attackRange, playerLayer);
         return playerInRange != null;
     }
@@ -98,11 +92,12 @@ public class SprayerAttack : MonoBehaviour
         isAttacking = true;
         lastAttackTime = Time.time;
         sprayParticles.Play();
-        DisableMovement(); // Use the new method
+        DisableMovement();
 
-        // Play attack sound if assigned
+        // Play attack sound with adjustable volume
         if (attackSoundClip != null && audioSource != null)
         {
+            audioSource.volume = attackSoundVolume;
             audioSource.PlayOneShot(attackSoundClip);
         }
 
@@ -116,7 +111,7 @@ public class SprayerAttack : MonoBehaviour
         float timer = 0f;
         while (timer < damageDuration)
         {
-            ApplyDamageTick(); // Call a new method for a single damage tick
+            ApplyDamageTick();
             timer += damageInterval;
             yield return new WaitForSeconds(damageInterval);
         }
@@ -127,7 +122,7 @@ public class SprayerAttack : MonoBehaviour
     {
         isAttacking = false;
         sprayParticles.Stop();
-        EnableMovement(); // Use the new method
+        EnableMovement();
     }
 
     private void ApplyDamageTick()
@@ -140,7 +135,6 @@ public class SprayerAttack : MonoBehaviour
             PlayerHealth playerHealth = hit.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
-                // Calculate damage per tick based on damagePerSecond and damageInterval
                 float damageThisTick = damagePerSecond * damageInterval;
                 playerHealth.TakeDamage(Mathf.RoundToInt(damageThisTick), 0f, Vector2.zero);
             }
@@ -165,19 +159,13 @@ public class SprayerAttack : MonoBehaviour
         sprayerAnimator.SetBool("IsWalking", true);
     }
 
-
-
-
     void OnDrawGizmosSelected()
     {
-        // Visualize Damage Zone
         Gizmos.color = Color.red;
         Vector2 attackOrigin = (Vector2)transform.position + FlippedDamageZoneOffset;
         Gizmos.DrawWireCube(attackOrigin, damageZoneSize);
 
-        // Visualize Attack Range
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }
-

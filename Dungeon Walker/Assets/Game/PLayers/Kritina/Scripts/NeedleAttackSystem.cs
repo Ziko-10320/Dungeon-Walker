@@ -12,6 +12,12 @@ public class EnhancedNeedleAttackSystem : MonoBehaviour
     [SerializeField] private float attackCooldown = 1.0f; // Cooldown duration for the attack (in seconds)
     [SerializeField] private int damage = 20; // Damage amount dealt by the attack
 
+    [Header("Audio Settings")]
+    [SerializeField] private AudioClip swingMissSound; // Sound for when the swing doesn't hit an enemy
+    [SerializeField, Range(0f, 1f)] private float swingMissSoundVolume = 1f; // Volume for swing miss sound
+    [SerializeField] private AudioClip swingHitSound; // Sound for when the swing hits an enemy
+    [SerializeField, Range(0f, 1f)] private float swingHitSoundVolume = 1f; // Volume for swing hit sound
+
     [Header("Damage Area Settings")]
     [SerializeField] private Transform attackPoint; // Origin point of the attack (usually in front of the player)
     [SerializeField] private float attackRange = 0.5f; // Radius of the attack area (circle)
@@ -39,6 +45,17 @@ public class EnhancedNeedleAttackSystem : MonoBehaviour
     private bool canDealDamage = false; // Flag to control damage application once per attack
     private bool isAnticipating = false; // Flag to check if anticipation is active
     private Coroutine ghostEffectCoroutine; // Reference to the ghost effect coroutine
+    private AudioSource audioSource; // Reference to the AudioSource component
+
+    void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false;
+    }
 
     void Start()
     {
@@ -226,9 +243,12 @@ public class EnhancedNeedleAttackSystem : MonoBehaviour
         // Detect enemies in the attack range
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
 
+        bool enemyWasHit = false;
+
         // Apply damage to each detected enemy
         foreach (Collider2D enemy in hitEnemies)
         {
+            enemyWasHit = true;
             // Use a common interface or base class for health components if possible
             // For now, we'll check each type and cast
             if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth))
@@ -254,6 +274,21 @@ public class EnhancedNeedleAttackSystem : MonoBehaviour
             }
 
             Debug.Log("Hit " + enemy.name + " for " + damage + " damage!");
+        }
+
+        if (enemyWasHit)
+        {
+            if (swingHitSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(swingHitSound, swingHitSoundVolume);
+            }
+        }
+        else
+        {
+            if (swingMissSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(swingMissSound, swingMissSoundVolume);
+            }
         }
 
         canDealDamage = false; // Disable damage application after it's been dealt
