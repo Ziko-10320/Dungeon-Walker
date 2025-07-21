@@ -18,6 +18,11 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float flashDuration = 0.2f; // Duration of the flash effect
     [SerializeField] private SpriteRenderer[] spriteRenderers; // Array of all player part sprites
 
+    [Header("Sound Effects")]
+    [SerializeField] private AudioClip damageSound; // Sound played when taking damage
+    [Range(0f, 1f)]
+    [SerializeField] private float damageSoundVolume = 1f;
+
     private Material[] originalMaterials; // To store original materials
     private bool isInvincible = false;
 
@@ -55,6 +60,16 @@ public class PlayerHealth : MonoBehaviour
         if (currentHealth <= 0)
         {
             Die();
+        }
+
+        PlayDamageSound();
+    }
+
+    private void PlayDamageSound()
+    {
+        if (damageSound != null)
+        {
+            AudioSource.PlayClipAtPoint(damageSound, transform.position, damageSoundVolume);
         }
     }
 
