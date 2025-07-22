@@ -5,7 +5,7 @@ using UnityEngine;
 public class BatAttackSystem : MonoBehaviour
 {
     [Header("Attack Settings")]
-    [SerializeField] private Animator playerAnimator; // Reference to the player's Animator
+    [SerializeField] private Animator playerAnimator; // Reference to the player\"s Animator
     [SerializeField] private string anticipationTriggerName = "Anticipation"; // Name of the Anticipation Trigger in the Animator
     [SerializeField] private string attackTriggerName = "BatAttack"; // Name of the Attack Trigger in the Animator
     [SerializeField] private string upwardAttackTriggerName = "UpwardAttack"; // Name of the Upward Attack Trigger in the Animator
@@ -14,18 +14,24 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private float attackCooldown = 1.0f; // Cooldown duration for the attack (in seconds)
     [SerializeField] private int damage = 20; // Damage amount dealt by the attack
 
-    [Header("Bat Throwing Settings")]
-    [SerializeField] private GameObject batPrefab; // Prefab of the bat projectile
-    [SerializeField] private Transform batSpawnPoint; // Point where the bat is spawned when thrown
-    [SerializeField] private float batThrowSpeed = 15f; // Speed of the thrown bat
-    [SerializeField] private float batPickupRange = 1.5f; // Range within which player can pick up the bat
-    [SerializeField] private LayerMask groundLayer = 1; // Layer mask for ground collision
+    [Header("Throw Slash Settings")]
+    [SerializeField] private GameObject throwSlashPrefab; // Prefab of the ThrowSlash projectile
+    [SerializeField] private Transform throwSlashSpawnPoint; // Point where the ThrowSlash is spawned when thrown
+    [SerializeField] private float throwSlashSpeed = 15f; // Speed of the thrown ThrowSlash
+    [SerializeField] private int throwSlashDamage = 20; // Damage dealt by ThrowSlash
+    [SerializeField] private GameObject bat2Prefab; // Prefab of the Bat2 to spawn on ground hit
+    [SerializeField] private float throwSlashGroundDetectionDelay = 0.5f; // Delay before ThrowSlash can detect ground
+
+
+    [Header("Bat Pickup Settings")]
+    [SerializeField] private float batPickupRange = 1.5f; // Range within which player can pick up the Bat2
 
     [Header("Damage Area Settings")]
     [SerializeField] private Transform attackPoint; // Origin point of the normal attack (usually in front of the player)
     [SerializeField] private Transform upwardAttackPoint; // Origin point of the upward attack (usually above the player)
     [SerializeField] private float attackRange = 0.5f; // Radius of the attack area (circle)
     [SerializeField] private LayerMask enemyLayers; // Layers of enemies that can receive damage
+    [SerializeField] private LayerMask groundLayer; // Layer mask for ground collision
 
     [Header("Direction Detection Settings")]
     [SerializeField] private float upwardZoneMinY = 0.5f; // Minimum Y-coordinate for upward attack zone (relative to player)
@@ -38,6 +44,7 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private AudioClip attackSound; // Sound played when performing normal attack
     [SerializeField] private AudioClip upwardAttackSound; // Sound played when performing upward attack
     [SerializeField] private AudioClip throwBatSound; // Sound played when throwing the bat
+    [SerializeField] private AudioClip throwSlashHitEnemySound; // Sound played when ThrowSlash hits an enemy
 
     [Header("Visual Settings")]
     [SerializeField] private GameObject playerBatVisual; // Visual representation of the bat on the player (to hide when thrown)
@@ -68,7 +75,8 @@ public class BatAttackSystem : MonoBehaviour
     private Camera playerCamera; // Reference to the main camera
     private bool isUpwardAttack = false; // Flag to determine which attack type is being performed
     private bool hasBat = true; // Flag to track if player has the bat
-    private GameObject thrownBat; // Reference to the currently thrown bat
+    private GameObject spawnedBat2; // Reference to the currently spawned Bat2 on the ground
+    private Vector3 lastMousePosition; // Store the mouse position at the moment of input
 
     void Start()
     {
@@ -106,11 +114,11 @@ public class BatAttackSystem : MonoBehaviour
             }
         }
 
-        // Auto-assign bat spawn point if not set
-        if (batSpawnPoint == null)
+        // Auto-assign throw slash spawn point if not set
+        if (throwSlashSpawnPoint == null)
         {
-            batSpawnPoint = transform; // Use player transform as default
-            Debug.LogWarning("Bat spawn point not assigned. Using player transform as default.");
+            throwSlashSpawnPoint = transform; // Use player transform as default
+            Debug.LogWarning("Throw Slash spawn point not assigned. Using player transform as default.");
         }
 
         // Ensure player bat visual is visible at start
@@ -118,37 +126,42 @@ public class BatAttackSystem : MonoBehaviour
         {
             playerBatVisual.SetActive(true);
         }
+
+        // Auto-assign player animator if not set
+        if (playerAnimator == null)
+        {
+            playerAnimator = GetComponent<Animator>();
+            if (playerAnimator == null)
+            {
+                Debug.LogWarning("Player Animator not found. Animations will not work.");
+            }
+        }
     }
 
     void Update()
     {
-        // Check for Right Mouse Button press for attacks (only if player has bat)
+        // Right Mouse Button for Normal/Upward Attacks
         if (Input.GetMouseButtonDown(1) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
         {
-            // Determine attack type based on mouse direction
             bool shouldPerformUpwardAttack = ShouldPerformUpwardAttack();
-
-            if (showDirectionDebug)
-            {
-                Debug.Log($"Attack Type: {(shouldPerformUpwardAttack ? "Upward" : "Normal")}");
-            }
-
             StartAnticipationAttack(shouldPerformUpwardAttack);
         }
 
-        // Check for Left Mouse Button press for throwing bat (only if player has bat)
-        if (Input.GetMouseButtonDown(0) && hasBat && !isAnticipating)
+        // Left Mouse Button for Throwing ThrowSlash
+        if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
         {
-            ThrowBat();
+            // Store mouse position at the moment of input
+            lastMousePosition = Input.mousePosition;
+            StartAnticipationAndThrowSlash();
         }
 
-        // Check for bat pickup if player doesn't have bat
-        if (!hasBat && thrownBat != null)
+        // Check for Bat2 pickup if player doesn\"t have bat
+        if (!hasBat && spawnedBat2 != null)
         {
-            float distanceToBat = Vector2.Distance(transform.position, thrownBat.transform.position);
-            if (distanceToBat <= batPickupRange)
+            float distanceToBat2 = Vector2.Distance(transform.position, spawnedBat2.transform.position);
+            if (distanceToBat2 <= batPickupRange)
             {
-                PickUpBat();
+                PickUpBat2();
             }
         }
     }
@@ -183,96 +196,11 @@ public class BatAttackSystem : MonoBehaviour
         return false;
     }
 
-    void ThrowBat()
-    {
-        if (batPrefab == null)
-        {
-            Debug.LogWarning("Bat prefab not assigned! Cannot throw bat.");
-            return;
-        }
-
-        // Get mouse position in world space
-        Vector3 mouseWorldPos = playerCamera.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldPos.z = transform.position.z;
-
-        // Calculate direction from bat spawn point to mouse
-        Vector2 throwDirection = (mouseWorldPos - batSpawnPoint.position).normalized;
-
-        // Instantiate the bat projectile
-        GameObject batInstance = Instantiate(batPrefab, batSpawnPoint.position, Quaternion.identity);
-        thrownBat = batInstance;
-
-        // Initialize the bat projectile
-        BatProjectile batProjectile = batInstance.GetComponent<BatProjectile>();
-        if (batProjectile != null)
-        {
-            batProjectile.Initialize(throwDirection, batThrowSpeed, damage, enemyLayers, groundLayer);
-        }
-
-        // Trigger throw animation
-        if (playerAnimator != null)
-        {
-            playerAnimator.SetTrigger(throwBatTriggerName);
-        }
-
-        // Play throw sound
-        if (audioSource != null && throwBatSound != null)
-        {
-            audioSource.PlayOneShot(throwBatSound);
-        }
-
-        // Hide player bat visual
-        if (playerBatVisual != null)
-        {
-            playerBatVisual.SetActive(false);
-        }
-
-        // Player no longer has bat
-        hasBat = false;
-
-        if (showDirectionDebug)
-        {
-            Debug.Log($"Threw bat towards: {throwDirection}");
-        }
-    }
-
-    void PickUpBat()
-    {
-        if (thrownBat != null)
-        {
-            // Destroy the thrown bat
-            BatProjectile batProjectile = thrownBat.GetComponent<BatProjectile>();
-            if (batProjectile != null)
-            {
-                batProjectile.PickUp();
-            }
-            else
-            {
-                Destroy(thrownBat);
-            }
-
-            thrownBat = null;
-        }
-
-        // Show player bat visual
-        if (playerBatVisual != null)
-        {
-            playerBatVisual.SetActive(true);
-        }
-
-        // Player now has bat
-        hasBat = true;
-
-        if (showDirectionDebug)
-        {
-            Debug.Log("Picked up bat!");
-        }
-    }
-
     void StartAnticipationAttack(bool performUpwardAttack = false)
     {
         isAnticipating = true;
         isUpwardAttack = performUpwardAttack;
+        nextAttackTime = Time.time + anticipationDuration + attackCooldown; // Set cooldown for after anticipation
 
         // Trigger the anticipation animation
         if (playerAnimator != null)
@@ -292,7 +220,7 @@ public class BatAttackSystem : MonoBehaviour
             ghostEffectCoroutine = StartCoroutine(GhostEffectRoutine());
         }
 
-        // Start the anticipation routine
+        // Start the anticipation routine for normal/upward attack
         StartCoroutine(AnticipationRoutine());
     }
 
@@ -326,6 +254,162 @@ public class BatAttackSystem : MonoBehaviour
         isAnticipating = false;
     }
 
+    void StartAnticipationAndThrowSlash()
+    {
+        isAnticipating = true;
+        nextAttackTime = Time.time + anticipationDuration + attackCooldown; // Set cooldown for after anticipation
+
+        // Trigger the anticipation animation
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetTrigger(anticipationTriggerName);
+        }
+
+        // Start camera hold effect
+        if (enableCameraEffects && cameraEffects != null)
+        {
+            cameraEffects.StartHoldAndReleaseEffect();
+        }
+
+        // Start ghost effect for specified sprites
+        if (ghostTargets.Count > 0)
+        {
+            ghostEffectCoroutine = StartCoroutine(GhostEffectRoutine());
+        }
+
+        // Start the anticipation routine which will lead to ThrowSlash
+        StartCoroutine(AnticipationRoutineForThrowSlash());
+    }
+
+    IEnumerator AnticipationRoutineForThrowSlash()
+    {
+        // Slow down time slightly during anticipation for dramatic effect
+        Time.timeScale = 0.8f;
+
+        // Wait for the anticipation duration
+        yield return new WaitForSecondsRealtime(anticipationDuration);
+
+        // Reset time scale
+        Time.timeScale = 1.0f;
+
+        // Stop ghost effect
+        if (ghostEffectCoroutine != null)
+        {
+            StopCoroutine(ghostEffectCoroutine);
+        }
+
+        // Trigger ThrowBat animation and throw ThrowSlash
+        ThrowSlash();
+
+        isAnticipating = false;
+    }
+
+    void ThrowSlash()
+    {
+        if (throwSlashPrefab == null)
+        {
+            Debug.LogWarning("Throw Slash prefab not assigned! Cannot throw.");
+            return;
+        }
+
+        if (playerCamera == null)
+        {
+            Debug.LogWarning("Player camera not found! Cannot determine throw direction.");
+            return;
+        }
+
+        // Use the stored mouse position to get the target world point
+        Vector3 targetWorldPoint = playerCamera.ScreenToWorldPoint(new Vector3(lastMousePosition.x, lastMousePosition.y, playerCamera.nearClipPlane));
+        targetWorldPoint.z = throwSlashSpawnPoint.position.z; // Ensure the Z coordinate matches the spawn point
+
+        // Calculate the direction from the spawn point to the target world point
+        Vector2 throwDirection = (targetWorldPoint - throwSlashSpawnPoint.position).normalized;
+
+        // If the target is too close to the spawn point, provide a default direction
+        if (throwDirection.magnitude < 0.1f)
+        {
+            throwDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+        }
+
+        GameObject slashInstance = Instantiate(throwSlashPrefab, throwSlashSpawnPoint.position, Quaternion.identity);
+
+        // Initialize ThrowSlash properties
+        Rigidbody2D slashRb = slashInstance.GetComponent<Rigidbody2D>();
+        if (slashRb == null)
+        {
+            Debug.LogWarning("ThrowSlash prefab is missing Rigidbody2D component! Adding one.");
+            slashRb = slashInstance.AddComponent<Rigidbody2D>();
+            slashRb.gravityScale = 0; // Disable gravity for projectile
+        }
+
+        // Ensure the ThrowSlash has a collider
+        Collider2D slashCollider = slashInstance.GetComponent<Collider2D>();
+        if (slashCollider == null)
+        {
+            Debug.LogWarning("ThrowSlash prefab is missing Collider2D component! Adding one.");
+            slashCollider = slashInstance.AddComponent<BoxCollider2D>(); // Default to BoxCollider2D
+            slashCollider.isTrigger = true;
+        }
+
+        // Set velocity for movement
+        slashRb.velocity = throwDirection * throwSlashSpeed;
+
+        // Calculate rotation for the ThrowSlash based on throwDirection
+        float angle = Mathf.Atan2(throwDirection.y, throwDirection.x) * Mathf.Rad2Deg;
+        slashInstance.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+
+        // Add a component to handle collision and Bat2 spawning
+        ThrowSlashHandler slashHandler = slashInstance.AddComponent<ThrowSlashHandler>();
+        slashHandler.Initialize(throwSlashDamage, enemyLayers, groundLayer, bat2Prefab, this, throwSlashGroundDetectionDelay, audioSource, throwSlashHitEnemySound);
+
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetTrigger(throwBatTriggerName);
+        }
+
+        // Play throw sound
+        if (audioSource != null && throwBatSound != null)
+        {
+            audioSource.PlayOneShot(throwBatSound);
+        }
+
+        // Disable the Bat spriteRenderer
+        if (playerBatVisual != null)
+        {
+            playerBatVisual.SetActive(false);
+        }
+
+        hasBat = false;
+
+        if (showDirectionDebug)
+        {
+            Debug.Log($"Threw ThrowSlash towards: {throwDirection} with speed: {throwSlashSpeed}");
+        }
+    }
+
+    public void SetSpawnedBat2(GameObject bat2)
+    {
+        spawnedBat2 = bat2;
+    }
+
+    void PickUpBat2()
+    {
+        if (spawnedBat2 != null)
+        {
+            Destroy(spawnedBat2);
+            spawnedBat2 = null;
+        }
+
+        // Enable the Bat spriteRenderer again
+        if (playerBatVisual != null)
+        {
+            playerBatVisual.SetActive(true);
+        }
+
+        hasBat = true;
+        Debug.Log("Picked up Bat2! Bat spriteRenderer enabled.");
+    }
+
     IEnumerator GhostEffectRoutine()
     {
         float timer = 0f;
@@ -354,7 +438,7 @@ public class BatAttackSystem : MonoBehaviour
         GameObject ghostObject = new GameObject("Ghost_" + originalRenderer.name);
         SpriteRenderer ghostRenderer = ghostObject.AddComponent<SpriteRenderer>();
 
-        // Copy the transform's properties directly
+        // Copy the transform\"s properties directly
         ghostObject.transform.position = originalRenderer.transform.position;
         ghostObject.transform.rotation = originalRenderer.transform.rotation;
         ghostObject.transform.localScale = originalRenderer.transform.lossyScale; // Use lossyScale to get the true global scale
@@ -474,7 +558,7 @@ public class BatAttackSystem : MonoBehaviour
     // This function will be called as an Animation Event at the specified frame for normal attacks
     public void ApplyDamage()
     {
-        if (!canDealDamage || !hasBat) return; // Ensure we haven't already applied damage and player has bat
+        if (!canDealDamage || !hasBat) return; // Ensure we haven\"t already applied damage and player has bat
 
         ApplyDamageAtPoint(attackPoint);
     }
@@ -482,7 +566,7 @@ public class BatAttackSystem : MonoBehaviour
     // This function will be called as an Animation Event at the specified frame for upward attacks
     public void ApplyUpwardDamage()
     {
-        if (!canDealDamage || !hasBat) return; // Ensure we haven't already applied damage and player has bat
+        if (!canDealDamage || !hasBat) return; // Ensure we haven\"t already applied damage and player has bat
 
         // Use upward attack point if available, otherwise fallback to normal attack point
         Transform damagePoint = upwardAttackPoint != null ? upwardAttackPoint : attackPoint;
@@ -530,14 +614,13 @@ public class BatAttackSystem : MonoBehaviour
             }
             else
             {
-                // Fallback for other types or if no specific health script is found
                 Debug.LogWarning($"No recognized health script found on {enemy.name}. Damage applied without specific knockback.");
             }
 
-            Debug.Log($"Hit {enemy.name} for {damage} damage with {(isUpwardAttack ? "Upward" : "Normal")} attack!");
+
         }
 
-        canDealDamage = false; // Disable damage application after it's been dealt
+        canDealDamage = false; // Disable damage application after it\"s been dealt
     }
 
     // Public methods to control the system from external scripts
@@ -647,5 +730,107 @@ public class BatAttackSystem : MonoBehaviour
         Vector3 normalZoneMax = new Vector3(playerPos.x + 1f, playerPos.y + normalZoneMaxY, playerPos.z);
         Gizmos.DrawWireCube(Vector3.Lerp(normalZoneMin, normalZoneMax, 0.5f), normalZoneMax - normalZoneMin);
     }
-}
 
+    // Inner class to handle ThrowSlash collision and Bat2 spawning
+    public class ThrowSlashHandler : MonoBehaviour
+    {
+        private int damage;
+        private LayerMask enemyLayers;
+        private LayerMask groundLayer;
+        private GameObject bat2Prefab;
+        private BatAttackSystem parentSystem;
+        private bool hasHit = false;
+        private float canDetectGroundTime; // New variable for ground detection delay
+        private AudioSource audioSource; // AudioSource for playing sounds
+        private AudioClip hitEnemySound; // Sound for hitting enemy
+
+        public void Initialize(int dmg, LayerMask enemies, LayerMask ground, GameObject bat2, BatAttackSystem system, float groundDetectionDelay, AudioSource src, AudioClip hitSound)
+        {
+            damage = dmg;
+            enemyLayers = enemies;
+            groundLayer = ground;
+            bat2Prefab = bat2;
+            parentSystem = system;
+            canDetectGroundTime = Time.time + groundDetectionDelay; // Set the time when ground detection becomes active
+            audioSource = src;
+            hitEnemySound = hitSound;
+        }
+
+        void OnTriggerEnter2D(Collider2D other)
+        {
+            if (hasHit) return;
+
+            // Check if it hit an enemy
+            if (((1 << other.gameObject.layer) & enemyLayers) != 0)
+            {
+                Debug.Log($"ThrowSlash hit enemy: {other.name}");
+
+                // Play hit enemy sound
+                if (audioSource != null && hitEnemySound != null)
+                {
+                    audioSource.PlayOneShot(hitEnemySound);
+                }
+
+                // Apply damage using the same logic as the main attack system
+                ApplyDamageToEnemy(other);
+
+                // Spawn Bat2 at the enemy hit position
+                SpawnBat2(transform.position);
+
+                Destroy(gameObject); // Destroy ThrowSlash on enemy hit
+            }
+            // Check if it hit the ground, only if enough time has passed
+            else if (((1 << other.gameObject.layer) & groundLayer) != 0 && Time.time >= canDetectGroundTime)
+            {
+                Debug.Log("ThrowSlash hit ground.");
+                hasHit = true;
+                SpawnBat2(transform.position);
+                Destroy(gameObject); // Destroy ThrowSlash after spawning Bat2
+            }
+        }
+
+        void ApplyDamageToEnemy(Collider2D enemy)
+        {
+            // Calculate knockback direction from ThrowSlash to enemy
+            Vector2 knockbackDirection = ((Vector2)(enemy.transform.position - transform.position)).normalized;
+
+            // Use the same damage application logic as the main system
+            if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth))
+            {
+                fleaHealth.TakeDamage(damage, knockbackDirection, parentSystem.fleaKnockbackForce);
+            }
+            else if (enemy.TryGetComponent<InkHealth>(out var inkHealth))
+            {
+                inkHealth.TakeDamage(damage, knockbackDirection, parentSystem.inkKnockbackForce);
+            }
+            else if (enemy.TryGetComponent<FlyHealth>(out var flyHealth))
+            {
+                flyHealth.TakeDamage(damage, knockbackDirection, parentSystem.flyKnockbackForce);
+            }
+            else if (enemy.TryGetComponent<SprayerHealth>(out var sprayerHealth))
+            {
+                sprayerHealth.TakeDamage(damage, knockbackDirection, parentSystem.sprayerKnockbackForce);
+            }
+            else
+            {
+                Debug.LogWarning($"No recognized health script found on {enemy.name}. ThrowSlash damage applied without specific knockback.");
+            }
+        }
+
+        void SpawnBat2(Vector3 position)
+        {
+            if (bat2Prefab != null)
+            {
+                GameObject bat2Instance = Instantiate(bat2Prefab, position, Quaternion.identity);
+                // Bat2 is now dynamic, so we don\"t set isKinematic or velocity to zero here.
+                // It should have its own Rigidbody2D with gravity enabled in its prefab.
+                parentSystem.SetSpawnedBat2(bat2Instance);
+                Debug.Log("Bat2 spawned at ground hit position.");
+            }
+            else
+            {
+                Debug.LogWarning("Bat2 Prefab is not assigned in BatAttackSystem. Cannot spawn Bat2.");
+            }
+        }
+    }
+}

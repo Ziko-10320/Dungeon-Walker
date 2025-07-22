@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 5177885264180721863}
   - component: {fileID: 3989335545234091424}
-  - component: {fileID: -4564850762905586286}
-  - component: {fileID: -4409731500937616008}
+  - component: {fileID: 7016357098667546641}
+  - component: {fileID: 313918055007583620}
   m_Layer: 0
-  m_Name: Bat
+  m_Name: Bat2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -86,7 +86,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!50 &-4564850762905586286
+--- !u!50 &7016357098667546641
 Rigidbody2D:
   serializedVersion: 4
   m_ObjectHideFlags: 0
@@ -113,23 +113,72 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &-4409731500937616008
-MonoBehaviour:
+--- !u!60 &313918055007583620
+PolygonCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4137591446552491165}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c23d04c2f8a1c04a8142fea8368760b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 15
-  damage: 80
-  enemyLayers:
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 640
-  groundLayer:
+    m_Bits: 0
+  m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 2, y: 2}
+    newSize: {x: 2, y: 2}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: -0.45, y: -0.57}
+      - {x: -0.32999998, y: -0.42999998}
+      - {x: 0.14, y: -0.03}
+      - {x: 0.41, y: 0.21}
+      - {x: 0.72999996, y: 0.52}
+      - {x: 0.89, y: 0.69}
+      - {x: 0.89, y: 0.76}
+      - {x: 0.85999995, y: 0.82}
+      - {x: 0.76, y: 0.91999996}
+      - {x: 0.65999997, y: 0.95}
+      - {x: 0.63, y: 0.95}
+      - {x: 0.28, y: 0.59}
+      - {x: 0.03, y: 0.29}
+      - {x: -0.19, y: 0.02}
+      - {x: -0.34, y: -0.17}
+      - {x: -0.56, y: -0.44}
+      - {x: -0.78, y: -0.65}
+      - {x: -0.97999996, y: -0.76}
+      - {x: -0.97999996, y: -0.87}
+      - {x: -0.9072483, y: -0.9404953}
+      - {x: -0.8177524, y: -0.97715414}
+      - {x: -0.75, y: -0.91999996}
+      - {x: -0.68, y: -0.79999995}
+      - {x: -0.5, y: -0.61}
+  m_UseDelaunayMesh: 0

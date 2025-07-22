@@ -52,12 +52,12 @@ public class KritinaMovement : MonoBehaviour
         animator = GetComponent<Animator>();
         playerDash = GetComponent<PlayerDash>();
 
+        // Initialize jumpsRemaining at the start
+        jumpsRemaining = maxJumps;
     }
 
     void Update()
     {
-
-
         if (playerDash != null && playerDash.IsDashing)
         {
             moveDirection = 0;
@@ -66,6 +66,7 @@ public class KritinaMovement : MonoBehaviour
 
         moveDirection = Input.GetAxisRaw("Horizontal");
         bool isMoving = Mathf.Abs(moveDirection) > 0.1f;
+
         animator.SetBool("isRunning", isMoving);
 
         if ((moveDirection > 0 && !isFacingRight) || (moveDirection < 0 && isFacingRight))
@@ -76,6 +77,7 @@ public class KritinaMovement : MonoBehaviour
         // --- MODIFIED: Jump Input Handling for Double Jump ---
         if (Input.GetKeyDown(KeyCode.Space))
         {
+            animator.SetTrigger("Jump");
             if (IsGrounded())
             {
                 PerformJump(false); // First jump
@@ -107,34 +109,17 @@ public class KritinaMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-
-
         if (playerDash != null && playerDash.IsDashing)
         {
+            rb.velocity = Vector2.zero; // Stop movement during dash
             return;
         }
 
         float currentXVelocity = rb.velocity.x;
         float currentYVelocity = rb.velocity.y;
 
-        if (!IsGrounded())
-        {
-            bool isTryingToMoveIntoWall = (moveDirection > 0 && IsTouchingWall(Vector2.right)) ||
-                                          (moveDirection < 0 && IsTouchingWall(Vector2.left));
-
-            if (isTryingToMoveIntoWall)
-            {
-                rb.velocity = new Vector2(0f, currentYVelocity);
-            }
-            else
-            {
-                rb.velocity = new Vector2(moveDirection * moveSpeed, currentYVelocity);
-            }
-        }
-        else // Player is grounded
-        {
-            rb.velocity = new Vector2(moveDirection * moveSpeed, currentYVelocity);
-        }
+        // Apply horizontal movement
+        rb.velocity = new Vector2(moveDirection * moveSpeed, currentYVelocity);
 
         // Handle buffered jump
         if (jumpPressedInAir)
@@ -248,5 +233,3 @@ public class KritinaMovement : MonoBehaviour
         }
     }
 }
-
-
