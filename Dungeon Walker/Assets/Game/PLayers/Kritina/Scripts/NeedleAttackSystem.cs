@@ -77,6 +77,12 @@ public class BatAttackSystem : MonoBehaviour
     private bool hasBat = true; // Flag to track if player has the bat
     private GameObject spawnedBat2; // Reference to the currently spawned Bat2 on the ground
     private Vector3 lastMousePosition; // Store the mouse position at the moment of input
+    private bool isGrounded; // New flag to track if the player is grounded
+
+    [Header("Ground Check Settings")]
+    [SerializeField] private Transform groundCheck; // Point for ground detection
+    [SerializeField] private float groundCheckRadius = 0.2f; // Radius of the ground check circle
+    [SerializeField] private LayerMask whatIsGround; // Layer mask for ground
 
     void Start()
     {
@@ -136,10 +142,19 @@ public class BatAttackSystem : MonoBehaviour
                 Debug.LogWarning("Player Animator not found. Animations will not work.");
             }
         }
+
+        // Auto-assign ground check point if not set
+        if (groundCheck == null)
+        {
+            groundCheck = transform; // Use player transform as default
+            Debug.LogWarning("Ground Check point not assigned. Using player transform as default.");
+        }
     }
 
     void Update()
     {
+        CheckGround(); // Call ground check every frame
+
         // Right Mouse Button for Normal/Upward Attacks
         if (Input.GetMouseButtonDown(1) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
         {
@@ -163,6 +178,39 @@ public class BatAttackSystem : MonoBehaviour
             {
                 PickUpBat2();
             }
+            // New: Continuously adjust Bat2 position to stay above ground
+            CheckAndAdjustBat2Position();
+        }
+    }
+
+    private void CheckGround()
+    {
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, whatIsGround);
+    }
+
+    private void CheckAndAdjustBat2Position()
+    {
+        if (spawnedBat2 == null) return;
+
+        Rigidbody2D bat2Rb = spawnedBat2.GetComponent<Rigidbody2D>();
+        if (bat2Rb == null) return; // Only adjust if it has a Rigidbody2D
+
+        float raycastDistance = 1f; // How far down to check for ground
+        float verticalOffset = 0.1f; // Small offset to place Bat2 above ground
+
+        // Raycast downwards to find the ground
+        RaycastHit2D hit = Physics2D.Raycast(spawnedBat2.transform.position, Vector2.down, raycastDistance, groundLayer);
+
+        // If the raycast hits the ground and the Bat2 is below it, adjust position
+        if (hit.collider != null && spawnedBat2.transform.position.y < hit.point.y + verticalOffset)
+        {
+            Vector3 newPosition = spawnedBat2.transform.position;
+            newPosition.y = hit.point.y + verticalOffset;
+            spawnedBat2.transform.position = newPosition;
+
+            // Optionally, stop any downward velocity to prevent it from trying to go through again
+            bat2Rb.velocity = new Vector2(bat2Rb.velocity.x, Mathf.Max(0, bat2Rb.velocity.y));
+            Debug.Log("Bat2 adjusted to be above ground.");
         }
     }
 
@@ -341,6 +389,7 @@ public class BatAttackSystem : MonoBehaviour
             slashRb = slashInstance.AddComponent<Rigidbody2D>();
             slashRb.gravityScale = 0; // Disable gravity for projectile
         }
+        slashRb.collisionDetectionMode = CollisionDetectionMode2D.Continuous; // Ensure continuous collision detection
 
         // Ensure the ThrowSlash has a collider
         Collider2D slashCollider = slashInstance.GetComponent<Collider2D>();
@@ -360,7 +409,35 @@ public class BatAttackSystem : MonoBehaviour
 
         // Add a component to handle collision and Bat2 spawning
         ThrowSlashHandler slashHandler = slashInstance.AddComponent<ThrowSlashHandler>();
-        slashHandler.Initialize(throwSlashDamage, enemyLayers, groundLayer, bat2Prefab, this, throwSlashGroundDetectionDelay, audioSource, throwSlashHitEnemySound);
+        slashHandler.Initialize(throwSlashDamage, enemyLayers, groundLayer, bat2Prefab, this, audioSource, throwSlashHitEnemySound);
+
+        // New: Smart collision handling for ground and walls
+        // Check if player is grounded and the throw is relatively horizontal (not sharply downwards)
+        float verticalThrowComponent = throwDirection.y; // Y component of the normalized throw direction
+        // Define a threshold for what's considered a "low" or "horizontal" throw
+        // This value might need tweaking based on game feel
+        float lowThrowThreshold = -0.3f; // e.g., -0.3 means it's not pointing too far down
+
+        // Only ignore ground collision if the player is grounded AND it's a low horizontal throw
+        if (isGrounded && verticalThrowComponent > lowThrowThreshold)
+        {
+            // Temporarily ignore collision between ThrowSlash and Ground layer
+            // Get the layer of the ThrowSlash instance
+            int throwSlashLayer = slashInstance.layer;
+            int groundLayerIndex = (int)Mathf.Log(groundLayer.value, 2); // Convert LayerMask to layer index
+
+            Physics2D.IgnoreLayerCollision(throwSlashLayer, groundLayerIndex, true);
+
+            // Start a coroutine to re-enable collision after a certain distance or time
+            StartCoroutine(ReEnableGroundCollision(slashInstance, throwSlashLayer, groundLayerIndex, throwDirection));
+        }
+        else
+        {
+            // For all other cases (not grounded, or sharp downward throw), ensure collision with ground layer is active
+            int throwSlashLayer = slashInstance.layer;
+            int groundLayerIndex = (int)Mathf.Log(groundLayer.value, 2); // Convert LayerMask to layer index
+            Physics2D.IgnoreLayerCollision(throwSlashLayer, groundLayerIndex, false);
+        }
 
         if (playerAnimator != null)
         {
@@ -384,6 +461,33 @@ public class BatAttackSystem : MonoBehaviour
         if (showDirectionDebug)
         {
             Debug.Log($"Threw ThrowSlash towards: {throwDirection} with speed: {throwSlashSpeed}");
+        }
+    }
+
+    IEnumerator ReEnableGroundCollision(GameObject slashInstance, int throwSlashLayer, int groundLayerIndex, Vector2 initialThrowDirection)
+    {
+        // Wait for a short duration or until the ThrowSlash has traveled a certain distance
+        // This prevents immediate re-enabling if the ThrowSlash is still very close to the player/ground
+        float reEnableDelay = 0.2f; // Time before checking distance
+        float reEnableDistance = 1.5f; // Distance after which collision is re-enabled
+
+        Vector3 initialPosition = slashInstance.transform.position;
+        float currentDistance = 0f;
+
+        while (slashInstance != null && currentDistance < reEnableDistance)
+        {
+            yield return null; // Wait for next frame
+            currentDistance = Vector3.Distance(initialPosition, slashInstance.transform.position);
+        }
+
+        // Also wait for the initial delay, in case the ThrowSlash is stuck or not moving
+        yield return new WaitForSeconds(reEnableDelay);
+
+        if (slashInstance != null)
+        {
+            // Re-enable collision between ThrowSlash and Ground layer
+            Physics2D.IgnoreLayerCollision(throwSlashLayer, groundLayerIndex, false);
+            Debug.Log("Re-enabled ground collision for ThrowSlash.");
         }
     }
 
@@ -729,6 +833,13 @@ public class BatAttackSystem : MonoBehaviour
         Vector3 normalZoneMin = new Vector3(playerPos.x - 1f, playerPos.y - 1f, playerPos.z);
         Vector3 normalZoneMax = new Vector3(playerPos.x + 1f, playerPos.y + normalZoneMaxY, playerPos.z);
         Gizmos.DrawWireCube(Vector3.Lerp(normalZoneMin, normalZoneMax, 0.5f), normalZoneMax - normalZoneMin);
+
+        // Draw Ground Check
+        Gizmos.color = Color.white;
+        if (groundCheck != null)
+        {
+            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+        }
     }
 
     // Inner class to handle ThrowSlash collision and Bat2 spawning
@@ -740,18 +851,16 @@ public class BatAttackSystem : MonoBehaviour
         private GameObject bat2Prefab;
         private BatAttackSystem parentSystem;
         private bool hasHit = false;
-        private float canDetectGroundTime; // New variable for ground detection delay
         private AudioSource audioSource; // AudioSource for playing sounds
         private AudioClip hitEnemySound; // Sound for hitting enemy
 
-        public void Initialize(int dmg, LayerMask enemies, LayerMask ground, GameObject bat2, BatAttackSystem system, float groundDetectionDelay, AudioSource src, AudioClip hitSound)
+        public void Initialize(int dmg, LayerMask enemies, LayerMask ground, GameObject bat2, BatAttackSystem system, AudioSource src, AudioClip hitSound)
         {
             damage = dmg;
             enemyLayers = enemies;
             groundLayer = ground;
             bat2Prefab = bat2;
             parentSystem = system;
-            canDetectGroundTime = Time.time + groundDetectionDelay; // Set the time when ground detection becomes active
             audioSource = src;
             hitEnemySound = hitSound;
         }
@@ -779,8 +888,8 @@ public class BatAttackSystem : MonoBehaviour
 
                 Destroy(gameObject); // Destroy ThrowSlash on enemy hit
             }
-            // Check if it hit the ground, only if enough time has passed
-            else if (((1 << other.gameObject.layer) & groundLayer) != 0 && Time.time >= canDetectGroundTime)
+            // Check if it hit the ground
+            else if (((1 << other.gameObject.layer) & groundLayer) != 0)
             {
                 Debug.Log("ThrowSlash hit ground.");
                 hasHit = true;

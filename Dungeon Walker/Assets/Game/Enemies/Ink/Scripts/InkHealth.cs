@@ -124,6 +124,8 @@ public class InkHealth : MonoBehaviour
     [Tooltip("Show debug messages for invincibility system")]
     public bool showInvincibilityDebug = false;
 
+    public WeaponSwitchManager weaponSwitchManager;
+
     [Tooltip("Show invincibility state in inspector (read-only)")]
     [SerializeField] private bool isCurrentlyInvincible = false;
 
@@ -194,6 +196,15 @@ public class InkHealth : MonoBehaviour
 
     void Start()
     {
+
+        if (weaponSwitchManager == null)
+        {
+            weaponSwitchManager = FindObjectOfType<WeaponSwitchManager>();
+            if (weaponSwitchManager == null)
+            {
+                Debug.LogError("WeaponSwitchManager not found in the scene. Please assign it or ensure it exists.");
+            }
+        }
         // Initialize health
         currentHealth = maxHealth;
 
@@ -624,6 +635,12 @@ public class InkHealth : MonoBehaviour
         }
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
+
+        if (weaponSwitchManager != null)
+        {
+            weaponSwitchManager.OnEnemyKilled();
+            Debug.Log("Enemy died, notifying WeaponSwitchManager.");
+        }
 
         // Destroy the ink enemy
         Destroy(gameObject);

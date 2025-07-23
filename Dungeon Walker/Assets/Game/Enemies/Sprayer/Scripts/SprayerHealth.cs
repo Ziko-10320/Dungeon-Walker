@@ -36,6 +36,8 @@ public class SprayerHealth : MonoBehaviour
     public AudioClip damageSoundClip; // Audio clip to play when taking damage
     [Range(0f, 1f)] public float damageSoundVolume = 0.7f; // Volume slider added here
 
+    public WeaponSwitchManager weaponSwitchManager;
+
     // Private variables
     private int currentHealth;
     private bool isKnockedBack = false; // Is the mushroom currently being knocked back?
@@ -59,6 +61,15 @@ public class SprayerHealth : MonoBehaviour
 
     void Start()
     {
+
+        if (weaponSwitchManager == null)
+        {
+            weaponSwitchManager = FindObjectOfType<WeaponSwitchManager>();
+            if (weaponSwitchManager == null)
+            {
+                Debug.LogError("WeaponSwitchManager not found in the scene. Please assign it or ensure it exists.");
+            }
+        }
         // Initialize health
         currentHealth = maxHealth;
     }
@@ -153,6 +164,12 @@ public class SprayerHealth : MonoBehaviour
 
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
+
+        if (weaponSwitchManager != null)
+        {
+            weaponSwitchManager.OnEnemyKilled();
+            Debug.Log("Enemy died, notifying WeaponSwitchManager.");
+        }
 
         // Destroy the mushroom
         Destroy(gameObject);
