@@ -7,13 +7,13 @@ public class WeaponSwitchManager : MonoBehaviour
     [System.Serializable]
     public class WeaponConfig
     {
-        public string weaponName; // Nom de l'arme pour l'affichage dans l'inspecteur
-        public List<GameObject> weaponGameObjects; // Liste des GameObjects associés à cette arme
-        public List<MonoBehaviour> weaponScripts; // Liste des scripts à activer/désactiver pour cette arme
-        public GameObject armGameObject; // GameObject du bras associé à cette arme (le parent)
-        public SpriteRenderer armSpriteRenderer; // Le SpriteRenderer du bras à activer/désactiver
+        public string weaponName; // Name of the weapon for display in the inspector
+        public List<GameObject> weaponGameObjects; // List of GameObjects associated with this weapon
+        public List<MonoBehaviour> weaponScripts; // List of scripts to enable/disable for this weapon
+        public GameObject armGameObject; // GameObject of the arm associated with this weapon (the parent)
+        public SpriteRenderer armSpriteRenderer; // The SpriteRenderer of the arm to enable/disable
         [Range(0f, 1f)]
-        public float dropChance = 0.25f; // Probabilité d'obtenir cette arme
+        public float dropChance = 0.25f; // Probability of getting this weapon
     }
 
     public List<WeaponConfig> weaponConfigs;
@@ -21,7 +21,7 @@ public class WeaponSwitchManager : MonoBehaviour
 
     private int currentKills = 0;
     private WeaponConfig currentWeapon;
-    private SpriteRenderer currentArmSpriteRenderer; // Pour suivre le SpriteRenderer du bras actuellement actif
+    private SpriteRenderer currentArmSpriteRenderer; // To track the currently active arm SpriteRenderer
 
     void Start()
     {
@@ -30,7 +30,7 @@ public class WeaponSwitchManager : MonoBehaviour
 
     void InitializeWeapons()
     {
-        // Désactiver toutes les armes, tous les bras (GameObjects) et tous les SpriteRenderers des bras au démarrage
+        // Disable all weapons, all arms (GameObjects) and all arm SpriteRenderers at startup
         foreach (var config in weaponConfigs)
         {
             if (config.weaponGameObjects != null)
@@ -53,14 +53,10 @@ public class WeaponSwitchManager : MonoBehaviour
                     }
                 }
             }
-            // Assurez-vous que le GameObject du bras est activé si l'utilisateur le souhaite, mais désactivez son SpriteRenderer
+            // Ensure the arm GameObject is activated if the user wants it, but disable its SpriteRenderer
             if (config.armGameObject != null)
             {
-                // L'utilisateur a dit que les bras sont initialement activés, mais leurs SpriteRenderers désactivés.
-                // Donc, nous ne touchons pas à l'état actif du GameObject du bras ici, juste à son SpriteRenderer.
-                // Cependant, pour la désactivation générale au démarrage, nous devons désactiver le GameObject du bras aussi.
-                // Si l'utilisateur veut que le GameObject du bras reste actif, il devra le gérer en dehors de ce script.
-                // Pour l'instant, nous désactivons le GameObject du bras pour une gestion cohérente.
+                // For consistent management, we disable the arm GameObject as well
                 config.armGameObject.SetActive(false);
             }
             if (config.armSpriteRenderer != null)
@@ -69,7 +65,7 @@ public class WeaponSwitchManager : MonoBehaviour
             }
         }
 
-        // Activer une arme aléatoire au démarrage
+        // Activate a random weapon at startup
         if (weaponConfigs.Count > 0)
         {
             currentWeapon = GetRandomWeapon();
@@ -81,7 +77,7 @@ public class WeaponSwitchManager : MonoBehaviour
     public void OnEnemyKilled()
     {
         currentKills++;
-        Debug.Log($"Kill count: {currentKills}");
+        Debug.Log($"Kill count: {currentKills}/{killsToSwitch}");
 
         if (currentKills >= killsToSwitch)
         {
@@ -92,10 +88,13 @@ public class WeaponSwitchManager : MonoBehaviour
 
     void SwitchWeapon()
     {
+        Debug.Log($"Switching from weapon: {currentWeapon?.weaponName}");
+
+        // Deactivate current weapon with enhanced cleanup
         DeactivateWeapon(currentWeapon);
 
         WeaponConfig newWeapon = GetRandomWeapon();
-        // Empêcher la sélection de la même arme deux fois de suite
+        // Prevent selecting the same weapon twice in a row
         while (newWeapon == currentWeapon && weaponConfigs.Count > 1)
         {
             newWeapon = GetRandomWeapon();
@@ -128,6 +127,8 @@ public class WeaponSwitchManager : MonoBehaviour
     {
         if (weapon != null)
         {
+            Debug.Log($"Activating weapon: {weapon.weaponName}");
+
             if (weapon.weaponGameObjects != null)
             {
                 foreach (var go in weapon.weaponGameObjects)
@@ -135,6 +136,7 @@ public class WeaponSwitchManager : MonoBehaviour
                     if (go != null)
                     {
                         go.SetActive(true);
+                        Debug.Log($"Activated weapon GameObject: {go.name}");
                     }
                 }
             }
@@ -145,18 +147,21 @@ public class WeaponSwitchManager : MonoBehaviour
                     if (script != null)
                     {
                         script.enabled = true;
+                        Debug.Log($"Enabled weapon script: {script.GetType().Name}");
                     }
                 }
             }
-            // Activer le GameObject du bras et son SpriteRenderer
+            // Activate the arm GameObject and its SpriteRenderer
             if (weapon.armGameObject != null)
             {
                 weapon.armGameObject.SetActive(true);
+                Debug.Log($"Activated arm GameObject: {weapon.armGameObject.name}");
             }
             if (weapon.armSpriteRenderer != null)
             {
                 weapon.armSpriteRenderer.enabled = true;
-                currentArmSpriteRenderer = weapon.armSpriteRenderer; // Mettre à jour le SpriteRenderer du bras actuellement actif
+                currentArmSpriteRenderer = weapon.armSpriteRenderer; // Update the currently active arm SpriteRenderer
+                Debug.Log($"Enabled arm SpriteRenderer: {weapon.armSpriteRenderer.name}");
             }
         }
     }
@@ -165,6 +170,28 @@ public class WeaponSwitchManager : MonoBehaviour
     {
         if (weapon != null)
         {
+            Debug.Log($"Deactivating weapon: {weapon.weaponName}");
+
+            // Enhanced cleanup for weapon scripts - call specific cleanup methods if they exist
+            if (weapon.weaponScripts != null)
+            {
+                foreach (var script in weapon.weaponScripts)
+                {
+                    if (script != null)
+                    {
+                        // Special handling for BatAttackSystem to ensure proper cleanup
+                        if (script is BatAttackSystem batSystem)
+                        {
+                            Debug.Log("Performing special cleanup for BatAttackSystem");
+                            // The OnDisable method will handle the cleanup automatically
+                        }
+
+                        script.enabled = false;
+                        Debug.Log($"Disabled weapon script: {script.GetType().Name}");
+                    }
+                }
+            }
+
             if (weapon.weaponGameObjects != null)
             {
                 foreach (var go in weapon.weaponGameObjects)
@@ -172,31 +199,88 @@ public class WeaponSwitchManager : MonoBehaviour
                     if (go != null)
                     {
                         go.SetActive(false);
+                        Debug.Log($"Deactivated weapon GameObject: {go.name}");
                     }
                 }
             }
-            if (weapon.weaponScripts != null)
-            {
-                foreach (var script in weapon.weaponScripts)
-                {
-                    if (script != null)
-                    {
-                        script.enabled = false;
-                    }
-                }
-            }
-            // Désactiver le GameObject du bras et son SpriteRenderer précédemment actif
+
+            // Disable the arm GameObject and its SpriteRenderer that was previously active
             if (currentArmSpriteRenderer != null)
             {
                 currentArmSpriteRenderer.enabled = false;
-                // Si le GameObject parent du SpriteRenderer doit être désactivé, faites-le ici.
-                // Pour l'instant, nous désactivons uniquement le SpriteRenderer.
+                Debug.Log($"Disabled arm SpriteRenderer: {currentArmSpriteRenderer.name}");
+
+                // If the GameObject parent of the SpriteRenderer should be disabled, do it here.
                 if (currentArmSpriteRenderer.gameObject != null)
                 {
                     currentArmSpriteRenderer.gameObject.SetActive(false);
+                    Debug.Log($"Deactivated arm GameObject: {currentArmSpriteRenderer.gameObject.name}");
                 }
-                currentArmSpriteRenderer = null; // Réinitialiser
+                currentArmSpriteRenderer = null; // Reset
             }
+
+            // Additional cleanup: Destroy any remaining ghost objects or other artifacts
+            CleanupWeaponArtifacts();
         }
+    }
+
+    /// <summary>
+    /// Clean up any remaining weapon artifacts like ghost objects, projectiles, etc.
+    /// </summary>
+    void CleanupWeaponArtifacts()
+    {
+        // Clean up ghost objects
+        GameObject[] ghosts = GameObject.FindGameObjectsWithTag("Ghost");
+        foreach (GameObject ghost in ghosts)
+        {
+            Destroy(ghost);
+        }
+        if (ghosts.Length > 0)
+        {
+            Debug.Log($"Cleaned up {ghosts.Length} ghost objects during weapon switch");
+        }
+
+        // Clean up any Bat2 objects that might be left in the scene
+        GameObject[] bat2Objects = GameObject.FindObjectsOfType<GameObject>()
+            .Where(go => go.name.Contains("Bat2") && go.GetComponent<Rigidbody2D>() != null)
+            .ToArray();
+        foreach (GameObject bat2 in bat2Objects)
+        {
+            Destroy(bat2);
+        }
+        if (bat2Objects.Length > 0)
+        {
+            Debug.Log($"Cleaned up {bat2Objects.Length} Bat2 objects during weapon switch");
+        }
+
+        // Clean up any ThrowSlash objects that might be left in the scene
+        GameObject[] throwSlashObjects = GameObject.FindObjectsOfType<GameObject>()
+            .Where(go => go.name.Contains("ThrowSlash"))
+            .ToArray();
+        foreach (GameObject throwSlash in throwSlashObjects)
+        {
+            Destroy(throwSlash);
+        }
+        if (throwSlashObjects.Length > 0)
+        {
+            Debug.Log($"Cleaned up {throwSlashObjects.Length} ThrowSlash objects during weapon switch");
+        }
+    }
+
+    /// <summary>
+    /// Public method to get the current weapon name for debugging
+    /// </summary>
+    public string GetCurrentWeaponName()
+    {
+        return currentWeapon?.weaponName ?? "None";
+    }
+
+    /// <summary>
+    /// Public method to force a weapon switch (for testing purposes)
+    /// </summary>
+    public void ForceWeaponSwitch()
+    {
+        SwitchWeapon();
+        currentKills = 0;
     }
 }

@@ -25,6 +25,10 @@ public class InkAttack : MonoBehaviour
 
     [Header("Player Detection")]
     [SerializeField] private LayerMask playerLayer; // Layer of the player
+    [SerializeField] private Transform detectionZoneTransform; // Transform defining the detection zone's center
+    [SerializeField] private float detectionRangeX = 10f; // X-axis range for detection
+    [SerializeField] private float detectionRangeY = 5f; // Y-axis range for detection
+    private bool playerInDetectionRange = false; // Is the player currently in detection range?
     private Transform playerTransform; // Reference to the player's transform
 
     [Header("Explosion Effect")]
@@ -59,7 +63,7 @@ public class InkAttack : MonoBehaviour
         inkHealthComponent = GetComponent<InkHealth>();
         if (inkHealthComponent == null)
         {
-            Debug.LogWarning("InkAttack: InkHealth component not found. Invincibility checks will be skipped.");
+            Debug.LogWarning("InkAttack: InkHealth component not found. Invincibility/hiding checks will be skipped.");
         }
 
         // Auto-find unflippable sprites if enabled
@@ -86,9 +90,14 @@ public class InkAttack : MonoBehaviour
 
     void Update()
     {
-        if (playerTransform != null)
+        if (playerTransform == null) return;
+
+        // Check if the player is within the detection zone
+        CheckPlayerDetection();
+
+        // Only face the player if they are in range and the enemy is not hiding
+        if (playerInDetectionRange && !IsHiding())
         {
-            // Always face the player
             Vector3 directionToPlayer = playerTransform.position - transform.position;
             if (directionToPlayer.x > 0 && !facingRight)
             {
@@ -99,6 +108,20 @@ public class InkAttack : MonoBehaviour
                 Flip();
             }
         }
+    }
+
+    private void CheckPlayerDetection()
+    {
+        if (detectionZoneTransform == null || playerTransform == null)
+        {
+            playerInDetectionRange = false;
+            return;
+        }
+
+        // Use OverlapBox to check for the player within the defined range
+        Vector2 boxCenter = detectionZoneTransform.position;
+        Vector2 boxSize = new Vector2(detectionRangeX * 2, detectionRangeY * 2);
+        playerInDetectionRange = Physics2D.OverlapBox(boxCenter, boxSize, 0, playerLayer);
     }
 
     private void Flip()
@@ -127,24 +150,22 @@ public class InkAttack : MonoBehaviour
         {
             yield return new WaitForSeconds(attackCooldown);
 
-            // Check if enemy can attack (not invincible and other conditions)
-            if (playerTransform != null && canAttack && CanAttack())
+            // Check if enemy can attack: must be in range, not on cooldown, and not hiding/invincible
+            if (playerInDetectionRange && canAttack && !IsHiding())
             {
                 Attack();
             }
         }
     }
 
-    // Check if the enemy can attack (considering invincibility)
-    private bool CanAttack()
+    // A helper method to check if the enemy is hiding/invincible via the InkHealth script
+    private bool IsHiding()
     {
-        // Check if enemy is invincible
-        if (inkHealthComponent != null && inkHealthComponent.IsInvincible())
+        if (inkHealthComponent != null)
         {
-            return false; // Cannot attack while invincible
+            return inkHealthComponent.IsInvincible();
         }
-
-        return true; // Can attack
+        return false; // If no health component, assume not hiding
     }
 
     void Attack()
@@ -189,10 +210,10 @@ public class InkAttack : MonoBehaviour
         if (rb == null)
         {
             rb = inkBall.AddComponent<Rigidbody2D>();
-            Debug.LogWarning("InkAttack: Rigidbody2D not found on InkBall prefab. Added one as fallback. Consider adding it to the prefab.");
+            Debug.LogWarning("InkAttack: Rigidbody2D not found on InkBall prefab. Added one as fallback.");
         }
-        rb.gravityScale = 0; // Ensure no gravity affects the projectile
-        rb.isKinematic = false; // Make sure it's not kinematic so physics can move it
+        rb.gravityScale = 0;
+        rb.isKinematic = false;
         rb.velocity = direction * projectileSpeed;
 
         Collider2D inkBallCollider = inkBall.GetComponent<Collider2D>();
@@ -200,16 +221,14 @@ public class InkAttack : MonoBehaviour
         {
             CircleCollider2D circle = inkBall.AddComponent<CircleCollider2D>();
             circle.isTrigger = true;
-            Debug.LogWarning("InkAttack: Collider2D not found on InkBall prefab. Added CircleCollider2D as fallback. Consider adding it to the prefab.");
+            Debug.LogWarning("InkAttack: Collider2D not found on InkBall prefab. Added CircleCollider2D as fallback.");
         }
         else
         {
-            inkBallCollider.isTrigger = true; // Ensure it's a trigger for collision detection
+            inkBallCollider.isTrigger = true;
         }
 
-        // Add a component to handle InkBall behavior (or use a direct method call if simpler)
-        // For this approach, we will use a dedicated MonoBehaviour on the InkBall itself
-        // that we will initialize from here.
+        // Add and initialize the InkBallBehavior component
         InkBallBehavior inkBallBehavior = inkBall.AddComponent<InkBallBehavior>();
         inkBallBehavior.Initialize(
             inkBallDamage,
@@ -229,17 +248,19 @@ public class InkAttack : MonoBehaviour
         canAttack = true;
     }
 
-    // Draw gizmos in editor to visualize aim lines and offsets
-    void OnDrawGizmos()
+    // Draw gizmos in editor to visualize aim lines and detection zone
+    void OnDrawGizmosSelected()
     {
+        // Draw Aiming Gizmos
         if (spawnPoint != null)
         {
             Gizmos.color = Color.red;
             Vector2 gizmoAimOffsetLow = aimOffsetLow;
             Vector2 gizmoAimOffsetHigh = aimOffsetHigh;
 
-            // Adjust gizmo aim offsets based on facing direction
-            if (!facingRight)
+            // Adjust gizmo aim offsets based on current facing direction in the editor
+            float editorFacingDirection = (transform.localScale.x > 0) ? 1f : -1f;
+            if (editorFacingDirection < 0)
             {
                 gizmoAimOffsetLow.x *= -1;
                 gizmoAimOffsetHigh.x *= -1;
@@ -249,14 +270,23 @@ public class InkAttack : MonoBehaviour
             {
                 Vector3 actualAimLow = aimPointLow.position + (Vector3)gizmoAimOffsetLow;
                 Gizmos.DrawLine(spawnPoint.position, actualAimLow);
-                Gizmos.DrawSphere(actualAimLow, 0.1f); // Draw a small sphere at the aim point
+                Gizmos.DrawSphere(actualAimLow, 0.1f);
             }
             if (aimPointHigh != null)
             {
                 Vector3 actualAimHigh = aimPointHigh.position + (Vector3)gizmoAimOffsetHigh;
                 Gizmos.DrawLine(spawnPoint.position, actualAimHigh);
-                Gizmos.DrawSphere(actualAimHigh, 0.1f); // Draw a small sphere at the aim point
+                Gizmos.DrawSphere(actualAimHigh, 0.1f);
             }
+        }
+
+        // Draw Detection Zone Gizmo
+        if (detectionZoneTransform != null)
+        {
+            Gizmos.color = Color.yellow;
+            Vector3 boxCenter = detectionZoneTransform.position;
+            Vector3 boxSize = new Vector3(detectionRangeX * 2, detectionRangeY * 2, 0);
+            Gizmos.DrawWireCube(boxCenter, boxSize);
         }
     }
 }
@@ -298,14 +328,13 @@ public class InkBallBehavior : MonoBehaviour
         yield return new WaitForSeconds(lifetime);
         if (!hasBeenDestroyed)
         {
-            Debug.Log("InkBallBehavior: Lifetime ended. Destroying ink ball.");
             DestroyInkBall();
         }
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (hasBeenDestroyed) return; // Prevent multiple calls if already destroying
+        if (hasBeenDestroyed) return;
 
         // Check for collision with Player
         if (((1 << other.gameObject.layer) & playerLayer) != 0)
@@ -313,7 +342,6 @@ public class InkBallBehavior : MonoBehaviour
             PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
-                // Calculate knockback direction based on ink ball's velocity
                 Vector2 knockbackDirection = (other.transform.position - transform.position).normalized;
                 playerHealth.TakeDamage(damageAmount, knockbackForce, knockbackDirection);
             }
@@ -321,9 +349,7 @@ public class InkBallBehavior : MonoBehaviour
         }
         else
         {
-            // Only destroy if it's not the enemy itself or another InkBall
-            // This prevents self-collision or collision with other projectiles from the same enemy
-            // We also need to ensure it doesn't collide with the spawner itself.
+            // Prevent self-collision or collision with other projectiles from the same enemy
             if (other.gameObject != spawnerObject && other.GetComponent<InkBallBehavior>() == null)
             {
                 DestroyInkBall();
@@ -333,37 +359,23 @@ public class InkBallBehavior : MonoBehaviour
 
     void DestroyInkBall()
     {
-        if (hasBeenDestroyed) return; // Prevent multiple destructions
+        if (hasBeenDestroyed) return;
         hasBeenDestroyed = true;
 
-        // Play explosion particle system
         if (explosionEffect != null)
         {
             GameObject explosionInstance = Instantiate(explosionEffect, transform.position, Quaternion.identity);
             ParticleSystem ps = explosionInstance.GetComponent<ParticleSystem>();
             if (ps != null)
             {
-                ps.Play();
-                // Destroy the particle system GameObject after its duration
-                Destroy(explosionInstance, ps.main.duration + ps.main.startLifetime.constantMax + 0.1f);
+                Destroy(explosionInstance, ps.main.duration);
             }
             else
             {
-                Debug.LogWarning("ExplosionEffect does not have a ParticleSystem component. Destroying after a default time.");
-                Destroy(explosionInstance, 3f); // Default destroy if no PS found
+                Destroy(explosionInstance, 3f);
             }
-        }
-        else
-        {
-            Debug.LogWarning("ExplosionEffect is null. No explosion effect will play.");
         }
         Destroy(gameObject);
     }
-
-    void OnDestroy()
-    {
-        hasBeenDestroyed = true;
-    }
 }
-
 

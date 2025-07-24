@@ -5,7 +5,7 @@ using UnityEngine;
 public class BatAttackSystem : MonoBehaviour
 {
     [Header("Attack Settings")]
-    [SerializeField] private Animator playerAnimator; // Reference to the player\"s Animator
+    [SerializeField] private Animator playerAnimator; // Reference to the player's Animator
     [SerializeField] private string anticipationTriggerName = "Anticipation"; // Name of the Anticipation Trigger in the Animator
     [SerializeField] private string attackTriggerName = "BatAttack"; // Name of the Attack Trigger in the Animator
     [SerializeField] private string upwardAttackTriggerName = "UpwardAttack"; // Name of the Upward Attack Trigger in the Animator
@@ -20,8 +20,6 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private float throwSlashSpeed = 15f; // Speed of the thrown ThrowSlash
     [SerializeField] private int throwSlashDamage = 20; // Damage dealt by ThrowSlash
     [SerializeField] private GameObject bat2Prefab; // Prefab of the Bat2 to spawn on ground hit
-    [SerializeField] private float throwSlashGroundDetectionDelay = 0.5f; // Delay before ThrowSlash can detect ground
-
 
     [Header("Bat Pickup Settings")]
     [SerializeField] private float batPickupRange = 1.5f; // Range within which player can pick up the Bat2
@@ -67,120 +65,216 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private float flyKnockbackForce = 7f; // Specific knockback for Fly
     [SerializeField] private float sprayerKnockbackForce = 6f; // Specific knockback for Sprayer
 
-    // Private variables
-    private float nextAttackTime = 0f; // Time when the next attack is allowed
-    private bool canDealDamage = false; // Flag to control damage application once per attack
-    private bool isAnticipating = false; // Flag to check if anticipation is active
-    private Coroutine ghostEffectCoroutine; // Reference to the ghost effect coroutine
-    private Camera playerCamera; // Reference to the main camera
-    private bool isUpwardAttack = false; // Flag to determine which attack type is being performed
-    private bool hasBat = true; // Flag to track if player has the bat
-    private GameObject spawnedBat2; // Reference to the currently spawned Bat2 on the ground
-    private Vector3 lastMousePosition; // Store the mouse position at the moment of input
-    private bool isGrounded; // New flag to track if the player is grounded
-
     [Header("Ground Check Settings")]
     [SerializeField] private Transform groundCheck; // Point for ground detection
     [SerializeField] private float groundCheckRadius = 0.2f; // Radius of the ground check circle
     [SerializeField] private LayerMask whatIsGround; // Layer mask for ground
 
-    void Start()
+    // Private variables
+    private float nextAttackTime = 0f;
+    private bool canDealDamage = false;
+    private bool isAnticipating = false;
+    private Coroutine ghostEffectCoroutine;
+    private Camera playerCamera;
+    private bool isUpwardAttack = false;
+    private bool hasBat = true;
+    private GameObject spawnedBat2; // Reference to the currently spawned Bat2 on the ground
+    private Vector3 lastMousePosition;
+    private bool isGrounded;
+
+    // Static list to track all active Bat2 objects for cleanup
+    private static List<GameObject> activeBat2Objects = new List<GameObject>();
+
+    // Static list to track all active ghost objects for cleanup
+    private static List<GameObject> activeGhostObjects = new List<GameObject>();
+
+    void OnDisable()
     {
-        // Auto-find camera effects if not assigned
-        if (cameraEffects == null)
-        {
-            cameraEffects = Camera.main?.GetComponent<CameraEffects>();
-            if (cameraEffects == null)
-            {
-                Debug.LogWarning("CameraEffects component not found on main camera. Camera effects will be disabled.");
-                enableCameraEffects = false;
-            }
-        }
+        Debug.Log("BatAttackSystem OnDisable called - performing comprehensive cleanup");
 
-        // Get reference to the main camera for mouse direction calculation
-        playerCamera = Camera.main;
-        if (playerCamera == null)
-        {
-            Debug.LogWarning("Main camera not found. Mouse direction detection may not work properly.");
-        }
+        // Clean up all active Bat2 objects
+        CleanupAllBat2Objects();
 
-        // Auto-assign upward attack point if not set
-        if (upwardAttackPoint == null && attackPoint != null)
-        {
-            Debug.LogWarning("Upward attack point not assigned. Please assign it in the inspector for proper upward attack functionality.");
-        }
+        // Clean up all ghost objects
+        CleanupAllGhostObjects();
 
-        // Auto-assign AudioSource if not set
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-            if (audioSource == null)
-            {
-                Debug.LogWarning("AudioSource component not found on this GameObject. Attack sounds will not play.");
-            }
-        }
+        // Stop all coroutines to prevent MissingReferenceException
+        StopAllCoroutines();
 
-        // Auto-assign throw slash spawn point if not set
-        if (throwSlashSpawnPoint == null)
-        {
-            throwSlashSpawnPoint = transform; // Use player transform as default
-            Debug.LogWarning("Throw Slash spawn point not assigned. Using player transform as default.");
-        }
-
-        // Ensure player bat visual is visible at start
+        // Ensure the player's bat visual is active when the script is disabled
+        // This prepares it for when the bat weapon is re-enabled or picked up
         if (playerBatVisual != null)
         {
             playerBatVisual.SetActive(true);
+            Debug.Log("playerBatVisual set to active in OnDisable (preparing for re-enable).");
         }
 
-        // Auto-assign player animator if not set
-        if (playerAnimator == null)
-        {
-            playerAnimator = GetComponent<Animator>();
-            if (playerAnimator == null)
-            {
-                Debug.LogWarning("Player Animator not found. Animations will not work.");
-            }
-        }
+        // Reset other states
+        isAnticipating = false;
+        Time.timeScale = 1.0f; // Ensure time scale is reset
+        Debug.Log("BatAttackSystem state reset in OnDisable.");
+    }
 
-        // Auto-assign ground check point if not set
-        if (groundCheck == null)
-        {
-            groundCheck = transform; // Use player transform as default
-            Debug.LogWarning("Ground Check point not assigned. Using player transform as default.");
-        }
+    void OnEnable()
+    {
+        Debug.Log("BatAttackSystem OnEnable called - resetting to fresh state");
+        ResetBatSystemState();
+    }
+
+    void Start()
+    {
+        InitializeComponents();
+        ResetBatSystemState();
     }
 
     void Update()
     {
-        CheckGround(); // Call ground check every frame
+        CheckGround();
 
-        // Right Mouse Button for Normal/Upward Attacks
         if (Input.GetMouseButtonDown(1) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
         {
             bool shouldPerformUpwardAttack = ShouldPerformUpwardAttack();
             StartAnticipationAttack(shouldPerformUpwardAttack);
         }
 
-        // Left Mouse Button for Throwing ThrowSlash
         if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
         {
-            // Store mouse position at the moment of input
             lastMousePosition = Input.mousePosition;
             StartAnticipationAndThrowSlash();
         }
 
-        // Check for Bat2 pickup if player doesn\"t have bat
         if (!hasBat && spawnedBat2 != null)
         {
-            float distanceToBat2 = Vector2.Distance(transform.position, spawnedBat2.transform.position);
-            if (distanceToBat2 <= batPickupRange)
+            // Check if spawnedBat2 is still valid before accessing its transform
+            if (spawnedBat2 != null)
             {
-                PickUpBat2();
+                float distanceToBat2 = Vector2.Distance(transform.position, spawnedBat2.transform.position);
+                if (distanceToBat2 <= batPickupRange)
+                {
+                    PickUpBat2();
+                }
+                CheckAndAdjustBat2Position();
             }
-            // New: Continuously adjust Bat2 position to stay above ground
-            CheckAndAdjustBat2Position();
         }
+    }
+
+    private void InitializeComponents()
+    {
+        if (cameraEffects == null)
+        {
+            cameraEffects = Camera.main?.GetComponent<CameraEffects>();
+            if (cameraEffects == null)
+            {
+                enableCameraEffects = false;
+            }
+        }
+
+        playerCamera = Camera.main;
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+
+        if (throwSlashSpawnPoint == null)
+        {
+            throwSlashSpawnPoint = transform;
+        }
+
+        if (playerAnimator == null)
+        {
+            playerAnimator = GetComponent<Animator>();
+        }
+
+        if (groundCheck == null)
+        {
+            groundCheck = transform;
+        }
+    }
+
+    private void ResetBatSystemState()
+    {
+        hasBat = true;
+        isAnticipating = false;
+        spawnedBat2 = null; // Clear reference to Bat2
+        Time.timeScale = 1.0f;
+
+        if (playerBatVisual != null)
+        {
+            playerBatVisual.SetActive(true);
+        }
+        Debug.Log("BatAttackSystem state fully reset.");
+    }
+
+    private void CleanupAllBat2Objects()
+    {
+        // Clean up the current spawned Bat2 if it exists and is not already destroyed
+        if (spawnedBat2 != null)
+        {
+            Destroy(spawnedBat2);
+            spawnedBat2 = null;
+        }
+
+        // Clean up all tracked Bat2 objects
+        for (int i = activeBat2Objects.Count - 1; i >= 0; i--)
+        {
+            if (activeBat2Objects[i] != null)
+            {
+                Destroy(activeBat2Objects[i]);
+            }
+        }
+        activeBat2Objects.Clear();
+
+        // Find and destroy any remaining Bat2 objects in the scene by name pattern
+        GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
+        foreach (GameObject obj in allObjects)
+        {
+            // Check if the object's name contains "Bat2" and it's not the player's visual bat
+            if (obj != playerBatVisual && obj.name.Contains("Bat2") && obj.GetComponent<Rigidbody2D>() != null)
+            {
+                Destroy(obj);
+            }
+        }
+
+        Debug.Log("All Bat2 objects cleaned up");
+    }
+
+    private void CleanupAllGhostObjects()
+    {
+        // Stop ghost effect coroutine if it's running
+        if (ghostEffectCoroutine != null)
+        {
+            StopCoroutine(ghostEffectCoroutine);
+            ghostEffectCoroutine = null;
+        }
+
+        // Clean up all tracked ghost objects
+        for (int i = activeGhostObjects.Count - 1; i >= 0; i--)
+        {
+            if (activeGhostObjects[i] != null)
+            {
+                Destroy(activeGhostObjects[i]);
+            }
+        }
+        activeGhostObjects.Clear();
+
+        // Find and destroy any remaining ghost objects by tag and name pattern
+        GameObject[] remainingGhostsByTag = GameObject.FindGameObjectsWithTag("Ghost");
+        foreach (GameObject ghost in remainingGhostsByTag)
+        {
+            Destroy(ghost);
+        }
+
+        GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
+        foreach (GameObject obj in allObjects)
+        {
+            if (obj.name.StartsWith("Ghost_"))
+            {
+                Destroy(obj);
+            }
+        }
+
+        Debug.Log("All ghost objects cleaned up");
     }
 
     private void CheckGround()
@@ -193,54 +287,39 @@ public class BatAttackSystem : MonoBehaviour
         if (spawnedBat2 == null) return;
 
         Rigidbody2D bat2Rb = spawnedBat2.GetComponent<Rigidbody2D>();
-        if (bat2Rb == null) return; // Only adjust if it has a Rigidbody2D
+        if (bat2Rb == null) return;
 
-        float raycastDistance = 1f; // How far down to check for ground
-        float verticalOffset = 0.1f; // Small offset to place Bat2 above ground
+        float raycastDistance = 1f;
+        float verticalOffset = 0.1f;
 
-        // Raycast downwards to find the ground
         RaycastHit2D hit = Physics2D.Raycast(spawnedBat2.transform.position, Vector2.down, raycastDistance, groundLayer);
 
-        // If the raycast hits the ground and the Bat2 is below it, adjust position
         if (hit.collider != null && spawnedBat2.transform.position.y < hit.point.y + verticalOffset)
         {
             Vector3 newPosition = spawnedBat2.transform.position;
             newPosition.y = hit.point.y + verticalOffset;
             spawnedBat2.transform.position = newPosition;
-
-            // Optionally, stop any downward velocity to prevent it from trying to go through again
             bat2Rb.velocity = new Vector2(bat2Rb.velocity.x, Mathf.Max(0, bat2Rb.velocity.y));
-            Debug.Log("Bat2 adjusted to be above ground.");
         }
     }
 
-    /// <summary>
-    /// Determines if the player should perform an upward attack based on mouse direction
-    /// </summary>
-    /// <returns>True if upward attack should be performed, false for normal attack</returns>
     private bool ShouldPerformUpwardAttack()
     {
         if (playerCamera == null) return false;
 
-        // Get mouse position in world space
         Vector3 mouseWorldPos = playerCamera.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldPos.z = transform.position.z; // Ensure same Z coordinate
-
-        // Calculate relative Y position of mouse to player
+        mouseWorldPos.z = transform.position.z;
         float relativeMouseY = mouseWorldPos.y - transform.position.y;
 
-        // Check if mouse is within the upward attack zone
         if (relativeMouseY >= upwardZoneMinY && relativeMouseY <= upwardZoneMaxY)
         {
             return true;
         }
-        // Check if mouse is within the normal attack zone (forward or down)
         else if (relativeMouseY <= normalZoneMaxY)
         {
             return false;
         }
 
-        // Default to normal attack if outside defined zones or in an ambiguous area
         return false;
     }
 
@@ -248,48 +327,38 @@ public class BatAttackSystem : MonoBehaviour
     {
         isAnticipating = true;
         isUpwardAttack = performUpwardAttack;
-        nextAttackTime = Time.time + anticipationDuration + attackCooldown; // Set cooldown for after anticipation
+        nextAttackTime = Time.time + anticipationDuration + attackCooldown;
 
-        // Trigger the anticipation animation
         if (playerAnimator != null)
         {
             playerAnimator.SetTrigger(anticipationTriggerName);
         }
 
-        // Start camera hold effect
         if (enableCameraEffects && cameraEffects != null)
         {
             cameraEffects.StartHoldAndReleaseEffect();
         }
 
-        // Start ghost effect for specified sprites
         if (ghostTargets.Count > 0)
         {
             ghostEffectCoroutine = StartCoroutine(GhostEffectRoutine());
         }
 
-        // Start the anticipation routine for normal/upward attack
         StartCoroutine(AnticipationRoutine());
     }
 
     IEnumerator AnticipationRoutine()
     {
-        // Slow down time slightly during anticipation for dramatic effect
         Time.timeScale = 0.8f;
-
-        // Wait for the anticipation duration
         yield return new WaitForSecondsRealtime(anticipationDuration);
-
-        // Reset time scale
         Time.timeScale = 1.0f;
 
-        // Stop ghost effect
         if (ghostEffectCoroutine != null)
         {
             StopCoroutine(ghostEffectCoroutine);
+            ghostEffectCoroutine = null;
         }
 
-        // Perform the appropriate attack based on the flag
         if (isUpwardAttack)
         {
             PerformUpwardAttack();
@@ -305,75 +374,55 @@ public class BatAttackSystem : MonoBehaviour
     void StartAnticipationAndThrowSlash()
     {
         isAnticipating = true;
-        nextAttackTime = Time.time + anticipationDuration + attackCooldown; // Set cooldown for after anticipation
+        nextAttackTime = Time.time + anticipationDuration + attackCooldown;
 
-        // Trigger the anticipation animation
         if (playerAnimator != null)
         {
             playerAnimator.SetTrigger(anticipationTriggerName);
         }
 
-        // Start camera hold effect
         if (enableCameraEffects && cameraEffects != null)
         {
             cameraEffects.StartHoldAndReleaseEffect();
         }
 
-        // Start ghost effect for specified sprites
         if (ghostTargets.Count > 0)
         {
             ghostEffectCoroutine = StartCoroutine(GhostEffectRoutine());
         }
 
-        // Start the anticipation routine which will lead to ThrowSlash
         StartCoroutine(AnticipationRoutineForThrowSlash());
     }
 
     IEnumerator AnticipationRoutineForThrowSlash()
     {
-        // Slow down time slightly during anticipation for dramatic effect
         Time.timeScale = 0.8f;
-
-        // Wait for the anticipation duration
         yield return new WaitForSecondsRealtime(anticipationDuration);
-
-        // Reset time scale
         Time.timeScale = 1.0f;
 
-        // Stop ghost effect
         if (ghostEffectCoroutine != null)
         {
             StopCoroutine(ghostEffectCoroutine);
+            ghostEffectCoroutine = null;
         }
 
-        // Trigger ThrowBat animation and throw ThrowSlash
         ThrowSlash();
-
         isAnticipating = false;
     }
 
     void ThrowSlash()
     {
-        if (throwSlashPrefab == null)
+        if (throwSlashPrefab == null || playerCamera == null)
         {
-            Debug.LogWarning("Throw Slash prefab not assigned! Cannot throw.");
+            Debug.LogWarning("Cannot throw - missing prefab or camera");
             return;
         }
 
-        if (playerCamera == null)
-        {
-            Debug.LogWarning("Player camera not found! Cannot determine throw direction.");
-            return;
-        }
-
-        // Use the stored mouse position to get the target world point
         Vector3 targetWorldPoint = playerCamera.ScreenToWorldPoint(new Vector3(lastMousePosition.x, lastMousePosition.y, playerCamera.nearClipPlane));
-        targetWorldPoint.z = throwSlashSpawnPoint.position.z; // Ensure the Z coordinate matches the spawn point
+        targetWorldPoint.z = throwSlashSpawnPoint.position.z;
 
-        // Calculate the direction from the spawn point to the target world point
         Vector2 throwDirection = (targetWorldPoint - throwSlashSpawnPoint.position).normalized;
 
-        // If the target is too close to the spawn point, provide a default direction
         if (throwDirection.magnitude < 0.1f)
         {
             throwDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
@@ -381,137 +430,69 @@ public class BatAttackSystem : MonoBehaviour
 
         GameObject slashInstance = Instantiate(throwSlashPrefab, throwSlashSpawnPoint.position, Quaternion.identity);
 
-        // Initialize ThrowSlash properties
         Rigidbody2D slashRb = slashInstance.GetComponent<Rigidbody2D>();
         if (slashRb == null)
         {
-            Debug.LogWarning("ThrowSlash prefab is missing Rigidbody2D component! Adding one.");
             slashRb = slashInstance.AddComponent<Rigidbody2D>();
-            slashRb.gravityScale = 0; // Disable gravity for projectile
+            slashRb.gravityScale = 0;
         }
-        slashRb.collisionDetectionMode = CollisionDetectionMode2D.Continuous; // Ensure continuous collision detection
+        slashRb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
-        // Ensure the ThrowSlash has a collider
         Collider2D slashCollider = slashInstance.GetComponent<Collider2D>();
         if (slashCollider == null)
         {
-            Debug.LogWarning("ThrowSlash prefab is missing Collider2D component! Adding one.");
-            slashCollider = slashInstance.AddComponent<BoxCollider2D>(); // Default to BoxCollider2D
+            slashCollider = slashInstance.AddComponent<BoxCollider2D>();
             slashCollider.isTrigger = true;
         }
 
-        // Set velocity for movement
         slashRb.velocity = throwDirection * throwSlashSpeed;
 
-        // Calculate rotation for the ThrowSlash based on throwDirection
         float angle = Mathf.Atan2(throwDirection.y, throwDirection.x) * Mathf.Rad2Deg;
         slashInstance.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
 
-        // Add a component to handle collision and Bat2 spawning
         ThrowSlashHandler slashHandler = slashInstance.AddComponent<ThrowSlashHandler>();
-        slashHandler.Initialize(throwSlashDamage, enemyLayers, groundLayer, bat2Prefab, this, audioSource, throwSlashHitEnemySound);
-
-        // New: Smart collision handling for ground and walls
-        // Check if player is grounded and the throw is relatively horizontal (not sharply downwards)
-        float verticalThrowComponent = throwDirection.y; // Y component of the normalized throw direction
-        // Define a threshold for what's considered a "low" or "horizontal" throw
-        // This value might need tweaking based on game feel
-        float lowThrowThreshold = -0.3f; // e.g., -0.3 means it's not pointing too far down
-
-        // Only ignore ground collision if the player is grounded AND it's a low horizontal throw
-        if (isGrounded && verticalThrowComponent > lowThrowThreshold)
-        {
-            // Temporarily ignore collision between ThrowSlash and Ground layer
-            // Get the layer of the ThrowSlash instance
-            int throwSlashLayer = slashInstance.layer;
-            int groundLayerIndex = (int)Mathf.Log(groundLayer.value, 2); // Convert LayerMask to layer index
-
-            Physics2D.IgnoreLayerCollision(throwSlashLayer, groundLayerIndex, true);
-
-            // Start a coroutine to re-enable collision after a certain distance or time
-            StartCoroutine(ReEnableGroundCollision(slashInstance, throwSlashLayer, groundLayerIndex, throwDirection));
-        }
-        else
-        {
-            // For all other cases (not grounded, or sharp downward throw), ensure collision with ground layer is active
-            int throwSlashLayer = slashInstance.layer;
-            int groundLayerIndex = (int)Mathf.Log(groundLayer.value, 2); // Convert LayerMask to layer index
-            Physics2D.IgnoreLayerCollision(throwSlashLayer, groundLayerIndex, false);
-        }
+        slashHandler.Initialize(throwSlashDamage, enemyLayers, groundLayer, bat2Prefab, this, audioSource, throwSlashHitEnemySound,
+                                 fleaKnockbackForce, inkKnockbackForce, flyKnockbackForce, sprayerKnockbackForce);
 
         if (playerAnimator != null)
         {
             playerAnimator.SetTrigger(throwBatTriggerName);
         }
 
-        // Play throw sound
         if (audioSource != null && throwBatSound != null)
         {
             audioSource.PlayOneShot(throwBatSound);
         }
 
-        // Disable the Bat spriteRenderer
         if (playerBatVisual != null)
         {
             playerBatVisual.SetActive(false);
         }
 
         hasBat = false;
-
-        if (showDirectionDebug)
-        {
-            Debug.Log($"Threw ThrowSlash towards: {throwDirection} with speed: {throwSlashSpeed}");
-        }
-    }
-
-    IEnumerator ReEnableGroundCollision(GameObject slashInstance, int throwSlashLayer, int groundLayerIndex, Vector2 initialThrowDirection)
-    {
-        // Wait for a short duration or until the ThrowSlash has traveled a certain distance
-        // This prevents immediate re-enabling if the ThrowSlash is still very close to the player/ground
-        float reEnableDelay = 0.2f; // Time before checking distance
-        float reEnableDistance = 1.5f; // Distance after which collision is re-enabled
-
-        Vector3 initialPosition = slashInstance.transform.position;
-        float currentDistance = 0f;
-
-        while (slashInstance != null && currentDistance < reEnableDistance)
-        {
-            yield return null; // Wait for next frame
-            currentDistance = Vector3.Distance(initialPosition, slashInstance.transform.position);
-        }
-
-        // Also wait for the initial delay, in case the ThrowSlash is stuck or not moving
-        yield return new WaitForSeconds(reEnableDelay);
-
-        if (slashInstance != null)
-        {
-            // Re-enable collision between ThrowSlash and Ground layer
-            Physics2D.IgnoreLayerCollision(throwSlashLayer, groundLayerIndex, false);
-            Debug.Log("Re-enabled ground collision for ThrowSlash.");
-        }
     }
 
     public void SetSpawnedBat2(GameObject bat2)
     {
         spawnedBat2 = bat2;
+        if (bat2 != null && !activeBat2Objects.Contains(bat2))
+        {
+            activeBat2Objects.Add(bat2);
+        }
     }
 
     void PickUpBat2()
     {
         if (spawnedBat2 != null)
         {
+            activeBat2Objects.Remove(spawnedBat2);
             Destroy(spawnedBat2);
             spawnedBat2 = null;
         }
 
-        // Enable the Bat spriteRenderer again
-        if (playerBatVisual != null)
-        {
-            playerBatVisual.SetActive(true);
-        }
-
-        hasBat = true;
-        Debug.Log("Picked up Bat2! Bat spriteRenderer enabled.");
+        // When picking up the bat, reset the system state as if nothing happened
+        ResetBatSystemState();
+        Debug.Log("Picked up Bat2! Bat visual enabled and system state reset.");
     }
 
     IEnumerator GhostEffectRoutine()
@@ -520,7 +501,6 @@ public class BatAttackSystem : MonoBehaviour
 
         while (timer < anticipationDuration)
         {
-            // Create ghost copies for all specified targets
             foreach (SpriteRenderer targetRenderer in ghostTargets)
             {
                 if (targetRenderer != null)
@@ -538,25 +518,22 @@ public class BatAttackSystem : MonoBehaviour
     {
         if (originalRenderer == null) return;
 
-        // Create ghost object
         GameObject ghostObject = new GameObject("Ghost_" + originalRenderer.name);
+        ghostObject.tag = "Ghost";
+        activeGhostObjects.Add(ghostObject);
+
         SpriteRenderer ghostRenderer = ghostObject.AddComponent<SpriteRenderer>();
 
-        // Copy the transform\"s properties directly
         ghostObject.transform.position = originalRenderer.transform.position;
         ghostObject.transform.rotation = originalRenderer.transform.rotation;
-        ghostObject.transform.localScale = originalRenderer.transform.lossyScale; // Use lossyScale to get the true global scale
+        ghostObject.transform.localScale = originalRenderer.transform.lossyScale;
 
-        // Copy sprite and sorting properties
         ghostRenderer.sprite = originalRenderer.sprite;
         ghostRenderer.sortingLayerID = originalRenderer.sortingLayerID;
-        ghostRenderer.sortingOrder = originalRenderer.sortingOrder - 1; // Render behind the original
-
-        // Directly copy the flip properties
+        ghostRenderer.sortingOrder = originalRenderer.sortingOrder - 1;
         ghostRenderer.flipX = originalRenderer.flipX;
         ghostRenderer.flipY = originalRenderer.flipY;
 
-        // Apply ghost material or create a transparent one
         if (ghostMaterial != null)
         {
             ghostRenderer.material = ghostMaterial;
@@ -569,150 +546,125 @@ public class BatAttackSystem : MonoBehaviour
 
         ghostRenderer.color = ghostColor;
 
-        // Start fade out coroutine
         StartCoroutine(FadeOutGhost(ghostRenderer));
     }
 
     IEnumerator FadeOutGhost(SpriteRenderer ghostRenderer)
     {
+        // Add null check at the start of the coroutine
+        if (ghostRenderer == null) yield break;
+
         Color startColor = ghostRenderer.color;
         Color endColor = new Color(startColor.r, startColor.g, startColor.b, 0f);
         float timer = 0f;
 
         while (timer < ghostDuration)
         {
-            // Use unscaledDeltaTime because the ghost effect might run when Time.timeScale is not 1
+            // Add null check inside the loop as well
+            if (ghostRenderer == null) yield break;
+
             timer += Time.unscaledDeltaTime;
             float progress = timer / ghostDuration;
             ghostRenderer.color = Color.Lerp(startColor, endColor, progress);
             yield return null;
         }
 
-        // Destroy the ghost object
         if (ghostRenderer != null && ghostRenderer.gameObject != null)
         {
+            activeGhostObjects.Remove(ghostRenderer.gameObject);
             Destroy(ghostRenderer.gameObject);
         }
     }
 
     void PerformBatAttack()
     {
-        // Reset the next attack time
         nextAttackTime = Time.time + attackCooldown;
 
-        // Trigger the normal attack animation
         if (playerAnimator != null)
         {
             playerAnimator.SetTrigger(attackTriggerName);
         }
 
-        // Play attack sound
         if (audioSource != null && attackSound != null)
         {
             audioSource.PlayOneShot(attackSound);
         }
 
-        // Enable damage application. ApplyDamage() will be called via Animation Event
         canDealDamage = true;
 
-        // Add a small camera shake on attack
         if (enableCameraEffects && cameraEffects != null)
         {
             cameraEffects.StartShakeEffect();
-        }
-
-        if (showDirectionDebug)
-        {
-            Debug.Log("Performing Normal Bat Attack");
         }
     }
 
     void PerformUpwardAttack()
     {
-        // Reset the next attack time
         nextAttackTime = Time.time + attackCooldown;
 
-        // Trigger the upward attack animation
         if (playerAnimator != null)
         {
             playerAnimator.SetTrigger(upwardAttackTriggerName);
         }
 
-        // Play upward attack sound
         if (audioSource != null && upwardAttackSound != null)
         {
             audioSource.PlayOneShot(upwardAttackSound);
         }
 
-        // Enable damage application. ApplyUpwardDamage() will be called via Animation Event
         canDealDamage = true;
 
-        // Add a small camera shake on attack
         if (enableCameraEffects && cameraEffects != null)
         {
             cameraEffects.StartShakeEffect();
         }
-
-        if (showDirectionDebug)
-        {
-            Debug.Log("Performing Upward Attack");
-        }
     }
 
-    // This function will be called as an Animation Event at the specified frame for normal attacks
     public void ApplyDamage()
     {
-        if (!canDealDamage || !hasBat) return; // Ensure we haven\"t already applied damage and player has bat
-
+        if (!canDealDamage || !hasBat) return;
         ApplyDamageAtPoint(attackPoint);
     }
 
-    // This function will be called as an Animation Event at the specified frame for upward attacks
     public void ApplyUpwardDamage()
     {
-        if (!canDealDamage || !hasBat) return; // Ensure we haven\"t already applied damage and player has bat
-
-        // Use upward attack point if available, otherwise fallback to normal attack point
+        if (!canDealDamage || !hasBat) return;
         Transform damagePoint = upwardAttackPoint != null ? upwardAttackPoint : attackPoint;
         ApplyDamageAtPoint(damagePoint);
     }
 
-    /// <summary>
-    /// Generic damage application method that can be used for both attack types
-    /// </summary>
-    /// <param name="damagePoint">The transform point where damage should be applied</param>
     private void ApplyDamageAtPoint(Transform damagePoint)
     {
         if (damagePoint == null)
         {
-            Debug.LogWarning("Damage point is null! Cannot apply damage.");
             canDealDamage = false;
             return;
         }
 
-        // Detect enemies in the attack range
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(damagePoint.position, attackRange, enemyLayers);
 
-        // Apply damage to each detected enemy
         foreach (Collider2D enemy in hitEnemies)
         {
-            // Calculate knockback direction from damage point to enemy
+            // Add null check for enemy GameObject before accessing its transform
+            if (enemy == null || enemy.gameObject == null) continue;
+
             Vector2 knockbackDirection = ((Vector2)(enemy.transform.position - damagePoint.position)).normalized;
 
             // Use a common interface or base class for health components if possible
-            if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth))
+            // Add null checks before calling TryGetComponent
+            if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth) && fleaHealth != null)
             {
                 fleaHealth.TakeDamage(damage, knockbackDirection, fleaKnockbackForce);
             }
-            else if (enemy.TryGetComponent<InkHealth>(out var inkHealth))
+            else if (enemy.TryGetComponent<InkHealth>(out var inkHealth) && inkHealth != null)
             {
                 inkHealth.TakeDamage(damage, knockbackDirection, inkKnockbackForce);
             }
-            else if (enemy.TryGetComponent<FlyHealth>(out var flyHealth))
+            else if (enemy.TryGetComponent<FlyHealth>(out var flyHealth) && flyHealth != null)
             {
                 flyHealth.TakeDamage(damage, knockbackDirection, flyKnockbackForce);
             }
-            else if (enemy.TryGetComponent<SprayerHealth>(out var sprayerHealth))
+            else if (enemy.TryGetComponent<SprayerHealth>(out var sprayerHealth) && sprayerHealth != null)
             {
                 sprayerHealth.TakeDamage(damage, knockbackDirection, sprayerKnockbackForce);
             }
@@ -720,64 +672,19 @@ public class BatAttackSystem : MonoBehaviour
             {
                 Debug.LogWarning($"No recognized health script found on {enemy.name}. Damage applied without specific knockback.");
             }
-
-
         }
 
-        canDealDamage = false; // Disable damage application after it\"s been dealt
+        canDealDamage = false;
     }
 
-    // Public methods to control the system from external scripts
-    public void AddGhostTarget(SpriteRenderer targetRenderer)
-    {
-        if (targetRenderer != null && !ghostTargets.Contains(targetRenderer))
-        {
-            ghostTargets.Add(targetRenderer);
-        }
-    }
+    // Public utility methods
+    public bool IsAnticipating() => isAnticipating;
+    public bool IsPerformingUpwardAttack() => isUpwardAttack;
+    public bool HasBat() => hasBat;
+    public bool CanAttack() => hasBat && !isAnticipating && Time.time >= nextAttackTime;
 
-    public void RemoveGhostTarget(SpriteRenderer targetRenderer)
-    {
-        if (ghostTargets.Contains(targetRenderer))
-        {
-            ghostTargets.Remove(targetRenderer);
-        }
-    }
-
-    public void SetAnticipationDuration(float duration)
-    {
-        anticipationDuration = Mathf.Max(0.1f, duration);
-    }
-
-    public void SetGhostInterval(float interval)
-    {
-        ghostInterval = Mathf.Max(0.05f, interval);
-    }
-
-    public bool IsAnticipating()
-    {
-        return isAnticipating;
-    }
-
-    public bool IsPerformingUpwardAttack()
-    {
-        return isUpwardAttack;
-    }
-
-    public bool HasBat()
-    {
-        return hasBat;
-    }
-
-    public bool CanAttack()
-    {
-        return hasBat && !isAnticipating && Time.time >= nextAttackTime;
-    }
-
-    // To visualize the attack range in the Scene View (for debugging only)
     void OnDrawGizmosSelected()
     {
-        // Draw normal attack range
         if (attackPoint != null)
         {
             Gizmos.color = Color.red;
@@ -785,7 +692,6 @@ public class BatAttackSystem : MonoBehaviour
             Gizmos.DrawLine(transform.position, attackPoint.position);
         }
 
-        // Draw upward attack range
         if (upwardAttackPoint != null)
         {
             Gizmos.color = Color.blue;
@@ -793,7 +699,6 @@ public class BatAttackSystem : MonoBehaviour
             Gizmos.DrawLine(transform.position, upwardAttackPoint.position);
         }
 
-        // Draw bat pickup range
         if (!hasBat)
         {
             Gizmos.color = Color.yellow;
@@ -842,7 +747,6 @@ public class BatAttackSystem : MonoBehaviour
         }
     }
 
-    // Inner class to handle ThrowSlash collision and Bat2 spawning
     public class ThrowSlashHandler : MonoBehaviour
     {
         private int damage;
@@ -851,10 +755,16 @@ public class BatAttackSystem : MonoBehaviour
         private GameObject bat2Prefab;
         private BatAttackSystem parentSystem;
         private bool hasHit = false;
-        private AudioSource audioSource; // AudioSource for playing sounds
-        private AudioClip hitEnemySound; // Sound for hitting enemy
+        private AudioSource audioSource;
+        private AudioClip hitEnemySound;
 
-        public void Initialize(int dmg, LayerMask enemies, LayerMask ground, GameObject bat2, BatAttackSystem system, AudioSource src, AudioClip hitSound)
+        private float _fleaKnockbackForce;
+        private float _inkKnockbackForce;
+        private float _flyKnockbackForce;
+        private float _sprayerKnockbackForce;
+
+        public void Initialize(int dmg, LayerMask enemies, LayerMask ground, GameObject bat2, BatAttackSystem system, AudioSource src, AudioClip hitSound,
+                               float fleaKB, float inkKB, float flyKB, float sprayerKB)
         {
             damage = dmg;
             enemyLayers = enemies;
@@ -863,62 +773,59 @@ public class BatAttackSystem : MonoBehaviour
             parentSystem = system;
             audioSource = src;
             hitEnemySound = hitSound;
+
+            _fleaKnockbackForce = fleaKB;
+            _inkKnockbackForce = inkKB;
+            _flyKnockbackForce = flyKB;
+            _sprayerKnockbackForce = sprayerKB;
         }
 
         void OnTriggerEnter2D(Collider2D other)
         {
             if (hasHit) return;
 
-            // Check if it hit an enemy
             if (((1 << other.gameObject.layer) & enemyLayers) != 0)
             {
-                Debug.Log($"ThrowSlash hit enemy: {other.name}");
-
-                // Play hit enemy sound
                 if (audioSource != null && hitEnemySound != null)
                 {
                     audioSource.PlayOneShot(hitEnemySound);
                 }
 
-                // Apply damage using the same logic as the main attack system
                 ApplyDamageToEnemy(other);
-
-                // Spawn Bat2 at the enemy hit position
                 SpawnBat2(transform.position);
-
-                Destroy(gameObject); // Destroy ThrowSlash on enemy hit
+                Destroy(gameObject);
             }
-            // Check if it hit the ground
             else if (((1 << other.gameObject.layer) & groundLayer) != 0)
             {
-                Debug.Log("ThrowSlash hit ground.");
                 hasHit = true;
                 SpawnBat2(transform.position);
-                Destroy(gameObject); // Destroy ThrowSlash after spawning Bat2
+                Destroy(gameObject);
             }
         }
 
         void ApplyDamageToEnemy(Collider2D enemy)
         {
-            // Calculate knockback direction from ThrowSlash to enemy
+            // Add null check for enemy GameObject before accessing its transform
+            if (enemy == null || enemy.gameObject == null) return;
+
             Vector2 knockbackDirection = ((Vector2)(enemy.transform.position - transform.position)).normalized;
 
-            // Use the same damage application logic as the main system
-            if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth))
+            // Add null checks before calling TryGetComponent
+            if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth) && fleaHealth != null)
             {
-                fleaHealth.TakeDamage(damage, knockbackDirection, parentSystem.fleaKnockbackForce);
+                fleaHealth.TakeDamage(damage, knockbackDirection, _fleaKnockbackForce);
             }
-            else if (enemy.TryGetComponent<InkHealth>(out var inkHealth))
+            else if (enemy.TryGetComponent<InkHealth>(out var inkHealth) && inkHealth != null)
             {
-                inkHealth.TakeDamage(damage, knockbackDirection, parentSystem.inkKnockbackForce);
+                inkHealth.TakeDamage(damage, knockbackDirection, _inkKnockbackForce);
             }
-            else if (enemy.TryGetComponent<FlyHealth>(out var flyHealth))
+            else if (enemy.TryGetComponent<FlyHealth>(out var flyHealth) && flyHealth != null)
             {
-                flyHealth.TakeDamage(damage, knockbackDirection, parentSystem.flyKnockbackForce);
+                flyHealth.TakeDamage(damage, knockbackDirection, _flyKnockbackForce);
             }
-            else if (enemy.TryGetComponent<SprayerHealth>(out var sprayerHealth))
+            else if (enemy.TryGetComponent<SprayerHealth>(out var sprayerHealth) && sprayerHealth != null)
             {
-                sprayerHealth.TakeDamage(damage, knockbackDirection, parentSystem.sprayerKnockbackForce);
+                sprayerHealth.TakeDamage(damage, knockbackDirection, _sprayerKnockbackForce);
             }
             else
             {
@@ -928,17 +835,11 @@ public class BatAttackSystem : MonoBehaviour
 
         void SpawnBat2(Vector3 position)
         {
-            if (bat2Prefab != null)
+            if (bat2Prefab != null && parentSystem != null)
             {
                 GameObject bat2Instance = Instantiate(bat2Prefab, position, Quaternion.identity);
-                // Bat2 is now dynamic, so we don\"t set isKinematic or velocity to zero here.
-                // It should have its own Rigidbody2D with gravity enabled in its prefab.
                 parentSystem.SetSpawnedBat2(bat2Instance);
-                Debug.Log("Bat2 spawned at ground hit position.");
-            }
-            else
-            {
-                Debug.LogWarning("Bat2 Prefab is not assigned in BatAttackSystem. Cannot spawn Bat2.");
+                Debug.Log("Bat2 spawned at position: " + position);
             }
         }
     }
