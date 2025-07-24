@@ -865,9 +865,27 @@ public class BowSystems : MonoBehaviour
                 return;
             }
 
+            // NEW: Handle InkHealth
+            InkHealth inkHealth = target.GetComponent<InkHealth>();
+            if (inkHealth != null)
+            {
+                // InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
+                // Assuming a default knockbackForce for arrows, you can adjust this value.
+                inkHealth.TakeDamage(Mathf.RoundToInt(damageToDeal), attackDirection, 1f);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Arrow dealt {damageToDeal} damage to Ink {target.name} at {impactPoint}");
+                }
+                if (enableSoundEffects && enemyImpactSound != null)
+                {
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                }
+                return;
+            }
+
             if (showDamageDebug)
             {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have a recognized health component (FleaHealth, SprayerHealth, or FlyHealth)!");
+                Debug.LogWarning($"Enemy {target.name} doesn\"t have a recognized health component (FleaHealth, SprayerHealth, FlyHealth, or InkHealth)!");
             }
         }
     }
@@ -924,9 +942,27 @@ public class BowSystems : MonoBehaviour
                 return;
             }
 
+            // NEW: Handle InkHealth
+            InkHealth inkHealth = target.GetComponent<InkHealth>();
+            if (inkHealth != null)
+            {
+                // InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
+                // Assuming a default knockbackForce for arrows, you can adjust this value.
+                inkHealth.TakeDamage(Mathf.RoundToInt(damageToDeal), attackDirection, 1f);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Ink {target.name} at {impactPoint}");
+                }
+                if (enableSoundEffects && enemyImpactSound != null)
+                {
+                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                }
+                return;
+            }
+
             if (showDamageDebug)
             {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have a recognized health component (FleaHealth, SprayerHealth, or FlyHealth)!");
+                Debug.LogWarning($"Enemy {target.name} doesn\"t have a recognized health component (FleaHealth, SprayerHealth, FlyHealth, or InkHealth)!");
             }
         }
     }

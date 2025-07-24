@@ -83,6 +83,12 @@ public class BulletBehavior : MonoBehaviour
         {
             flyHealth.TakeDamage(bulletDamage, moveDirection);
         }
+
+        InkHealth inkHealth = hitObject.GetComponent<InkHealth>();
+        if (inkHealth != null)
+        {
+            inkHealth.TakeDamage(bulletDamage, moveDirection);
+        }
         // --- LA LOGIQUE DE PARTICULE INSPIRÉE DU BOWSYSTEM ---
 
         // 1. On instancie la particule à l'endroit de l'impact

@@ -325,6 +325,30 @@ public class WaterBullet : MonoBehaviour
                 enemyHealth.TakeDamage(damage, attackDirection);
             }
 
+            var sprayerHealth = other.GetComponent<SprayerHealth>();
+            if (sprayerHealth != null)
+            {
+                Vector2 attackDirection = (other.transform.position - transform.position).normalized;
+                sprayerHealth.TakeDamage(damage, attackDirection);
+            }
+
+            var flyHealth = other.GetComponent<FlyHealth>();
+            if (flyHealth != null)
+            {
+                Vector2 attackDirection = (other.transform.position - transform.position).normalized;
+                flyHealth.TakeDamage(damage, attackDirection);
+            }
+
+            // NEW: Handle InkHealth
+            var inkHealth = other.GetComponent<InkHealth>();
+            if (inkHealth != null)
+            {
+                Vector2 attackDirection = (other.transform.position - transform.position).normalized;
+                // Assuming InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
+                // You might need to adjust the knockbackForce value (e.g., 1f) based on your game design.
+                inkHealth.TakeDamage(damage, attackDirection, 1f);
+            }
+
             if (audioSource != null && collisionSound != null) audioSource.PlayOneShot(collisionSound, collisionSoundVolume);
 
             HandleDestruction();
@@ -340,5 +364,4 @@ public class WaterBullet : MonoBehaviour
         Destroy(gameObject);
     }
 }
-
 

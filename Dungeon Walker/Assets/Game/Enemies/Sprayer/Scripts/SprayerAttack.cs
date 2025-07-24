@@ -16,19 +16,24 @@ public class SprayerAttack : MonoBehaviour
     [SerializeField] private Vector2 damageZoneSize = new Vector2(2f, 1f);
     [SerializeField] private Vector2 damageZoneOffset = new Vector2(1f, 0f);
     [SerializeField] private LayerMask playerLayer;
-    private Animator sprayerAnimator;
 
     [Header("Movement Control")]
-    [SerializeField] private SprayerFollow sprayerFollowScript;
+    [SerializeField] private SprayerFollow sprayerFollowScript; // Used to pause movement
 
     [Header("Attack Sound Settings")]
     [SerializeField] private AudioClip attackSoundClip;
-    [SerializeField][Range(0f, 1f)] private float attackSoundVolume = 0.7f; // Volume slider
+    [SerializeField][Range(0f, 1f)] private float attackSoundVolume = 0.7f;
 
+    // *** NEW ROBUST DIRECTION REFERENCE FOR BONE-BASED ENEMIES ***
+    [Header("Direction Reference (for bone-based enemies)")]
+    [Tooltip("Assign a child GameObject/bone that consistently points in the Sprayer\"s visual forward direction (e.g., a hand, weapon, or an empty child object placed in front of the character). This is crucial for accurate flipping.")]
+    [SerializeField] private Transform visualDirectionReference;
+
+    private Animator sprayerAnimator;
     private AudioSource audioSource;
     private float lastAttackTime;
     private bool isAttacking = false;
-    private float currentSprayerDirection = 1f;
+    private float attackDirection; // Stores the direction (1 or -1) when attack starts
 
     void Awake()
     {
@@ -38,34 +43,32 @@ public class SprayerAttack : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
         audioSource.playOnAwake = false;
-        audioSource.volume = attackSoundVolume; // Set initial volume
     }
 
     void Start()
     {
-        if (sprayerAnimator == null) sprayerAnimator = GetComponent<Animator>();
+        sprayerAnimator = GetComponent<Animator>();
         lastAttackTime = -attackCooldown;
 
         if (sprayParticles == null)
         {
             Debug.LogError("SprayerAttack: Spray Particles not assigned!", this);
             enabled = false;
-            return;
         }
 
-        if (sprayerFollowScript == null)
+        // Warn if visualDirectionReference is not set, as it's crucial for bone-based enemies
+        if (visualDirectionReference == null)
         {
-            Debug.LogError("SprayerAttack: SprayerFollow script not assigned. Damage zone and attack range will not flip correctly.", this);
-            enabled = false;
-            return;
+            Debug.LogWarning("SprayerAttack: visualDirectionReference is not assigned. Damage zone flipping might not be reliable for bone-based enemies. Please assign a child bone/GameObject that points forward.", this);
         }
-
-        currentSprayerDirection = sprayerFollowScript.transform.localScale.x > 0 ? 1f : -1f;
     }
 
     void Update()
     {
-        currentSprayerDirection = transform.localScale.x > 0 ? 1f : -1f;
+        if (isAttacking)
+        {
+            return; // Don\"t do anything else while an attack is in progress
+        }
 
         if (Time.time >= lastAttackTime + attackCooldown)
         {
@@ -76,25 +79,38 @@ public class SprayerAttack : MonoBehaviour
         }
     }
 
-    private Vector2 FlippedDamageZoneOffset
-    {
-        get { return new Vector2(damageZoneOffset.x * currentSprayerDirection, damageZoneOffset.y); }
-    }
-
     private bool IsPlayerInAttackRange()
     {
-        Collider2D playerInRange = Physics2D.OverlapCircle(transform.position, attackRange, playerLayer);
-        return playerInRange != null;
+        return Physics2D.OverlapCircle(transform.position, attackRange, playerLayer) != null;
     }
 
     private void StartAttack()
     {
         isAttacking = true;
         lastAttackTime = Time.time;
-        sprayParticles.Play();
+
+        // *** THE MOST ROBUST FLIPPING LOGIC FOR BONE-BASED ENEMIES ***
+        // Determine attack direction based on the visualDirectionReference\"s world X-axis.
+        // We check if its 'right' vector (local X-axis) is pointing globally right or left.
+        if (visualDirectionReference != null)
+        {
+            attackDirection = Mathf.Sign(visualDirectionReference.right.x);
+        }
+        else
+        {
+            // Fallback to localScale.x if no visualDirectionReference is assigned.
+            // This might not be reliable for bone-based enemies, but it's a last resort.
+            attackDirection = Mathf.Sign(transform.localScale.x);
+            Debug.LogWarning("Using transform.localScale.x for flipping. Assign visualDirectionReference for more reliable flipping with bone-based enemies.", this);
+        }
+
         DisableMovement();
 
-        // Play attack sound with adjustable volume
+        if (sprayParticles != null)
+        {
+            sprayParticles.Play();
+        }
+
         if (attackSoundClip != null && audioSource != null)
         {
             audioSource.volume = attackSoundVolume;
@@ -118,16 +134,12 @@ public class SprayerAttack : MonoBehaviour
         EndAttack();
     }
 
-    private void EndAttack()
-    {
-        isAttacking = false;
-        sprayParticles.Stop();
-        EnableMovement();
-    }
-
     private void ApplyDamageTick()
     {
-        Vector2 attackOrigin = (Vector2)transform.position + FlippedDamageZoneOffset;
+        // Use the stored \"attackDirection\" for consistent damage zone position
+        Vector2 flippedOffset = new Vector2(damageZoneOffset.x * attackDirection, damageZoneOffset.y);
+        Vector2 attackOrigin = (Vector2)transform.position + flippedOffset;
+
         Collider2D[] hits = Physics2D.OverlapBoxAll(attackOrigin, damageZoneSize, 0f, playerLayer);
 
         foreach (Collider2D hit in hits)
@@ -141,31 +153,61 @@ public class SprayerAttack : MonoBehaviour
         }
     }
 
+    private void EndAttack()
+    {
+        isAttacking = false;
+        if (sprayParticles != null)
+        {
+            sprayParticles.Stop();
+        }
+        EnableMovement();
+    }
+
     private void DisableMovement()
     {
         if (sprayerFollowScript != null)
         {
-            sprayerFollowScript.CanMove = false;
+            sprayerFollowScript.enabled = false;
         }
-        sprayerAnimator.SetBool("IsWalking", false);
+        if (sprayerAnimator != null)
+        {
+            sprayerAnimator.SetBool("IsWalking", false);
+        }
     }
 
     private void EnableMovement()
     {
         if (sprayerFollowScript != null)
         {
-            sprayerFollowScript.CanMove = true;
+            sprayerFollowScript.enabled = true;
         }
-        sprayerAnimator.SetBool("IsWalking", true);
+        if (sprayerAnimator != null)
+        {
+            sprayerAnimator.SetBool("IsWalking", true);
+        }
     }
 
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.red;
-        Vector2 attackOrigin = (Vector2)transform.position + FlippedDamageZoneOffset;
-        Gizmos.DrawWireCube(attackOrigin, damageZoneSize);
-
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+
+        Gizmos.color = Color.red;
+
+        // Determine gizmo direction based on the visualDirectionReference for editor consistency
+        float gizmoDirection = 1f;
+        if (visualDirectionReference != null)
+        {
+            gizmoDirection = Mathf.Sign(visualDirectionReference.right.x);
+        }
+        else
+        {
+            // Fallback to localScale.x for gizmo if no reference is assigned
+            gizmoDirection = Mathf.Sign(transform.localScale.x);
+        }
+
+        Vector2 flippedOffset = new Vector2(damageZoneOffset.x * gizmoDirection, damageZoneOffset.y);
+        Vector2 attackOrigin = (Vector2)transform.position + flippedOffset;
+        Gizmos.DrawWireCube(attackOrigin, damageZoneSize);
     }
 }

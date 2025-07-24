@@ -33085,6 +33085,11 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!212 &766482743 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 7059399505968963755, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+  m_PrefabInstance: {fileID: 5134699352899787872}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &767982754
 GameObject:
   m_ObjectHideFlags: 0
@@ -96127,6 +96132,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ink
       objectReference: {fileID: 0}
+    - target: {fileID: 6871114477328718656, guid: def788d9280bf0241b6807fd4864a96c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7111232836979566327, guid: def788d9280bf0241b6807fd4864a96c, type: 3}
       propertyPath: weaponSwitchManager
       value: 
@@ -96182,6 +96191,10 @@ PrefabInstance:
     - target: {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
       propertyPath: m_Name
       value: FlyDust
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5996842986850834114, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -96250,6 +96263,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 747300777720662801, guid: 0153416545614fa489c8f67f7ca52e0c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1208478156964909872, guid: 0153416545614fa489c8f67f7ca52e0c, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -96342,6 +96359,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 2ad816b99b8c8264c9b00085aa3f32bc, type: 3}
+    - target: {fileID: 8991776130530580151, guid: 0153416545614fa489c8f67f7ca52e0c, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -96399,6 +96420,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Flea
       objectReference: {fileID: 0}
+    - target: {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1720233607332291632, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
       propertyPath: playerTransform
       value: 
@@ -96428,6 +96453,10 @@ PrefabInstance:
       propertyPath: weaponSwitchManager
       value: 
       objectReference: {fileID: 776453694}
+    - target: {fileID: 578209667700630728, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 578209667700630728, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7
@@ -96468,14 +96497,58 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1564694357942923393, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: attackRange
+      value: 7.19
+      objectReference: {fileID: 0}
+    - target: {fileID: 1564694357942923393, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: attackCooldown
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1564694357942923393, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: damageDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1564694357942923393, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: damagePerSecond
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 1564694357942923393, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: sprayerSpriteRenderer
+      value: 
+      objectReference: {fileID: 766482743}
+    - target: {fileID: 1564694357942923393, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: visualDirectionReference
+      value: 
+      objectReference: {fileID: 457641510}
     - target: {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
       propertyPath: m_Name
       value: Sprayer
+      objectReference: {fileID: 0}
+    - target: {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6463975689986382202, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 1032792831}
+    - target: {fileID: 7059399505968963755, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: m_FlipX
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8048887584263250123, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: looping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8048887584263250123, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: simulationSpeed
+      value: 4.41
+      objectReference: {fileID: 0}
+    - target: {fileID: 8048887584263250123, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: InitialModule.startSpeed.scalar
+      value: 3.07
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
