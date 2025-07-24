@@ -11,54 +11,59 @@ public class Checkpoint : MonoBehaviour
 
     [Header("Effects")]
     public ParticleSystem reachEffect;
-    public AudioClip reachSound; // Existing reach sound
+    public AudioClip reachSound;
     [Range(0f, 1f)]
-    public float reachSoundVolume = 1f; // Volume for reach sound
-    public AudioClip radiusEnterSound; // Sound for entering radius
+    public float reachSoundVolume = 1f;
+    public AudioClip radiusEnterSound;
     [Range(0f, 1f)]
-    public float radiusEnterVolume = 1f; // Volume for radius enter sound
-    public AudioClip radiusExitPrematureSound; // New: Sound for exiting radius prematurely
+    public float radiusEnterVolume = 1f;
+    public AudioClip radiusExitPrematureSound;
     [Range(0f, 1f)]
-    public float radiusExitPrematureVolume = 1f; // New: Volume for premature exit sound
-    public AudioClip waitingSound; // New: Continuous sound while waiting in radius
+    public float radiusExitPrematureVolume = 1f;
+    public AudioClip waitingSound;
     [Range(0f, 1f)]
-    public float waitingSoundVolume = 1f; // New: Volume for waiting sound
+    public float waitingSoundVolume = 1f;
 
     [Header("Checkpoint Settings")]
-    public float timeToStay = 3f; // Individual time to stay at this checkpoint
-    public float radius = 2f; // New: Individual radius for this checkpoint
+    public float timeToStay = 3f;
+    public float radius = 2f;
 
     private int checkpointIndex;
     private bool isActive = false;
     private bool isReached = false;
     private AudioSource audioSource;
-    private AudioSource waitingAudioSource; // Separate AudioSource for continuous waiting sound
+    private AudioSource waitingAudioSource;
+
+    // New states for interaction
+    private bool playerInRadius = false;
+    private bool questStarted = false;
+    private bool timerEnded = false;
 
     public int CheckpointIndex => checkpointIndex;
     public bool IsActive => isActive;
     public bool IsReached => isReached;
     public float TimeToStay => timeToStay;
     public float Radius => radius;
+    public bool PlayerInRadius => playerInRadius;
+    public bool QuestStarted => questStarted;
+    public bool TimerEnded => timerEnded;
 
     void Awake()
     {
-        // Get or add AudioSource component for one-shot sounds
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
-        audioSource.playOnAwake = false; // Ensure it doesn\'t play automatically
+        audioSource.playOnAwake = false;
 
-        // Get or add a separate AudioSource for the continuous waiting sound
         waitingAudioSource = gameObject.AddComponent<AudioSource>();
-        waitingAudioSource.loop = true; // Make it loop
-        waitingAudioSource.playOnAwake = false; // Don\'t play on awake
+        waitingAudioSource.loop = true;
+        waitingAudioSource.playOnAwake = false;
     }
 
     void Start()
     {
-        // Initialize visual state
         UpdateVisuals();
     }
 
@@ -70,7 +75,7 @@ public class Checkpoint : MonoBehaviour
 
     public void SetActive(bool active)
     {
-        if (isReached) return; // Can\'t activate a reached checkpoint
+        if (isReached) return;
 
         isActive = active;
         UpdateVisuals();
@@ -83,14 +88,17 @@ public class Checkpoint : MonoBehaviour
 
     public void SetReached()
     {
-        if (isReached) return; // Already reached
+        if (isReached) return;
 
         isReached = true;
         isActive = false;
+        questStarted = false;
+        timerEnded = false;
+        playerInRadius = false;
         UpdateVisuals();
 
-        // Play effects
         PlayReachEffects();
+        StopWaitingSound();
 
         Debug.Log($"Checkpoint {checkpointIndex + 1} reached!");
     }
@@ -99,17 +107,19 @@ public class Checkpoint : MonoBehaviour
     {
         isReached = false;
         isActive = false;
+        questStarted = false;
+        timerEnded = false;
+        playerInRadius = false;
         UpdateVisuals();
+        StopWaitingSound();
     }
 
     void UpdateVisuals()
     {
-        // Hide all visuals first
         if (activeVisual != null) activeVisual.SetActive(false);
         if (inactiveVisual != null) inactiveVisual.SetActive(false);
         if (reachedVisual != null) reachedVisual.SetActive(false);
 
-        // Show appropriate visual
         if (isReached)
         {
             if (reachedVisual != null) reachedVisual.SetActive(true);
@@ -126,13 +136,11 @@ public class Checkpoint : MonoBehaviour
 
     void PlayReachEffects()
     {
-        // Play particle effect
         if (reachEffect != null)
         {
             reachEffect.Play();
         }
 
-        // Play sound effect
         if (reachSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(reachSound, reachSoundVolume);
@@ -173,52 +181,35 @@ public class Checkpoint : MonoBehaviour
         }
     }
 
-    // Optional: Visual feedback when player is near
-    void OnTriggerEnter2D(Collider2D other)
+    public void SetPlayerInRadius(bool inRadius)
     {
-        if (other.CompareTag("Player") && isActive)
+        playerInRadius = inRadius;
+    }
+
+    public void StartQuest()
+    {
+        if (!questStarted)
         {
-            // You can add visual feedback here like scaling or glowing
-            StartCoroutine(PulseEffect());
+            questStarted = true;
+            timerEnded = false;
+            StartWaitingSound();
+            Debug.Log($"Checkpoint {checkpointIndex + 1} quest started!");
         }
     }
 
-    IEnumerator PulseEffect()
+    public void EndTimer()
     {
-        Vector3 originalScale = transform.localScale;
-        Vector3 targetScale = originalScale * 1.2f;
-
-        // Scale up
-        float time = 0;
-        while (time < 0.2f)
+        if (questStarted && !timerEnded)
         {
-            transform.localScale = Vector3.Lerp(originalScale, targetScale, time / 0.2f);
-            time += Time.deltaTime;
-            yield return null;
+            timerEnded = true;
+            StopWaitingSound();
+            Debug.Log($"Checkpoint {checkpointIndex + 1} timer ended!");
         }
-
-        // Scale down
-        time = 0;
-        while (time < 0.2f)
-        {
-            transform.localScale = Vector3.Lerp(targetScale, originalScale, time / 0.2f);
-            time += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.localScale = originalScale;
     }
 
-    // Helper method for debugging
     void OnDrawGizmos()
     {
-        // Draw checkpoint index
         Gizmos.color = isReached ? Color.green : (isActive ? Color.yellow : Color.gray);
         Gizmos.DrawWireSphere(transform.position, radius);
-
-        // Draw checkpoint number
-#if UNITY_EDITOR
-        // UnityEditor.Handles.Label(transform.position + Vector3.up * 1.5f, $"{checkpointIndex + 1}");
-#endif
     }
 }
