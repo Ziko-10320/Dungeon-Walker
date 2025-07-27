@@ -78,6 +78,7 @@ public class PlayerHealth : MonoBehaviour
         isInvincible = true;
 
         rb.velocity = Vector2.zero;
+        // Apply knockback force in the calculated direction (including X and Y components)
         rb.AddForce(knockbackDirection * knockbackForce, ForceMode2D.Impulse);
 
         // Start the new flash material effect

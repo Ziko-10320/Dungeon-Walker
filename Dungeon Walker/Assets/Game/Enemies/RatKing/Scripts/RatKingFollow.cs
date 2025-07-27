@@ -10,12 +10,13 @@ public class RatKingBoss : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator ratKingAnimator;
     [SerializeField] private Transform playerTransform;
+    [SerializeField] private RatKingAttack ratKingAttack; // Reference to the attack script
 
     [Header("General Behavior")]
     public bool CanMove = true;
     [SerializeField] private float wanderSpeed = 2f;
     [SerializeField] private float chaseSpeed = 4f;
-    [SerializeField] public float stoppingDistance = 1.5f;
+    public float stoppingDistance = 1.5f; // Made public
     [SerializeField] private float detectionRadius = 7f;
     [SerializeField] private float lostSightRadius = 10f;
 
@@ -25,10 +26,10 @@ public class RatKingBoss : MonoBehaviour
 
     [Header("Environment Detection")]
     [SerializeField] private Transform wallCheck;
-    [SerializeField] public Transform groundCheck;
-    [SerializeField] public float checkDistance = 0.5f;
-    [SerializeField] public LayerMask whatIsGround;
-    [SerializeField] public float groundCheckRadius = 0.2f; // New: Radius for ground check zone
+    public Transform groundCheck; // Made public
+    [SerializeField] private float checkDistance = 0.5f;
+    public LayerMask whatIsGround; // Made public
+    public float groundCheckRadius = 0.2f; // Made public
 
     private float moveDirection = 1f;
     private float timeSinceLastFlip = 0f;
@@ -40,6 +41,7 @@ public class RatKingBoss : MonoBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (ratKingAnimator == null) ratKingAnimator = GetComponent<Animator>();
+        if (ratKingAttack == null) ratKingAttack = GetComponent<RatKingAttack>();
         if (playerTransform == null || wallCheck == null || groundCheck == null)
         {
             Debug.LogError("One or more essential references are not assigned!", this);
@@ -109,6 +111,16 @@ public class RatKingBoss : MonoBehaviour
 
     private void ExecuteCurrentState()
     {
+        // Check for jump attack first if in Chasing state and not blocked
+        if (currentState == AIState.Chasing && !IsBlocked())
+        {
+            if (ratKingAttack != null && ratKingAttack.CanPerformJumpAttack())
+            {
+                ratKingAttack.PerformJumpAttack();
+                return; // Prevent other movement logic if jump attack is initiated
+            }
+        }
+
         if (IsBlocked())
         {
             StopMoving();
@@ -223,7 +235,6 @@ public class RatKingBoss : MonoBehaviour
 
     private bool IsGroundAhead()
     {
-        // Changed to OverlapCircle for zone-based ground check
         return Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, whatIsGround);
     }
 
@@ -252,7 +263,6 @@ public class RatKingBoss : MonoBehaviour
         if (groundCheck != null)
         {
             Gizmos.color = Color.green;
-            // Changed to DrawWireSphere for ground check zone visualization
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
     }
