@@ -82869,7 +82869,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1885820438
 Transform:
   m_ObjectHideFlags: 0
@@ -101519,7 +101519,7 @@ PrefabInstance:
     - target: {fileID: 1264289404633083085, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
       propertyPath: playerTransform
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8154637775395992508}
     - target: {fileID: 2233549178179398066, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
       propertyPath: maxHealth
       value: 1000
@@ -101583,7 +101583,7 @@ PrefabInstance:
     - target: {fileID: 3449960890957057112, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
       propertyPath: playerTransform
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8154637775395992508}
     - target: {fileID: 3449960890957057112, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
       propertyPath: cheeseDamageAmount
       value: 30
@@ -101618,7 +101618,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5738250013264142466, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
       propertyPath: m_LocalScale.x
@@ -107006,7 +107006,7 @@ Transform:
   m_GameObject: {fileID: 1148901484452678916}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.872, y: 1.58, z: 0}
+  m_LocalPosition: {x: 0.9, y: 1.59, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -112738,8 +112738,8 @@ MonoBehaviour:
   rb: {fileID: 982499632335051572}
   ghostEffect: {fileID: 945771198167810154}
   kritinaMovement: {fileID: 8666326037326594557}
-  dashSpeed: 50
-  dashDuration: 0.16
+  dashSpeed: 50.5
+  dashDuration: 0.18
   dashCooldown: 1
   dashSoundClip: {fileID: 8300000, guid: 18e93df17df665741be350e1d1383b89, type: 3}
   dashVolume: 0.283
@@ -143526,7 +143526,7 @@ Transform:
   m_GameObject: {fileID: 4117063791888864297}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.057, y: 1.585, z: 0}
+  m_LocalPosition: {x: 1.05, y: 1.6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
