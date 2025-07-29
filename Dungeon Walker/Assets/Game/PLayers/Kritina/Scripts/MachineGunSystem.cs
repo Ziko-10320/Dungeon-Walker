@@ -495,6 +495,12 @@ public class BulletComponent : MonoBehaviour
                 inkHealth.TakeDamage(damage, attackDirection, 1f);
             }
 
+            RatKingHealth RatKingHealth = collidedObject.GetComponent<RatKingHealth>();
+            if (RatKingHealth != null)
+            {
+                RatKingHealth.TakeDamage(damage);
+            }
+
             if (audioSource != null && collisionSound != null) audioSource.PlayOneShot(collisionSound, collisionSoundVolume);
             shouldDestroy = true;
         }

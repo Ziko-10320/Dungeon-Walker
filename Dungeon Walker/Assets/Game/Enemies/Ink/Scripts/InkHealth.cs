@@ -520,7 +520,7 @@ public class InkHealth : MonoBehaviour
     }
 
     // Method to take damage (modified to check invincibility and accept knockback force)
-    public void TakeDamage(int damage, Vector2 attackDirection, float knockbackForce = 1f) // Added knockbackForce parameter
+    public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 1f) // Added knockbackForce parameter
     {
         // Check if invincible
         if (isInvincible)

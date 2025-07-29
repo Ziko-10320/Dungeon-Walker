@@ -1,6 +1,8 @@
+using System.Collections;
+using Unity.Burst.Intrinsics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections;
 
 public class WaterGunSystem : MonoBehaviour
 {
@@ -9,7 +11,7 @@ public class WaterGunSystem : MonoBehaviour
     [SerializeField] private GameObject Arm;
     [SerializeField] private Transform playerTransform;
     [SerializeField] private Transform bulletSpawnPoint;
-    [SerializeField] private Transform launcherAimPoint; // Point d\"origine de la visée
+    [SerializeField] private Transform launcherAimPoint; // Point d"origine de la visée
     [SerializeField] private Transform minDistancePoint; // Transform pour visualiser la distance minimale
 
     [Header("PROJECTILE & EFFECTS")]
@@ -27,17 +29,17 @@ public class WaterGunSystem : MonoBehaviour
     [SerializeField] private float maxUpwardAngle = 80f;
     [Tooltip("Angle maximum de visée vers le bas")]
     [SerializeField] private float maxDownwardAngle = 80f;
-    [Tooltip("Distance minimale pour que la visée s\"active")]
+    [Tooltip("Distance minimale pour que la visée sactive")]
     [SerializeField] private float minDistanceToAim = 0.8f;
-    [Tooltip("Vitesse de rotation de l\"arme (pour une rotation fluide)")]
+    [Tooltip("Vitesse de rotation de l'arme(pour une rotation fluide)")]
     [SerializeField] private float rotationSpeed = 25f;
     [Tooltip("Utiliser une rotation instantanée pour une réactivité maximale")]
     [SerializeField] private bool useInstantRotation = true;
 
     [Header("LAUNCHER CALIBRATION")]
-    [Tooltip("Offset de rotation pour l\"arme quand le joueur regarde à DROITE")]
+    [Tooltip("Offset de rotation pour l'arme quand le joueur regarde à DROITE")]
     public float launcherRotationOffsetRight = 0f;
-    [Tooltip("Offset de rotation pour l\"arme quand le joueur regarde à GAUCHE")]
+    [Tooltip("Offset de rotation pour l'arme quand le joueur regarde à GAUCHE")]
     public float launcherRotationOffsetLeft = 0f;
     [Tooltip("Offset de rotation pour la TRAJECTOIRE quand le joueur regarde à DROITE")]
     public float trajectoryRotationOffsetRight = 0f;
@@ -82,7 +84,7 @@ public class WaterGunSystem : MonoBehaviour
 
     void Update()
     {
-        // La séquence d\"update la plus fiable, directement tirée du launcher
+        // La séquence d"update la plus fiable, directement tirée du launcher
         HandleAiming();
         ApplyRotation();
         HandleShooting();
@@ -97,10 +99,10 @@ public class WaterGunSystem : MonoBehaviour
         // 2. Obtenir la position de la souris
         mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
-        // 3. Définir le point d\"origine de la visée
+        // 3. Définir le point d"origine de la visée
         aimFromPosition = launcherAimPoint != null ? (Vector2)launcherAimPoint.position : (Vector2)Gun.transform.position;
 
-        // 4. Calculer la direction et l\"angle vers la souris
+        // 4. Calculer la direction et l"angle vers la souris
         Vector2 directionToMouse = (mouseWorldPosition - aimFromPosition);
         aimDirection = directionToMouse.normalized; // Stocker la direction normalisée
 
@@ -110,10 +112,10 @@ public class WaterGunSystem : MonoBehaviour
             return;
         }
 
-        // 5. Calculer l\"angle en degrés
+        // 5. Calculer l"angle en degrés
         float worldAngleToMouse = Mathf.Atan2(directionToMouse.y, directionToMouse.x) * Mathf.Rad2Deg;
 
-        // 6. Brider l\"angle avec la logique exacte du launcher
+        // 6. Brider l"angle avec la logique exacte du launcher
         float clampedWorldAngle = ClampWorldAngle(worldAngleToMouse);
 
         // 7. Définir les rotations finales en appliquant les offsets
@@ -136,7 +138,7 @@ public class WaterGunSystem : MonoBehaviour
     // LA LOGIQUE DE CLAMPING QUI MARCHE ENFIN
     private float ClampWorldAngle(float worldAngle)
     {
-        // Normalise l\"angle pour qu\"il soit toujours entre -180 et 180
+        // Normalise l"angle pour qu"il soit toujours entre -180 et 180
         worldAngle = (worldAngle + 180f) % 360f - 180f;
 
         if (isPlayerFacingRight)
@@ -145,11 +147,11 @@ public class WaterGunSystem : MonoBehaviour
         }
         else
         {
-            // Quand on est à gauche, on veut que l\"angle soit entre (180 - maxUpwardAngle) et (180 + maxDownwardAngle)
-            // On convertit l\"angle de visée en son équivalent \"gauche\"
+            // Quand on est à gauche, on veut que l"angle soit entre (180 - maxUpwardAngle) et (180 + maxDownwardAngle)
+            // On convertit l"angle de visée en son équivalent "gauche"
             float leftEquivAngle = 180 + worldAngle;
             leftEquivAngle = Mathf.Clamp(leftEquivAngle, 180 - maxUpwardAngle, 180 + maxDownwardAngle);
-            // On le reconvertit en son équivalent \"world\"
+            // On le reconvertit en son équivalent "world"
             return leftEquivAngle - 180;
         }
     }
@@ -178,6 +180,7 @@ public class WaterGunSystem : MonoBehaviour
 
     private void HandleShooting()
     {
+        // Manual reload with R key - only if current ammo is less than max ammo
         if (Keyboard.current.rKey.wasPressedThisFrame && !isReloading && currentAmmo < maxAmmo)
         {
             StartCoroutine(Reload());
@@ -193,6 +196,7 @@ public class WaterGunSystem : MonoBehaviour
                 Shoot();
                 currentAmmo--;
                 nextFireTime = Time.time + fireRate;
+                // Automatic reload when ammo reaches 0
                 if (currentAmmo <= 0) StartCoroutine(Reload());
             }
             else
@@ -347,6 +351,15 @@ public class WaterBullet : MonoBehaviour
                 // Assuming InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
                 // You might need to adjust the knockbackForce value (e.g., 1f) based on your game design.
                 inkHealth.TakeDamage(damage, attackDirection, 1f);
+            }
+
+            var RatKingHealth = other.GetComponent<RatKingHealth>();
+            if (RatKingHealth != null)
+            {
+                Vector2 attackDirection = (other.transform.position - transform.position).normalized;
+                // Assuming InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
+                // You might need to adjust the knockbackForce value (e.g., 1f) based on your game design.
+                RatKingHealth.TakeDamage(damage);
             }
 
             if (audioSource != null && collisionSound != null) audioSource.PlayOneShot(collisionSound, collisionSoundVolume);

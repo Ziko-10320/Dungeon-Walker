@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using FirstGearGames.SmoothCameraShaker;
-
+using UnityEngine.Events;
 public class FleaHealth : MonoBehaviour
 {
     // Public variables for health and effects
@@ -37,6 +37,7 @@ public class FleaHealth : MonoBehaviour
     [Range(0f, 1f)] public float damageSoundVolume = 0.7f; // Volume slider added here
 
     public WeaponSwitchManager weaponSwitchManager;
+    public UnityEvent<GameObject> OnDeath;
 
     private AudioSource audioSource; // Reference to the AudioSource component
 
@@ -76,7 +77,7 @@ public class FleaHealth : MonoBehaviour
     }
 
     // Method to take damage
-    public void TakeDamage(int damage, Vector2 attackDirection, float knockbackForce = 1f)
+    public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 1f)
     {
         // Reduce health
         currentHealth -= (int)damage;
@@ -165,6 +166,8 @@ public class FleaHealth : MonoBehaviour
 
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
+
+        OnDeath?.Invoke(gameObject);
 
         if (weaponSwitchManager != null)
         {

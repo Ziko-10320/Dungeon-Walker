@@ -88,7 +88,7 @@ public class RobustLauncherSystem : MonoBehaviour
 
     [Header("Ball Damage System")]
     [Tooltip("Damage dealt by balls to enemies")]
-    public float ballDamage = 25f;
+    public int ballDamage = 100; // Changed to int for exact damage
     [Tooltip("Layer mask for enemies that can take damage")]
     [SerializeField] private LayerMask enemyLayers = -1;
     [Tooltip("Enable damage system")]
@@ -847,7 +847,7 @@ public class RobustLauncherSystem : MonoBehaviour
         }
     }
 
-    public void SetBallDamage(float damage)
+    public void SetBallDamage(int damage)
     {
         ballDamage = damage;
         if (showDamageDebug)
@@ -1231,7 +1231,7 @@ public class RobustLauncherSystem : MonoBehaviour
         PlaySoundAtPosition(clip, position, delay, volume);
     }
 
-    // Damage handling methods
+    // Damage handling methods - FIXED FOR EXACT DAMAGE
     public void HandleCollision(GameObject collidedObject, Vector2 contactPoint, GameObject projectileGameObject)
     {
         ProjectileLifecycleController lifecycleController = projectileGameObject.GetComponent<ProjectileLifecycleController>();
@@ -1300,7 +1300,7 @@ public class RobustLauncherSystem : MonoBehaviour
             if (fleaHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                fleaHealth.TakeDamage((int)ballDamage, attackDirection);
+                fleaHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} damage to Flea {target.name} at {impactPoint}");
@@ -1312,7 +1312,7 @@ public class RobustLauncherSystem : MonoBehaviour
             if (sprayerHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                sprayerHealth.TakeDamage((int)ballDamage, attackDirection);
+                sprayerHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} damage to Sprayer {target.name} at {impactPoint}");
@@ -1324,7 +1324,7 @@ public class RobustLauncherSystem : MonoBehaviour
             if (flyHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                flyHealth.TakeDamage((int)ballDamage, attackDirection);
+                flyHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} damage to Fly {target.name} at {impactPoint}");
@@ -1336,10 +1336,22 @@ public class RobustLauncherSystem : MonoBehaviour
             if (inkHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                inkHealth.TakeDamage((int)ballDamage, attackDirection);
+                inkHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} damage to Ink {target.name} at {impactPoint}");
+                }
+                return;
+            }
+
+            RatKingHealth RatKingHealth = target.GetComponent<RatKingHealth>();
+            if (RatKingHealth != null)
+            {
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
+                RatKingHealth.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
                 }
                 return;
             }
@@ -1359,7 +1371,7 @@ public class RobustLauncherSystem : MonoBehaviour
             if (fleaHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                fleaHealth.TakeDamage((int)ballDamage, attackDirection);
+                fleaHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Flea {target.name} at {impactPoint}");
@@ -1371,7 +1383,7 @@ public class RobustLauncherSystem : MonoBehaviour
             if (sprayerHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                sprayerHealth.TakeDamage((int)ballDamage, attackDirection);
+                sprayerHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Sprayer {target.name} at {impactPoint}");
@@ -1383,7 +1395,7 @@ public class RobustLauncherSystem : MonoBehaviour
             if (flyHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                flyHealth.TakeDamage((int)ballDamage, attackDirection);
+                flyHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Fly {target.name} at {impactPoint}");
@@ -1395,7 +1407,19 @@ public class RobustLauncherSystem : MonoBehaviour
             if (inkHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                inkHealth.TakeDamage((int)ballDamage, attackDirection);
+                inkHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
+                }
+                return;
+            }
+
+            RatKingHealth RatKingHealth = target.GetComponent<RatKingHealth>();
+            if (RatKingHealth != null)
+            {
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
+                RatKingHealth.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
@@ -1424,14 +1448,11 @@ public class RobustLauncherSystem : MonoBehaviour
             FleaHealth fleaHealth = enemyCollider.GetComponent<FleaHealth>();
             if (fleaHealth != null)
             {
-                float distance = Vector2.Distance(explosionCenter, enemyCollider.transform.position);
-                float damageMultiplier = 1f - (distance / explosionDamageRadius);
-                float explosionDamage = ballDamage * explosionDamageMultiplier * damageMultiplier;
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
-                fleaHealth.TakeDamage((int)explosionDamage, attackDirection);
+                fleaHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO MULTIPLIERS
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Explosion dealt {explosionDamage:F1} damage to Flea {enemyCollider.name} (distance: {distance:F2})");
+                    Debug.Log($"Explosion dealt {ballDamage} damage to Flea {enemyCollider.name}");
                 }
                 continue;
             }
@@ -1439,14 +1460,11 @@ public class RobustLauncherSystem : MonoBehaviour
             SprayerHealth sprayerHealth = enemyCollider.GetComponent<SprayerHealth>();
             if (sprayerHealth != null)
             {
-                float distance = Vector2.Distance(explosionCenter, enemyCollider.transform.position);
-                float damageMultiplier = 1f - (distance / explosionDamageRadius);
-                float explosionDamage = ballDamage * explosionDamageMultiplier * damageMultiplier;
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
-                sprayerHealth.TakeDamage((int)explosionDamage, attackDirection);
+                sprayerHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO MULTIPLIERS
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Explosion dealt {explosionDamage:F1} damage to Sprayer {enemyCollider.name} (distance: {distance:F2})");
+                    Debug.Log($"Explosion dealt {ballDamage} damage to Sprayer {enemyCollider.name}");
                 }
                 continue;
             }
@@ -1454,14 +1472,11 @@ public class RobustLauncherSystem : MonoBehaviour
             FlyHealth flyHealth = enemyCollider.GetComponent<FlyHealth>();
             if (flyHealth != null)
             {
-                float distance = Vector2.Distance(explosionCenter, enemyCollider.transform.position);
-                float damageMultiplier = 1f - (distance / explosionDamageRadius);
-                float explosionDamage = ballDamage * explosionDamageMultiplier * damageMultiplier;
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
-                flyHealth.TakeDamage((int)explosionDamage, attackDirection);
+                flyHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO MULTIPLIERS
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Explosion dealt {explosionDamage:F1} damage to Fly {enemyCollider.name} (distance: {distance:F2})");
+                    Debug.Log($"Explosion dealt {ballDamage} damage to Fly {enemyCollider.name}");
                 }
                 continue;
             }
@@ -1469,14 +1484,23 @@ public class RobustLauncherSystem : MonoBehaviour
             InkHealth inkHealth = enemyCollider.GetComponent<InkHealth>();
             if (inkHealth != null)
             {
-                float distance = Vector2.Distance(explosionCenter, enemyCollider.transform.position);
-                float damageMultiplier = 1f - (distance / explosionDamageRadius);
-                float explosionDamage = ballDamage * explosionDamageMultiplier * damageMultiplier;
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
-                inkHealth.TakeDamage((int)explosionDamage, attackDirection);
+                inkHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO MULTIPLIERS
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Explosion dealt {explosionDamage:F1} damage to Ink {enemyCollider.name} (distance: {distance:F2})");
+                    Debug.Log($"Explosion dealt {ballDamage} damage to Ink {enemyCollider.name}");
+                }
+                continue;
+            }
+
+            RatKingHealth RatKingHealth = enemyCollider.GetComponent<RatKingHealth>();
+            if (RatKingHealth != null)
+            {
+                Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
+                RatKingHealth.TakeDamage(ballDamage); // EXACT DAMAGE - NO MULTIPLIERS
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Explosion dealt {ballDamage} damage to Ink {enemyCollider.name}");
                 }
                 continue;
             }
@@ -1534,95 +1558,57 @@ public class RobustLauncherSystem : MonoBehaviour
             Gizmos.color = Color.yellow;
             Gizmos.DrawRay(aimFromPos, aimDirection * 3f);
 
-            // Draw GREEN LINE - actual projectile direction (controlled by trajectory offsets)
+            // Draw GREEN LINE - actual projectile direction (controlled by trajectory visual point)
             Gizmos.color = Color.green;
-            Vector2 trajectoryGizmoOrigin = trajectoryVisualPoint != null ? trajectoryVisualPoint.position : projectileSpawnPoint.position;
-            Gizmos.DrawRay(trajectoryGizmoOrigin, GetLauncherDirection() * 4f);
+            Vector2 launcherDirection = GetLauncherDirection();
+            Gizmos.DrawRay(aimFromPos, launcherDirection * 3f);
 
-            // Draw curved trajectory if enabled and calculated
+            // Draw minimum distance circle
+            Gizmos.color = IsMouseInDeadZone() ? Color.red : Color.white;
+            Gizmos.DrawWireSphere(aimFromPos, minDistanceToAim);
+
+            // Draw curved trajectory if enabled
             if (useCurvedTrajectory && trajectoryPoints.Count > 1)
             {
-                Gizmos.color = Color.red;
+                Gizmos.color = Color.cyan;
                 for (int i = 0; i < trajectoryPoints.Count - 1; i++)
                 {
                     Gizmos.DrawLine(trajectoryPoints[i], trajectoryPoints[i + 1]);
                 }
-
-                // Draw trajectory end point
-                if (trajectoryPoints.Count > 0)
-                {
-                    Gizmos.color = Color.magenta;
-                    Gizmos.DrawWireSphere(trajectoryPoints[trajectoryPoints.Count - 1], 0.2f);
-                }
             }
 
-            // Draw dynamic force visualization
-            if (useDynamicForce && IsAimingValid())
+            // Draw explosion damage radius if enabled
+            if (enableDamageSystem && damageOnExplosion)
             {
-                float distanceToMouse = GetDistanceToMouse();
-                float normalizedForce = (currentCalculatedForce - minLaunchForce) / (maxLaunchForce - minLaunchForce);
-
-                // Draw force indicator circle (size based on force)
-                Gizmos.color = Color.Lerp(Color.blue, Color.red, normalizedForce);
-                Gizmos.DrawWireSphere(aimFromPos, 0.3f + normalizedForce * 0.3f);
-
-                // Draw force range indicators
-                Gizmos.color = Color.blue;
-                Gizmos.DrawWireSphere(aimFromPos, minForceDistance);
                 Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(aimFromPos, maxForceDistance);
-            }
-
-            // Draw minimum aim distance circle
-            Gizmos.color = IsMouseInDeadZone() ? Color.red : Color.blue;
-            Gizmos.DrawWireSphere(aimFromPos, minDistanceToAim);
-
-            // Draw line from aim point to mouse
-            Gizmos.color = IsAimingValid() ? Color.white : Color.red;
-            Gizmos.DrawLine(aimFromPos, stabilizedMouseWorldPosition);
-
-            // Draw MinDistancePoint position if assigned
-            if (minDistancePoint != null)
-            {
-                Gizmos.color = Color.black;
-                Gizmos.DrawWireSphere(minDistancePoint.position, 0.1f);
-                Gizmos.DrawLine(aimFromPos, minDistancePoint.position);
-            }
-        }
-
-        // Gizmos for explosion damage radius and random offset
-        if (enableDamageSystem && damageOnExplosion)
-        {
-            // Iterate through active projectiles to draw their explosion radius
-            foreach (GameObject projectile in activeProjectiles)
-            {
-                if (projectile != null)
-                {
-                    Gizmos.color = Color.red;
-                    Gizmos.DrawWireSphere(projectile.transform.position, explosionDamageRadius);
-
-                    // Note: explosionRandomOffset is no longer used for visual debug here
-                    // as it\"s handled by individual ball explosion scripts.
-                }
+                Gizmos.DrawWireSphere(aimFromPos, explosionDamageRadius);
             }
         }
     }
 }
 
-// New helper script to handle ball collisions and pass them back to RobustLauncherSystem
+// Helper classes for projectile management
+public class ProjectileLifecycleController : MonoBehaviour
+{
+    public RobustLauncherSystem launcherSystem;
+    public float spawnTime;
+    public bool hasBeenDestroyed = false;
+}
+
 public class BallCollisionHandler : MonoBehaviour
 {
     public RobustLauncherSystem launcherSystem;
 
-    void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionEnter2D(Collision2D collision)
     {
         if (launcherSystem != null)
         {
-            launcherSystem.HandleCollision(collision.gameObject, collision.contacts[0].point, gameObject);
+            Vector2 contactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : transform.position;
+            launcherSystem.HandleCollision(collision.gameObject, contactPoint, gameObject);
         }
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
         if (launcherSystem != null)
         {
@@ -1631,37 +1617,4 @@ public class BallCollisionHandler : MonoBehaviour
     }
 }
 
-// New script to manage projectile lifecycle and state
-public class ProjectileLifecycleController : MonoBehaviour
-{
-    public RobustLauncherSystem launcherSystem;
-    public float spawnTime;
-    public bool hasBeenDestroyed = false;
-}
-
-// Simplified ParticleSystemLifecycle script (can be removed if not needed, or kept for generic particle systems)
-public class ParticleSystemLifecycle : MonoBehaviour
-{
-    void Start()
-    {
-        ParticleSystem ps = GetComponent<ParticleSystem>();
-        if (ps == null)
-        {
-            Debug.LogWarning($"ParticleSystemLifecycle: No ParticleSystem found on {gameObject.name}. Destroying this component.");
-            Destroy(this); // Destroy this component if no ParticleSystem is found
-            return;
-        }
-
-        // Ensure the particle system plays if it\"s not already playing
-        if (!ps.isPlaying)
-        {
-            ps.Play();
-        }
-
-        // Destroy the GameObject after the particle system has finished playing
-        // We add a small buffer to ensure all particles have faded out.
-        float totalDuration = ps.main.duration + ps.main.startLifetime.constantMax + 0.1f;
-        Destroy(gameObject, totalDuration);
-    }
-}
 

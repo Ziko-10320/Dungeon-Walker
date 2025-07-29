@@ -7,6 +7,7 @@ public class PlayerDash : MonoBehaviour
     [Header("Component References")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private GhostEffect ghostEffect; // Reference to the GhostEffect script
+    [SerializeField] private KritinaMovement kritinaMovement; // Reference to the KritinaMovement script
 
     [Header("Dash Settings")]
     [SerializeField] private float dashSpeed = 25f; // The speed of the player during the dash
@@ -23,6 +24,7 @@ public class PlayerDash : MonoBehaviour
     private bool isDashing = false;
     private float dashTimer;
     private float originalGravity;
+    private Vector2 dashDirectionVector; // Store the dash direction
 
     // Public property for other scripts to check if the player is currently dashing
     public bool IsDashing => isDashing;
@@ -31,33 +33,26 @@ public class PlayerDash : MonoBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (ghostEffect == null) ghostEffect = GetComponent<GhostEffect>();
+        if (kritinaMovement == null) kritinaMovement = GetComponent<KritinaMovement>();
         originalGravity = rb.gravityScale;
     }
 
     void Update()
     {
         // Check for dash input (e.g., Left Shift key)
-        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && !isDashing)
         {
-            // We need a reference to the movement script to check if grounded,
-            // or we can just dash anytime. For now, let's assume we can dash anytime.
             StartDash();
         }
     }
 
     void FixedUpdate()
     {
-        // This is the core logic. It runs every physics frame to ensure
-        // the velocity is maintained during the dash.
         if (isDashing)
         {
-            // Determine dash direction based on player's facing direction
-            // We get this from the KritinaMovement script's public variable
-            KritinaMovement movementScript = GetComponent<KritinaMovement>();
-            float dashDirection = movementScript.isFacingRight ? 1f : -1f;
-
-            // Continuously set the velocity during the dash
-            rb.velocity = new Vector2(dashDirection * dashSpeed, 0f);
+            // Directly manipulate the transform position for guaranteed movement
+            // This bypasses Rigidbody physics during the dash, ensuring movement.
+            transform.position += (Vector3)dashDirectionVector * dashSpeed * Time.fixedDeltaTime;
 
             // Increment the timer
             dashTimer += Time.fixedDeltaTime;
@@ -72,15 +67,38 @@ public class PlayerDash : MonoBehaviour
 
     private void StartDash()
     {
+        Debug.Log("Starting dash...");
+
         isDashing = true;
         canDash = false;
         dashTimer = 0f;
 
+        // Determine dash direction based on player's facing direction at the start of the dash
+        if (kritinaMovement != null)
+        {
+            dashDirectionVector = kritinaMovement.isFacingRight ? Vector2.right : Vector2.left;
+            // Disable KritinaMovement during dash to prevent conflicts
+            kritinaMovement.enabled = false;
+            Debug.Log($"Dash direction: {dashDirectionVector}, isFacingRight: {kritinaMovement.isFacingRight}");
+        }
+        else
+        {
+            Debug.LogWarning("KritinaMovement script not found on player. Defaulting dash direction to right.");
+            dashDirectionVector = Vector2.right;
+        }
+
         // Play dash sound
-        if (dashSoundClip != null) AudioSource.PlayClipAtPoint(dashSoundClip, transform.position, dashVolume);
+        if (dashSoundClip != null)
+        {
+            AudioSource.PlayClipAtPoint(dashSoundClip, transform.position, dashVolume);
+        }
 
         // Prepare the Rigidbody for the dash
+        // Set velocity to zero and disable gravity to prevent interference with direct transform manipulation
+        rb.velocity = Vector2.zero;
         rb.gravityScale = 0f;
+
+        Debug.Log($"Rigidbody velocity reset and gravity disabled.");
 
         // Activate the ghost effect
         if (ghostEffect != null)
@@ -91,11 +109,19 @@ public class PlayerDash : MonoBehaviour
 
     private void EndDash()
     {
+        Debug.Log("Ending dash...");
+
         isDashing = false;
 
-        // Reset the Rigidbody
-        rb.velocity = Vector2.zero; // Stop the player
-        rb.gravityScale = originalGravity;
+        // Re-enable KritinaMovement after dash
+        if (kritinaMovement != null)
+        {
+            kritinaMovement.enabled = true;
+        }
+
+        // Reset the Rigidbody properties
+        rb.gravityScale = originalGravity; // Restore original gravity
+        rb.velocity = Vector2.zero; // Ensure player stops after dash
 
         // Stop the ghost effect
         if (ghostEffect != null)
@@ -111,7 +137,6 @@ public class PlayerDash : MonoBehaviour
     {
         yield return new WaitForSeconds(dashCooldown);
         canDash = true;
+        Debug.Log("Dash cooldown finished. Can dash again.");
     }
 }
-
-

@@ -68,6 +68,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2453324877085352315}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3302002973679668761
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6165009945439312054}
+  m_Layer: 7
+  m_Name: DetectionZonePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6165009945439312054
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3302002973679668761}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.2, y: 1.9, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5733931022801928995}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4123222504280639358
 GameObject:
   m_ObjectHideFlags: 0
@@ -1154,6 +1185,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: 13
       addedObject: {fileID: 4715227671083996487}
+    - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6165009945439312054}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
@@ -1262,7 +1296,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 4
+  m_Constraints: 7
 --- !u!95 &6622398012560137658
 Animator:
   serializedVersion: 5
@@ -1308,10 +1342,13 @@ MonoBehaviour:
   aimPointHigh: {fileID: 2887797699475530947}
   aimOffsetLow: {x: 0, y: 0}
   aimOffsetHigh: {x: 0, y: 0}
-  projectileSpeed: 10
+  projectileSpeed: 12
   playerLayer:
     serializedVersion: 2
-    m_Bits: 320
+    m_Bits: 256
+  detectionZoneTransform: {fileID: 6165009945439312054}
+  detectionRangeX: 24.4
+  detectionRangeY: 7.43
   explosionParticleSystemPrefab: {fileID: 1211861614038965299}
   unflippableSprites:
   - {fileID: 6426796543867001761}

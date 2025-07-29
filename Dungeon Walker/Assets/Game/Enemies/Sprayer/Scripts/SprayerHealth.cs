@@ -75,7 +75,7 @@ public class SprayerHealth : MonoBehaviour
     }
 
     // Method to take damage
-    public void TakeDamage(int damage, Vector2 attackDirection, float knockbackForce = 1f)
+    public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 1f)
     {
         // Reduce health
         currentHealth -= (int)damage;

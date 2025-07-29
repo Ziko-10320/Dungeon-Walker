@@ -89,6 +89,12 @@ public class BulletBehavior : MonoBehaviour
         {
             inkHealth.TakeDamage(bulletDamage, moveDirection);
         }
+
+        RatKingHealth RatKingHealth = hitObject.GetComponent<RatKingHealth>();
+        if (RatKingHealth != null)
+        {
+            RatKingHealth.TakeDamage(bulletDamage);
+        }
         // --- LA LOGIQUE DE PARTICULE INSPIRÉE DU BOWSYSTEM ---
 
         // 1. On instancie la particule à l'endroit de l'impact

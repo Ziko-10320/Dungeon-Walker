@@ -1,14 +1,12 @@
 using System.Collections;
 using UnityEngine;
 using FirstGearGames.SmoothCameraShaker;
-using UnityEngine.Events;
-public class FlyHealth : MonoBehaviour
+
+public class RatKingHealth : MonoBehaviour
 {
     // Public variables for health and effects
-    public int maxHealth = 100; // Maximum health of the mushroom
-    public GameObject deathEffect; // Optional: Effect to play when the mushroom dies
-    public float knockbackDistance = 1f; // Distance the mushroom moves during knockback
-    public float knockbackDuration = 0.2f; // Duration of the knockback effect
+    public int maxHealth = 100; // Maximum health of the Rat King
+    public GameObject deathEffect; // Optional: Effect to play when the Rat King dies
     public Transform bloodSpawnPoint; // Spawn point for blood particles
     public ParticleSystem bloodParticle; // Blood particle system
 
@@ -29,7 +27,7 @@ public class FlyHealth : MonoBehaviour
     public string flashAmountProperty = "_FlashAmount"; // Name of the Flash Amount property in the shader
     public float flashDuration = 0.2f; // Duration of the flash effect
 
-    // Array of SpriteRenderers for the parts of the mushroom
+    // Array of SpriteRenderers for the parts of the Rat King
     public SpriteRenderer[] spriteRenderers;
 
     // Damage Sound Variables
@@ -37,10 +35,9 @@ public class FlyHealth : MonoBehaviour
     [Range(0f, 1f)] public float damageSoundVolume = 0.7f; // Volume slider added here
 
     public WeaponSwitchManager weaponSwitchManager;
-    public UnityEvent<GameObject> OnDeath;
+
     // Private variables
     private int currentHealth;
-    private bool isKnockedBack = false; // Is the mushroom currently being knocked back?
     private bool isFlashing = false; // Added to prevent multiple flash coroutines
     private AudioSource audioSource; // Reference to the AudioSource component
 
@@ -61,6 +58,7 @@ public class FlyHealth : MonoBehaviour
 
     void Start()
     {
+
         if (weaponSwitchManager == null)
         {
             weaponSwitchManager = FindObjectOfType<WeaponSwitchManager>();
@@ -69,13 +67,12 @@ public class FlyHealth : MonoBehaviour
                 Debug.LogError("WeaponSwitchManager not found in the scene. Please assign it or ensure it exists.");
             }
         }
-
         // Initialize health
         currentHealth = maxHealth;
     }
 
     // Method to take damage
-    public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 1f)
+    public void TakeDamage(float damage)
     {
         // Reduce health
         currentHealth -= (int)damage;
@@ -85,12 +82,6 @@ public class FlyHealth : MonoBehaviour
         {
             audioSource.volume = damageSoundVolume; // Apply volume
             audioSource.PlayOneShot(damageSoundClip);
-        }
-
-        // Apply knockback
-        if (!isKnockedBack)
-        {
-            StartCoroutine(ApplyKnockback(attackDirection, knockbackForce));
         }
 
         // Play blood particle effect
@@ -105,33 +96,11 @@ public class FlyHealth : MonoBehaviour
             StartCoroutine(FlashDamage());
         }
 
-        // Check if the mushroom is dead
+        // Check if the Rat King is dead
         if (currentHealth <= 0)
         {
             Die();
         }
-    }
-
-    // Coroutine to apply knockback using transform movement
-    private IEnumerator ApplyKnockback(Vector2 attackDirection, float force)
-    {
-        isKnockedBack = true;
-
-        float knockbackDirection = Mathf.Sign(attackDirection.x);
-        Vector3 startPosition = transform.position;
-        Vector3 endPosition = startPosition + new Vector3(knockbackDirection * knockbackDistance * force, 0, 0);
-
-        float elapsed = 0f;
-
-        while (elapsed < knockbackDuration)
-        {
-            transform.position = Vector3.Lerp(startPosition, endPosition, elapsed / knockbackDuration);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.position = endPosition;
-        isKnockedBack = false;
     }
 
     // Method to handle death
@@ -165,15 +134,13 @@ public class FlyHealth : MonoBehaviour
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
 
-        OnDeath?.Invoke(gameObject);
-
         if (weaponSwitchManager != null)
         {
             weaponSwitchManager.OnEnemyKilled();
             Debug.Log("Enemy died, notifying WeaponSwitchManager.");
         }
 
-        // Destroy the mushroom
+        // Destroy the Rat King
         Destroy(gameObject);
     }
 

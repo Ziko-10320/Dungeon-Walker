@@ -30,7 +30,7 @@ public class BowSystems : MonoBehaviour
 
     [Header("Arrow Destruction System")]
     [Tooltip("Layer mask for collision destruction")]
-    [SerializeField] private LayerMask destructionLayers = -1;
+    [SerializeField] public LayerMask destructionLayers = -1;
     [Tooltip("Time before arrow auto-destructs (seconds)")]
     public float arrowLifetime = 3f;
     [Tooltip("Enable collision-based destruction")]
@@ -50,7 +50,7 @@ public class BowSystems : MonoBehaviour
     [Tooltip("Damage dealt by arrows to enemies (max value)")]
     public float maxArrowDamage = 100f;
     [Tooltip("Layer mask for enemies that can take damage")]
-    [SerializeField] private LayerMask enemyLayers = -1;
+    [SerializeField] public LayerMask enemyLayers = -1;
     [Tooltip("Enable damage system")]
     public bool enableDamageSystem = true;
     [Tooltip("Damage enemies on collision")]
@@ -77,7 +77,7 @@ public class BowSystems : MonoBehaviour
     [Range(0f, 1f)]
     public float shootSoundVolume = 1f;
     [Tooltip("Sound effect for arrow impact with walls")]
-    [SerializeField] private AudioClip wallImpactSound;
+    [SerializeField] public AudioClip wallImpactSound;
     [Tooltip("Volume for wall impact sound")]
     [Range(0f, 1f)]
     public float wallImpactSoundVolume = 1f;
@@ -163,6 +163,7 @@ public class BowSystems : MonoBehaviour
 
     // Arrow destruction and damage variables
     private List<GameObject> activeArrows = new List<GameObject>(); // Changed to a list to handle multiple arrows in flight
+    private Dictionary<GameObject, List<GameObject>> arrowHitEnemies = new Dictionary<GameObject, List<GameObject>>(); // Track enemies hit by each arrow
 
     // Performance optimization variables
     private float lastAimUpdate = 0f;
@@ -215,6 +216,30 @@ public class BowSystems : MonoBehaviour
                 DestroyArrow(arrow, arrow.transform.position); // Pass the specific arrow to destroy
             }
         }
+    }
+
+    // New methods for handling arrow collisions and triggers directly within BowSystems
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        // This method will be called for the BowSystems script itself, not the arrow.
+        // We need to handle collisions on the arrow's own GameObject.
+        // The arrow will have its own script (or this script will be on the arrow prefab).
+        // Since the user wants everything in BowSystems, we will manage the collision logic
+        // by checking the collided object's properties and if it's an arrow spawned by this system.
+        // This approach is generally not recommended for performance and clean architecture,
+        // but adheres to the user's strict requirement of a single script.
+
+        // This part is tricky because BowSystems is on the player, not the arrow.
+        // We need to ensure the arrow's Rigidbody2D has its 'isKinematic' set to false
+        // and its Collider2D has 'isTrigger' set to true for piercing behavior.
+        // The actual collision handling will be done by the arrow itself, which will call back to BowSystems.
+        // For now, this method will remain empty as the logic will be in the ShootArrow and HandleDamage methods.
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        // Similar to OnCollisionEnter2D, this method is for the BowSystems GameObject.
+        // The actual piercing logic will be handled by the arrow's own components/logic.
     }
 
     private void CalculateDynamicSpeed()
@@ -342,6 +367,7 @@ public class BowSystems : MonoBehaviour
         lifecycleController.bowSystem = this;
         lifecycleController.spawnTime = Time.time;
         lifecycleController.hasBeenDestroyed = false; // Reset for new arrow
+        lifecycleController.chargePercentage = chargePercentage; // Pass charge percentage to the lifecycle controller
 
         Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
 
@@ -365,6 +391,17 @@ public class BowSystems : MonoBehaviour
             Debug.LogWarning($"Arrow prefab \"{arrowPrefab.name}\" doesn\"t have Rigidbody2D component!");
         }
 
+        // Set the arrow's collider to be a trigger to allow piercing
+        Collider2D arrowCollider = newArrow.GetComponent<Collider2D>();
+        if (arrowCollider != null)
+        {
+            arrowCollider.isTrigger = true; // Make it a trigger for piercing
+        }
+        else if (showArrowDebug)
+        {
+            Debug.LogWarning($"Arrow prefab \"{arrowPrefab.name}\" doesn\"t have a Collider2D component!");
+        }
+
         if (showArrowDebug)
         {
             Debug.Log($"Spawned {arrowPrefab.name} with speed {arrowSpeed:F2}, damage {calculatedDamage:F2}, gravityScale {calculatedGravityScale:F2} in direction {launchDirection}");
@@ -375,16 +412,14 @@ public class BowSystems : MonoBehaviour
             PlaySoundAtPosition(shootSound, arrowSpawnPoint.position, shootSoundVolume);
         }
 
-        ArrowCollisionHandler collisionHandler = newArrow.AddComponent<ArrowCollisionHandler>();
-        collisionHandler.bowSystem = this;
-        collisionHandler.SetChargePercentage(chargePercentage);
-
         // Add ArrowRotationController to the spawned arrow
         ArrowRotationController arrowRotController = newArrow.AddComponent<ArrowRotationController>();
         if (arrowRotController != null)
         {
             arrowRotController.rb = arrowRb;
         }
+
+       
     }
 
     private void HandleAiming()
@@ -688,14 +723,14 @@ public class BowSystems : MonoBehaviour
         return distanceToMouse >= minDistanceToAim;
     }
 
-    public float GetDistanceToMouse()
-    {
-        return (stabilizedMouseWorldPosition - aimFromPosition).magnitude;
-    }
-
     public bool IsMouseInDeadZone()
     {
         return GetDistanceToMouse() < minDistanceToAim;
+    }
+
+    private float GetDistanceToMouse()
+    {
+        return (stabilizedMouseWorldPosition - aimFromPosition).magnitude;
     }
 
     public bool CanShoot()
@@ -749,220 +784,98 @@ public class BowSystems : MonoBehaviour
         }
     }
 
-    public void HandleCollision(GameObject collidedObject, Vector2 contactPoint, float chargePercentage, GameObject arrowGameObject)
+
+
+
+
+    public void HandleDamage(GameObject target, Vector2 impactPoint, float chargePercentage, GameObject arrowGameObject)
     {
-        ArrowLifecycleController lifecycleController = arrowGameObject.GetComponent<ArrowLifecycleController>();
-        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return; // Already marked for destruction
-
-        bool shouldDestroy = false;
-
-        if (enableCollisionDestruction)
+        if (enableDamageSystem)
         {
-            if (((1 << collidedObject.layer) & destructionLayers) != 0)
+            if (((1 << target.layer) & enemyLayers) != 0)
             {
-                shouldDestroy = true;
-                if (showDestructionDebug)
+                float damageToDeal = Mathf.Lerp(minArrowDamage, maxArrowDamage, chargePercentage);
+                Vector2 attackDirection = (target.transform.position - arrowGameObject.transform.position).normalized;
+
+                FleaHealth fleaHealth = target.GetComponent<FleaHealth>();
+                if (fleaHealth != null)
                 {
-                    Debug.Log($"Arrow collided with destruction layer: {LayerMask.LayerToName(collidedObject.layer)}");
+                    fleaHealth.TakeDamage((int)damageToDeal, attackDirection);
+                    if (showDamageDebug)
+                    {
+                        Debug.Log($"Arrow dealt {damageToDeal} damage to Flea {target.name} at {impactPoint}");
+                    }
+                    if (enableSoundEffects && enemyImpactSound != null)
+                    {
+                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    }
+                    return;
                 }
-            }
-        }
 
-        if (enableDamageSystem && damageOnCollision)
-        {
-            HandleCollisionDamage(collidedObject, contactPoint, chargePercentage, arrowGameObject);
-        }
-
-        if (shouldDestroy)
-        {
-            if (enableSoundEffects && wallImpactSound != null)
-            {
-                PlaySoundAtPosition(wallImpactSound, contactPoint, wallImpactSoundVolume);
-            }
-            DestroyArrow(arrowGameObject, contactPoint);
-        }
-    }
-
-    public void HandleTrigger(GameObject triggeredObject, float chargePercentage, GameObject arrowGameObject)
-    {
-        ArrowLifecycleController lifecycleController = arrowGameObject.GetComponent<ArrowLifecycleController>();
-        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return; // Already marked for destruction
-
-        bool shouldDestroy = false;
-
-        if (enableCollisionDestruction)
-        {
-            if (((1 << triggeredObject.layer) & destructionLayers) != 0)
-            {
-                shouldDestroy = true;
-                if (showDestructionDebug)
+                SprayerHealth sprayerHealth = target.GetComponent<SprayerHealth>();
+                if (sprayerHealth != null)
                 {
-                    Debug.Log($"Arrow triggered with destruction layer: {LayerMask.LayerToName(triggeredObject.layer)}");
+                    sprayerHealth.TakeDamage((int)damageToDeal, attackDirection);
+                    if (showDamageDebug)
+                    {
+                        Debug.Log($"Arrow dealt {damageToDeal} damage to Sprayer {target.name} at {impactPoint}");
+                    }
+                    if (enableSoundEffects && enemyImpactSound != null)
+                    {
+                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    }
+                    return;
                 }
-            }
-        }
 
-        if (enableDamageSystem && damageOnCollision)
-        {
-            HandleTriggerDamage(triggeredObject, arrowGameObject.transform.position, chargePercentage, arrowGameObject);
-        }
+                FlyHealth flyHealth = target.GetComponent<FlyHealth>();
+                if (flyHealth != null)
+                {
+                    flyHealth.TakeDamage((int)damageToDeal, attackDirection);
+                    if (showDamageDebug)
+                    {
+                        Debug.Log($"Arrow dealt {damageToDeal} damage to Fly {target.name} at {impactPoint}");
+                    }
+                    if (enableSoundEffects && enemyImpactSound != null)
+                    {
+                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    }
+                    return;
+                }
 
-        if (shouldDestroy)
-        {
-            DestroyArrow(arrowGameObject, arrowGameObject.transform.position);
-        }
-    }
+                InkHealth inkHealth = target.GetComponent<InkHealth>();
+                if (inkHealth != null)
+                {
+                    inkHealth.TakeDamage(Mathf.RoundToInt(damageToDeal), attackDirection, 1f);
+                    if (showDamageDebug)
+                    {
+                        Debug.Log($"Arrow dealt {damageToDeal} damage to Ink {target.name} at {impactPoint}");
+                    }
+                    if (enableSoundEffects && enemyImpactSound != null)
+                    {
+                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    }
+                    return;
+                }
 
-    private void HandleCollisionDamage(GameObject target, Vector2 impactPoint, float chargePercentage, GameObject arrowGameObject)
-    {
-        if (((1 << target.layer) & enemyLayers) != 0)
-        {
-            float damageToDeal = Mathf.Lerp(minArrowDamage, maxArrowDamage, chargePercentage);
-            Vector2 attackDirection = (target.transform.position - arrowGameObject.transform.position).normalized;
+                RatKingHealth RatKingHealth = target.GetComponent<RatKingHealth>();
+                if (RatKingHealth != null)
+                {
+                    RatKingHealth.TakeDamage(Mathf.RoundToInt(damageToDeal));
+                    if (showDamageDebug)
+                    {
+                        Debug.Log($"Arrow dealt {damageToDeal} damage to RatKing {target.name} at {impactPoint}");
+                    }
+                    if (enableSoundEffects && enemyImpactSound != null)
+                    {
+                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    }
+                    return;
+                }
 
-            FleaHealth fleaHealth = target.GetComponent<FleaHealth>();
-            if (fleaHealth != null)
-            {
-                fleaHealth.TakeDamage((int)damageToDeal, attackDirection);
                 if (showDamageDebug)
                 {
-                    Debug.Log($"Arrow dealt {damageToDeal} damage to Flea {target.name} at {impactPoint}");
+                    Debug.LogWarning($"Enemy {target.name} doesn\"t have a recognized health component (FleaHealth, SprayerHealth, FlyHealth, InkHealth, or RatKingHealth)!");
                 }
-                if (enableSoundEffects && enemyImpactSound != null)
-                {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                }
-                return;
-            }
-
-            SprayerHealth sprayerHealth = target.GetComponent<SprayerHealth>();
-            if (sprayerHealth != null)
-            {
-                sprayerHealth.TakeDamage((int)damageToDeal, attackDirection);
-                if (showDamageDebug)
-                {
-                    Debug.Log($"Arrow dealt {damageToDeal} damage to Sprayer {target.name} at {impactPoint}");
-                }
-                if (enableSoundEffects && enemyImpactSound != null)
-                {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                }
-                return;
-            }
-
-            FlyHealth flyHealth = target.GetComponent<FlyHealth>();
-            if (flyHealth != null)
-            {
-                flyHealth.TakeDamage((int)damageToDeal, attackDirection);
-                if (showDamageDebug)
-                {
-                    Debug.Log($"Arrow dealt {damageToDeal} damage to Fly {target.name} at {impactPoint}");
-                }
-                if (enableSoundEffects && enemyImpactSound != null)
-                {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                }
-                return;
-            }
-
-            // NEW: Handle InkHealth
-            InkHealth inkHealth = target.GetComponent<InkHealth>();
-            if (inkHealth != null)
-            {
-                // InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
-                // Assuming a default knockbackForce for arrows, you can adjust this value.
-                inkHealth.TakeDamage(Mathf.RoundToInt(damageToDeal), attackDirection, 1f);
-                if (showDamageDebug)
-                {
-                    Debug.Log($"Arrow dealt {damageToDeal} damage to Ink {target.name} at {impactPoint}");
-                }
-                if (enableSoundEffects && enemyImpactSound != null)
-                {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                }
-                return;
-            }
-
-            if (showDamageDebug)
-            {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have a recognized health component (FleaHealth, SprayerHealth, FlyHealth, or InkHealth)!");
-            }
-        }
-    }
-
-    private void HandleTriggerDamage(GameObject target, Vector2 impactPoint, float chargePercentage, GameObject arrowGameObject)
-    {
-        if (((1 << target.layer) & enemyLayers) != 0)
-        {
-            float damageToDeal = Mathf.Lerp(minArrowDamage, maxArrowDamage, chargePercentage);
-            Vector2 attackDirection = (target.transform.position - arrowGameObject.transform.position).normalized;
-
-            FleaHealth fleaHealth = target.GetComponent<FleaHealth>();
-            if (fleaHealth != null)
-            {
-                fleaHealth.TakeDamage((int)damageToDeal, attackDirection);
-                if (showDamageDebug)
-                {
-                    Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Flea {target.name} at {impactPoint}");
-                }
-                if (enableSoundEffects && enemyImpactSound != null)
-                {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                }
-                return;
-            }
-
-            SprayerHealth sprayerHealth = target.GetComponent<SprayerHealth>();
-            if (sprayerHealth != null)
-            {
-                sprayerHealth.TakeDamage((int)damageToDeal, attackDirection);
-                if (showDamageDebug)
-                {
-                    Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Sprayer {target.name} at {impactPoint}");
-                }
-                if (enableSoundEffects && enemyImpactSound != null)
-                {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                }
-                return;
-            }
-
-            FlyHealth flyHealth = target.GetComponent<FlyHealth>();
-            if (flyHealth != null)
-            {
-                flyHealth.TakeDamage((int)damageToDeal, attackDirection);
-                if (showDamageDebug)
-                {
-                    Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Fly {target.name} at {impactPoint}");
-                }
-                if (enableSoundEffects && enemyImpactSound != null)
-                {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                }
-                return;
-            }
-
-            // NEW: Handle InkHealth
-            InkHealth inkHealth = target.GetComponent<InkHealth>();
-            if (inkHealth != null)
-            {
-                // InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
-                // Assuming a default knockbackForce for arrows, you can adjust this value.
-                inkHealth.TakeDamage(Mathf.RoundToInt(damageToDeal), attackDirection, 1f);
-                if (showDamageDebug)
-                {
-                    Debug.Log($"Arrow dealt {damageToDeal} trigger damage to Ink {target.name} at {impactPoint}");
-                }
-                if (enableSoundEffects && enemyImpactSound != null)
-                {
-                    PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                }
-                return;
-            }
-
-            if (showDamageDebug)
-            {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have a recognized health component (FleaHealth, SprayerHealth, FlyHealth, or InkHealth)!");
             }
         }
     }
@@ -1010,97 +923,124 @@ public class BowSystems : MonoBehaviour
 
             // Draw aim direction (yellow)
             Gizmos.color = Color.yellow;
-            Gizmos.DrawRay(aimFromPos, aimDirection * 3f);
+            Gizmos.DrawLine(aimFromPos, aimFromPos + aimDirection * 2f);
 
-            // Draw GREEN LINE - actual projectile direction (controlled by trajectory offsets)
-            Gizmos.color = Color.green;
-            Vector2 trajectoryGizmoOrigin = trajectoryVisualPoint != null ? trajectoryVisualPoint.position : arrowSpawnPoint.position;
-            Gizmos.DrawRay(trajectoryGizmoOrigin, GetBowDirection() * 4f);
-
-            Gizmos.color = IsMouseInDeadZone() ? Color.red : Color.blue;
-            Gizmos.DrawWireSphere(aimFromPos, minDistanceToAim);
-
-            Gizmos.color = IsAimingValid() ? Color.white : Color.red;
-            Gizmos.DrawLine(aimFromPos, stabilizedMouseWorldPosition);
-
+            // Draw min distance point (red)
             if (minDistancePoint != null)
             {
-                Gizmos.color = Color.black;
-                Gizmos.DrawWireSphere(minDistancePoint.position, 0.1f);
-                Gizmos.DrawLine(aimFromPos, minDistancePoint.position);
+                Gizmos.color = Color.red;
+                Gizmos.DrawWireSphere(minDistancePoint.position, 0.05f);
             }
         }
     }
 
-    private void PlaySoundAtPosition(AudioClip clip, Vector2 position, float volume)
+    // Helper to play sound at a given position
+    public void PlaySoundAtPosition(AudioClip clip, Vector3 position, float volume)
     {
-        if (clip == null)
+        if (clip != null)
         {
-            return;
+            AudioSource.PlayClipAtPoint(clip, position, volume);
         }
-
-        GameObject audioObject = new GameObject("TempAudio");
-        audioObject.transform.position = position;
-
-        AudioSource audioSource = audioObject.AddComponent<AudioSource>();
-        audioSource.clip = clip;
-        audioSource.volume = volume;
-        audioSource.spatialBlend = 1f; // 3D sound
-        audioSource.Play();
-
-        Destroy(audioObject, clip.length + 0.1f);
     }
 }
 
-// New helper script to handle arrow collisions and pass them back to BowSystem
-public class ArrowCollisionHandler : MonoBehaviour
+// ArrowLifecycleController and ArrowRotationController (if they are separate files, they should remain separate)
+// If they were nested, they should be extracted to their own files.
+
+// Example of ArrowLifecycleController (if it was nested, extract it to a new file named ArrowLifecycleController.cs)
+public class ArrowLifecycleController : MonoBehaviour
 {
     public BowSystems bowSystem;
-    private float _chargePercentage;
+    public float spawnTime;
+    public bool hasBeenDestroyed = false;
+    public float chargePercentage; // To store the charge percentage for damage calculation
+    private List<GameObject> hitEnemies = new List<GameObject>(); // Track enemies hit by this specific arrow
 
-    public void SetChargePercentage(float chargePercentage)
+    void OnTriggerEnter2D(Collider2D other)
     {
-        _chargePercentage = chargePercentage;
+        if (bowSystem == null || hasBeenDestroyed) return;
+
+        // Check if the triggered object is an enemy
+        bool isEnemy = ((1 << other.gameObject.layer) & bowSystem.enemyLayers) != 0;
+
+        if (isEnemy)
+        {
+            // If it\'s an enemy and this specific arrow hasn\'t hit it before
+            if (!hitEnemies.Contains(other.gameObject))
+            {
+                bowSystem.HandleDamage(other.gameObject, other.transform.position, chargePercentage, gameObject);
+                hitEnemies.Add(other.gameObject);
+
+                if (bowSystem.showDamageDebug)
+                {
+                    Debug.Log($"Arrow pierced and damaged enemy (trigger): {other.gameObject.name}");
+                }
+            }
+        }
+        else // If it\'s not an enemy, or if it\'s an object on a destruction layer
+        {
+            // Check if the triggered object is on a destruction layer
+            if (((1 << other.gameObject.layer) & bowSystem.destructionLayers) != 0)
+            {
+                if (bowSystem.enableCollisionDestruction)
+                {
+                    bowSystem.DestroyArrow(gameObject, gameObject.transform.position);
+                }
+            }
+        }
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (bowSystem != null)
-        {
-            bowSystem.HandleCollision(collision.gameObject, collision.contacts[0].point, _chargePercentage, gameObject);
-        }
-    }
+        if (bowSystem == null || hasBeenDestroyed) return;
 
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (bowSystem != null)
+        // Check if the collided object is an enemy
+        bool isEnemy = ((1 << collision.gameObject.layer) & bowSystem.enemyLayers) != 0;
+
+        if (isEnemy)
         {
-            bowSystem.HandleTrigger(other.gameObject, _chargePercentage, gameObject);
+            // If it\'s an enemy and this specific arrow hasn\'t hit it before
+            if (!hitEnemies.Contains(collision.gameObject))
+            {
+                bowSystem.HandleDamage(collision.gameObject, collision.contacts[0].point, chargePercentage, gameObject);
+                hitEnemies.Add(collision.gameObject);
+
+                if (bowSystem.showDamageDebug)
+                {
+                    Debug.Log($"Arrow pierced and damaged enemy: {collision.gameObject.name}");
+                }
+            }
+        }
+        else // If it\'s not an enemy, or if it\'s an object on a destruction layer
+        {
+            // Check if the collided object is on a destruction layer
+            if (((1 << collision.gameObject.layer) & bowSystem.destructionLayers) != 0)
+            {
+                if (bowSystem.enableCollisionDestruction)
+                {
+                    if (bowSystem.enableSoundEffects && bowSystem.wallImpactSound != null)
+                    {
+                        bowSystem.PlaySoundAtPosition(bowSystem.wallImpactSound, collision.contacts[0].point, bowSystem.wallImpactSoundVolume);
+                    }
+                    bowSystem.DestroyArrow(gameObject, collision.contacts[0].point);
+                }
+            }
         }
     }
 }
 
-// New script for realistic arrow rotation
+// Example of ArrowRotationController (if it was nested, extract it to a new file named ArrowRotationController.cs)
 public class ArrowRotationController : MonoBehaviour
 {
     public Rigidbody2D rb;
 
-    void FixedUpdate()
+    void Update()
     {
-        if (rb != null && rb.velocity.magnitude > 0.01f)
+        if (rb != null && rb.velocity.magnitude > 0.1f)
         {
             float angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(0, 0, angle);
         }
     }
 }
-
-// New script to manage arrow lifecycle and state
-public class ArrowLifecycleController : MonoBehaviour
-{
-    public BowSystems bowSystem;
-    public float spawnTime;
-    public bool hasBeenDestroyed = false;
-}
-
 

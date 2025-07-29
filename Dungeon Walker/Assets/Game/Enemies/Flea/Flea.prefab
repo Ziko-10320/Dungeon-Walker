@@ -5785,6 +5785,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3970156097857623796}
+    - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5256201411756966090}
   m_SourcePrefab: {fileID: 4843985084834002234, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
 --- !u!4 &481970195025675269 stripped
 Transform:
@@ -5893,7 +5896,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rb: {fileID: 8602618842035117712}
   fleaAnimator: {fileID: 5518558782334354305}
-  playerTransform: {fileID: 0}
+  playerTransform: {fileID: 5689588596020951161, guid: 0153416545614fa489c8f67f7ca52e0c, type: 3}
   patrolSpeed: 5
   chaseSpeed: 9.14
   stoppingDistance: 2.95
@@ -5947,6 +5950,9 @@ MonoBehaviour:
   damageSound: {fileID: 0}
   damageSoundVolume: 0.7
   weaponSwitchManager: {fileID: 0}
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
   CameraShakeDeath: {fileID: 11400000, guid: 5de216865eb2173459f490db41b47444, type: 2}
 --- !u!114 &1720233607332291632
 MonoBehaviour:
@@ -5961,9 +5967,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fleaAnimator: {fileID: 5518558782334354305}
-  followScript: {fileID: 0}
+  followScript: {fileID: 4000390345464616173}
   rb: {fileID: 8602618842035117712}
-  playerTransform: {fileID: 0}
+  playerTransform: {fileID: 5689588596020951161, guid: 0153416545614fa489c8f67f7ca52e0c, type: 3}
   attackRange: 7.05
   minTimeBeforeAttack: 0.2
   maxTimeBeforeAttack: 1.5
@@ -6076,6 +6082,28 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &5256201411756966090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1619136985213934694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 506cf7c1450a094428b9cd6974ffba4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 0
+  destroyDelay: 0
+  deathEffect: {fileID: 0}
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!212 &4819574818533767492 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 6015976353237451935, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}

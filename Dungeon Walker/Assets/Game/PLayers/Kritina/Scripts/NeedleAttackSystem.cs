@@ -5,7 +5,7 @@ using UnityEngine;
 public class BatAttackSystem : MonoBehaviour
 {
     [Header("Attack Settings")]
-    [SerializeField] private Animator playerAnimator; // Reference to the player's Animator
+    [SerializeField] private Animator playerAnimator; // Reference to the player\"s Animator
     [SerializeField] private string anticipationTriggerName = "Anticipation"; // Name of the Anticipation Trigger in the Animator
     [SerializeField] private string attackTriggerName = "BatAttack"; // Name of the Attack Trigger in the Animator
     [SerializeField] private string upwardAttackTriggerName = "UpwardAttack"; // Name of the Upward Attack Trigger in the Animator
@@ -16,10 +16,13 @@ public class BatAttackSystem : MonoBehaviour
 
     [Header("Throw Slash Settings")]
     [SerializeField] private GameObject throwSlashPrefab; // Prefab of the ThrowSlash projectile
-    [SerializeField] private Transform throwSlashSpawnPoint; // Point where the ThrowSlash is spawned when thrown
+    [SerializeField] private Transform throwSlashSpawnPointRight; // Point where the ThrowSlash is spawned when facing right
+    [SerializeField] private Transform throwSlashSpawnPointLeft; // Point where the ThrowSlash is spawned when facing left
     [SerializeField] private float throwSlashSpeed = 15f; // Speed of the thrown ThrowSlash
     [SerializeField] private int throwSlashDamage = 20; // Damage dealt by ThrowSlash
     [SerializeField] private GameObject bat2Prefab; // Prefab of the Bat2 to spawn on ground hit
+    [SerializeField] public float aimVerticalOffsetRightCursor = 0f; // Vertical offset for aim when cursor is to the right of the player
+    [SerializeField] public float aimVerticalOffsetLeftCursor = 0f; // Vertical offset for aim when cursor is to the left of the player
 
     [Header("Bat Pickup Settings")]
     [SerializeField] private float batPickupRange = 1.5f; // Range within which player can pick up the Bat2
@@ -101,7 +104,7 @@ public class BatAttackSystem : MonoBehaviour
         // Stop all coroutines to prevent MissingReferenceException
         StopAllCoroutines();
 
-        // Ensure the player's bat visual is active when the script is disabled
+        // Ensure the player\"s bat visual is active when the script is disabled
         // This prepares it for when the bat weapon is re-enabled or picked up
         if (playerBatVisual != null)
         {
@@ -176,10 +179,13 @@ public class BatAttackSystem : MonoBehaviour
             audioSource = GetComponent<AudioSource>();
         }
 
-        if (throwSlashSpawnPoint == null)
-        {
-            throwSlashSpawnPoint = transform;
-        }
+        // The original throwSlashSpawnPoint is no longer needed as we have specific left/right ones.
+        // If it was used for other purposes, it should be kept and its usage clarified.
+        // For now, assuming it's solely for ThrowSlash spawning and can be removed.
+        // if (throwSlashSpawnPoint == null)
+        // {
+        //     throwSlashSpawnPoint = transform;
+        // }
 
         if (playerAnimator == null)
         {
@@ -229,7 +235,7 @@ public class BatAttackSystem : MonoBehaviour
         GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
         foreach (GameObject obj in allObjects)
         {
-            // Check if the object's name contains "Bat2" and it's not the player's visual bat
+            // Check if the object\"s name contains "Bat2" and it\"s not the player\"s visual bat
             if (obj != playerBatVisual && obj.name.Contains("Bat2") && obj.GetComponent<Rigidbody2D>() != null)
             {
                 Destroy(obj);
@@ -241,7 +247,7 @@ public class BatAttackSystem : MonoBehaviour
 
     private void CleanupAllGhostObjects()
     {
-        // Stop ghost effect coroutine if it's running
+        // Stop ghost effect coroutine if it\"s running
         if (ghostEffectCoroutine != null)
         {
             StopCoroutine(ghostEffectCoroutine);
@@ -289,17 +295,25 @@ public class BatAttackSystem : MonoBehaviour
         Rigidbody2D bat2Rb = spawnedBat2.GetComponent<Rigidbody2D>();
         if (bat2Rb == null) return;
 
-        float raycastDistance = 1f;
-        float verticalOffset = 0.1f;
+        // Use a small raycast distance to detect ground directly below the bat
+        float raycastDistance = 0.2f; // Adjusted for more precise ground detection
+        // Offset the bat slightly above the ground to prevent it from sinking
+        float verticalOffset = 0.05f; // Adjusted for more precise positioning
 
+        // Perform a raycast downwards from the bat\"s position
         RaycastHit2D hit = Physics2D.Raycast(spawnedBat2.transform.position, Vector2.down, raycastDistance, groundLayer);
 
+        // If the raycast hits the ground and the bat is below the intended vertical offset
         if (hit.collider != null && spawnedBat2.transform.position.y < hit.point.y + verticalOffset)
         {
             Vector3 newPosition = spawnedBat2.transform.position;
-            newPosition.y = hit.point.y + verticalOffset;
+            newPosition.y = hit.point.y + verticalOffset; // Set the bat\"s Y position to be slightly above the ground hit point
             spawnedBat2.transform.position = newPosition;
-            bat2Rb.velocity = new Vector2(bat2Rb.velocity.x, Mathf.Max(0, bat2Rb.velocity.y));
+            // If the bat is moving downwards, stop its vertical velocity to prevent bouncing or sinking
+            if (bat2Rb.velocity.y < 0)
+            {
+                bat2Rb.velocity = new Vector2(bat2Rb.velocity.x, 0);
+            }
         }
     }
 
@@ -418,17 +432,46 @@ public class BatAttackSystem : MonoBehaviour
             return;
         }
 
-        Vector3 targetWorldPoint = playerCamera.ScreenToWorldPoint(new Vector3(lastMousePosition.x, lastMousePosition.y, playerCamera.nearClipPlane));
-        targetWorldPoint.z = throwSlashSpawnPoint.position.z;
+        Transform currentSpawnPoint = null;
+        if (transform.localScale.x > 0)
+        { // Player is facing right
+            currentSpawnPoint = throwSlashSpawnPointRight;
+        }
+        else
+        { // Player is facing left
+            currentSpawnPoint = throwSlashSpawnPointLeft;
+        }
 
-        Vector2 throwDirection = (targetWorldPoint - throwSlashSpawnPoint.position).normalized;
+        if (currentSpawnPoint == null)
+        {
+            Debug.LogWarning("ThrowSlash spawn point is not assigned for the current direction.");
+            return;
+        }
+
+        Vector3 targetWorldPoint = playerCamera.ScreenToWorldPoint(new Vector3(lastMousePosition.x, lastMousePosition.y, playerCamera.nearClipPlane));
+        targetWorldPoint.z = currentSpawnPoint.position.z;
+
+        // Determine if the cursor is to the right or left of the player
+        float playerScreenX = playerCamera.WorldToScreenPoint(transform.position).x;
+        float cursorScreenX = lastMousePosition.x;
+
+        if (cursorScreenX > playerScreenX) // Cursor is to the right of the player
+        {
+            targetWorldPoint.y += aimVerticalOffsetRightCursor;
+        }
+        else // Cursor is to the left of the player
+        {
+            targetWorldPoint.y += aimVerticalOffsetLeftCursor;
+        }
+
+        Vector2 throwDirection = (targetWorldPoint - currentSpawnPoint.position).normalized;
 
         if (throwDirection.magnitude < 0.1f)
         {
             throwDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
         }
 
-        GameObject slashInstance = Instantiate(throwSlashPrefab, throwSlashSpawnPoint.position, Quaternion.identity);
+        GameObject slashInstance = Instantiate(throwSlashPrefab, currentSpawnPoint.position, Quaternion.identity);
 
         Rigidbody2D slashRb = slashInstance.GetComponent<Rigidbody2D>();
         if (slashRb == null)
@@ -668,6 +711,10 @@ public class BatAttackSystem : MonoBehaviour
             {
                 sprayerHealth.TakeDamage(damage, knockbackDirection, sprayerKnockbackForce);
             }
+            else if (enemy.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
+            {
+                RatKingHealth.TakeDamage(damage);
+            }
             else
             {
                 Debug.LogWarning($"No recognized health script found on {enemy.name}. Damage applied without specific knockback.");
@@ -720,6 +767,20 @@ public class BatAttackSystem : MonoBehaviour
         {
             Vector3 mouseWorldPos = playerCamera.ScreenToWorldPoint(Input.mousePosition);
             mouseWorldPos.z = transform.position.z;
+
+            // Apply aim offset based on cursor position relative to player
+            float playerScreenX = playerCamera.WorldToScreenPoint(transform.position).x;
+            float cursorScreenX = Input.mousePosition.x;
+
+            if (cursorScreenX > playerScreenX) // Cursor is to the right of the player
+            {
+                mouseWorldPos.y += aimVerticalOffsetRightCursor;
+            }
+            else // Cursor is to the left of the player
+            {
+                mouseWorldPos.y += aimVerticalOffsetLeftCursor;
+            }
+
             Vector2 directionToMouse = (mouseWorldPos - transform.position).normalized;
 
             Gizmos.color = Color.yellow;
@@ -784,62 +845,56 @@ public class BatAttackSystem : MonoBehaviour
         {
             if (hasHit) return;
 
+            // Check for enemy collision
             if (((1 << other.gameObject.layer) & enemyLayers) != 0)
             {
+                // Check if the enemy has a health script and apply damage
+                Vector2 knockbackDirection = (other.transform.position - transform.position).normalized;
+
+                if (other.TryGetComponent<FleaHealth>(out var fleaHealth) && fleaHealth != null)
+                {
+                    fleaHealth.TakeDamage(damage, knockbackDirection, _fleaKnockbackForce);
+                }
+                else if (other.TryGetComponent<InkHealth>(out var inkHealth) && inkHealth != null)
+                {
+                    inkHealth.TakeDamage(damage, knockbackDirection, _inkKnockbackForce);
+                }
+                else if (other.TryGetComponent<FlyHealth>(out var flyHealth) && flyHealth != null)
+                {
+                    flyHealth.TakeDamage(damage, knockbackDirection, _flyKnockbackForce);
+                }
+                else if (other.TryGetComponent<SprayerHealth>(out var sprayerHealth) && sprayerHealth != null)
+                {
+                    sprayerHealth.TakeDamage(damage, knockbackDirection, _sprayerKnockbackForce);
+                }
+                else if (other.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
+                {
+                    RatKingHealth.TakeDamage(damage);
+                }
+                else
+                {
+                    Debug.LogWarning($"No recognized health script found on {other.name}. Damage applied without specific knockback.");
+                }
+
                 if (audioSource != null && hitEnemySound != null)
                 {
                     audioSource.PlayOneShot(hitEnemySound);
                 }
 
-                ApplyDamageToEnemy(other);
-                SpawnBat2(transform.position);
-                Destroy(gameObject);
+                hasHit = true;
+                Destroy(gameObject); // Destroy the slash after hitting an enemy
             }
+            // Check for ground collision
             else if (((1 << other.gameObject.layer) & groundLayer) != 0)
             {
                 hasHit = true;
-                SpawnBat2(transform.position);
-                Destroy(gameObject);
-            }
-        }
-
-        void ApplyDamageToEnemy(Collider2D enemy)
-        {
-            // Add null check for enemy GameObject before accessing its transform
-            if (enemy == null || enemy.gameObject == null) return;
-
-            Vector2 knockbackDirection = ((Vector2)(enemy.transform.position - transform.position)).normalized;
-
-            // Add null checks before calling TryGetComponent
-            if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth) && fleaHealth != null)
-            {
-                fleaHealth.TakeDamage(damage, knockbackDirection, _fleaKnockbackForce);
-            }
-            else if (enemy.TryGetComponent<InkHealth>(out var inkHealth) && inkHealth != null)
-            {
-                inkHealth.TakeDamage(damage, knockbackDirection, _inkKnockbackForce);
-            }
-            else if (enemy.TryGetComponent<FlyHealth>(out var flyHealth) && flyHealth != null)
-            {
-                flyHealth.TakeDamage(damage, knockbackDirection, _flyKnockbackForce);
-            }
-            else if (enemy.TryGetComponent<SprayerHealth>(out var sprayerHealth) && sprayerHealth != null)
-            {
-                sprayerHealth.TakeDamage(damage, knockbackDirection, _sprayerKnockbackForce);
-            }
-            else
-            {
-                Debug.LogWarning($"No recognized health script found on {enemy.name}. ThrowSlash damage applied without specific knockback.");
-            }
-        }
-
-        void SpawnBat2(Vector3 position)
-        {
-            if (bat2Prefab != null && parentSystem != null)
-            {
-                GameObject bat2Instance = Instantiate(bat2Prefab, position, Quaternion.identity);
-                parentSystem.SetSpawnedBat2(bat2Instance);
-                Debug.Log("Bat2 spawned at position: " + position);
+                // Spawn Bat2 at the collision point
+                if (bat2Prefab != null)
+                {
+                    GameObject bat2Instance = Instantiate(bat2Prefab, transform.position, Quaternion.identity);
+                    parentSystem.SetSpawnedBat2(bat2Instance);
+                }
+                Destroy(gameObject); // Destroy the slash after hitting the ground
             }
         }
     }
