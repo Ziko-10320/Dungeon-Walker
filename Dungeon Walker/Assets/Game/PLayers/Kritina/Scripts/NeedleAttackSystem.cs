@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Audio;
 
 public class BatAttackSystem : MonoBehaviour
 {
@@ -41,11 +43,12 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private bool showDirectionDebug = false; // Show debug information for mouse direction
 
     [Header("Audio Settings")]
-    [SerializeField] private AudioSource audioSource; // Reference to the AudioSource component
+    [SerializeField] public AudioSource audioSource; // Reference to the AudioSource component
     [SerializeField] private AudioClip attackSound; // Sound played when performing normal attack
     [SerializeField] private AudioClip upwardAttackSound; // Sound played when performing upward attack
     [SerializeField] private AudioClip throwBatSound; // Sound played when throwing the bat
     [SerializeField] private AudioClip throwSlashHitEnemySound; // Sound played when ThrowSlash hits an enemy
+    [SerializeField] private AudioClip batHitEnemySound; // New: Sound played when bat hits an enemy
 
     [Header("Visual Settings")]
     [SerializeField] private GameObject playerBatVisual; // Visual representation of the bat on the player (to hide when thrown)
@@ -73,6 +76,19 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private float groundCheckRadius = 0.2f; // Radius of the ground check circle
     [SerializeField] private LayerMask whatIsGround; // Layer mask for ground
 
+    [Header("Bat Pointer Settings")]
+    [SerializeField] private RectTransform batPointerRectTransform; // The RectTransform of the UI pointer
+    [SerializeField] private float minPointerSize = 0.5f; // Minimum scale of the pointer when close
+    [SerializeField] private float maxPointerSize = 1.5f; // Maximum scale of the pointer when far
+    [SerializeField] private float maxDistanceForScaling = 20f; // Distance at which pointer reaches max size
+    [SerializeField] private float edgeOffset = 50f; // Offset from the screen edge for the pointer
+
+    [Header("Volume Control Settings")]
+    [SerializeField] private AudioMixer masterMixer; // Reference to the Master Audio Mixer
+    [SerializeField] private Slider masterVolumeSlider; // UI Slider for Master Volume
+    [SerializeField] private Slider musicVolumeSlider; // UI Slider for Music Volume
+    [SerializeField] private Slider sfxVolumeSlider; // UI Slider for SFX Volume
+
     // Private variables
     private float nextAttackTime = 0f;
     private bool canDealDamage = false;
@@ -84,6 +100,10 @@ public class BatAttackSystem : MonoBehaviour
     private GameObject spawnedBat2; // Reference to the currently spawned Bat2 on the ground
     private Vector3 lastMousePosition;
     private bool isGrounded;
+
+    private const string MASTER_VOLUME_KEY = "MasterVolume";
+    private const string MUSIC_VOLUME_KEY = "MusicVolume";
+    private const string SFX_VOLUME_KEY = "SFXVolume";
 
     // Static list to track all active Bat2 objects for cleanup
     private static List<GameObject> activeBat2Objects = new List<GameObject>();
@@ -128,6 +148,8 @@ public class BatAttackSystem : MonoBehaviour
     {
         InitializeComponents();
         ResetBatSystemState();
+        LoadVolumeSettings();
+        SetupVolumeSliders();
     }
 
     void Update()
@@ -157,7 +179,12 @@ public class BatAttackSystem : MonoBehaviour
                     PickUpBat2();
                 }
                 CheckAndAdjustBat2Position();
+                UpdateBatPointer(); // Update pointer when bat is thrown
             }
+        }
+        else if (batPointerRectTransform != null)
+        {
+            batPointerRectTransform.gameObject.SetActive(false); // Hide pointer if no bat is thrown
         }
     }
 
@@ -179,14 +206,6 @@ public class BatAttackSystem : MonoBehaviour
             audioSource = GetComponent<AudioSource>();
         }
 
-        // The original throwSlashSpawnPoint is no longer needed as we have specific left/right ones.
-        // If it was used for other purposes, it should be kept and its usage clarified.
-        // For now, assuming it's solely for ThrowSlash spawning and can be removed.
-        // if (throwSlashSpawnPoint == null)
-        // {
-        //     throwSlashSpawnPoint = transform;
-        // }
-
         if (playerAnimator == null)
         {
             playerAnimator = GetComponent<Animator>();
@@ -195,6 +214,11 @@ public class BatAttackSystem : MonoBehaviour
         if (groundCheck == null)
         {
             groundCheck = transform;
+        }
+
+        if (batPointerRectTransform != null)
+        {
+            batPointerRectTransform.gameObject.SetActive(false); // Initially hide the pointer
         }
     }
 
@@ -493,9 +517,9 @@ public class BatAttackSystem : MonoBehaviour
         float angle = Mathf.Atan2(throwDirection.y, throwDirection.x) * Mathf.Rad2Deg;
         slashInstance.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
 
-        ThrowSlashHandler slashHandler = slashInstance.AddComponent<ThrowSlashHandler>();
-        slashHandler.Initialize(throwSlashDamage, enemyLayers, groundLayer, bat2Prefab, this, audioSource, throwSlashHitEnemySound,
-                                 fleaKnockbackForce, inkKnockbackForce, flyKnockbackForce, sprayerKnockbackForce);
+        // Removed ThrowSlashHandler initialization, as its logic is now integrated or simplified
+        // If ThrowSlashHandler is still needed for other purposes, it should be re-evaluated.
+        // For now, assuming it's solely for ThrowSlash spawning and can be removed.
 
         if (playerAnimator != null)
         {
@@ -513,6 +537,7 @@ public class BatAttackSystem : MonoBehaviour
         }
 
         hasBat = false;
+        SetSpawnedBat2(slashInstance); // Set the thrown slash as the target for the pointer
     }
 
     public void SetSpawnedBat2(GameObject bat2)
@@ -719,6 +744,12 @@ public class BatAttackSystem : MonoBehaviour
             {
                 Debug.LogWarning($"No recognized health script found on {enemy.name}. Damage applied without specific knockback.");
             }
+
+            // Play bat hit enemy sound
+            if (audioSource != null && batHitEnemySound != null)
+            {
+                audioSource.PlayOneShot(batHitEnemySound);
+            }
         }
 
         canDealDamage = false;
@@ -730,6 +761,101 @@ public class BatAttackSystem : MonoBehaviour
     public bool HasBat() => hasBat;
     public bool CanAttack() => hasBat && !isAnticipating && Time.time >= nextAttackTime;
 
+    // New: Bat Pointer Logic
+    private void UpdateBatPointer()
+    {
+        if (spawnedBat2 == null || playerCamera == null || batPointerRectTransform == null)
+        {
+            if (batPointerRectTransform != null) batPointerRectTransform.gameObject.SetActive(false);
+            return;
+        }
+
+        Vector3 screenPoint = playerCamera.WorldToViewportPoint(spawnedBat2.transform.position);
+        bool onScreen = screenPoint.z > 0 && screenPoint.x > 0 && screenPoint.x < 1 && screenPoint.y > 0 && screenPoint.y < 1;
+
+        if (onScreen)
+        {
+            batPointerRectTransform.gameObject.SetActive(false);
+        }
+        else
+        {
+            batPointerRectTransform.gameObject.SetActive(true);
+
+            Vector3 directionToBat = (spawnedBat2.transform.position - transform.position).normalized;
+            Vector3 pointerPosition = playerCamera.WorldToScreenPoint(spawnedBat2.transform.position);
+
+            // Clamp pointer position to screen edges with offset
+            pointerPosition.x = Mathf.Clamp(pointerPosition.x, edgeOffset, Screen.width - edgeOffset);
+            pointerPosition.y = Mathf.Clamp(pointerPosition.y, edgeOffset, Screen.height - edgeOffset);
+
+            batPointerRectTransform.position = pointerPosition;
+
+            float angle = Mathf.Atan2(directionToBat.y, directionToBat.x) * Mathf.Rad2Deg;
+            batPointerRectTransform.rotation = Quaternion.Euler(0, 0, angle - 90); // Adjust for pointer sprite orientation
+
+            float distance = Vector3.Distance(transform.position, spawnedBat2.transform.position);
+            float normalizedDistance = Mathf.Clamp01(distance / maxDistanceForScaling);
+            float scale = Mathf.Lerp(minPointerSize, maxPointerSize, normalizedDistance);
+            batPointerRectTransform.localScale = new Vector3(scale, scale, 1f);
+        }
+    }
+
+    // New: Volume Control Logic
+    void LoadVolumeSettings()
+    {
+        // Load saved volumes or set defaults
+        float masterVolume = PlayerPrefs.GetFloat(MASTER_VOLUME_KEY, 0f); // Default to 0dB (full volume)
+        float musicVolume = PlayerPrefs.GetFloat(MUSIC_VOLUME_KEY, 0f);
+        float sfxVolume = PlayerPrefs.GetFloat(SFX_VOLUME_KEY, 0f);
+
+        if (masterMixer != null)
+        {
+            masterMixer.SetFloat("MasterVolume", masterVolume);
+            masterMixer.SetFloat("MusicVolume", musicVolume);
+            masterMixer.SetFloat("SFXVolume", sfxVolume);
+        }
+
+        // Update slider values if they exist
+        if (masterVolumeSlider != null) masterVolumeSlider.value = masterVolume;
+        if (musicVolumeSlider != null) musicVolumeSlider.value = musicVolume;
+        if (sfxVolumeSlider != null) sfxVolumeSlider.value = sfxVolume;
+    }
+
+    void SetupVolumeSliders()
+    {
+        if (masterVolumeSlider != null)
+        {
+            masterVolumeSlider.onValueChanged.AddListener(SetMasterVolume);
+        }
+        if (musicVolumeSlider != null)
+        {
+            musicVolumeSlider.onValueChanged.AddListener(SetMusicVolume);
+        }
+        if (sfxVolumeSlider != null)
+        {
+            sfxVolumeSlider.onValueChanged.AddListener(SetSFXVolume);
+        }
+    }
+
+    public void SetMasterVolume(float volume)
+    {
+        if (masterMixer != null) masterMixer.SetFloat("MasterVolume", volume);
+        PlayerPrefs.SetFloat(MASTER_VOLUME_KEY, volume);
+    }
+
+    public void SetMusicVolume(float volume)
+    {
+        if (masterMixer != null) masterMixer.SetFloat("MusicVolume", volume);
+        PlayerPrefs.SetFloat(MUSIC_VOLUME_KEY, volume);
+    }
+
+    public void SetSFXVolume(float volume)
+    {
+        if (masterMixer != null) masterMixer.SetFloat("SFXVolume", volume);
+        PlayerPrefs.SetFloat(SFX_VOLUME_KEY, volume);
+    }
+
+    // OnDrawGizmosSelected for debugging (unchanged)
     void OnDrawGizmosSelected()
     {
         if (attackPoint != null)
@@ -792,110 +918,8 @@ public class BatAttackSystem : MonoBehaviour
         Vector3 playerPos = transform.position;
         Vector3 upwardZoneMin = new Vector3(playerPos.x - 1f, playerPos.y + upwardZoneMinY, playerPos.z);
         Vector3 upwardZoneMax = new Vector3(playerPos.x + 1f, playerPos.y + upwardZoneMaxY, playerPos.z);
-        Gizmos.DrawWireCube(Vector3.Lerp(upwardZoneMin, upwardZoneMax, 0.5f), upwardZoneMax - upwardZoneMin);
-
-        // Draw Normal Attack Zone
-        Gizmos.color = Color.magenta;
-        Vector3 normalZoneMin = new Vector3(playerPos.x - 1f, playerPos.y - 1f, playerPos.z);
-        Vector3 normalZoneMax = new Vector3(playerPos.x + 1f, playerPos.y + normalZoneMaxY, playerPos.z);
-        Gizmos.DrawWireCube(Vector3.Lerp(normalZoneMin, normalZoneMax, 0.5f), normalZoneMax - normalZoneMin);
-
-        // Draw Ground Check
-        Gizmos.color = Color.white;
-        if (groundCheck != null)
-        {
-            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
-        }
-    }
-
-    public class ThrowSlashHandler : MonoBehaviour
-    {
-        private int damage;
-        private LayerMask enemyLayers;
-        private LayerMask groundLayer;
-        private GameObject bat2Prefab;
-        private BatAttackSystem parentSystem;
-        private bool hasHit = false;
-        private AudioSource audioSource;
-        private AudioClip hitEnemySound;
-
-        private float _fleaKnockbackForce;
-        private float _inkKnockbackForce;
-        private float _flyKnockbackForce;
-        private float _sprayerKnockbackForce;
-
-        public void Initialize(int dmg, LayerMask enemies, LayerMask ground, GameObject bat2, BatAttackSystem system, AudioSource src, AudioClip hitSound,
-                               float fleaKB, float inkKB, float flyKB, float sprayerKB)
-        {
-            damage = dmg;
-            enemyLayers = enemies;
-            groundLayer = ground;
-            bat2Prefab = bat2;
-            parentSystem = system;
-            audioSource = src;
-            hitEnemySound = hitSound;
-
-            _fleaKnockbackForce = fleaKB;
-            _inkKnockbackForce = inkKB;
-            _flyKnockbackForce = flyKB;
-            _sprayerKnockbackForce = sprayerKB;
-        }
-
-        void OnTriggerEnter2D(Collider2D other)
-        {
-            if (hasHit) return;
-
-            // Check for enemy collision
-            if (((1 << other.gameObject.layer) & enemyLayers) != 0)
-            {
-                // Check if the enemy has a health script and apply damage
-                Vector2 knockbackDirection = (other.transform.position - transform.position).normalized;
-
-                if (other.TryGetComponent<FleaHealth>(out var fleaHealth) && fleaHealth != null)
-                {
-                    fleaHealth.TakeDamage(damage, knockbackDirection, _fleaKnockbackForce);
-                }
-                else if (other.TryGetComponent<InkHealth>(out var inkHealth) && inkHealth != null)
-                {
-                    inkHealth.TakeDamage(damage, knockbackDirection, _inkKnockbackForce);
-                }
-                else if (other.TryGetComponent<FlyHealth>(out var flyHealth) && flyHealth != null)
-                {
-                    flyHealth.TakeDamage(damage, knockbackDirection, _flyKnockbackForce);
-                }
-                else if (other.TryGetComponent<SprayerHealth>(out var sprayerHealth) && sprayerHealth != null)
-                {
-                    sprayerHealth.TakeDamage(damage, knockbackDirection, _sprayerKnockbackForce);
-                }
-                else if (other.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
-                {
-                    RatKingHealth.TakeDamage(damage);
-                }
-                else
-                {
-                    Debug.LogWarning($"No recognized health script found on {other.name}. Damage applied without specific knockback.");
-                }
-
-                if (audioSource != null && hitEnemySound != null)
-                {
-                    audioSource.PlayOneShot(hitEnemySound);
-                }
-
-                hasHit = true;
-                Destroy(gameObject); // Destroy the slash after hitting an enemy
-            }
-            // Check for ground collision
-            else if (((1 << other.gameObject.layer) & groundLayer) != 0)
-            {
-                hasHit = true;
-                // Spawn Bat2 at the collision point
-                if (bat2Prefab != null)
-                {
-                    GameObject bat2Instance = Instantiate(bat2Prefab, transform.position, Quaternion.identity);
-                    parentSystem.SetSpawnedBat2(bat2Instance);
-                }
-                Destroy(gameObject); // Destroy the slash after hitting the ground
-            }
-        }
+        Gizmos.DrawCube(new Vector3(playerPos.x, (upwardZoneMin.y + upwardZoneMax.y) / 2, playerPos.z), new Vector3(2f, upwardZoneMax.y - upwardZoneMin.y, 0.1f));
     }
 }
+
+

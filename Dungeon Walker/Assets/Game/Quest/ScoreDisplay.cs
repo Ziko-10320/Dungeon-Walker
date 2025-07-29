@@ -4,10 +4,24 @@ using UnityEngine.UI;
 
 public class ScoreDisplay : MonoBehaviour
 {
+    [Header("Score Display Settings")]
     public TextMeshProUGUI scoreText;
+    public string scorePrefix = "Score: "; // Custom prefix for score text
+    public Image scoreImageUI; // Optional: Image UI for score
+
+    [Header("Timer Display Settings")]
     public TextMeshProUGUI timerText;
+    public string timerPrefix = "Quest Timer: "; // Custom prefix for timer text
+    public TMP_FontAsset timerFontAsset; // Custom font asset for timer
+    public FontStyles timerFontStyles = FontStyles.Normal; // Custom font styles for timer
+    public string timerFormat = "F1"; // Custom format for timer (e.g., F1, F0)
+    public Image timerImageUI; // New: Optional Image UI for timer
+
+    [Header("E Button Display Settings")]
     public GameObject eButtonUI; // UI element for E button
     public TextMeshProUGUI eButtonText; // Text component for E button
+
+    [Header("References")]
     public CheckpointManager checkpointManager;
     public Camera mainCamera; // Reference to the main camera
     public Canvas canvas; // Reference to the UI Canvas
@@ -37,7 +51,7 @@ public class ScoreDisplay : MonoBehaviour
             mainCamera = Camera.main;
             if (mainCamera == null)
             {
-                Debug.LogError("ScoreDisplay: Main Camera not found. Please assign it or ensure it\'s tagged \'MainCamera\'.");
+                Debug.LogError("ScoreDisplay: Main Camera not found. Please assign it or ensure it\"s tagged \"MainCamera\".");
                 enabled = false;
                 return;
             }
@@ -54,6 +68,16 @@ public class ScoreDisplay : MonoBehaviour
             }
         }
 
+        // Apply timer font settings
+        if (timerText != null)
+        {
+            if (timerFontAsset != null)
+            {
+                timerText.font = timerFontAsset;
+            }
+            timerText.fontStyle = timerFontStyles;
+        }
+
         // Subscribe to events
         checkpointManager.OnScoreChanged.AddListener(UpdateScoreDisplay);
         checkpointManager.OnLoopCompleted.AddListener(OnLoopComplete);
@@ -65,6 +89,17 @@ public class ScoreDisplay : MonoBehaviour
         UpdateScoreDisplay(checkpointManager.TotalScore);
         UpdateTimerDisplay(0f);
         ShowEButton(false); // Initially hide E button
+
+        // Initialize score image UI state
+        if (scoreImageUI != null)
+        {
+            scoreImageUI.gameObject.SetActive(scoreImageUI.sprite != null);
+        }
+        // Initialize timer image UI state
+        if (timerImageUI != null)
+        {
+            timerImageUI.gameObject.SetActive(false); // Initially hide timer image
+        }
     }
 
     void Update()
@@ -78,7 +113,7 @@ public class ScoreDisplay : MonoBehaviour
 
     void UpdateScoreDisplay(int newScore)
     {
-        scoreText.text = $"Score: {newScore}";
+        scoreText.text = scorePrefix + newScore;
     }
 
     void UpdateTimerDisplay(float timeRemaining)
@@ -87,11 +122,13 @@ public class ScoreDisplay : MonoBehaviour
         {
             if (timeRemaining > 0)
             {
-                timerText.text = $"Quest Timer: {timeRemaining:F1}s";
+                timerText.text = timerPrefix + timeRemaining.ToString(timerFormat) + "s";
+                if (timerImageUI != null) timerImageUI.gameObject.SetActive(true);
             }
             else
             {
                 timerText.text = "";
+                if (timerImageUI != null) timerImageUI.gameObject.SetActive(false);
             }
         }
     }
