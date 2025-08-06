@@ -7,7 +7,7 @@ public class FleaChargeAttack : MonoBehaviour
     [SerializeField] private Animator fleaAnimator;
     [SerializeField] private FleaFollow followScript;
     [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private Transform playerTransform;
+    [SerializeField] public Transform playerTransform;
 
     [Header("Attack Range & Timing")]
     [SerializeField] private float attackRange = 5f;
@@ -51,12 +51,7 @@ public class FleaChargeAttack : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         originalDrag = rb.drag;
 
-        if (playerTransform == null)
-        {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null) playerTransform = player.transform;
-        }
-
+       
         isAnticipatingHash = Animator.StringToHash("IsAnticipating");
         isChargingHash = Animator.StringToHash("IsCharging");
 

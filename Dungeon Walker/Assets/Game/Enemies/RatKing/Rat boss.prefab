@@ -10646,15 +10646,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3.8308
+      value: -8.050224
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.12443
+      value: 3.4020917
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.16040426
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalRotation.w
@@ -10662,15 +10662,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -11025,7 +11025,7 @@ MonoBehaviour:
   groundImpactParticles: {fileID: 3962489236768551362}
   damageZoneOrigin: {fileID: 2937064212468406145}
   damageZoneRadius: 3.87
-  damageAmount: 30
+  damageAmount: 40
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -11046,7 +11046,7 @@ MonoBehaviour:
   cheeseImpactParticlesPrefab3: {fileID: 5989248871805962395, guid: 42fc002353319184a9f45737980de158, type: 3}
   throwCooldown: 1.8
   throwProbability: 0.53
-  cheeseDamageAmount: 20
+  cheeseDamageAmount: 30
   cheeseExplosionRadius: 2
   cheeseKnockbackForce: 10
 --- !u!114 &2233549178179398066
@@ -11090,6 +11090,9 @@ MonoBehaviour:
   damageSoundClip: {fileID: 0}
   damageSoundVolume: 0.7
   weaponSwitchManager: {fileID: 0}
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
   CameraShakeDeath: {fileID: 11400000, guid: c09a47171b56bb94b910790a6bd8c684, type: 2}
 --- !u!212 &9176582138239089832 stripped
 SpriteRenderer:

@@ -1,6 +1,7 @@
+using FirstGearGames.SmoothCameraShaker;
 using System.Collections;
 using UnityEngine;
-using FirstGearGames.SmoothCameraShaker;
+using UnityEngine.Events;
 
 public class SprayerHealth : MonoBehaviour
 {
@@ -37,7 +38,7 @@ public class SprayerHealth : MonoBehaviour
     [Range(0f, 1f)] public float damageSoundVolume = 0.7f; // Volume slider added here
 
     public WeaponSwitchManager weaponSwitchManager;
-
+    public UnityEvent<GameObject> OnDeath;
     // Private variables
     private int currentHealth;
     private bool isKnockedBack = false; // Is the mushroom currently being knocked back?
@@ -164,6 +165,8 @@ public class SprayerHealth : MonoBehaviour
 
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
+
+        OnDeath?.Invoke(gameObject);
 
         if (weaponSwitchManager != null)
         {

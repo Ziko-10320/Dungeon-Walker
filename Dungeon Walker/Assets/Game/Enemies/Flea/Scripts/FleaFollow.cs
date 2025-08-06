@@ -9,7 +9,7 @@ public class FleaFollow : MonoBehaviour
     [Header("Références Essentielles")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator fleaAnimator;
-    [SerializeField] private Transform playerTransform;
+    [SerializeField] public Transform playerTransform;
 
     [Header("Comportement Général")]
     [SerializeField] private float patrolSpeed = 2f;
@@ -40,12 +40,7 @@ public class FleaFollow : MonoBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
-        if (playerTransform == null || groundCheck == null || wallCheck == null)
-        {
-            Debug.LogError("ERREUR: Références manquantes !", this);
-            enabled = false;
-            return;
-        }
+       
     }
 
     void Start()

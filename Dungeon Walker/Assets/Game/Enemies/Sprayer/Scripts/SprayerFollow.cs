@@ -9,7 +9,7 @@ public class SprayerFollow : MonoBehaviour
     [Header("Références Essentielles")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator sprayerAnimator;
-    [SerializeField] private Transform playerTransform;
+    [SerializeField] public Transform playerTransform;
 
     [Header("Systèmes de Particules")]
     [SerializeField] private ParticleSystem groundDustImpactParticles;
@@ -50,12 +50,7 @@ public class SprayerFollow : MonoBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (sprayerAnimator == null) sprayerAnimator = GetComponent<Animator>();
-        if (playerTransform == null || wallCheck == null || groundCheck == null)
-        {
-            Debug.LogError("Une ou plusieurs références essentielles ne sont pas assignées !", this);
-            enabled = false;
-            return;
-        }
+        
     }
 
     void Start()

@@ -35,11 +35,7 @@ public class FlyFollow : MonoBehaviour
             Debug.LogError("FlyFollow: Rigidbody2D not found on this GameObject. Please add one.");
             enabled = false; // Disable the script if no Rigidbody2D is found
         }
-        if (playerTransform == null)
-        {
-            Debug.LogError("FlyFollow: Player Transform not assigned. Please assign the player\"s Transform in the Inspector.");
-            enabled = false; // Disable the script if no player is assigned
-        }
+       
         GenerateRandomTarget();
     }
 

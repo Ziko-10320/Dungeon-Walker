@@ -62,11 +62,7 @@ public class FlyAttack : MonoBehaviour
             Debug.LogError("FlyAttack: Animator not found on this GameObject. Please add one.");
             enabled = false;
         }
-        if (playerTransform == null)
-        {
-            Debug.LogError("FlyAttack: Player Transform not assigned. Please assign the player's Transform in the Inspector.");
-            enabled = false;
-        }
+      
         if (dustProjectilePrefab == null)
         {
             Debug.LogError("FlyAttack: Dust Projectile Prefab not assigned. Please assign the DustProjectile prefab in the Inspector.");

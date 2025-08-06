@@ -88,7 +88,8 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private Slider masterVolumeSlider; // UI Slider for Master Volume
     [SerializeField] private Slider musicVolumeSlider; // UI Slider for Music Volume
     [SerializeField] private Slider sfxVolumeSlider; // UI Slider for SFX Volume
-
+    private GameObject activeThrowSlash; // Reference to the currently flying ThrowSlash projectile
+    private List<Collider2D> hitEnemies = new List<Collider2D>();
     // Private variables
     private float nextAttackTime = 0f;
     private bool canDealDamage = false;
@@ -156,21 +157,27 @@ public class BatAttackSystem : MonoBehaviour
     {
         CheckGround();
 
-        if (Input.GetMouseButtonDown(1) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
+        if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
         {
             bool shouldPerformUpwardAttack = ShouldPerformUpwardAttack();
             StartAnticipationAttack(shouldPerformUpwardAttack);
         }
 
-        if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
+        if (Input.GetMouseButtonDown(1) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
         {
             lastMousePosition = Input.mousePosition;
             StartAnticipationAndThrowSlash();
         }
 
-        if (!hasBat && spawnedBat2 != null)
+        if (!hasBat)
         {
-            // Check if spawnedBat2 is still valid before accessing its transform
+            // Check for flying ThrowSlash collision with walls
+            if (activeThrowSlash != null)
+            {
+                CheckThrowSlashCollision();
+            }
+
+            // Check for spawned bat pickup
             if (spawnedBat2 != null)
             {
                 float distanceToBat2 = Vector2.Distance(transform.position, spawnedBat2.transform.position);
@@ -235,9 +242,119 @@ public class BatAttackSystem : MonoBehaviour
         }
         Debug.Log("BatAttackSystem state fully reset.");
     }
+    private void CheckThrowSlashCollision()
+    {
+        if (activeThrowSlash == null) return;
 
+        Collider2D slashCollider = activeThrowSlash.GetComponent<Collider2D>();
+        if (slashCollider == null) return;
+
+        // Check for enemies first
+        Collider2D[] overlappingEnemies = Physics2D.OverlapBoxAll(
+            activeThrowSlash.transform.position,
+            slashCollider.bounds.size,
+            activeThrowSlash.transform.eulerAngles.z,
+            enemyLayers
+        );
+
+        foreach (Collider2D enemyCollider in overlappingEnemies)
+        {
+            if (!hitEnemies.Contains(enemyCollider))
+            {
+                // Add null check for enemy GameObject before accessing its transform
+                if (enemyCollider == null || enemyCollider.gameObject == null) continue;
+
+                hitEnemies.Add(enemyCollider);
+
+                // Calculate knockback direction from the ThrowSlash position to the enemy
+                Vector2 knockbackDirection = ((Vector2)(enemyCollider.transform.position - activeThrowSlash.transform.position)).normalized;
+
+                // Use TryGetComponent for specific health scripts, similar to ApplyDamageAtPoint
+                if (enemyCollider.TryGetComponent<FleaHealth>(out var fleaHealth) && fleaHealth != null)
+                {
+                    fleaHealth.TakeDamage(throwSlashDamage, knockbackDirection, fleaKnockbackForce);
+                }
+                else if (enemyCollider.TryGetComponent<InkHealth>(out var inkHealth) && inkHealth != null)
+                {
+                    inkHealth.TakeDamage(throwSlashDamage, knockbackDirection, inkKnockbackForce);
+                }
+                else if (enemyCollider.TryGetComponent<FlyHealth>(out var flyHealth) && flyHealth != null)
+                {
+                    flyHealth.TakeDamage(throwSlashDamage, knockbackDirection, flyKnockbackForce);
+                }
+                else if (enemyCollider.TryGetComponent<SprayerHealth>(out var sprayerHealth) && sprayerHealth != null)
+                {
+                    sprayerHealth.TakeDamage(throwSlashDamage, knockbackDirection, sprayerKnockbackForce);
+                }
+                else if (enemyCollider.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
+                {
+                    RatKingHealth.TakeDamage(throwSlashDamage);
+                }
+                else
+                {
+                    Debug.LogWarning($"No recognized health script found on {enemyCollider.name}. Damage applied without specific knockback.");
+                }
+
+                // Play bat hit enemy sound
+                if (audioSource != null && batHitEnemySound != null)
+                {
+                    audioSource.PlayOneShot(batHitEnemySound);
+                }
+            }
+        }
+
+        // Check for walls (keep your existing wall collision logic)
+        Collider2D groundCollider = Physics2D.OverlapBox(
+            activeThrowSlash.transform.position,
+            slashCollider.bounds.size,
+            activeThrowSlash.transform.eulerAngles.z,
+            groundLayer
+        );
+
+        if (groundCollider != null)
+        {
+            HandleThrowSlashHit(activeThrowSlash.transform.position);
+            return;
+        }
+    }
+    private void HandleThrowSlashHit(Vector3 hitPosition)
+    {
+        if (activeThrowSlash == null) return;
+
+        // Stop the ThrowSlash movement
+        Rigidbody2D slashRb = activeThrowSlash.GetComponent<Rigidbody2D>();
+        if (slashRb != null)
+        {
+            slashRb.velocity = Vector2.zero;
+            slashRb.isKinematic = true;
+        }
+
+        // Spawn the pickupable bat (bat2Prefab) at the hit position
+        if (bat2Prefab != null)
+        {
+            // Adjust spawn position slightly above the hit point to prevent sinking
+            Vector3 spawnPosition = hitPosition;
+            spawnPosition.y += 0.1f;
+
+            GameObject newBat2 = Instantiate(bat2Prefab, spawnPosition, Quaternion.identity);
+            SetSpawnedBat2(newBat2);
+
+            // Add to tracking list
+            activeBat2Objects.Add(newBat2);
+        }
+
+        // Destroy the ThrowSlash projectile
+        Destroy(activeThrowSlash);
+        activeThrowSlash = null;
+    }
     private void CleanupAllBat2Objects()
     {
+        // Clean up active ThrowSlash if it exists
+        if (activeThrowSlash != null)
+        {
+            Destroy(activeThrowSlash);
+            activeThrowSlash = null;
+        }
         // Clean up the current spawned Bat2 if it exists and is not already destroyed
         if (spawnedBat2 != null)
         {
@@ -450,6 +567,8 @@ public class BatAttackSystem : MonoBehaviour
 
     void ThrowSlash()
     {
+        hitEnemies.Clear();
+
         if (throwSlashPrefab == null || playerCamera == null)
         {
             Debug.LogWarning("Cannot throw - missing prefab or camera");
@@ -537,7 +656,8 @@ public class BatAttackSystem : MonoBehaviour
         }
 
         hasBat = false;
-        SetSpawnedBat2(slashInstance); // Set the thrown slash as the target for the pointer
+        activeThrowSlash = slashInstance; // Track the flying projectile
+                                         
     }
 
     public void SetSpawnedBat2(GameObject bat2)
@@ -921,5 +1041,6 @@ public class BatAttackSystem : MonoBehaviour
         Gizmos.DrawCube(new Vector3(playerPos.x, (upwardZoneMin.y + upwardZoneMax.y) / 2, playerPos.z), new Vector3(2f, upwardZoneMax.y - upwardZoneMin.y, 0.1f));
     }
 }
+
 
 

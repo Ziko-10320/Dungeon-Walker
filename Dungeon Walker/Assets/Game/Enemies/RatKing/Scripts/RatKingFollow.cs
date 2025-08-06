@@ -9,7 +9,7 @@ public class RatKingBoss : MonoBehaviour
     [Header("Essential References")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator ratKingAnimator;
-    [SerializeField] private Transform playerTransform;
+    [SerializeField] public Transform playerTransform;
     [SerializeField] private RatKingAttack ratKingAttack; // Reference to the attack script
 
     [Header("General Behavior")]
@@ -42,7 +42,7 @@ public class RatKingBoss : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (ratKingAnimator == null) ratKingAnimator = GetComponent<Animator>();
         if (ratKingAttack == null) ratKingAttack = GetComponent<RatKingAttack>();
-        if (playerTransform == null || wallCheck == null || groundCheck == null)
+        if ( wallCheck == null || groundCheck == null)
         {
             Debug.LogError("One or more essential references are not assigned!", this);
             enabled = false;

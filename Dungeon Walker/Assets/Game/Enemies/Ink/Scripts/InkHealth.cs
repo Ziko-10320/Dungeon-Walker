@@ -1,6 +1,7 @@
+using FirstGearGames.SmoothCameraShaker;
 using System.Collections;
 using UnityEngine;
-using FirstGearGames.SmoothCameraShaker;
+using UnityEngine.Events;
 
 public class InkHealth : MonoBehaviour
 {
@@ -125,7 +126,7 @@ public class InkHealth : MonoBehaviour
     public bool showInvincibilityDebug = false;
 
     public WeaponSwitchManager weaponSwitchManager;
-
+    public UnityEvent<GameObject> OnDeath;
     [Tooltip("Show invincibility state in inspector (read-only)")]
     [SerializeField] private bool isCurrentlyInvincible = false;
 
@@ -635,6 +636,8 @@ public class InkHealth : MonoBehaviour
         }
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
+
+        OnDeath?.Invoke(gameObject);
 
         if (weaponSwitchManager != null)
         {

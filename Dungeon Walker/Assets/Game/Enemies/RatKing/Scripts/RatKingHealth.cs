@@ -1,6 +1,7 @@
+using FirstGearGames.SmoothCameraShaker;
 using System.Collections;
 using UnityEngine;
-using FirstGearGames.SmoothCameraShaker;
+using UnityEngine.Events;
 
 public class RatKingHealth : MonoBehaviour
 {
@@ -35,7 +36,7 @@ public class RatKingHealth : MonoBehaviour
     [Range(0f, 1f)] public float damageSoundVolume = 0.7f; // Volume slider added here
 
     public WeaponSwitchManager weaponSwitchManager;
-
+    public UnityEvent<GameObject> OnDeath;
     // Private variables
     private int currentHealth;
     private bool isFlashing = false; // Added to prevent multiple flash coroutines
@@ -133,6 +134,8 @@ public class RatKingHealth : MonoBehaviour
 
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
+
+        OnDeath?.Invoke(gameObject);
 
         if (weaponSwitchManager != null)
         {

@@ -1013,7 +1013,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.5165215
+      value: 4.92
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1296,7 +1296,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 7
+  m_Constraints: 5
 --- !u!95 &6622398012560137658
 Animator:
   serializedVersion: 5
@@ -1420,6 +1420,9 @@ MonoBehaviour:
   invincibilitySoundVolume: 0.237
   showInvincibilityDebug: 0
   weaponSwitchManager: {fileID: 0}
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
   isCurrentlyInvincible: 0
   timeUntilNextInvincibilityCheck: 0
   currentInvincibilityTimer: 0

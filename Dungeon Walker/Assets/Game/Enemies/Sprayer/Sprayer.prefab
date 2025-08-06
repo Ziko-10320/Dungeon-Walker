@@ -5178,7 +5178,7 @@ ParticleSystem:
   m_GameObject: {fileID: 8238885213516324053}
   serializedVersion: 8
   lengthInSec: 2
-  simulationSpeed: 2.64
+  simulationSpeed: 4.41
   stopAction: 0
   cullingMode: 0
   ringBufferMode: 0
@@ -5305,7 +5305,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 2.5
+      scalar: 3.07
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -10529,7 +10529,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 3
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 4
@@ -10568,10 +10568,10 @@ MonoBehaviour:
   detectionRadius: 10.65
   lostSightRadius: 13.8
   wanderTimeRange: {x: 2.87, y: 5}
-  jumpForce: 15
-  jumpHorizontalForce: 12.92
-  jumpCooldown: 3.5
-  jumpChance: 0.519
+  jumpForce: 54
+  jumpHorizontalForce: 29.9
+  jumpCooldown: 2
+  jumpChance: 0.778
   jumpAnticipationDuration: 0.3
   wallCheck: {fileID: 7787156638415213151}
   groundCheck: {fileID: 6799983314753468441}
@@ -10591,10 +10591,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b84a5f5934ea6254aa4183a683cf1b4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackRange: 6.89
-  attackCooldown: 3
-  damagePerSecond: 13
-  damageDuration: 1.8
+  attackRange: 7.19
+  attackCooldown: 2
+  damagePerSecond: 15
+  damageDuration: 1
   damageDelay: 0
   damageInterval: 0.4
   sprayParticles: {fileID: 8048887584263250123}
@@ -10606,6 +10606,7 @@ MonoBehaviour:
   sprayerFollowScript: {fileID: 6463975689986382202}
   attackSoundClip: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
   attackSoundVolume: 0.014
+  visualDirectionReference: {fileID: 578209667700630728}
 --- !u!114 &561808408041264527
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10620,8 +10621,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   deathEffect: {fileID: 0}
-  knockbackDistance: 1
-  knockbackDuration: 0.2
+  knockbackDistance: 0
+  knockbackDuration: 0
   bloodSpawnPoint: {fileID: 6887314040794923926}
   bloodParticle: {fileID: 1441365472297043515}
   DeathMushroomParticules: {fileID: 2531850299380109093}
@@ -10644,6 +10645,9 @@ MonoBehaviour:
   damageSoundClip: {fileID: 0}
   damageSoundVolume: 0.779
   weaponSwitchManager: {fileID: 0}
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
   CameraShakeDeath: {fileID: 11400000, guid: 5de216865eb2173459f490db41b47444, type: 2}
 --- !u!212 &5254049360258234812 stripped
 SpriteRenderer:

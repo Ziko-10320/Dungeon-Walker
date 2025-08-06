@@ -8,7 +8,7 @@ public class RatKingAttack : MonoBehaviour
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator ratKingAnimator;
-    [SerializeField] private Transform playerTransform;
+    [SerializeField] public Transform playerTransform;
     [SerializeField] private RatKingBoss ratKingBoss; // Reference to the main boss script
 
     [Header("Jump Attack Parameters")]

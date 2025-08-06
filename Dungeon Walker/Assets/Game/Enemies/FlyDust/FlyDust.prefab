@@ -10333,11 +10333,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.4622498
+      value: -3.61
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.484578
+      value: 9.45
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10563,9 +10563,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7084638065724886995}
-    - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: -8552774247571023652}
   m_SourcePrefab: {fileID: 4843985084834002234, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
 --- !u!212 &1029526706110725274 stripped
 SpriteRenderer:
@@ -10782,28 +10779,6 @@ MonoBehaviour:
   secondProjectileOffset: {x: -0.58, y: 1.82}
   attackSoundClip: {fileID: 8300000, guid: 07a86ab723f171943972bf9e7bb23c81, type: 3}
   attackSoundVolume: 0.079
---- !u!114 &-8552774247571023652
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4895704407418736289}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 506cf7c1450a094428b9cd6974ffba4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 80
-  currentHealth: 0
-  destroyDelay: 0
-  deathEffect: {fileID: 0}
-  OnDeath:
-    m_PersistentCalls:
-      m_Calls: []
-  OnHealthChanged:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!212 &5452577108238717682 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: -8089108032486474258, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
