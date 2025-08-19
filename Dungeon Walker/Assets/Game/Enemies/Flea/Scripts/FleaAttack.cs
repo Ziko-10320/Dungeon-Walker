@@ -177,6 +177,13 @@ public class FleaChargeAttack : MonoBehaviour
                 knockbackDirection.y = 0.5f;
                 playerHealth.TakeDamage(attackDamage, knockbackForce, knockbackDirection.normalized);
             }
+            L3antixHealth l3antixHealth = playerHit.GetComponent<L3antixHealth>();
+            if (l3antixHealth != null)
+            {
+                Vector2 knockbackDirection = (playerHit.transform.position - transform.position).normalized;
+                knockbackDirection.y = 0.5f;
+                l3antixHealth.TakeDamage(attackDamage, knockbackForce, knockbackDirection.normalized);
+            }
             return true;
         }
         return false;

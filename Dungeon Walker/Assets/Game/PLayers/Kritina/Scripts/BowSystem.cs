@@ -871,6 +871,20 @@ public class BowSystems : MonoBehaviour
                     }
                     return;
                 }
+                BarrelExplosion BarrelExplosion = target.GetComponent<BarrelExplosion>();
+                if (BarrelExplosion != null)
+                {
+                    BarrelExplosion.TakeDamage(Mathf.RoundToInt(damageToDeal));
+                    if (showDamageDebug)
+                    {
+                        Debug.Log($"Arrow dealt {damageToDeal} damage to RatKing {target.name} at {impactPoint}");
+                    }
+                    if (enableSoundEffects && enemyImpactSound != null)
+                    {
+                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    }
+                    return;
+                }
 
                 if (showDamageDebug)
                 {

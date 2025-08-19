@@ -52,6 +52,12 @@ public class BatAttackSystem : MonoBehaviour
 
     [Header("Visual Settings")]
     [SerializeField] private GameObject playerBatVisual; // Visual representation of the bat on the player (to hide when thrown)
+    [SerializeField] private SpriteRenderer playerBatSpriteRenderer;
+
+    [Header("Bat Protection Settings")]
+   
+    [SerializeField] private Transform batParent; // Le parent de la batte (l'épaule/bras du joueur)
+    private GameObject _currentBatInstance;
 
     [Header("Ghost Effect Settings")]
     [SerializeField] private List<SpriteRenderer> ghostTargets = new List<SpriteRenderer>(); // SpriteRenderers that will have ghost effect
@@ -127,10 +133,10 @@ public class BatAttackSystem : MonoBehaviour
 
         // Ensure the player\"s bat visual is active when the script is disabled
         // This prepares it for when the bat weapon is re-enabled or picked up
-        if (playerBatVisual != null)
+        if (playerBatSpriteRenderer != null)
         {
-            playerBatVisual.SetActive(true);
-            Debug.Log("playerBatVisual set to active in OnDisable (preparing for re-enable).");
+            playerBatSpriteRenderer.enabled = true; // Ensure bat is visible when script is disabled
+            Debug.Log("playerBatSpriteRenderer set to enabled in OnDisable (preparing for re-enable).");
         }
 
         // Reset other states
@@ -142,9 +148,15 @@ public class BatAttackSystem : MonoBehaviour
     void OnEnable()
     {
         Debug.Log("BatAttackSystem OnEnable called - resetting to fresh state");
+        EnsureBatExists();
         ResetBatSystemState();
     }
 
+    void Awake()
+    {
+        // Crée la batte dès le début pour s'assurer qu'elle existe.
+        EnsureBatExists();
+    }
     void Start()
     {
         InitializeComponents();
@@ -167,6 +179,11 @@ public class BatAttackSystem : MonoBehaviour
         {
             lastMousePosition = Input.mousePosition;
             StartAnticipationAndThrowSlash();
+        }
+
+        if (hasBat)
+        {
+            EnsureBatExists();
         }
 
         if (!hasBat)
@@ -229,6 +246,32 @@ public class BatAttackSystem : MonoBehaviour
         }
     }
 
+    public void EnsureBatExists()
+    {
+        // Étape 1: Vérifier si notre référence à l'instance de la batte est nulle.
+        if (_currentBatInstance == null)
+        {
+            Debug.LogWarning("Bat instance is NULL. Searching or creating a new one.");
+
+            // Étape 2: Essayer de trouver une batte existante avec le bon tag.
+            // Cela peut arriver si le script est désactivé puis réactivé.
+            _currentBatInstance = GameObject.FindGameObjectWithTag("PlayerWeaponBat");
+
+            // Étape 3: Si on ne trouve toujours rien, on la crée à partir du préfabriqué.
+           
+        }
+
+        // Étape 4: Mettre à jour les références qui dépendent de la batte.
+        // C'est crucial pour que tout le reste du script fonctionne.
+        playerBatVisual = _currentBatInstance;
+        playerBatSpriteRenderer = _currentBatInstance.GetComponent<SpriteRenderer>();
+
+        // Assure-toi que la batte est active.
+        if (!_currentBatInstance.activeSelf)
+        {
+            _currentBatInstance.SetActive(true);
+        }
+    }
     private void ResetBatSystemState()
     {
         hasBat = true;
@@ -236,9 +279,9 @@ public class BatAttackSystem : MonoBehaviour
         spawnedBat2 = null; // Clear reference to Bat2
         Time.timeScale = 1.0f;
 
-        if (playerBatVisual != null)
+        if (playerBatSpriteRenderer != null)
         {
-            playerBatVisual.SetActive(true);
+            playerBatSpriteRenderer.enabled = true; // Ensure bat is visible on reset
         }
         Debug.Log("BatAttackSystem state fully reset.");
     }
@@ -289,6 +332,10 @@ public class BatAttackSystem : MonoBehaviour
                 else if (enemyCollider.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
                 {
                     RatKingHealth.TakeDamage(throwSlashDamage);
+                }
+                else if (enemyCollider.TryGetComponent<BarrelExplosion>(out var barrelExplosion) && barrelExplosion != null)
+                {
+                    barrelExplosion.TakeDamage(throwSlashDamage);
                 }
                 else
                 {
@@ -530,6 +577,14 @@ public class BatAttackSystem : MonoBehaviour
     {
         isAnticipating = true;
         nextAttackTime = Time.time + anticipationDuration + attackCooldown;
+        hasBat = false;
+
+        if (playerBatSpriteRenderer != null)
+        {
+            playerBatSpriteRenderer.enabled = false; // Disable the SpriteRenderer to hide the bat visual
+            Debug.Log("Player bat SpriteRenderer disabled after throwing ThrowSlash.");
+        }
+
 
         if (playerAnimator != null)
         {
@@ -657,7 +712,7 @@ public class BatAttackSystem : MonoBehaviour
 
         hasBat = false;
         activeThrowSlash = slashInstance; // Track the flying projectile
-                                         
+
     }
 
     public void SetSpawnedBat2(GameObject bat2)
@@ -676,6 +731,12 @@ public class BatAttackSystem : MonoBehaviour
             activeBat2Objects.Remove(spawnedBat2);
             Destroy(spawnedBat2);
             spawnedBat2 = null;
+        }
+        hasBat = true;
+        if (playerBatSpriteRenderer != null)
+        {
+            playerBatSpriteRenderer.enabled = true; // Enable the SpriteRenderer to show the bat visual
+            Debug.Log("Player bat SpriteRenderer enabled after picking up Bat2.");
         }
 
         // When picking up the bat, reset the system state as if nothing happened
@@ -833,6 +894,10 @@ public class BatAttackSystem : MonoBehaviour
 
         foreach (Collider2D enemy in hitEnemies)
         {
+            if (enemy.CompareTag("Player")) // Assure-toi que ton joueur a bien le tag "Player"
+            {
+                continue; // Ignore cet objet et passe au suivant
+            }
             // Add null check for enemy GameObject before accessing its transform
             if (enemy == null || enemy.gameObject == null) continue;
 
@@ -842,7 +907,7 @@ public class BatAttackSystem : MonoBehaviour
             // Add null checks before calling TryGetComponent
             if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth) && fleaHealth != null)
             {
-                fleaHealth.TakeDamage(damage, knockbackDirection, fleaKnockbackForce);
+                fleaHealth.TakeDamage(damage, knockbackDirection, fleaKnockbackForce, null);
             }
             else if (enemy.TryGetComponent<InkHealth>(out var inkHealth) && inkHealth != null)
             {
@@ -859,6 +924,10 @@ public class BatAttackSystem : MonoBehaviour
             else if (enemy.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
             {
                 RatKingHealth.TakeDamage(damage);
+            }
+            else if (enemy.TryGetComponent<BarrelExplosion>(out var barrelExplosion) && barrelExplosion != null)
+            {
+                barrelExplosion.TakeDamage(damage);
             }
             else
             {
@@ -1041,6 +1110,7 @@ public class BatAttackSystem : MonoBehaviour
         Gizmos.DrawCube(new Vector3(playerPos.x, (upwardZoneMin.y + upwardZoneMax.y) / 2, playerPos.z), new Vector3(2f, upwardZoneMax.y - upwardZoneMin.y, 0.1f));
     }
 }
+
 
 
 

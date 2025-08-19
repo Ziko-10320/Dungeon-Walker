@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 6244576270574274305}
   m_Layer: 7
   m_Name: WallCheck
-  m_TagString: Untagged
+  m_TagString: Rat
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -73,7 +73,7 @@ GameObject:
   - component: {fileID: 6065686839572335127}
   m_Layer: 7
   m_Name: SpawnCheesePoint (1)
-  m_TagString: Untagged
+  m_TagString: Rat
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 2937064212468406145}
   m_Layer: 7
   m_Name: DamagePoint
-  m_TagString: Untagged
+  m_TagString: Rat
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -166,9 +166,10 @@ GameObject:
   - component: {fileID: 5738250013264142466}
   - component: {fileID: 580472205846089318}
   - component: {fileID: 1319908527158577783}
+  - component: {fileID: 5543890602477335782}
   m_Layer: 9
   m_Name: RatBloodExplosion
-  m_TagString: Untagged
+  m_TagString: Rat
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -766,7 +767,7 @@ ParticleSystem:
     gravityModifier:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0
+      scalar: 0.31
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -3832,13 +3833,13 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     range: {x: 0, y: 1}
   CollisionModule:
-    enabled: 0
+    enabled: 1
     serializedVersion: 4
-    type: 0
-    collisionMode: 0
+    type: 1
+    collisionMode: 1
     colliderForce: 0
     multiplyColliderForceByParticleSize: 0
-    multiplyColliderForceByParticleSpeed: 0
+    multiplyColliderForceByParticleSpeed: 1
     multiplyColliderForceByCollisionAngle: 1
     m_Planes: []
     m_Dampen:
@@ -3897,7 +3898,7 @@ ParticleSystem:
     m_Bounce:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 0
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -4005,11 +4006,11 @@ ParticleSystem:
     radiusScale: 1
     collidesWith:
       serializedVersion: 2
-      m_Bits: 4294967295
+      m_Bits: 65
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
-    collisionMessages: 0
+    collisionMessages: 1
     collidesWithDynamic: 1
     interiorCollisions: 0
   TriggerModule:
@@ -5043,6 +5044,20 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &5543890602477335782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3487477894333288293}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059de2ec315af694583207050692c7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splatterType: 1
+  splatterSpawnRate: 3
 --- !u!1 &3627424532580216417
 GameObject:
   m_ObjectHideFlags: 0
@@ -5147,9 +5162,10 @@ GameObject:
   - component: {fileID: 9135306649624651010}
   - component: {fileID: 2645654069939671888}
   - component: {fileID: 4203288767417363104}
+  - component: {fileID: 8791867759306566454}
   m_Layer: 9
   m_Name: RatBlood
-  m_TagString: Untagged
+  m_TagString: Rat
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5747,7 +5763,7 @@ ParticleSystem:
     gravityModifier:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0
+      scalar: 0.23
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -8813,13 +8829,13 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     range: {x: 0, y: 1}
   CollisionModule:
-    enabled: 0
+    enabled: 1
     serializedVersion: 4
-    type: 0
-    collisionMode: 0
+    type: 1
+    collisionMode: 1
     colliderForce: 0
     multiplyColliderForceByParticleSize: 0
-    multiplyColliderForceByParticleSpeed: 0
+    multiplyColliderForceByParticleSpeed: 1
     multiplyColliderForceByCollisionAngle: 1
     m_Planes: []
     m_Dampen:
@@ -8878,7 +8894,7 @@ ParticleSystem:
     m_Bounce:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 0
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -8986,11 +9002,11 @@ ParticleSystem:
     radiusScale: 1
     collidesWith:
       serializedVersion: 2
-      m_Bits: 4294967295
+      m_Bits: 65
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
-    collisionMessages: 0
+    collisionMessages: 1
     collidesWithDynamic: 1
     interiorCollisions: 0
   TriggerModule:
@@ -10024,6 +10040,20 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &8791867759306566454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4722588382375697398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059de2ec315af694583207050692c7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splatterType: 0
+  splatterSpawnRate: 4
 --- !u!1 &7183459178828329502
 GameObject:
   m_ObjectHideFlags: 0
@@ -10035,7 +10065,7 @@ GameObject:
   - component: {fileID: 3896541145735939658}
   m_Layer: 7
   m_Name: GroundCheck
-  m_TagString: Untagged
+  m_TagString: Rat
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10066,7 +10096,7 @@ GameObject:
   - component: {fileID: 2781349613605771955}
   m_Layer: 9
   m_Name: SpawnPoints (3)
-  m_TagString: Untagged
+  m_TagString: Rat
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10103,7 +10133,7 @@ GameObject:
   - component: {fileID: 1303806355811573937}
   m_Layer: 7
   m_Name: SpawnCheesePoint
-  m_TagString: Untagged
+  m_TagString: Rat
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10177,6 +10207,10 @@ PrefabInstance:
     - target: {fileID: 3832048731679019324, guid: da5ac6fe661aaba4e9fe7370e617cecd, type: 3}
       propertyPath: m_Layer
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3832048731679019324, guid: da5ac6fe661aaba4e9fe7370e617cecd, type: 3}
+      propertyPath: m_TagString
+      value: Rat
       objectReference: {fileID: 0}
     - target: {fileID: 3832048731679019325, guid: da5ac6fe661aaba4e9fe7370e617cecd, type: 3}
       propertyPath: m_LocalScale.x
@@ -10365,6 +10399,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 1982612565981529581, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     - target: {fileID: 2938270285230883288, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_SortingOrder
       value: 11
@@ -10401,6 +10439,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 4509183948020417044, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     - target: {fileID: 4621548541187013460, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_SortingOrder
       value: 13
@@ -10413,9 +10455,45 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 4809421703279907128, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: looping
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: InitialModule.startSpeed.scalar
+      value: 5.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMessages
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collidesWith.m_Bits
+      value: 65
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: InitialModule.gravityModifier.scalar
+      value: 1.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.multiplyColliderForceByParticleSpeed
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5179100873277422717, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_SortingOrder
@@ -10477,9 +10555,17 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 7496888785734196062, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     - target: {fileID: 7772050555358281063, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_Layer
       value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7772050555358281063, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Rat
       objectReference: {fileID: 0}
     - target: {fileID: 8588814125443815226, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_SortingOrder
@@ -10514,6 +10600,34 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.m_Bounce.scalar
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: InitialModule.startSpeed.scalar
+      value: 3.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMessages
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collidesWith.m_Bits
+      value: 65
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
       value: 0.38314345
       objectReference: {fileID: 0}
@@ -10524,6 +10638,14 @@ PrefabInstance:
     - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
       value: 0.7735849
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: InitialModule.gravityModifier.scalar
+      value: 0.42
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.multiplyColliderForceByParticleSpeed
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9118949907024126296, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalScale.x
@@ -10557,14 +10679,48 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 9136627536380471599, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7496888785734196062, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4598034890162808907}
+    - targetCorrespondingSourceObject: {fileID: 4809421703279907128, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3964659817426198939}
   m_SourcePrefab: {fileID: 100100000, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
 --- !u!4 &3616354795958536943 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1529955828377026203, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+  m_PrefabInstance: {fileID: 2816052957266637940}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &5701255449628323626 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7496888785734196062, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+  m_PrefabInstance: {fileID: 2816052957266637940}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4598034890162808907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5701255449628323626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059de2ec315af694583207050692c7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splatterType: 1
+  splatterSpawnRate: 1
+--- !u!198 &6532124360563313642 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
   m_PrefabInstance: {fileID: 2816052957266637940}
   m_PrefabAsset: {fileID: 0}
 --- !u!198 &7124156525789569307 stripped
@@ -10577,14 +10733,23 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 4809421703279907128, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
   m_PrefabInstance: {fileID: 2816052957266637940}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3964659817426198939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7325912592937739596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059de2ec315af694583207050692c7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splatterType: 1
+  splatterSpawnRate: 4
 --- !u!198 &8403004249430277333 stripped
 ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
-  m_PrefabInstance: {fileID: 2816052957266637940}
-  m_PrefabAsset: {fileID: 0}
---- !u!198 &8460196067724961018 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 5943632486485971086, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
   m_PrefabInstance: {fileID: 2816052957266637940}
   m_PrefabAsset: {fileID: 0}
 --- !u!198 &8512385788130095368 stripped
@@ -10608,6 +10773,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: -8695416825521746284, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     - target: {fileID: -8653719598885068355, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Name
       value: Rat boss
@@ -10620,9 +10789,17 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -8653719598885068355, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     - target: {fileID: -8286969786277680935, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -8286969786277680935, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
+      propertyPath: m_TagString
+      value: Rat
       objectReference: {fileID: 0}
     - target: {fileID: -7839583854103590311, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Layer
@@ -10646,11 +10823,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -8.050224
+      value: -69.050476
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.4020917
+      value: -0.6128378
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10696,6 +10873,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: -6627991806376485586, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     - target: {fileID: -6551915357139312317, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -10712,6 +10893,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: -3948471002323827587, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     - target: {fileID: -3145382201746366490, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -10723,6 +10908,10 @@ PrefabInstance:
     - target: {fileID: -1240721892719223032, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -1240721892719223032, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
+      propertyPath: m_TagString
+      value: Rat
       objectReference: {fileID: 0}
     - target: {fileID: -1024815538560704356, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Layer
@@ -10736,6 +10925,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 386791141387813222, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     - target: {fileID: 1300142661454288029, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_SortingOrder
       value: 8
@@ -10748,6 +10941,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 1596357972171728719, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
+      propertyPath: m_TagString
+      value: Rat
+      objectReference: {fileID: 0}
     - target: {fileID: 2382009419907154866, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -10755,6 +10952,10 @@ PrefabInstance:
     - target: {fileID: 2947414824929455936, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947414824929455936, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
+      propertyPath: m_TagString
+      value: Rat
       objectReference: {fileID: 0}
     - target: {fileID: 3004019969263073014, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Layer
@@ -10787,6 +10988,10 @@ PrefabInstance:
     - target: {fileID: 8462792922189227698, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8462792922189227698, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
+      propertyPath: m_TagString
+      value: Rat
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11061,12 +11266,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff768d6f3799df3469bcb76d3724f5f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 1000
-  deathEffect: {fileID: 7325912592937739596}
+  maxHealth: 500
+  deathEffect: {fileID: 3487477894333288293}
   bloodSpawnPoint: {fileID: 4506034669272728072}
   bloodParticle: {fileID: 2645654069939671888}
-  DeathMushroomParticules: {fileID: 7124156525789569307}
-  DeathMushroomParticules2: {fileID: 8460196067724961018}
+  DeathMushroomParticules: {fileID: 6532124360563313642}
+  DeathMushroomParticules2: {fileID: 7124156525789569307}
   DeathMushroomParticules3: {fileID: 8403004249430277333}
   DeathMushroomParticules4: {fileID: 580472205846089318}
   DeathMushroomParticules5: {fileID: 8512385788130095368}

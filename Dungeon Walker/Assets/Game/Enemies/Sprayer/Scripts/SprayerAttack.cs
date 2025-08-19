@@ -150,6 +150,12 @@ public class SprayerAttack : MonoBehaviour
                 float damageThisTick = damagePerSecond * damageInterval;
                 playerHealth.TakeDamage(Mathf.RoundToInt(damageThisTick), 0f, Vector2.zero);
             }
+            L3antixHealth l3antixHealth = hit.GetComponent<L3antixHealth>();
+            if (l3antixHealth != null)
+            {
+                float damageThisTick = damagePerSecond * damageInterval;
+                l3antixHealth.TakeDamage(Mathf.RoundToInt(damageThisTick), 0f, Vector2.zero);
+            }
         }
     }
 

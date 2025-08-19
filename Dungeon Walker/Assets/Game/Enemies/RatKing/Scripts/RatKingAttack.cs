@@ -352,6 +352,14 @@ public class RatKingAttack : MonoBehaviour
                 playerHealth.TakeDamage(damageAmount, knockbackForce, knockbackDirection);
                 Debug.Log($"Player {player.name} took {damageAmount} damage from RatKing impact and was knocked back!");
             }
+            L3antixHealth l3antixHealth = player.GetComponent<L3antixHealth>();
+            if (l3antixHealth != null)
+            {
+                // Calculate knockback direction from RatKing to player
+                Vector2 knockbackDirection = (player.transform.position - transform.position).normalized;
+                l3antixHealth.TakeDamage(damageAmount, knockbackForce, knockbackDirection);
+                Debug.Log($"Player {player.name} took {damageAmount} damage from RatKing impact and was knocked back!");
+            }
         }
     }
 
@@ -461,6 +469,13 @@ public class CheeseProjectile : MonoBehaviour
             {
                 Vector2 knockbackDirection = (player.transform.position - transform.position).normalized;
                 playerHealth.TakeDamage(damageAmount, cheeseKnockbackForce, knockbackDirection);
+                Debug.Log($"Player {player.name} took {damageAmount} damage from Cheese explosion and was knocked back!");
+            }
+            L3antixHealth l3antixHealth = player.GetComponent<L3antixHealth>();
+            if (l3antixHealth != null)
+            {
+                Vector2 knockbackDirection = (player.transform.position - transform.position).normalized;
+                l3antixHealth.TakeDamage(damageAmount, cheeseKnockbackForce, knockbackDirection);
                 Debug.Log($"Player {player.name} took {damageAmount} damage from Cheese explosion and was knocked back!");
             }
         }

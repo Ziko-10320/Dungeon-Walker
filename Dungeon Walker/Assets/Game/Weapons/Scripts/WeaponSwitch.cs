@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 
 public class WeaponSwitchManager : MonoBehaviour
@@ -18,10 +19,12 @@ public class WeaponSwitchManager : MonoBehaviour
 
     public List<WeaponConfig> weaponConfigs;
     public int killsToSwitch = 5;
+    [SerializeField] private float switchDelay = 0.2f; // New: Delay before activating the new weapon
 
     private int currentKills = 0;
     private WeaponConfig currentWeapon;
     private SpriteRenderer currentArmSpriteRenderer; // To track the currently active arm SpriteRenderer
+    private bool isSwitchingWeapon = false; // New: Flag to prevent multiple simultaneous switches
 
     void Start()
     {
@@ -79,20 +82,25 @@ public class WeaponSwitchManager : MonoBehaviour
         currentKills++;
         Debug.Log($"Kill count: {currentKills}/{killsToSwitch}");
 
-        if (currentKills >= killsToSwitch)
+        if (currentKills >= killsToSwitch && !isSwitchingWeapon)
         {
-            SwitchWeapon();
+            StartCoroutine(SwitchWeaponWithDelay()); // Modified: Start coroutine for delayed switch
             currentKills = 0;
         }
     }
 
-    void SwitchWeapon()
+    private IEnumerator SwitchWeaponWithDelay()
     {
-        Debug.Log($"Switching from weapon: {currentWeapon?.weaponName}");
+        isSwitchingWeapon = true;
+        Debug.Log($"Initiating weapon switch from: {currentWeapon?.weaponName}");
 
-        // Deactivate current weapon with enhanced cleanup
+        // Wait for the specified delay BEFORE deactivating the current weapon
+        yield return new WaitForSeconds(switchDelay);
+
+        // Deactivate current weapon after the delay
         DeactivateWeapon(currentWeapon);
 
+        // Select new weapon
         WeaponConfig newWeapon = GetRandomWeapon();
         // Prevent selecting the same weapon twice in a row
         while (newWeapon == currentWeapon && weaponConfigs.Count > 1)
@@ -104,6 +112,7 @@ public class WeaponSwitchManager : MonoBehaviour
         ActivateWeapon(currentWeapon);
 
         Debug.Log($"Switched to weapon: {currentWeapon.weaponName}");
+        isSwitchingWeapon = false;
     }
 
     WeaponConfig GetRandomWeapon()
@@ -241,16 +250,40 @@ public class WeaponSwitchManager : MonoBehaviour
         }
 
         // Clean up any Bat2 objects that might be left in the scene
+        // BUT EXCLUDE the player's current weapon bat
         GameObject[] bat2Objects = GameObject.FindObjectsOfType<GameObject>()
             .Where(go => go.name.Contains("Bat2") && go.GetComponent<Rigidbody2D>() != null)
             .ToArray();
+
         foreach (GameObject bat2 in bat2Objects)
         {
-            Destroy(bat2);
+            // Check if this bat2 is part of the current weapon - if so, DON'T destroy it
+            // This assumes 'currentWeapon' is correctly set and 'weaponGameObjects' contains the bat's GameObject.
+            bool isCurrentWeaponBat = false;
+            if (currentWeapon != null && currentWeapon.weaponGameObjects != null)
+            {
+                foreach (GameObject weaponGO in currentWeapon.weaponGameObjects)
+                {
+                    if (weaponGO == bat2)
+                    {
+                        isCurrentWeaponBat = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isCurrentWeaponBat)
+            {
+                Destroy(bat2);
+            }
+            else
+            {
+                Debug.Log($"Skipping destruction of current weapon bat: {bat2.name}");
+            }
         }
         if (bat2Objects.Length > 0)
         {
-            Debug.Log($"Cleaned up {bat2Objects.Length} Bat2 objects during weapon switch");
+            Debug.Log($"Cleaned up Bat2 objects during weapon switch (excluding current weapon)");
         }
 
         // Clean up any ThrowSlash objects that might be left in the scene
@@ -267,6 +300,7 @@ public class WeaponSwitchManager : MonoBehaviour
         }
     }
 
+
     /// <summary>
     /// Public method to get the current weapon name for debugging
     /// </summary>
@@ -280,7 +314,11 @@ public class WeaponSwitchManager : MonoBehaviour
     /// </summary>
     public void ForceWeaponSwitch()
     {
-        SwitchWeapon();
-        currentKills = 0;
+        if (!isSwitchingWeapon)
+        {
+            StartCoroutine(SwitchWeaponWithDelay());
+            currentKills = 0;
+        }
     }
 }
+

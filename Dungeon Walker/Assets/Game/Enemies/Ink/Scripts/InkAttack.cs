@@ -345,6 +345,12 @@ public class InkBallBehavior : MonoBehaviour
                 Vector2 knockbackDirection = (other.transform.position - transform.position).normalized;
                 playerHealth.TakeDamage(damageAmount, knockbackForce, knockbackDirection);
             }
+            L3antixHealth l3antixHealth = other.GetComponent<L3antixHealth>();
+            if (l3antixHealth != null)
+            {
+                Vector2 knockbackDirection = (other.transform.position - transform.position).normalized;
+                l3antixHealth.TakeDamage(damageAmount, knockbackForce, knockbackDirection);
+            }
             DestroyInkBall();
         }
         else

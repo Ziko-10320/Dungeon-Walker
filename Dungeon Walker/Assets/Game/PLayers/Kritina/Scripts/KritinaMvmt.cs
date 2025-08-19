@@ -27,6 +27,10 @@ public class KritinaMovement : MonoBehaviour
     public ParticleSystem dust;
     public ParticleSystem dustLand;
 
+    [Header("Arm and Gun Flip")]
+    public Transform[] playerArms;
+    public Transform[] playerGuns;
+
     [Header("Sound Settings")]
     public AudioClip jumpSoundClip;
     [Range(0f, 1f)]
@@ -176,8 +180,27 @@ public class KritinaMovement : MonoBehaviour
 
     void Flip()
     {
-
+        // Flip the player character
         transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+
+        // Flip all arms
+        foreach (Transform arm in playerArms)
+        {
+            if (arm != null)
+            {
+                arm.localScale = new Vector3(-arm.localScale.x, -arm.localScale.y, arm.localScale.z);
+            }
+        }
+
+        // Flip all guns
+        foreach (Transform gun in playerGuns)
+        {
+            if (gun != null)
+            {
+                gun.localScale = new Vector3(-gun.localScale.x, -gun.localScale.y, gun.localScale.z);
+            }
+        }
+
         isFacingRight = !isFacingRight;
 
         if (IsGrounded())

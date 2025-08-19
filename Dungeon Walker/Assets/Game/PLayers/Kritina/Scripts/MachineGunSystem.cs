@@ -48,7 +48,8 @@ public class MachineGunSystem : MonoBehaviour
     public float trajectoryRotationOffsetRight = 0f;
     [Tooltip("Offset de rotation pour la TRAJECTOIRE quand le joueur regarde à GAUCHE")]
     public float trajectoryRotationOffsetLeft = 0f;
-
+    public bool enableAimStabilization = true;
+    public bool independentLauncherRotation = true;
     [Header("FIRING & AMMO SYSTEM")]
     [SerializeField] private float fireRate = 0.2f;
 
@@ -103,6 +104,9 @@ public class MachineGunSystem : MonoBehaviour
     private bool playedOverheatShake = false;
     private float overheatCooldownTimer = 0f; // New timer for cooldown
 
+    private Vector2 mouseScreenPosition; // Mouse screen position
+   
+    private Vector2 stabilizedMouseWorldPosition; // Stabilized mouse world position
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -128,13 +132,55 @@ public class MachineGunSystem : MonoBehaviour
 
     private void HandleAiming()
     {
-        UpdatePlayerFacingDirection();
-        mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-        aimFromPosition = launcherAimPoint != null ? (Vector2)launcherAimPoint.position : (Vector2)Gun.transform.position;
-        Vector2 directionToMouse = (mouseWorldPosition - aimFromPosition);
-        aimDirection = directionToMouse.normalized;
+        // Get raw mouse screen position
+        mouseScreenPosition = Mouse.current.position.ReadValue();
 
-        if (directionToMouse.magnitude < minDistanceToAim)
+        // Convert mouse screen position to world position
+        mouseWorldPosition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+
+        // Stabilize mouse world position if enabled
+        if (enableAimStabilization)
+        {
+            // To stabilize aiming, we need to calculate the aim direction relative to the launcher\"s current position,
+            // but the mouse position itself should not be directly affected by player movement.
+            // The `stabilizedMouseWorldPosition` should be the mouse\"s world position relative to the camera\"s view,
+            // not relative to the player\"s changing position.
+            // By simply using `mouseWorldPosition` (which is already relative to the camera\"s view),
+            // the aim will remain stable even if the player moves.
+            stabilizedMouseWorldPosition = mouseWorldPosition;
+        }
+        else
+        {
+            stabilizedMouseWorldPosition = mouseWorldPosition;
+        }
+
+        UpdatePlayerFacingDirection();
+        CalculateAimDirection();
+    }
+
+    private void UpdatePlayerFacingDirection()
+    {
+        if (playerTransform != null)
+        {
+            KritinaMovement playerMovement = playerTransform.GetComponent<KritinaMovement>();
+            if (playerMovement != null)
+            {
+                isPlayerFacingRight = playerMovement.isFacingRight;
+            }
+            else
+            {
+                isPlayerFacingRight = playerTransform.localScale.x > 0;
+            }
+        }
+    }
+
+    private void CalculateAimDirection()
+    {
+        aimFromPosition = launcherAimPoint != null ? launcherAimPoint.position : Gun.transform.position;
+        Vector2 directionToMouse = (stabilizedMouseWorldPosition - aimFromPosition);
+        float distanceToMouse = directionToMouse.magnitude;
+
+        if (distanceToMouse < minDistanceToAim)
         {
             return;
         }
@@ -142,76 +188,74 @@ public class MachineGunSystem : MonoBehaviour
         float worldAngleToMouse = Mathf.Atan2(directionToMouse.y, directionToMouse.x) * Mathf.Rad2Deg;
         float clampedWorldAngle = ClampWorldAngle(worldAngleToMouse);
 
+        // Set world space rotations
         worldArmRotation = clampedWorldAngle;
+
+        // Apply launcher offsets
         float currentLauncherOffset = isPlayerFacingRight ? launcherRotationOffsetRight : launcherRotationOffsetLeft;
         worldLauncherRotation = clampedWorldAngle + currentLauncherOffset;
+
+        // Apply trajectory offsets (this controls the green line - where projectiles actually go)
         float currentTrajectoryOffset = isPlayerFacingRight ? trajectoryRotationOffsetRight : trajectoryRotationOffsetLeft;
         worldTrajectoryRotation = clampedWorldAngle + currentTrajectoryOffset;
-    }
 
-    private void UpdatePlayerFacingDirection()
-    {
-        if (playerTransform != null)
-        {
-            isPlayerFacingRight = playerTransform.localScale.x > 0;
-        }
+        aimDirection = directionToMouse.normalized;
     }
 
     private float ClampWorldAngle(float worldAngle)
     {
-        worldAngle = (worldAngle + 180f) % 360f - 180f;
+        while (worldAngle > 180f) worldAngle -= 360f;
+        while (worldAngle < -180f) worldAngle += 360f;
 
-        if (isPlayerFacingRight)
+        if (worldAngle >= -maxDownwardAngle && worldAngle <= maxUpwardAngle)
         {
             return Mathf.Clamp(worldAngle, -maxDownwardAngle, maxUpwardAngle);
         }
-        else
+        else if (worldAngle > 90f && worldAngle < 270f)
         {
-            float leftEquivAngle = 180 + worldAngle;
-            leftEquivAngle = Mathf.Clamp(leftEquivAngle, 180 - maxUpwardAngle, 180 + maxDownwardAngle);
-            return leftEquivAngle - 180;
+            float leftUpLimit = 180f - maxDownwardAngle;
+            float leftDownLimit = 180f + maxDownwardAngle;
+            return Mathf.Clamp(worldAngle, leftUpLimit, leftDownLimit);
         }
+
+        return worldAngle;
     }
 
     private void ApplyRotation()
     {
-        if (Vector2.Distance(mouseWorldPosition, aimFromPosition) < minDistanceToAim)
-        {
-            return;
-        }
-
-        Quaternion armTargetRotation = Quaternion.Euler(0, 0, worldArmRotation);
-        Quaternion gunTargetRotation = Quaternion.Euler(0, 0, worldLauncherRotation);
+        Quaternion armWorldRotation = Quaternion.Euler(0, 0, worldArmRotation);
+        Quaternion launcherWorldRotation = Quaternion.Euler(0, 0, worldLauncherRotation);
+        Quaternion trajectoryWorldRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation);
 
         if (useInstantRotation)
         {
-            Arm.transform.rotation = armTargetRotation;
-            if (Gun != null && pivotPoint != null)
+            Arm.transform.rotation = armWorldRotation;
+            if (independentLauncherRotation)
             {
-                Gun.transform.RotateAround(pivotPoint.position, Vector3.forward, worldLauncherRotation - Gun.transform.rotation.eulerAngles.z);
+                Gun.transform.rotation = launcherWorldRotation;
             }
-            else if (Gun != null)
+            else
             {
-                Gun.transform.rotation = gunTargetRotation;
+                Gun.transform.rotation = armWorldRotation;
             }
+
+           
         }
         else
         {
-            Arm.transform.rotation = Quaternion.Slerp(Arm.transform.rotation, armTargetRotation, rotationSpeed * Time.deltaTime);
-            if (Gun != null && pivotPoint != null)
+            Arm.transform.rotation = Quaternion.Lerp(Arm.transform.rotation, armWorldRotation, rotationSpeed * Time.deltaTime);
+            if (independentLauncherRotation)
             {
-                float currentZ = Gun.transform.rotation.eulerAngles.z;
-                float targetZ = worldLauncherRotation;
-                float angleDiff = Mathf.DeltaAngle(currentZ, targetZ);
-                Gun.transform.RotateAround(pivotPoint.position, Vector3.forward, angleDiff * rotationSpeed * Time.deltaTime);
+                Gun.transform.rotation = Quaternion.Lerp(Gun.transform.rotation, launcherWorldRotation, rotationSpeed * Time.deltaTime);
             }
-            else if (Gun != null)
+            else
             {
-                Gun.transform.rotation = Quaternion.Slerp(Gun.transform.rotation, gunTargetRotation, rotationSpeed * Time.deltaTime);
+                Gun.transform.rotation = Quaternion.Lerp(Gun.transform.rotation, armWorldRotation, rotationSpeed * Time.deltaTime);
             }
+
+           
         }
     }
-
     private void HandleShooting()
     {
         // If currently overheated, prevent shooting and handle cooldown
@@ -499,6 +543,11 @@ public class BulletComponent : MonoBehaviour
             if (RatKingHealth != null)
             {
                 RatKingHealth.TakeDamage(damage);
+            }
+            BarrelExplosion barrelExplosion = collidedObject.GetComponent<BarrelExplosion>();
+            if (barrelExplosion != null)
+            {
+                barrelExplosion.TakeDamage(damage);
             }
 
             if (audioSource != null && collisionSound != null) audioSource.PlayOneShot(collisionSound, collisionSoundVolume);

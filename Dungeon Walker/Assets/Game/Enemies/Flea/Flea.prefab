@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2666662147083810555}
   m_Layer: 0
   m_Name: PatrolPoint (3)
-  m_TagString: Untagged
+  m_TagString: Flea
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 5816548107140405315}
   m_Layer: 0
   m_Name: PatrolPoint (2)
-  m_TagString: Untagged
+  m_TagString: Flea
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -73,7 +73,7 @@ GameObject:
   - component: {fileID: 7700987351906086708}
   m_Layer: 0
   m_Name: PatrolPoint
-  m_TagString: Untagged
+  m_TagString: Flea
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 4041683331665385289}
   m_Layer: 7
   m_Name: GroundCheck
-  m_TagString: Untagged
+  m_TagString: Flea
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -166,9 +166,10 @@ GameObject:
   - component: {fileID: 198586472607855105}
   - component: {fileID: 7826740536671988027}
   - component: {fileID: 6025355095051735489}
+  - component: {fileID: 8472128770464996839}
   m_Layer: 0
   m_Name: FleaBlood
-  m_TagString: Untagged
+  m_TagString: Flea
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -182,7 +183,7 @@ Transform:
   m_GameObject: {fileID: 2782896639739519807}
   serializedVersion: 2
   m_LocalRotation: {x: -0.69822913, y: -0, z: -0, w: 0.71587443}
-  m_LocalPosition: {x: -14.48, y: 4, z: -0.06}
+  m_LocalPosition: {x: -0.32, y: 1.56, z: -0.12}
   m_LocalScale: {x: 0.6817725, y: 0.3952305, z: 0.3952305}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -766,7 +767,7 @@ ParticleSystem:
     gravityModifier:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0
+      scalar: 0.16
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -3832,10 +3833,10 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     range: {x: 0, y: 1}
   CollisionModule:
-    enabled: 0
+    enabled: 1
     serializedVersion: 4
-    type: 0
-    collisionMode: 0
+    type: 1
+    collisionMode: 1
     colliderForce: 0
     multiplyColliderForceByParticleSize: 0
     multiplyColliderForceByParticleSpeed: 0
@@ -3897,7 +3898,7 @@ ParticleSystem:
     m_Bounce:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 0
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -4005,11 +4006,11 @@ ParticleSystem:
     radiusScale: 1
     collidesWith:
       serializedVersion: 2
-      m_Bits: 4294967295
+      m_Bits: 65
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
-    collisionMessages: 0
+    collisionMessages: 1
     collidesWithDynamic: 1
     interiorCollisions: 0
   TriggerModule:
@@ -5043,6 +5044,20 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &8472128770464996839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2782896639739519807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059de2ec315af694583207050692c7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splatterType: 0
+  splatterSpawnRate: 4
 --- !u!1 &3700113216986949727
 GameObject:
   m_ObjectHideFlags: 0
@@ -5147,7 +5162,7 @@ GameObject:
   - component: {fileID: 4555631776906421297}
   m_Layer: 7
   m_Name: SpawnPoints
-  m_TagString: Untagged
+  m_TagString: Flea
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5246,7 +5261,7 @@ GameObject:
   - component: {fileID: 228593435883474359}
   m_Layer: 7
   m_Name: WallCheck
-  m_TagString: Untagged
+  m_TagString: Flea
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5285,6 +5300,10 @@ PrefabInstance:
     - target: {fileID: -8653719598885068355, guid: 4ea1a69b85678f242bd6da879c868a3e, type: 3}
       propertyPath: m_Name
       value: sonic Flea
+      objectReference: {fileID: 0}
+    - target: {fileID: -8653719598885068355, guid: 4ea1a69b85678f242bd6da879c868a3e, type: 3}
+      propertyPath: m_TagString
+      value: Flea
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 4ea1a69b85678f242bd6da879c868a3e, type: 3}
       propertyPath: m_LocalScale.x
@@ -5402,6 +5421,10 @@ PrefabInstance:
     - target: {fileID: 5241446291610512719, guid: 7aad3f7e8c8d26c4aacabde4c3670c73, type: 3}
       propertyPath: m_Name
       value: Dust Burst Slide (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5241446291610512719, guid: 7aad3f7e8c8d26c4aacabde4c3670c73, type: 3}
+      propertyPath: m_TagString
+      value: Flea
       objectReference: {fileID: 0}
     - target: {fileID: 6364406544012708653, guid: 7aad3f7e8c8d26c4aacabde4c3670c73, type: 3}
       propertyPath: m_LocalScale.x
@@ -5550,6 +5573,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BloodMushroom
       objectReference: {fileID: 0}
+    - target: {fileID: 7908121163218307258, guid: 162e5caa1f5b1594fa800f2b6a85675a, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5576,6 +5603,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -9047987502257962793, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
     - target: {fileID: -8840475949118799487, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -5592,6 +5623,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -8653719598885068355, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.8320601
@@ -5606,11 +5641,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.8000078
+      value: -77.874405
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.499999
+      value: 1.7244391
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5664,6 +5699,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 386791141387813222, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
     - target: {fileID: 970511627865089740, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -5671,6 +5710,10 @@ PrefabInstance:
     - target: {fileID: 2805404538631728759, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2805404538631728759, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
+      propertyPath: m_TagString
+      value: Flea
       objectReference: {fileID: 0}
     - target: {fileID: 3297364353584691495, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Layer
@@ -5696,6 +5739,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 5316818519409218415, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
     - target: {fileID: 6015976353237451935, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -5712,6 +5759,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6725575266271996171, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
     - target: {fileID: 8606694299350720583, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -5723,6 +5774,10 @@ PrefabInstance:
     - target: {fileID: 9202286772897935925, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9202286772897935925, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
+      propertyPath: m_TagString
+      value: Flea
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5785,6 +5840,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3970156097857623796}
+    - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1370146577963590099}
   m_SourcePrefab: {fileID: 4843985084834002234, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
 --- !u!4 &481970195025675269 stripped
 Transform:
@@ -6079,6 +6137,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1370146577963590099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1619136985213934694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abad733681d967b47848192787b7a071, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 65
+  splatterOffsetZ: 0.11
 --- !u!212 &4819574818533767492 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 6015976353237451935, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
@@ -6166,6 +6240,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Dust Burst Slide
       objectReference: {fileID: 0}
+    - target: {fileID: 9166201769829142512, guid: c2141956fd4478e458c81cad8411ec72, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6249,6 +6327,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1982612565981529581, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
     - target: {fileID: 2938270285230883288, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -6260,6 +6342,14 @@ PrefabInstance:
     - target: {fileID: 3227857253686018997, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.227
+      objectReference: {fileID: 0}
+    - target: {fileID: 4509183948020417044, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
+    - target: {fileID: 4809421703279907128, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Flea
       objectReference: {fileID: 0}
     - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: looping
@@ -6290,6 +6380,30 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.m_Bounce.scalar
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMessages
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collidesWith.m_Bits
+      value: 65
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
       value: 0.8207547
       objectReference: {fileID: 0}
@@ -6300,6 +6414,18 @@ PrefabInstance:
     - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
       value: 0.8207547
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.multiplyColliderForceByParticleSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7496888785734196062, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
+    - target: {fileID: 7772050555358281063, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Flea
       objectReference: {fileID: 0}
     - target: {fileID: 8970738348927089689, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalPosition.x
@@ -6314,6 +6440,30 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.m_Bounce.scalar
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMessages
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collidesWith.m_Bits
+      value: 65
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
       value: 0.38656995
       objectReference: {fileID: 0}
@@ -6324,6 +6474,10 @@ PrefabInstance:
     - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
       value: 0.6886792
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.multiplyColliderForceByParticleSpeed
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9118949907024126296, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalPosition.x
@@ -6337,11 +6491,37 @@ PrefabInstance:
       propertyPath: m_Name
       value: DeathMushroomEffects
       objectReference: {fileID: 0}
+    - target: {fileID: 9136627536380471599, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Flea
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4509183948020417044, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 594852456064506118}
   m_SourcePrefab: {fileID: 100100000, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+--- !u!1 &595118411889361170 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4509183948020417044, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+  m_PrefabInstance: {fileID: 3950114141650502406}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &594852456064506118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 595118411889361170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059de2ec315af694583207050692c7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splatterType: 1
+  splatterSpawnRate: 4
 --- !u!4 &2588128713935699357 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1529955828377026203, guid: 431de6694f6de34438fc4626ad5979df, type: 3}

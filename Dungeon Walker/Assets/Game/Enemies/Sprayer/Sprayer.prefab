@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1488796531953921774}
   m_Layer: 7
   m_Name: HighCheck
-  m_TagString: Untagged
+  m_TagString: Sprayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 7787156638415213151}
   m_Layer: 7
   m_Name: WallCheck
-  m_TagString: Untagged
+  m_TagString: Sprayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -166,7 +166,7 @@ GameObject:
   - component: {fileID: 6799983314753468441}
   m_Layer: 7
   m_Name: GroundCheck
-  m_TagString: Untagged
+  m_TagString: Sprayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -228,9 +228,10 @@ GameObject:
   - component: {fileID: 1092698187580357436}
   - component: {fileID: 1441365472297043515}
   - component: {fileID: 8677198769677297444}
+  - component: {fileID: 1077550869805182359}
   m_Layer: 0
   m_Name: 'SprayerBlood '
-  m_TagString: Untagged
+  m_TagString: Sprayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3894,13 +3895,13 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     range: {x: 0, y: 1}
   CollisionModule:
-    enabled: 0
+    enabled: 1
     serializedVersion: 4
-    type: 0
-    collisionMode: 0
+    type: 1
+    collisionMode: 1
     colliderForce: 0
     multiplyColliderForceByParticleSize: 0
-    multiplyColliderForceByParticleSpeed: 0
+    multiplyColliderForceByParticleSpeed: 1
     multiplyColliderForceByCollisionAngle: 1
     m_Planes: []
     m_Dampen:
@@ -3959,7 +3960,7 @@ ParticleSystem:
     m_Bounce:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 0
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -4067,11 +4068,11 @@ ParticleSystem:
     radiusScale: 1
     collidesWith:
       serializedVersion: 2
-      m_Bits: 4294967295
+      m_Bits: 65
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
-    collisionMessages: 0
+    collisionMessages: 1
     collidesWithDynamic: 1
     interiorCollisions: 0
   TriggerModule:
@@ -5105,6 +5106,20 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &1077550869805182359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8045067836393302539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059de2ec315af694583207050692c7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splatterType: 0
+  splatterSpawnRate: 4
 --- !u!1 &8054507066501396339
 GameObject:
   m_ObjectHideFlags: 0
@@ -5149,7 +5164,7 @@ GameObject:
   - component: {fileID: 538594615891676093}
   m_Layer: 7
   m_Name: SprayAttackParticules
-  m_TagString: Untagged
+  m_TagString: Sprayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10008,7 +10023,7 @@ GameObject:
   - component: {fileID: 938431801114116735}
   m_Layer: 7
   m_Name: SpawnPoints (1)
-  m_TagString: Untagged
+  m_TagString: Sprayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10069,6 +10084,10 @@ PrefabInstance:
     - target: {fileID: 5241446291610512719, guid: 7aad3f7e8c8d26c4aacabde4c3670c73, type: 3}
       propertyPath: m_Name
       value: GroundDustImpact (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5241446291610512719, guid: 7aad3f7e8c8d26c4aacabde4c3670c73, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
       objectReference: {fileID: 0}
     - target: {fileID: 6364406544012708653, guid: 7aad3f7e8c8d26c4aacabde4c3670c73, type: 3}
       propertyPath: m_LocalScale.x
@@ -10167,11 +10186,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7
+      value: -67.18967
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.5
+      value: 1.6285
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10248,6 +10267,10 @@ PrefabInstance:
     - target: {fileID: -7300182959068601463, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: -7300182959068601463, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
       objectReference: {fileID: 0}
     - target: {fileID: -7221020487405985688, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_LocalRotation.w
@@ -10329,13 +10352,25 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 386791141387813222, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
+      objectReference: {fileID: 0}
     - target: {fileID: 1769465101944927738, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 1769465101944927738, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
+      objectReference: {fileID: 0}
     - target: {fileID: 2805404538631728759, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2805404538631728759, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
       objectReference: {fileID: 0}
     - target: {fileID: 3297364353584691495, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_Layer
@@ -10400,6 +10435,10 @@ PrefabInstance:
     - target: {fileID: 7665902336581051093, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_Layer
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7665902336581051093, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -10748,6 +10787,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1982612565981529581, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
+      objectReference: {fileID: 0}
     - target: {fileID: 2938270285230883288, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -10764,6 +10807,14 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: -0.227
       objectReference: {fileID: 0}
+    - target: {fileID: 4509183948020417044, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
+      objectReference: {fileID: 0}
+    - target: {fileID: 4809421703279907128, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
+      objectReference: {fileID: 0}
     - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: looping
       value: 0
@@ -10771,6 +10822,30 @@ PrefabInstance:
     - target: {fileID: 5852059347395478908, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: looping
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5852059347395478908, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5852059347395478908, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5852059347395478908, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.m_Bounce.scalar
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5852059347395478908, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMessages
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5852059347395478908, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collidesWith.m_Bits
+      value: 65
+      objectReference: {fileID: 0}
+    - target: {fileID: 5852059347395478908, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.multiplyColliderForceByParticleSize
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5943632486485971086, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: looping
@@ -10793,6 +10868,34 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.m_Bounce.scalar
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: InitialModule.startSpeed.scalar
+      value: 2.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMessages
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collidesWith.m_Bits
+      value: 65
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
       value: 0
       objectReference: {fileID: 0}
@@ -10803,6 +10906,22 @@ PrefabInstance:
     - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
       value: 0.6981132
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: InitialModule.gravityModifier.scalar
+      value: 0.52
+      objectReference: {fileID: 0}
+    - target: {fileID: 6019578662971721889, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.multiplyColliderForceByParticleSpeed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7496888785734196062, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
+      objectReference: {fileID: 0}
+    - target: {fileID: 7772050555358281063, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
       objectReference: {fileID: 0}
     - target: {fileID: 8970738348927089689, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalPosition.x
@@ -10817,6 +10936,30 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.m_Bounce.scalar
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collisionMessages
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.collidesWith.m_Bits
+      value: 65
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
       value: 0.5492168
       objectReference: {fileID: 0}
@@ -10827,6 +10970,10 @@ PrefabInstance:
     - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
       value: 0.6226415
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: CollisionModule.multiplyColliderForceByParticleSpeed
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9118949907024126296, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalPosition.x
@@ -10840,11 +10987,40 @@ PrefabInstance:
       propertyPath: m_Name
       value: DeathMushroomEffects (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 9136627536380471599, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4509183948020417044, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5790348408131159131}
+    - targetCorrespondingSourceObject: {fileID: 7772050555358281063, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4428050917680224868}
   m_SourcePrefab: {fileID: 100100000, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+--- !u!1 &951272173713123117 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7772050555358281063, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+  m_PrefabInstance: {fileID: 7415255733037668938}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4428050917680224868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 951272173713123117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059de2ec315af694583207050692c7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splatterType: 1
+  splatterSpawnRate: 4
 --- !u!198 &1970925775796184532 stripped
 ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
@@ -10870,6 +11046,25 @@ ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 5852059347395478908, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
   m_PrefabInstance: {fileID: 7415255733037668938}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &6375849289176127582 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4509183948020417044, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+  m_PrefabInstance: {fileID: 7415255733037668938}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5790348408131159131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6375849289176127582}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059de2ec315af694583207050692c7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  splatterType: 1
+  splatterSpawnRate: 4
 --- !u!4 &8346077710834001105 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1529955828377026203, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
@@ -10910,6 +11105,10 @@ PrefabInstance:
     - target: {fileID: 5241446291610512719, guid: 7aad3f7e8c8d26c4aacabde4c3670c73, type: 3}
       propertyPath: m_Name
       value: GroundDustImpact
+      objectReference: {fileID: 0}
+    - target: {fileID: 5241446291610512719, guid: 7aad3f7e8c8d26c4aacabde4c3670c73, type: 3}
+      propertyPath: m_TagString
+      value: Sprayer
       objectReference: {fileID: 0}
     - target: {fileID: 6364406544012708653, guid: 7aad3f7e8c8d26c4aacabde4c3670c73, type: 3}
       propertyPath: m_LocalScale.x

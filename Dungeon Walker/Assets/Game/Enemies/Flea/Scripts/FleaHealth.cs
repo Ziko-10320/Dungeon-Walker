@@ -1,6 +1,7 @@
-using System.Collections;
-using UnityEngine;
 using FirstGearGames.SmoothCameraShaker;
+using System.Collections;
+using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.Events;
 public class FleaHealth : MonoBehaviour
 {
@@ -77,7 +78,7 @@ public class FleaHealth : MonoBehaviour
     }
 
     // Method to take damage
-    public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 1f)
+    public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 1f, GameObject attacker = null)
     {
         // Reduce health
         currentHealth -= (int)damage;
@@ -110,7 +111,8 @@ public class FleaHealth : MonoBehaviour
         // Check if the mushroom is dead
         if (currentHealth <= 0)
         {
-            Die();
+            // Passe l'attaquant à la fonction Die
+            Die(attacker);
         }
     }
 
@@ -137,7 +139,7 @@ public class FleaHealth : MonoBehaviour
     }
 
     // Method to handle death
-    private void Die()
+    private void Die(GameObject attacker = null)
     {
         if (DeathMushroomSpawn != null && DeathMushroomParticules != null)
         {
@@ -167,7 +169,10 @@ public class FleaHealth : MonoBehaviour
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
 
-        OnDeath?.Invoke(gameObject);
+        if (attacker != null && attacker.CompareTag("Projectile"))
+        {
+            OnDeath?.Invoke(attacker); // Invoque l'événement uniquement pour les projectiles
+        }
 
         if (weaponSwitchManager != null)
         {

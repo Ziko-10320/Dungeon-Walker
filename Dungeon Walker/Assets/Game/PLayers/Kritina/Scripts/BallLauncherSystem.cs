@@ -1355,7 +1355,17 @@ public class RobustLauncherSystem : MonoBehaviour
                 }
                 return;
             }
-
+            BarrelExplosion BarrelExplosion = target.GetComponent<BarrelExplosion>();
+            if (BarrelExplosion != null)
+            {
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
+                BarrelExplosion.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
+                }
+                return;
+            }
             if (fleaHealth == null && sprayerHealth == null && flyHealth == null && inkHealth == null && showDamageDebug)
             {
                 Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth, SprayerHealth, FlyHealth, or InkHealth component!");
@@ -1420,6 +1430,18 @@ public class RobustLauncherSystem : MonoBehaviour
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 RatKingHealth.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
+                }
+                return;
+            }
+
+            BarrelExplosion BarrelExplosion = target.GetComponent<BarrelExplosion>();
+            if (BarrelExplosion != null)
+            {
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
+                BarrelExplosion.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");

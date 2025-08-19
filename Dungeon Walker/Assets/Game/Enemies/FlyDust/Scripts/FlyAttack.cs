@@ -255,12 +255,18 @@ public class FlyAttack : MonoBehaviour
                 {
                     playerHealth.TakeDamage(damage, knockbackForce, knockbackDirection);
                 }
+                L3antixHealth l3antixHealth = other.GetComponent<L3antixHealth>();
+                if (l3antixHealth != null)
+                {
+                    l3antixHealth.TakeDamage(damage, knockbackForce, knockbackDirection);
+                }
                 else
                 {
                     Debug.LogWarning("PlayerHealth not found on player object.");
                 }
                 DestroyProjectile(transform.position, false);
             }
+            
         }
 
         public void DestroyProjectile(Vector2 explosionPosition, bool triggerExplosion)
