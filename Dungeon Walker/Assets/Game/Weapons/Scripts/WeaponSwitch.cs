@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+using TMPro; // ---- NEW ----: Import the TextMeshPro namespace
 
 public class WeaponSwitchManager : MonoBehaviour
 {
@@ -17,18 +18,23 @@ public class WeaponSwitchManager : MonoBehaviour
         public float dropChance = 0.25f; // Probability of getting this weapon
     }
 
+    [Header("Weapon Configuration")]
     public List<WeaponConfig> weaponConfigs;
     public int killsToSwitch = 5;
-    [SerializeField] private float switchDelay = 0.2f; // New: Delay before activating the new weapon
+    [SerializeField] private float switchDelay = 0.2f;
+
+    [Header("UI Settings")] // ---- NEW ----: Header for UI elements
+    public TextMeshProUGUI killsLeftText; // ---- NEW ----: Reference to the UI Text element
 
     private int currentKills = 0;
     private WeaponConfig currentWeapon;
-    private SpriteRenderer currentArmSpriteRenderer; // To track the currently active arm SpriteRenderer
-    private bool isSwitchingWeapon = false; // New: Flag to prevent multiple simultaneous switches
+    private SpriteRenderer currentArmSpriteRenderer;
+    private bool isSwitchingWeapon = false;
 
     void Start()
     {
         InitializeWeapons();
+        UpdateKillsUI(); // ---- NEW ----: Update the UI on start
     }
 
     void InitializeWeapons()
@@ -40,26 +46,18 @@ public class WeaponSwitchManager : MonoBehaviour
             {
                 foreach (var go in config.weaponGameObjects)
                 {
-                    if (go != null)
-                    {
-                        go.SetActive(false);
-                    }
+                    if (go != null) go.SetActive(false);
                 }
             }
             if (config.weaponScripts != null)
             {
                 foreach (var script in config.weaponScripts)
                 {
-                    if (script != null)
-                    {
-                        script.enabled = false;
-                    }
+                    if (script != null) script.enabled = false;
                 }
             }
-            // Ensure the arm GameObject is activated if the user wants it, but disable its SpriteRenderer
             if (config.armGameObject != null)
             {
-                // For consistent management, we disable the arm GameObject as well
                 config.armGameObject.SetActive(false);
             }
             if (config.armSpriteRenderer != null)
@@ -80,12 +78,28 @@ public class WeaponSwitchManager : MonoBehaviour
     public void OnEnemyKilled()
     {
         currentKills++;
+        UpdateKillsUI(); // ---- NEW ----: Update the UI every time an enemy is killed
         Debug.Log($"Kill count: {currentKills}/{killsToSwitch}");
 
         if (currentKills >= killsToSwitch && !isSwitchingWeapon)
         {
-            StartCoroutine(SwitchWeaponWithDelay()); // Modified: Start coroutine for delayed switch
+            StartCoroutine(SwitchWeaponWithDelay());
             currentKills = 0;
+            // ---- NEW ----: We will update the UI again after the switch completes
+        }
+    }
+
+    // ---- NEW ----: A new method dedicated to updating the UI text
+    void UpdateKillsUI()
+    {
+        if (killsLeftText != null)
+        {
+            int killsRemaining = killsToSwitch - currentKills;
+            killsLeftText.text = $"Kills to Switch: {killsRemaining}";
+        }
+        else
+        {
+            Debug.LogWarning("Kills Left Text UI element is not assigned in the inspector!");
         }
     }
 
@@ -94,15 +108,11 @@ public class WeaponSwitchManager : MonoBehaviour
         isSwitchingWeapon = true;
         Debug.Log($"Initiating weapon switch from: {currentWeapon?.weaponName}");
 
-        // Wait for the specified delay BEFORE deactivating the current weapon
         yield return new WaitForSeconds(switchDelay);
 
-        // Deactivate current weapon after the delay
         DeactivateWeapon(currentWeapon);
 
-        // Select new weapon
         WeaponConfig newWeapon = GetRandomWeapon();
-        // Prevent selecting the same weapon twice in a row
         while (newWeapon == currentWeapon && weaponConfigs.Count > 1)
         {
             newWeapon = GetRandomWeapon();
@@ -111,10 +121,15 @@ public class WeaponSwitchManager : MonoBehaviour
         currentWeapon = newWeapon;
         ActivateWeapon(currentWeapon);
 
+        UpdateKillsUI(); // ---- NEW ----: Update the UI after the switch is complete to reset the counter display
+
         Debug.Log($"Switched to weapon: {currentWeapon.weaponName}");
         isSwitchingWeapon = false;
     }
 
+    // ... (The rest of your script remains the same)
+    // GetRandomWeapon, ActivateWeapon, DeactivateWeapon, CleanupWeaponArtifacts, etc.
+    // I have omitted the rest of the script for brevity as no other changes are needed.
     WeaponConfig GetRandomWeapon()
     {
         float totalChance = weaponConfigs.Sum(config => config.dropChance);
@@ -232,10 +247,6 @@ public class WeaponSwitchManager : MonoBehaviour
             CleanupWeaponArtifacts();
         }
     }
-
-    /// <summary>
-    /// Clean up any remaining weapon artifacts like ghost objects, projectiles, etc.
-    /// </summary>
     void CleanupWeaponArtifacts()
     {
         // Clean up ghost objects
@@ -321,4 +332,3 @@ public class WeaponSwitchManager : MonoBehaviour
         }
     }
 }
-
