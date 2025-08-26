@@ -45,7 +45,14 @@ public class PlayerDash : MonoBehaviour
             StartDash();
         }
     }
-
+    public void TriggerDash()
+    {
+        // On vérifie les mêmes conditions que pour le clavier.
+        if (canDash && !isDashing)
+        {
+            StartDash();
+        }
+    }
     void FixedUpdate()
     {
         if (isDashing)

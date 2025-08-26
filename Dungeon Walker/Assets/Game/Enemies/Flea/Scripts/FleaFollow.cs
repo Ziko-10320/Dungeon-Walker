@@ -40,14 +40,28 @@ public class FleaFollow : MonoBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
-       
     }
+
+    
 
     void Start()
     {
+        // AJOUTEZ CETTE LIGNE :
+        if (playerTransform == null) playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+
         initialYPosition = transform.position.y;
         ChangeState(AIState.Patrolling);
+
+        // La vérification suivante est maintenant une sécurité supplémentaire
+        if (playerTransform == null)
+        {
+            Debug.LogError("Impossible de trouver le joueur ! Assurez-vous que votre joueur a le tag 'Player'. Puce: " + gameObject.name);
+            enabled = false; // On désactive le script pour éviter plus d'erreurs.
+        }
     }
+
+
+
 
     void Update()
     {
@@ -207,9 +221,14 @@ public class FleaFollow : MonoBehaviour
 
     private bool IsPlayerVisible()
     {
+        // Ajout d'une vérification de nullité pour playerTransform
+        if (playerTransform == null)
+        {
+            Debug.LogWarning("Player Transform n'est pas assigné ou est nul pour la puce: " + gameObject.name);
+            return false; // Le joueur n'est pas visible si sa référence est nulle
+        }
         return Vector2.Distance(transform.position, playerTransform.position) < detectionRadius;
     }
-
     private bool IsBlocked()
     {
         return !IsGroundAhead() || IsWallAhead();

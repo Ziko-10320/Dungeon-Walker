@@ -13,7 +13,7 @@ public class WaterGunSystem : MonoBehaviour
     [SerializeField] private Transform bulletSpawnPoint;
     [SerializeField] private Transform launcherAimPoint; // Point d"origine de la visée
     [SerializeField] private Transform minDistancePoint; // Transform pour visualiser la distance minimale
-
+    public Joystick aimJoystick;
     [Header("PROJECTILE & EFFECTS")]
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private ParticleSystem destructionEffectPrefab;
@@ -85,47 +85,76 @@ public class WaterGunSystem : MonoBehaviour
     void Update()
     {
         // La séquence d"update la plus fiable, directement tirée du launcher
-        HandleAiming();
+        HandleInputAndShooting();
         ApplyRotation();
-        HandleShooting();
+        
         UpdateMinDistancePointPosition(); // Mise à jour du point de visualisation
     }
 
-    private void HandleAiming()
+    private void HandleInputAndShooting()
     {
-        // 1. Mettre à jour la direction du joueur
-        UpdatePlayerFacingDirection();
+        bool isAiming = false;
+        bool isShooting = false;
 
-        // 2. Obtenir la position de la souris
-        mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-
-        // 3. Définir le point d"origine de la visée
-        aimFromPosition = launcherAimPoint != null ? (Vector2)launcherAimPoint.position : (Vector2)Gun.transform.position;
-
-        // 4. Calculer la direction et l"angle vers la souris
-        Vector2 directionToMouse = (mouseWorldPosition - aimFromPosition);
-        aimDirection = directionToMouse.normalized; // Stocker la direction normalisée
-
-        // Si la souris est dans la zone morte, on ne met pas à jour les angles
-        if (directionToMouse.magnitude < minDistanceToAim)
+        if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f)
         {
+            // --- MODE MOBILE ---
+            isAiming = true;
+            isShooting = true; // Tir automatique
+            Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
+            mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f;
+        }
+        else
+        {
+            // --- MODE PC (SOURIS) ---
+            isAiming = true;
+            isShooting = Mouse.current.leftButton.isPressed;
+            mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        }
+
+        // --- LOGIQUE DE VISÉE ---
+        if (isAiming)
+        {
+            UpdatePlayerFacingDirection();
+            aimFromPosition = launcherAimPoint != null ? (Vector2)launcherAimPoint.position : (Vector2)Gun.transform.position;
+            Vector2 directionToMouse = (mouseWorldPosition - aimFromPosition);
+            aimDirection = directionToMouse.normalized;
+            if (directionToMouse.magnitude >= minDistanceToAim)
+            {
+                float worldAngleToMouse = Mathf.Atan2(directionToMouse.y, directionToMouse.x) * Mathf.Rad2Deg;
+                float clampedWorldAngle = ClampWorldAngle(worldAngleToMouse);
+                worldArmRotation = clampedWorldAngle;
+                float currentLauncherOffset = isPlayerFacingRight ? launcherRotationOffsetRight : launcherRotationOffsetLeft;
+                worldLauncherRotation = clampedWorldAngle + currentLauncherOffset;
+                float currentTrajectoryOffset = isPlayerFacingRight ? trajectoryRotationOffsetRight : trajectoryRotationOffsetLeft;
+                worldTrajectoryRotation = clampedWorldAngle + currentTrajectoryOffset;
+            }
+        }
+
+        // --- LOGIQUE DE TIR ---
+        if (Keyboard.current.rKey.wasPressedThisFrame && !isReloading && currentAmmo < maxAmmo)
+        {
+            StartCoroutine(Reload());
             return;
         }
 
-        // 5. Calculer l"angle en degrés
-        float worldAngleToMouse = Mathf.Atan2(directionToMouse.y, directionToMouse.x) * Mathf.Rad2Deg;
+        if (isShooting && !isReloading && Time.time >= nextFireTime)
+        {
+            if (Vector2.Distance(mouseWorldPosition, aimFromPosition) < minDistanceToAim) return;
 
-        // 6. Brider l"angle avec la logique exacte du launcher
-        float clampedWorldAngle = ClampWorldAngle(worldAngleToMouse);
-
-        // 7. Définir les rotations finales en appliquant les offsets
-        worldArmRotation = clampedWorldAngle;
-        float currentLauncherOffset = isPlayerFacingRight ? launcherRotationOffsetRight : launcherRotationOffsetLeft;
-        worldLauncherRotation = clampedWorldAngle + currentLauncherOffset;
-        float currentTrajectoryOffset = isPlayerFacingRight ? trajectoryRotationOffsetRight : trajectoryRotationOffsetLeft;
-        worldTrajectoryRotation = clampedWorldAngle + currentTrajectoryOffset;
+            if (currentAmmo > 0)
+            {
+                Shoot();
+                currentAmmo--;
+                nextFireTime = Time.time + fireRate;
+                if (currentAmmo <= 0) StartCoroutine(Reload());
+            }
+            else
+            {
+                StartCoroutine(Reload());
+            }
+        }
     }
-
     private void UpdatePlayerFacingDirection()
 
     {
@@ -178,33 +207,7 @@ public class WaterGunSystem : MonoBehaviour
         }
     }
 
-    private void HandleShooting()
-    {
-        // Manual reload with R key - only if current ammo is less than max ammo
-        if (Keyboard.current.rKey.wasPressedThisFrame && !isReloading && currentAmmo < maxAmmo)
-        {
-            StartCoroutine(Reload());
-            return;
-        }
-
-        if (Mouse.current.leftButton.isPressed && !isReloading && Time.time >= nextFireTime)
-        {
-            if (Vector2.Distance(mouseWorldPosition, aimFromPosition) < minDistanceToAim) return;
-
-            if (currentAmmo > 0)
-            {
-                Shoot();
-                currentAmmo--;
-                nextFireTime = Time.time + fireRate;
-                // Automatic reload when ammo reaches 0
-                if (currentAmmo <= 0) StartCoroutine(Reload());
-            }
-            else
-            {
-                StartCoroutine(Reload());
-            }
-        }
-    }
+    
 
     private void Shoot()
     {

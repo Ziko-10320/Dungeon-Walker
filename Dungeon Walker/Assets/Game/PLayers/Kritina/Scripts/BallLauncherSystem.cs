@@ -13,7 +13,7 @@ public class RobustLauncherSystem : MonoBehaviour
     [SerializeField] private Transform launcherAimPoint; // Specific point on the launcher for aiming
     [SerializeField] private Transform minDistancePoint; // Transform point for minimum distance visualization
     [SerializeField] private Transform trajectoryVisualPoint; // Transform point for trajectory visualization (controls green line)
-
+    public Joystick aimJoystick;
     [Header("Ball Prefabs")]
     [SerializeField] private GameObject orangeBallPrefab;
     [Tooltip("Blue ball prefab")]
@@ -257,8 +257,7 @@ public class RobustLauncherSystem : MonoBehaviour
     void Update()
     {
         // Core updates every frame - ALWAYS allow rotation regardless of player movement
-        HandleAiming();
-        HandleShooting();
+        HandleInputAndShooting();
         ApplyWorldSpaceRotations();
 
         // Optimized updates with intervals
@@ -472,24 +471,48 @@ public class RobustLauncherSystem : MonoBehaviour
         }
     }
 
-    private void HandleShooting()
+    private void HandleInputAndShooting()
     {
-        // Check for left mouse click and cooldown
-        if (Mouse.current.leftButton.wasPressedThisFrame && Time.time >= lastShootTime + shootCooldown)
+        bool isAiming = false;
+        bool shootPressed = false;
+
+        // On vérifie si le joystick de visée est utilisé
+        if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f)
         {
-            // Only shoot if aiming is valid (not in dead zone)
+            // --- MODE MOBILE ---
+            isAiming = true;
+            // Pour le lanceur, le tir se fait au relâchement, donc on simule un clic
+            shootPressed = true;
+
+            Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
+            mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f;
+        }
+        else
+        {
+            // --- MODE PC (SOURIS) ---
+            isAiming = true;
+            shootPressed = Mouse.current.leftButton.wasPressedThisFrame;
+            mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        }
+
+        // --- LOGIQUE DE VISÉE (reprise de votre HandleAiming) ---
+        if (isAiming)
+        {
+            stabilizedMouseWorldPosition = mouseWorldPosition;
+            UpdatePlayerFacingDirection();
+            CalculateAimDirection();
+        }
+
+        // --- LOGIQUE DE TIR (reprise de votre HandleShooting) ---
+        if (shootPressed && Time.time >= lastShootTime + shootCooldown)
+        {
             if (IsAimingValid())
             {
                 SpawnNextBall();
                 lastShootTime = Time.time;
             }
-            else if (showBallDebug)
-            {
-                Debug.Log("Cannot shoot - mouse in dead zone");
-            }
         }
     }
-
     private void SpawnNextBall()
     {
         // Check if we have valid ball prefabs
@@ -593,34 +616,7 @@ public class RobustLauncherSystem : MonoBehaviour
         }
     }
 
-    private void HandleAiming()
-    {
-        // Get raw mouse screen position
-        mouseScreenPosition = Mouse.current.position.ReadValue();
-
-        // Convert mouse screen position to world position
-        mouseWorldPosition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
-
-        // Stabilize mouse world position if enabled
-        if (enableAimStabilization)
-        {
-            // To stabilize aiming, we need to calculate the aim direction relative to the launcher\"s current position,
-            // but the mouse position itself should not be directly affected by player movement.
-            // The `stabilizedMouseWorldPosition` should be the mouse\"s world position relative to the camera\"s view,
-            // not relative to the player\"s changing position.
-            // By simply using `mouseWorldPosition` (which is already relative to the camera\"s view),
-            // the aim will remain stable even if the player moves.
-            stabilizedMouseWorldPosition = mouseWorldPosition;
-        }
-        else
-        {
-            stabilizedMouseWorldPosition = mouseWorldPosition;
-        }
-
-        UpdatePlayerFacingDirection();
-        CalculateAimDirection();
-    }
-
+   
     private void UpdatePlayerFacingDirection()
     {
         if (playerTransform != null)

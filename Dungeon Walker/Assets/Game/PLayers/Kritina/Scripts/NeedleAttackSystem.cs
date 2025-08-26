@@ -15,7 +15,16 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private float anticipationDuration = 1.0f; // Duration of the anticipation animation
     [SerializeField] private float attackCooldown = 1.0f; // Cooldown duration for the attack (in seconds)
     [SerializeField] private int damage = 20; // Damage amount dealt by the attack
+    [Header("Mobile Controls")]
+    [Tooltip("Faites glisser le joystick d'attaque de la batte ici.")]
+    public Joystick attackJoystick;
+    [Tooltip("Seuil pour différencier un 'tap' d'une 'visée'.")]
+    [SerializeField] private float joystickAimThreshold = 0.5f;
+    [Tooltip("Temps maximum en secondes pour qu'un contact soit considéré comme un 'tap'.")]
+    [SerializeField] private float joystickTapTime = 0.2f;
 
+    private bool isJoystickHeld = false;
+    private float joystickHoldTime = 0f;
     [Header("Throw Slash Settings")]
     [SerializeField] private GameObject throwSlashPrefab; // Prefab of the ThrowSlash projectile
     [SerializeField] private Transform throwSlashSpawnPointRight; // Point where the ThrowSlash is spawned when facing right
@@ -159,6 +168,7 @@ public class BatAttackSystem : MonoBehaviour
     }
     void Start()
     {
+        EnsureBatExists();
         InitializeComponents();
         ResetBatSystemState();
         LoadVolumeSettings();
@@ -168,18 +178,8 @@ public class BatAttackSystem : MonoBehaviour
     void Update()
     {
         CheckGround();
-
-        if (Input.GetMouseButtonDown(0) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
-        {
-            bool shouldPerformUpwardAttack = ShouldPerformUpwardAttack();
-            StartAnticipationAttack(shouldPerformUpwardAttack);
-        }
-
-        if (Input.GetMouseButtonDown(1) && Time.time >= nextAttackTime && !isAnticipating && hasBat)
-        {
-            lastMousePosition = Input.mousePosition;
-            StartAnticipationAndThrowSlash();
-        }
+        HandleInput();
+       
 
         if (hasBat)
         {
@@ -209,6 +209,67 @@ public class BatAttackSystem : MonoBehaviour
         else if (batPointerRectTransform != null)
         {
             batPointerRectTransform.gameObject.SetActive(false); // Hide pointer if no bat is thrown
+        }
+    }
+    private void HandleInput()
+    {
+        // On ne traite aucune nouvelle entrée si on est déjà en train d'anticiper une attaque.
+        if (isAnticipating || !hasBat || Time.time < nextAttackTime)
+        {
+            return;
+        }
+
+        // --- GESTION DU JOYSTICK ---
+        if (attackJoystick != null && attackJoystick.gameObject.activeInHierarchy)
+        {
+            // Le joueur touche le joystick
+            if (attackJoystick.Direction.sqrMagnitude > 0.01f)
+            {
+                if (!isJoystickHeld)
+                {
+                    // Première frame où le joystick est touché
+                    isJoystickHeld = true;
+                    joystickHoldTime = 0f;
+                }
+                joystickHoldTime += Time.deltaTime;
+            }
+            // Le joueur a relâché le joystick
+            else if (isJoystickHeld)
+            {
+                // On vient de relâcher
+                isJoystickHeld = false;
+
+                // On vérifie si c'était une visée ou un tap
+                if (attackJoystick.Direction.magnitude > joystickAimThreshold)
+                {
+                    // C'était une VISÉE, on lance la batte
+                    // On calcule une "fausse" position de souris basée sur la direction du joystick
+                    Vector3 joystickScreenPos = new Vector3(Screen.width / 2, Screen.height / 2, 0) + (Vector3)attackJoystick.Direction * 100f;
+                    lastMousePosition = joystickScreenPos;
+                    StartAnticipationAndThrowSlash();
+                }
+                else if (joystickHoldTime <= joystickTapTime)
+                {
+                    // C'était un TAP, on fait une attaque normale
+                    // On simule une visée vers l'avant pour l'attaque normale/haute
+                    bool upward = attackJoystick.Direction.y > 0.5f;
+                    StartAnticipationAttack(upward);
+                }
+                joystickHoldTime = 0f;
+            }
+        }
+
+        // --- GESTION DU CLAVIER/SOURIS (reste fonctionnel) ---
+        if (Input.GetMouseButtonDown(0))
+        {
+            bool shouldPerformUpwardAttack = ShouldPerformUpwardAttack();
+            StartAnticipationAttack(shouldPerformUpwardAttack);
+        }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            lastMousePosition = Input.mousePosition;
+            StartAnticipationAndThrowSlash();
         }
     }
 
@@ -248,25 +309,36 @@ public class BatAttackSystem : MonoBehaviour
 
     public void EnsureBatExists()
     {
-        // Étape 1: Vérifier si notre référence à l'instance de la batte est nulle.
+        // Étape 1: On ne cherche la batte que si notre référence est vide.
+        // C'est plus performant que de chercher à chaque fois.
         if (_currentBatInstance == null)
         {
-            Debug.LogWarning("Bat instance is NULL. Searching or creating a new one.");
-
-            // Étape 2: Essayer de trouver une batte existante avec le bon tag.
-            // Cela peut arriver si le script est désactivé puis réactivé.
+            Debug.Log("Référence de la batte est nulle, tentative de recherche avec le tag 'PlayerWeaponBat'...");
             _currentBatInstance = GameObject.FindGameObjectWithTag("PlayerWeaponBat");
-
-            // Étape 3: Si on ne trouve toujours rien, on la crée à partir du préfabriqué.
-           
         }
 
-        // Étape 4: Mettre à jour les références qui dépendent de la batte.
-        // C'est crucial pour que tout le reste du script fonctionne.
-        playerBatVisual = _currentBatInstance;
-        playerBatSpriteRenderer = _currentBatInstance.GetComponent<SpriteRenderer>();
+        // Étape 2: LA VÉRIFICATION CRUCIALE.
+        // Si, après la recherche, la référence est TOUJOURS nulle, on arrête TOUT.
+        // C'est ce qui empêche le NullReferenceException.
+        if (_currentBatInstance == null)
+        {
+            // On affiche une erreur claire pour le débogage et on quitte la fonction.
+            Debug.LogError("ÉCHEC DE LA RECHERCHE : Impossible de trouver un GameObject actif avec le tag 'PlayerWeaponBat'. Le script ne peut pas continuer.");
+            return; // Quitte la fonction pour éviter le crash.
+        }
 
-        // Assure-toi que la batte est active.
+        // Étape 3: Si on arrive ici, c'est que _currentBatInstance a été trouvé avec succès.
+        // On peut maintenant assigner les autres variables en toute sécurité.
+        if (playerBatVisual == null)
+        {
+            playerBatVisual = _currentBatInstance;
+        }
+        if (playerBatSpriteRenderer == null)
+        {
+            playerBatSpriteRenderer = _currentBatInstance.GetComponent<SpriteRenderer>();
+        }
+
+        // On s'assure que la batte est visuellement active.
         if (!_currentBatInstance.activeSelf)
         {
             _currentBatInstance.SetActive(true);

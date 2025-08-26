@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using System.Collections;
 using FirstGearGames.SmoothCameraShaker;
-
+using UnityEngine.UI;
 public class BowSystems : MonoBehaviour
 {
     [Header("Component References")]
@@ -13,7 +13,8 @@ public class BowSystems : MonoBehaviour
     [SerializeField] private Transform bowAimPoint; // Specific point on the bow for aiming
     [SerializeField] private Transform minDistancePoint; // Transform point for minimum distance visualization
     [SerializeField] private Transform trajectoryVisualPoint; // Transform point for trajectory visualization (controls green line)
-
+    public Joystick aimJoystick;
+    public Button shootButton;
     [Header("Arrow Prefab")]
     [Tooltip("The arrow prefab to be launched")]
     [SerializeField] private GameObject arrowPrefab;
@@ -168,9 +169,34 @@ public class BowSystems : MonoBehaviour
     // Performance optimization variables
     private float lastAimUpdate = 0f;
     private float aimUpdateInterval = 0.02f;
-
+    private bool isAimingWithJoystick = false;
     public ShakeData CameraShakeImpact;
 
+    void OnEnable()
+    {
+        // Quand ce script (et donc l'arc) devient actif, on active les contrôles mobiles.
+        if (shootButton != null)
+        {
+            shootButton.gameObject.SetActive(true);
+        }
+        if (aimJoystick != null) // --- AJOUT ---
+        {
+            aimJoystick.gameObject.SetActive(true);
+        }
+    }
+
+    void OnDisable()
+    {
+        // Quand on change d'arme, ce script est désactivé. On cache les contrôles mobiles.
+        if (shootButton != null)
+        {
+            shootButton.gameObject.SetActive(false);
+        }
+        if (aimJoystick != null) // --- AJOUT ---
+        {
+            aimJoystick.gameObject.SetActive(false);
+        }
+    }
     void Start()
     {
         InitializeArrowPreview();
@@ -186,10 +212,41 @@ public class BowSystems : MonoBehaviour
 
     void Update()
     {
-        HandleAiming();
-        HandleShootingInput();
+        // --- PARTIE 1: GESTION DE LA VISÉE (UNIFIÉE) ---
+        // On détermine la source de la visée : joystick ou souris.
+        if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.01f)
+        {
+            // Visée mobile
+            Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
+            mouseWorldPosition = bowAimPoint.position + joystickDirection * 10f;
+        }
+        else
+        {
+            // Visée PC
+            mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        }
+
+        // Le reste de la logique de visée est maintenant unifié
+        stabilizedMouseWorldPosition = mouseWorldPosition;
+        UpdatePlayerFacingDirection();
+        CalculateAimDirection();
         ApplyWorldSpaceRotations();
 
+
+        // --- PARTIE 2: GESTION DE LA CHARGE (SIMPLIFIÉE) ---
+        // La charge est maintenant contrôlée par la variable 'isCharging',
+        // qui est mise à jour par les entrées PC ou les nouvelles fonctions publiques.
+        if (isCharging)
+        {
+            currentChargeTime += Time.deltaTime;
+            currentChargeTime = Mathf.Min(currentChargeTime, maxChargeTime);
+        }
+
+        // On gère uniquement l'input PC ici. Le mobile est géré par les événements.
+        HandlePCInput();
+
+
+        // --- PARTIE 3: MISES À JOUR OPTIMISÉES (INCHANGÉ) ---
         if (Time.time - lastAimUpdate >= aimUpdateInterval)
         {
             UpdateMinDistancePointPosition();
@@ -201,24 +258,52 @@ public class BowSystems : MonoBehaviour
             }
             lastAimUpdate = Time.time;
         }
+        // ... (le reste de la fonction Update reste inchangé)
+    }
 
-        // Handle destruction for all active arrows based on lifetime
-        for (int i = activeArrows.Count - 1; i >= 0; i--)
+    // --- NOUVELLE FONCTION POUR GÉRER L'INPUT PC ---
+    private void HandlePCInput()
+    {
+        // Détection de l'appui sur la souris
+        if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            GameObject arrow = activeArrows[i];
-            ArrowLifecycleController lifecycleController = arrow.GetComponent<ArrowLifecycleController>();
-            if (lifecycleController != null && enableTimeDestruction && !lifecycleController.hasBeenDestroyed && Time.time - lifecycleController.spawnTime >= arrowLifetime)
-            {
-                if (showDestructionDebug)
-                {
-                    Debug.Log($"Arrow auto-destructed after {arrowLifetime}s");
-                }
-                DestroyArrow(arrow, arrow.transform.position); // Pass the specific arrow to destroy
-            }
+            OnChargeStart(); // On appelle la même fonction que le bouton mobile
+        }
+
+        // Détection du relâchement de la souris
+        if (Mouse.current.leftButton.wasReleasedThisFrame)
+        {
+            OnChargeRelease(); // On appelle la même fonction que le bouton mobile
         }
     }
 
-    // New methods for handling arrow collisions and triggers directly within BowSystems
+    // --- NOUVELLES FONCTIONS PUBLIQUES POUR LE BOUTON UI ---
+
+    // Cette fonction sera appelée par l'événement POINTER DOWN du bouton.
+    public void OnChargeStart()
+    {
+        if (Time.time < lastShootTime + shootCooldown) return;
+
+        isCharging = true;
+        currentChargeTime = 0f;
+        if (currentPreviewArrow != null) currentPreviewArrow.SetActive(false);
+        Debug.Log("Bow charge started.");
+    }
+
+    // Cette fonction sera appelée par l'événement POINTER UP du bouton.
+    public void OnChargeRelease()
+    {
+        if (!isCharging) return;
+
+        isCharging = false;
+        ShootArrow();
+        lastShootTime = Time.time;
+        if (currentPreviewArrow != null) currentPreviewArrow.SetActive(true);
+        Debug.Log("Bow charge released, shooting arrow.");
+    }
+
+
+  
     void OnCollisionEnter2D(Collision2D collision)
     {
         // This method will be called for the BowSystems script itself, not the arrow.
@@ -319,22 +404,82 @@ public class BowSystems : MonoBehaviour
         }
     }
 
-    private void HandleShootingInput()
+    private void HandleInputAndShooting()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame && Time.time >= lastShootTime + shootCooldown)
+        bool isAimingThisFrame = false;
+        bool shootPressedThisFrame = false;
+        bool shootHeldThisFrame = false;
+        bool shootReleasedThisFrame = false;
+
+        // On vérifie si le joystick de visée est utilisé
+        bool isJoystickCurrentlyActive = aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f;
+
+        if (isJoystickCurrentlyActive)
+        {
+            // --- MODE MOBILE ACTIF ---
+            isAimingThisFrame = true;
+
+            // Si ce n'est pas la première frame où l'on touche le joystick, on ne fait que maintenir la charge.
+            if (!isAimingWithJoystick)
+            {
+                // C'est la première frame ! On simule un "appui".
+                shootPressedThisFrame = true;
+                isAimingWithJoystick = true; // On mémorise qu'on vise avec le joystick.
+            }
+
+            // Tant que le joystick est actif, on simule un "maintien".
+            shootHeldThisFrame = true;
+
+            // On calcule la position de visée
+            Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
+            mouseWorldPosition = bowAimPoint.position + joystickDirection * 10f;
+        }
+        else
+        {
+            // --- MODE PC (ou joystick relâché) ---
+
+            // Si on était en train de viser avec le joystick à la frame précédente et qu'il est maintenant inactif...
+            if (isAimingWithJoystick)
+            {
+                // ...cela signifie qu'on vient de le relâcher ! On simule un "relâchement".
+                shootReleasedThisFrame = true;
+                isAimingWithJoystick = false; // On mémorise qu'on ne vise plus avec le joystick.
+            }
+
+            // On utilise les entrées normales de la souris comme solution de repli.
+            isAimingThisFrame = true; // La souris vise toujours par défaut.
+                                      // On s'assure de ne pas écraser la détection de relâchement du joystick.
+            shootPressedThisFrame = shootPressedThisFrame || Mouse.current.leftButton.wasPressedThisFrame;
+            shootHeldThisFrame = shootHeldThisFrame || Mouse.current.leftButton.isPressed;
+            shootReleasedThisFrame = shootReleasedThisFrame || Mouse.current.leftButton.wasReleasedThisFrame;
+
+            mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        }
+
+        // --- LOGIQUE DE VISÉE (INCHANGÉE) ---
+        if (isAimingThisFrame)
+        {
+            stabilizedMouseWorldPosition = mouseWorldPosition;
+            UpdatePlayerFacingDirection();
+            CalculateAimDirection();
+        }
+
+        // --- LOGIQUE DE TIR (CHARGE) (INCHANGÉE) ---
+        // Cette partie fonctionne maintenant parfaitement car les drapeaux sont corrects.
+        if (shootPressedThisFrame && Time.time >= lastShootTime + shootCooldown)
         {
             isCharging = true;
             currentChargeTime = 0f;
             if (currentPreviewArrow != null) currentPreviewArrow.SetActive(false);
         }
 
-        if (Mouse.current.leftButton.isPressed && isCharging)
+        if (shootHeldThisFrame && isCharging)
         {
             currentChargeTime += Time.deltaTime;
             currentChargeTime = Mathf.Min(currentChargeTime, maxChargeTime);
         }
 
-        if (Mouse.current.leftButton.wasReleasedThisFrame && isCharging)
+        if (shootReleasedThisFrame && isCharging)
         {
             isCharging = false;
             ShootArrow();
@@ -422,23 +567,7 @@ public class BowSystems : MonoBehaviour
        
     }
 
-    private void HandleAiming()
-    {
-        mouseScreenPosition = Mouse.current.position.ReadValue();
-        mouseWorldPosition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
-
-        if (enableAimStabilization)
-        {
-            stabilizedMouseWorldPosition = mouseWorldPosition;
-        }
-        else
-        {
-            stabilizedMouseWorldPosition = mouseWorldPosition;
-        }
-
-        UpdatePlayerFacingDirection();
-        CalculateAimDirection();
-    }
+   
 
     private void UpdatePlayerFacingDirection()
     {

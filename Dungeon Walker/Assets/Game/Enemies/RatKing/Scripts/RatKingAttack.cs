@@ -78,6 +78,15 @@ public class RatKingAttack : MonoBehaviour
         if (ratKingAnimator == null) ratKingAnimator = GetComponent<Animator>();
         if (ratKingBoss == null) ratKingBoss = GetComponent<RatKingBoss>();
 
+        if (playerTransform == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                playerTransform = playerObj.transform;
+            }
+        }
+
         if (playerTransform == null || damageZoneOrigin == null || cheeseSpawnPoint1 == null || cheeseSpawnPoint2 == null)
         {
             Debug.LogError("Essential references for RatKingAttack are not assigned!", this);

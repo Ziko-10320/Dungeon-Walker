@@ -50,7 +50,15 @@ public class SprayerFollow : MonoBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (sprayerAnimator == null) sprayerAnimator = GetComponent<Animator>();
-        
+        if (playerTransform == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                playerTransform = playerObj.transform;
+            }
+        }
+
     }
 
     void Start()
@@ -60,6 +68,25 @@ public class SprayerFollow : MonoBehaviour
 
     void Update()
     {
+        if (playerTransform == null)
+        {
+            // Si non, on essaie de le trouver.
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                // Si on le trouve, on stocke sa référence.
+                playerTransform = playerObj.transform;
+            }
+            else
+            {
+                // Si on ne le trouve PAS, c'est qu'il n'existe pas (ou plus).
+                // On arrête TOUT pour cet ennemi.
+                StopMoving(); // On arrête le mouvement.
+                enabled = false; // On désactive complètement le script pour éviter d'autres erreurs.
+                return; // On quitte la fonction Update pour cette frame.
+            }
+        }
+
         timeSinceLastFlip += Time.deltaTime;
 
         if (!CanMove || isAnticipatingJump)

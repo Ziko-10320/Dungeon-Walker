@@ -2,13 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-
+using UnityEngine.UI;
 public class CheckpointManager : MonoBehaviour
 {
     [Header("Checkpoint Settings")]
     public List<Checkpoint> checkpoints = new List<Checkpoint>();
     public Transform player;
     public bool loopCheckpoints = true;
+
+    public Button interactButton;
 
     [Header("Score Settings")]
     public int scorePerCheckpoint = 100;
@@ -39,6 +41,13 @@ public class CheckpointManager : MonoBehaviour
 
     void Start()
     {
+
+        if (interactButton != null)
+        {
+            interactButton.gameObject.SetActive(false); // On cache l'objet du bouton
+            interactButton.interactable = false;      // On le rend non cliquable
+        }
+
         InitializeCheckpoints();
         UpdateArrowTarget();
         OnShowEButton?.Invoke(false); // Ensure E button is hidden at start
@@ -105,63 +114,79 @@ public class CheckpointManager : MonoBehaviour
 
     void UpdateEButtonVisibility()
     {
-        if (currentCheckpointIndex >= checkpoints.Count) return;
+        if (currentCheckpointIndex >= checkpoints.Count || interactButton == null) return;
+
         Checkpoint currentCheckpoint = checkpoints[currentCheckpointIndex];
+        bool shouldBeVisible = false;
 
         if (isPlayerAtCheckpoint)
         {
             if (!currentCheckpoint.QuestStarted)
             {
-                OnShowEButton?.Invoke(true);
-                OnEButtonTextUpdate?.Invoke("Press E to Start Quest");
+                shouldBeVisible = true;
+                // On pourrait mettre à jour le texte du bouton ici si nécessaire
+                // interactButton.GetComponentInChildren<TMPro.TextMeshProUGU>().text = "Start";
             }
             else if (currentCheckpoint.TimerEnded)
             {
-                OnShowEButton?.Invoke(true);
-                OnEButtonTextUpdate?.Invoke("Press E to Complete Quest");
-            }
-            else
-            {
-                OnShowEButton?.Invoke(false); // Hide if quest started but timer not ended
+                shouldBeVisible = true;
+                // interactButton.GetComponentInChildren<TMPro.TextMeshProUGU>().text = "Complete";
             }
         }
-        else
-        {
-            OnShowEButton?.Invoke(false); // Hide if player not in radius
-        }
+
+        // On affiche ou on cache l'objet du bouton
+        interactButton.gameObject.SetActive(shouldBeVisible);
+        // On le rend cliquable ou non
+        interactButton.interactable = shouldBeVisible;
     }
+
 
     void HandleInput()
     {
-        if (Input.GetKeyDown(KeyCode.E) && currentCheckpointIndex < checkpoints.Count)
+        // On vérifie uniquement l'input clavier ici.
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            Checkpoint currentCheckpoint = checkpoints[currentCheckpointIndex];
-
-            // Player must be in radius to interact with E button
-            if (!isPlayerAtCheckpoint) return;
-
-            if (!currentCheckpoint.QuestStarted)
+            // On ne simule un clic que si le bouton est visible et interactif
+            if (interactButton != null && interactButton.interactable)
             {
-                // Start the quest
-                currentCheckpoint.StartQuest();
-                currentCheckpointTimer = currentCheckpoint.TimeToStay;
-                isTimerRunning = true;
-
-                // Hide E button and start timer
-                OnShowEButton?.Invoke(false);
-
-                if (checkpointTimerCoroutine != null) StopCoroutine(checkpointTimerCoroutine);
-                checkpointTimerCoroutine = StartCoroutine(CheckpointTimer());
-
-                Debug.Log($"Quest started at checkpoint {currentCheckpointIndex + 1}");
-            }
-            else if (currentCheckpoint.TimerEnded)
-            {
-                // Complete the quest
-                ReachCheckpoint();
+                OnInteractButtonPressed();
             }
         }
     }
+
+    // --- MODIFICATION : La fonction publique est maintenant plus simple ---
+    public void OnInteractButtonPressed()
+    {
+        if (currentCheckpointIndex >= checkpoints.Count) return;
+        Checkpoint currentCheckpoint = checkpoints[currentCheckpointIndex];
+
+        // La vérification 'isPlayerAtCheckpoint' est implicitement gérée par la visibilité du bouton,
+        // mais on peut la garder pour plus de sécurité.
+        if (!isPlayerAtCheckpoint) return;
+
+        if (!currentCheckpoint.QuestStarted)
+        {
+            currentCheckpoint.StartQuest();
+            currentCheckpointTimer = currentCheckpoint.TimeToStay;
+            isTimerRunning = true;
+
+            // On cache et désactive le bouton pendant la quête
+            if (interactButton != null)
+            {
+                interactButton.gameObject.SetActive(false);
+                interactButton.interactable = false;
+            }
+
+            if (checkpointTimerCoroutine != null) StopCoroutine(checkpointTimerCoroutine);
+            checkpointTimerCoroutine = StartCoroutine(CheckpointTimer());
+        }
+        else if (currentCheckpoint.TimerEnded)
+        {
+            ReachCheckpoint();
+        }
+    }
+
+   
 
     IEnumerator CheckpointTimer()
     {
@@ -188,6 +213,11 @@ public class CheckpointManager : MonoBehaviour
 
     void ReachCheckpoint()
     {
+        if (interactButton != null)
+        {
+            interactButton.gameObject.SetActive(false);
+            interactButton.interactable = false;
+        }
         if (checkpointTimerCoroutine != null) StopCoroutine(checkpointTimerCoroutine);
         isTimerRunning = false;
 

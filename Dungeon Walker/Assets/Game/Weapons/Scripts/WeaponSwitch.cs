@@ -78,14 +78,26 @@ public class WeaponSwitchManager : MonoBehaviour
     public void OnEnemyKilled()
     {
         currentKills++;
-        UpdateKillsUI(); // ---- NEW ----: Update the UI every time an enemy is killed
+        UpdateKillsUI();
         Debug.Log($"Kill count: {currentKills}/{killsToSwitch}");
 
         if (currentKills >= killsToSwitch && !isSwitchingWeapon)
         {
             StartCoroutine(SwitchWeaponWithDelay());
             currentKills = 0;
-            // ---- NEW ----: We will update the UI again after the switch completes
+        }
+    }
+    public void SwitchWeaponManually()
+    {
+        // On vérifie si on n'est pas déjà en train de changer d'arme pour éviter les bugs.
+        if (!isSwitchingWeapon)
+        {
+            Debug.Log("Manual weapon switch triggered by UI button.");
+            
+            // On réinitialise le compteur pour que le cycle soit cohérent.
+            currentKills = 0;
+
+            StartCoroutine(SwitchWeaponWithDelay());
         }
     }
 
@@ -110,26 +122,27 @@ public class WeaponSwitchManager : MonoBehaviour
 
         yield return new WaitForSeconds(switchDelay);
 
+        // ÉTAPE 1 : DÉSACTIVER L'ARME ACTUELLE (C'est ici que les visuels sont cachés)
         DeactivateWeapon(currentWeapon);
 
+        // ÉTAPE 2 : TROUVER UNE NOUVELLE ARME
         WeaponConfig newWeapon = GetRandomWeapon();
         while (newWeapon == currentWeapon && weaponConfigs.Count > 1)
         {
             newWeapon = GetRandomWeapon();
         }
 
+        // ÉTAPE 3 : ACTIVER LA NOUVELLE ARME (C'est ici que les nouveaux visuels apparaissent)
         currentWeapon = newWeapon;
         ActivateWeapon(currentWeapon);
 
-        UpdateKillsUI(); // ---- NEW ----: Update the UI after the switch is complete to reset the counter display
+        // ÉTAPE 4 : METTRE À JOUR L'INTERFACE UTILISATEUR
+        UpdateKillsUI();
 
         Debug.Log($"Switched to weapon: {currentWeapon.weaponName}");
         isSwitchingWeapon = false;
     }
-
-    // ... (The rest of your script remains the same)
-    // GetRandomWeapon, ActivateWeapon, DeactivateWeapon, CleanupWeaponArtifacts, etc.
-    // I have omitted the rest of the script for brevity as no other changes are needed.
+   
     WeaponConfig GetRandomWeapon()
     {
         float totalChance = weaponConfigs.Sum(config => config.dropChance);

@@ -6,6 +6,10 @@ public class KritinaMovement : MonoBehaviour
     public float moveSpeed = 5f;
     public float jumpPower = 12f;
     public float jumpReleaseCutMultiplier = 0.5f; // How much velocity is kept on early release
+    [Header("Mobile Controls")]
+    public Joystick joystick; // Faites glisser votre joystick ici depuis la hiérarchie
+    private bool jumpButtonPressed = false;
+    private bool jumpButtonReleased = false;
 
     [Header("Jump Buffer Settings")]
     private float jumpBufferTimer = 0f;
@@ -68,9 +72,16 @@ public class KritinaMovement : MonoBehaviour
             return;
         }
 
+        // --- MODIFICATION : LECTURE DES ENTRÉES ---
         moveDirection = Input.GetAxisRaw("Horizontal");
-        bool isMoving = Mathf.Abs(moveDirection) > 0.1f;
+        // On vérifie si le joystick est assigné et actif avant de l'utiliser
+        if (moveDirection == 0 && joystick != null && joystick.gameObject.activeInHierarchy)
+        {
+            // On utilise la valeur horizontale du joystick
+            moveDirection = joystick.Horizontal;
+        }
 
+        bool isMoving = Mathf.Abs(moveDirection) > 0.1f;
         animator.SetBool("isRunning", isMoving);
 
         if ((moveDirection > 0 && !isFacingRight) || (moveDirection < 0 && isFacingRight))
@@ -78,37 +89,53 @@ public class KritinaMovement : MonoBehaviour
             Flip();
         }
 
-        // --- MODIFIED: Jump Input Handling for Double Jump ---
-        if (Input.GetKeyDown(KeyCode.Space))
+        // --- MODIFICATION : GESTION DU SAUT ---
+        if (Input.GetKeyDown(KeyCode.Space) || jumpButtonPressed)
         {
             animator.SetTrigger("Jump");
             if (IsGrounded())
             {
-                PerformJump(false); // First jump
+                PerformJump(false);
             }
-            else // Player is in the air
+            else
             {
-                // Check for double jump
-                if (jumpsRemaining > 0) // If maxJumps is 2, and we have 2 remaining, it's the first jump. If 1 remaining, it's the second.
+                if (jumpsRemaining > 0)
                 {
-                    PerformJump(true); // Perform the double jump
+                    PerformJump(true);
                 }
                 else
                 {
-                    // Start jump buffer if not grounded and no double jump available
                     jumpPressedInAir = true;
                     jumpBufferTimer = jumpBufferTime;
                 }
             }
         }
 
-        if (Input.GetKeyUp(KeyCode.Space))
+        // --- MODIFICATION : GESTION DU RELÂCHEMENT DU SAUT ---
+        if (Input.GetKeyUp(KeyCode.Space) || jumpButtonReleased)
         {
             if (rb.velocity.y > 0)
             {
                 rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * jumpReleaseCutMultiplier);
             }
         }
+
+        // Réinitialiser les drapeaux des boutons à la fin de chaque frame
+        jumpButtonPressed = false;
+        jumpButtonReleased = false;
+    }
+
+    // --- AJOUT DE NOUVELLES FONCTIONS PUBLIQUES ---
+    // Cette fonction sera appelée quand le bouton de saut est pressé.
+    public void OnJumpButtonDown()
+    {
+        jumpButtonPressed = true;
+    }
+
+    // Cette fonction sera appelée quand le bouton de saut est relâché.
+    public void OnJumpButtonUp()
+    {
+        jumpButtonReleased = true;
     }
 
     void FixedUpdate()

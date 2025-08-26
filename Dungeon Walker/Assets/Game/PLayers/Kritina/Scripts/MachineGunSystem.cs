@@ -15,7 +15,8 @@ public class MachineGunSystem : MonoBehaviour
     [SerializeField] private Transform pivotPoint; // Nouveau point de pivot pour la rotation du Gun
     [SerializeField] private Transform emptyBulletSpawnPoint; // Point de spawn des douilles vides
     [SerializeField] private List<SpriteRenderer> gunSpriteRenderers; // SpriteRenderers pour le changement de couleur
-
+    public Joystick aimJoystick;
+    private bool isShootingWithJoystick = false;
     [Header("PROJECTILE & EFFECTS")]
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private ParticleSystem destructionEffectPrefab;
@@ -123,40 +124,85 @@ public class MachineGunSystem : MonoBehaviour
 
     void Update()
     {
-        HandleAiming();
+        
+        HandleInputAndShooting();
         ApplyRotation();
-        HandleShooting();
+        
         UpdateMinDistancePointPosition();
         HandleOverheat();
     }
-
-    private void HandleAiming()
+    private void HandleInputAndShooting()
     {
-        // Get raw mouse screen position
-        mouseScreenPosition = Mouse.current.position.ReadValue();
+        bool isAiming = false;
+        bool isShooting = false;
 
-        // Convert mouse screen position to world position
-        mouseWorldPosition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
-
-        // Stabilize mouse world position if enabled
-        if (enableAimStabilization)
+        // On vérifie si le joystick de visée est utilisé
+        if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f)
         {
-            // To stabilize aiming, we need to calculate the aim direction relative to the launcher\"s current position,
-            // but the mouse position itself should not be directly affected by player movement.
-            // The `stabilizedMouseWorldPosition` should be the mouse\"s world position relative to the camera\"s view,
-            // not relative to the player\"s changing position.
-            // By simply using `mouseWorldPosition` (which is already relative to the camera\"s view),
-            // the aim will remain stable even if the player moves.
-            stabilizedMouseWorldPosition = mouseWorldPosition;
+            // --- MODE MOBILE ---
+            isAiming = true;
+            isShooting = true; // Le tir est automatique avec le joystick
+            isShootingWithJoystick = true;
+
+            // On calcule une position de visée dans le monde basée sur la direction du joystick
+            Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
+            // On projette cette direction à une distance raisonnable du joueur pour que la visée soit stable
+            mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f;
         }
         else
         {
-            stabilizedMouseWorldPosition = mouseWorldPosition;
+            // --- MODE PC (SOURIS) ---
+            isShootingWithJoystick = false;
+            isAiming = true; // La souris vise toujours
+            isShooting = Mouse.current.leftButton.isPressed;
+
+            // On utilise la position normale de la souris
+            mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         }
 
-        UpdatePlayerFacingDirection();
-        CalculateAimDirection();
+        // --- LOGIQUE DE VISÉE (reprise de votre HandleAiming) ---
+        if (isAiming)
+        {
+            // On utilise la même variable 'mouseWorldPosition' qui a été définie soit par le joystick, soit par la souris
+            stabilizedMouseWorldPosition = mouseWorldPosition;
+            UpdatePlayerFacingDirection();
+            CalculateAimDirection();
+        }
+
+        // --- LOGIQUE DE TIR (reprise de votre HandleShooting) ---
+        if (isOverheated)
+        {
+            overheatCooldownTimer -= Time.deltaTime;
+            if (overheatCooldownTimer <= 0f)
+            {
+                isOverheated = false;
+                currentOverheatValue = 0f;
+            }
+            return;
+        }
+
+        if (isShooting)
+        {
+            currentOverheatValue += Time.deltaTime;
+            currentOverheatValue = Mathf.Min(currentOverheatValue, maxOverheatTime);
+
+            if (Time.time >= nextFireTime)
+            {
+                if (Vector2.Distance(mouseWorldPosition, aimFromPosition) < minDistanceToAim) return;
+
+                Shoot();
+                SpawnEmptyBullet();
+                nextFireTime = Time.time + fireRate;
+            }
+        }
+        else
+        {
+            currentOverheatValue -= Time.deltaTime * (maxOverheatTime / overheatCoolDownTime);
+            currentOverheatValue = Mathf.Max(0f, currentOverheatValue);
+        }
     }
+
+    
 
     private void UpdatePlayerFacingDirection()
     {
@@ -256,43 +302,7 @@ public class MachineGunSystem : MonoBehaviour
            
         }
     }
-    private void HandleShooting()
-    {
-        // If currently overheated, prevent shooting and handle cooldown
-        if (isOverheated)
-        {
-            overheatCooldownTimer -= Time.deltaTime;
-            if (overheatCooldownTimer <= 0f)
-            {
-                isOverheated = false; // Cooldown finished, no longer overheated
-                currentOverheatValue = 0f; // Reset overheat value
-            }
-            return; // Prevent shooting while overheated
-        }
-
-        if (Mouse.current.leftButton.isPressed)
-        {
-            // Augmenter la valeur de surchauffe si le bouton est pressé et que l\'arme n\'est pas surchauffée
-            currentOverheatValue += Time.deltaTime;
-            currentOverheatValue = Mathf.Min(currentOverheatValue, maxOverheatTime); // Capped at max
-
-            // Tirer seulement si l\'arme n\'est pas surchauffée et que le temps de tir est écoulé
-            if (Time.time >= nextFireTime)
-            {
-                if (Vector2.Distance(mouseWorldPosition, aimFromPosition) < minDistanceToAim) return;
-
-                Shoot();
-                SpawnEmptyBullet();
-                nextFireTime = Time.time + fireRate;
-            }
-        }
-        else // Le bouton de la souris n\'est PAS pressé
-        {
-            // Diminuer la valeur de surchauffe
-            currentOverheatValue -= Time.deltaTime * (maxOverheatTime / overheatCoolDownTime);
-            currentOverheatValue = Mathf.Max(0f, currentOverheatValue); // S\'assurer qu\'elle ne descend pas en dessous de 0
-        }
-    }
+   
 
     private void Shoot()
     {
