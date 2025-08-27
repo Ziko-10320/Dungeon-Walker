@@ -8237,7 +8237,7 @@ MonoBehaviour:
   radiusEnterVolume: 1
   radiusExitPrematureSound: {fileID: 0}
   radiusExitPrematureVolume: 1
-  waitingSound: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+  waitingSound: {fileID: 0}
   waitingSoundVolume: 0.071
   timeToStay: 15
   radius: 3
@@ -15489,7 +15489,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &282212885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19610,7 +19610,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cf6e3657a5c54842b4a007806a07546, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scoreText: {fileID: 0}
+  scoreText: {fileID: 955633872}
   scorePrefix: 0
   scoreImageUI: {fileID: 1804216811}
   timerText: {fileID: 477092629}
@@ -20589,7 +20589,7 @@ MonoBehaviour:
   radiusEnterVolume: 1
   radiusExitPrematureSound: {fileID: 0}
   radiusExitPrematureVolume: 1
-  waitingSound: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+  waitingSound: {fileID: 0}
   waitingSoundVolume: 0.071
   timeToStay: 10
   radius: 4
@@ -20977,7 +20977,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8653719598885068355, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8653719598885068355, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
       propertyPath: m_TagString
@@ -24981,7 +24981,7 @@ MonoBehaviour:
   radiusEnterVolume: 1
   radiusExitPrematureSound: {fileID: 0}
   radiusExitPrematureVolume: 1
-  waitingSound: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+  waitingSound: {fileID: 0}
   waitingSoundVolume: 0.071
   timeToStay: 15
   radius: 6
@@ -77505,7 +77505,7 @@ MonoBehaviour:
   radiusEnterVolume: 1
   radiusExitPrematureSound: {fileID: 0}
   radiusExitPrematureVolume: 1
-  waitingSound: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+  waitingSound: {fileID: 0}
   waitingSoundVolume: 0.071
   timeToStay: 5
   radius: 4
@@ -129269,7 +129269,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1402139149
 Transform:
   m_ObjectHideFlags: 0
@@ -141180,7 +141180,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1540087097
 Transform:
   m_ObjectHideFlags: 0
@@ -157094,7 +157094,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: beb7a057e96e47e449524dda14068c10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 7145000217874595580}
+  player: {fileID: 104591447}
   maxHorizontalDistance: 2
   followSpeed: 10
 --- !u!114 &1641578992
@@ -159816,7 +159816,7 @@ MonoBehaviour:
   radiusEnterVolume: 1
   radiusExitPrematureSound: {fileID: 0}
   radiusExitPrematureVolume: 1
-  waitingSound: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+  waitingSound: {fileID: 0}
   waitingSoundVolume: 0.071
   timeToStay: 10
   radius: 5
@@ -195396,7 +195396,7 @@ MonoBehaviour:
     dropChance: 0.086
   killsToSwitch: 3
   switchDelay: 0.1
-  killsLeftText: {fileID: 0}
+  killsLeftText: {fileID: 682263874}
 --- !u!1 &1998150855
 GameObject:
   m_ObjectHideFlags: 0
@@ -196473,12 +196473,12 @@ RectTransform:
   - {fileID: 477092631}
   - {fileID: 2074331073}
   - {fileID: 1804216810}
+  - {fileID: 955633871}
   - {fileID: 1741421468}
   - {fileID: 682263873}
   - {fileID: 1917857850}
   - {fileID: 93016015}
   - {fileID: 1371016092}
-  - {fileID: 955633871}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -256408,7 +256408,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8653719598885068355, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8653719598885068355, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
       propertyPath: m_TagString
