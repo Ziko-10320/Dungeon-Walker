@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections;
 using FirstGearGames.SmoothCameraShaker;
 using UnityEngine.UI;
+
 public class BowSystems : MonoBehaviour
 {
     [Header("Component References")]
@@ -14,7 +15,9 @@ public class BowSystems : MonoBehaviour
     [SerializeField] private Transform minDistancePoint; // Transform point for minimum distance visualization
     [SerializeField] private Transform trajectoryVisualPoint; // Transform point for trajectory visualization (controls green line)
     public Joystick aimJoystick;
-    public Button shootButton;
+    // --- MODIFICATION: Removed the shootButton as it's no longer needed ---
+    // public Button shootButton;
+
     [Header("Arrow Prefab")]
     [Tooltip("The arrow prefab to be launched")]
     [SerializeField] private GameObject arrowPrefab;
@@ -163,23 +166,20 @@ public class BowSystems : MonoBehaviour
     private float currentCalculatedSpeed = 10f;
 
     // Arrow destruction and damage variables
-    private List<GameObject> activeArrows = new List<GameObject>(); // Changed to a list to handle multiple arrows in flight
-    private Dictionary<GameObject, List<GameObject>> arrowHitEnemies = new Dictionary<GameObject, List<GameObject>>(); // Track enemies hit by each arrow
+    private List<GameObject> activeArrows = new List<GameObject>();
+    private Dictionary<GameObject, List<GameObject>> arrowHitEnemies = new Dictionary<GameObject, List<GameObject>>();
 
     // Performance optimization variables
     private float lastAimUpdate = 0f;
     private float aimUpdateInterval = 0.02f;
+
+    // --- MODIFICATION: This new variable tracks if we are currently using the joystick ---
     private bool isAimingWithJoystick = false;
     public ShakeData CameraShakeImpact;
 
     void OnEnable()
     {
-        // Quand ce script (et donc l'arc) devient actif, on active les contrôles mobiles.
-        if (shootButton != null)
-        {
-            shootButton.gameObject.SetActive(true);
-        }
-        if (aimJoystick != null) // --- AJOUT ---
+        if (aimJoystick != null)
         {
             aimJoystick.gameObject.SetActive(true);
         }
@@ -187,66 +187,25 @@ public class BowSystems : MonoBehaviour
 
     void OnDisable()
     {
-        // Quand on change d'arme, ce script est désactivé. On cache les contrôles mobiles.
-        if (shootButton != null)
-        {
-            shootButton.gameObject.SetActive(false);
-        }
-        if (aimJoystick != null) // --- AJOUT ---
+        if (aimJoystick != null)
         {
             aimJoystick.gameObject.SetActive(false);
         }
     }
+
     void Start()
     {
         InitializeArrowPreview();
-
-        if (autoCalibrate)
-        {
-            CalibrateAiming();
-        }
-
+        if (autoCalibrate) CalibrateAiming();
         UpdateMinDistancePointPosition();
         UpdateTrajectoryVisualPoint();
     }
 
     void Update()
     {
-        // --- PARTIE 1: GESTION DE LA VISÉE (UNIFIÉE) ---
-        // On détermine la source de la visée : joystick ou souris.
-        if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.01f)
-        {
-            // Visée mobile
-            Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
-            mouseWorldPosition = bowAimPoint.position + joystickDirection * 10f;
-        }
-        else
-        {
-            // Visée PC
-            mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-        }
+        // --- MODIFICATION: The entire Update loop is now simplified to call one master function ---
+        HandleInputAndShooting();
 
-        // Le reste de la logique de visée est maintenant unifié
-        stabilizedMouseWorldPosition = mouseWorldPosition;
-        UpdatePlayerFacingDirection();
-        CalculateAimDirection();
-        ApplyWorldSpaceRotations();
-
-
-        // --- PARTIE 2: GESTION DE LA CHARGE (SIMPLIFIÉE) ---
-        // La charge est maintenant contrôlée par la variable 'isCharging',
-        // qui est mise à jour par les entrées PC ou les nouvelles fonctions publiques.
-        if (isCharging)
-        {
-            currentChargeTime += Time.deltaTime;
-            currentChargeTime = Mathf.Min(currentChargeTime, maxChargeTime);
-        }
-
-        // On gère uniquement l'input PC ici. Le mobile est géré par les événements.
-        HandlePCInput();
-
-
-        // --- PARTIE 3: MISES À JOUR OPTIMISÉES (INCHANGÉ) ---
         if (Time.time - lastAimUpdate >= aimUpdateInterval)
         {
             UpdateMinDistancePointPosition();
@@ -258,152 +217,9 @@ public class BowSystems : MonoBehaviour
             }
             lastAimUpdate = Time.time;
         }
-        // ... (le reste de la fonction Update reste inchangé)
     }
 
-    // --- NOUVELLE FONCTION POUR GÉRER L'INPUT PC ---
-    private void HandlePCInput()
-    {
-        // Détection de l'appui sur la souris
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            OnChargeStart(); // On appelle la même fonction que le bouton mobile
-        }
-
-        // Détection du relâchement de la souris
-        if (Mouse.current.leftButton.wasReleasedThisFrame)
-        {
-            OnChargeRelease(); // On appelle la même fonction que le bouton mobile
-        }
-    }
-
-    // --- NOUVELLES FONCTIONS PUBLIQUES POUR LE BOUTON UI ---
-
-    // Cette fonction sera appelée par l'événement POINTER DOWN du bouton.
-    public void OnChargeStart()
-    {
-        if (Time.time < lastShootTime + shootCooldown) return;
-
-        isCharging = true;
-        currentChargeTime = 0f;
-        if (currentPreviewArrow != null) currentPreviewArrow.SetActive(false);
-        Debug.Log("Bow charge started.");
-    }
-
-    // Cette fonction sera appelée par l'événement POINTER UP du bouton.
-    public void OnChargeRelease()
-    {
-        if (!isCharging) return;
-
-        isCharging = false;
-        ShootArrow();
-        lastShootTime = Time.time;
-        if (currentPreviewArrow != null) currentPreviewArrow.SetActive(true);
-        Debug.Log("Bow charge released, shooting arrow.");
-    }
-
-
-  
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        // This method will be called for the BowSystems script itself, not the arrow.
-        // We need to handle collisions on the arrow's own GameObject.
-        // The arrow will have its own script (or this script will be on the arrow prefab).
-        // Since the user wants everything in BowSystems, we will manage the collision logic
-        // by checking the collided object's properties and if it's an arrow spawned by this system.
-        // This approach is generally not recommended for performance and clean architecture,
-        // but adheres to the user's strict requirement of a single script.
-
-        // This part is tricky because BowSystems is on the player, not the arrow.
-        // We need to ensure the arrow's Rigidbody2D has its 'isKinematic' set to false
-        // and its Collider2D has 'isTrigger' set to true for piercing behavior.
-        // The actual collision handling will be done by the arrow itself, which will call back to BowSystems.
-        // For now, this method will remain empty as the logic will be in the ShootArrow and HandleDamage methods.
-    }
-
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        // Similar to OnCollisionEnter2D, this method is for the BowSystems GameObject.
-        // The actual piercing logic will be handled by the arrow's own components/logic.
-    }
-
-    private void CalculateDynamicSpeed()
-    {
-        float chargePercentage = currentChargeTime / maxChargeTime;
-        currentCalculatedSpeed = Mathf.Lerp(minArrowSpeed, maxArrowSpeed, chargePercentage);
-
-        if (showArrowDebug)
-        {
-            Debug.Log($"Charge: {chargePercentage:F2}, Calculated Speed: {currentCalculatedSpeed:F2}");
-        }
-    }
-
-    private void InitializeArrowPreview()
-    {
-        if (!showNextArrowPreview || arrowPrefab == null || nextArrowPreviewPoint == null)
-        {
-            return;
-        }
-
-        CreatePreviewArrow();
-    }
-
-    private void CreatePreviewArrow()
-    {
-        if (arrowPrefab == null || nextArrowPreviewPoint == null)
-        {
-            return;
-        }
-
-        if (currentPreviewArrow != null)
-        {
-            DestroyImmediate(currentPreviewArrow);
-        }
-
-        currentPreviewArrow = Instantiate(arrowPrefab, nextArrowPreviewPoint.position, nextArrowPreviewPoint.rotation);
-        currentPreviewArrow.transform.localScale = Vector3.one * previewArrowScale;
-
-        Rigidbody2D previewRb = currentPreviewArrow.GetComponent<Rigidbody2D>();
-        if (previewRb != null)
-        {
-            DestroyImmediate(previewRb);
-        }
-
-        Collider2D[] colliders = currentPreviewArrow.GetComponents<Collider2D>();
-        foreach (Collider2D col in colliders)
-        {
-            col.enabled = false;
-        }
-
-        SpriteRenderer spriteRenderer = currentPreviewArrow.GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
-        {
-            Color color = spriteRenderer.color;
-            color.a = 0.7f;
-            spriteRenderer.color = color;
-        }
-
-        if (showArrowDebug)
-        {
-            Debug.Log($"Created preview arrow: {arrowPrefab.name}");
-        }
-    }
-
-    private void UpdateArrowPreview()
-    {
-        if (!showNextArrowPreview || currentPreviewArrow == null || nextArrowPreviewPoint == null)
-        {
-            return;
-        }
-
-        currentPreviewArrow.transform.position = nextArrowPreviewPoint.position;
-
-        if (previewFollowsBow)
-        {
-            currentPreviewArrow.transform.rotation = nextArrowPreviewPoint.rotation;
-        }
-    }
-
+    // --- MODIFICATION: This is the new, unified input handling method ---
     private void HandleInputAndShooting()
     {
         bool isAimingThisFrame = false;
@@ -411,61 +227,50 @@ public class BowSystems : MonoBehaviour
         bool shootHeldThisFrame = false;
         bool shootReleasedThisFrame = false;
 
-        // On vérifie si le joystick de visée est utilisé
+        // Check if the aim joystick is being used
         bool isJoystickCurrentlyActive = aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f;
 
         if (isJoystickCurrentlyActive)
         {
-            // --- MODE MOBILE ACTIF ---
+            // --- MOBILE JOYSTICK MODE ---
             isAimingThisFrame = true;
 
-            // Si ce n'est pas la première frame où l'on touche le joystick, on ne fait que maintenir la charge.
             if (!isAimingWithJoystick)
             {
-                // C'est la première frame ! On simule un "appui".
                 shootPressedThisFrame = true;
-                isAimingWithJoystick = true; // On mémorise qu'on vise avec le joystick.
+                isAimingWithJoystick = true;
             }
 
-            // Tant que le joystick est actif, on simule un "maintien".
             shootHeldThisFrame = true;
-
-            // On calcule la position de visée
             Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
             mouseWorldPosition = bowAimPoint.position + joystickDirection * 10f;
         }
         else
         {
-            // --- MODE PC (ou joystick relâché) ---
-
-            // Si on était en train de viser avec le joystick à la frame précédente et qu'il est maintenant inactif...
+            // --- PC MOUSE MODE (or joystick released) ---
             if (isAimingWithJoystick)
             {
-                // ...cela signifie qu'on vient de le relâcher ! On simule un "relâchement".
                 shootReleasedThisFrame = true;
-                isAimingWithJoystick = false; // On mémorise qu'on ne vise plus avec le joystick.
+                isAimingWithJoystick = false;
             }
 
-            // On utilise les entrées normales de la souris comme solution de repli.
-            isAimingThisFrame = true; // La souris vise toujours par défaut.
-                                      // On s'assure de ne pas écraser la détection de relâchement du joystick.
+            isAimingThisFrame = true;
             shootPressedThisFrame = shootPressedThisFrame || Mouse.current.leftButton.wasPressedThisFrame;
             shootHeldThisFrame = shootHeldThisFrame || Mouse.current.leftButton.isPressed;
             shootReleasedThisFrame = shootReleasedThisFrame || Mouse.current.leftButton.wasReleasedThisFrame;
-
             mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         }
 
-        // --- LOGIQUE DE VISÉE (INCHANGÉE) ---
+        // --- UNIFIED AIMING LOGIC ---
         if (isAimingThisFrame)
         {
             stabilizedMouseWorldPosition = mouseWorldPosition;
             UpdatePlayerFacingDirection();
             CalculateAimDirection();
+            ApplyWorldSpaceRotations();
         }
 
-        // --- LOGIQUE DE TIR (CHARGE) (INCHANGÉE) ---
-        // Cette partie fonctionne maintenant parfaitement car les drapeaux sont corrects.
+        // --- UNIFIED SHOOTING LOGIC ---
         if (shootPressedThisFrame && Time.time >= lastShootTime + shootCooldown)
         {
             isCharging = true;
@@ -488,42 +293,79 @@ public class BowSystems : MonoBehaviour
         }
     }
 
+    private void CalculateDynamicSpeed()
+    {
+        float chargePercentage = currentChargeTime / maxChargeTime;
+        currentCalculatedSpeed = Mathf.Lerp(minArrowSpeed, maxArrowSpeed, chargePercentage);
+
+        if (showArrowDebug)
+        {
+            Debug.Log($"Charge: {chargePercentage:F2}, Calculated Speed: {currentCalculatedSpeed:F2}");
+        }
+    }
+
+    private void InitializeArrowPreview()
+    {
+        if (!showNextArrowPreview || arrowPrefab == null || nextArrowPreviewPoint == null) return;
+        CreatePreviewArrow();
+    }
+
+    private void CreatePreviewArrow()
+    {
+        if (arrowPrefab == null || nextArrowPreviewPoint == null) return;
+        if (currentPreviewArrow != null) DestroyImmediate(currentPreviewArrow);
+
+        currentPreviewArrow = Instantiate(arrowPrefab, nextArrowPreviewPoint.position, nextArrowPreviewPoint.rotation);
+        currentPreviewArrow.transform.localScale = Vector3.one * previewArrowScale;
+
+        if (currentPreviewArrow.GetComponent<Rigidbody2D>() != null) DestroyImmediate(currentPreviewArrow.GetComponent<Rigidbody2D>());
+        foreach (Collider2D col in currentPreviewArrow.GetComponents<Collider2D>()) col.enabled = false;
+
+        SpriteRenderer spriteRenderer = currentPreviewArrow.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            Color color = spriteRenderer.color;
+            color.a = 0.7f;
+            spriteRenderer.color = color;
+        }
+        if (showArrowDebug) Debug.Log($"Created preview arrow: {arrowPrefab.name}");
+    }
+
+    private void UpdateArrowPreview()
+    {
+        if (!showNextArrowPreview || currentPreviewArrow == null || nextArrowPreviewPoint == null) return;
+        currentPreviewArrow.transform.position = nextArrowPreviewPoint.position;
+        if (previewFollowsBow) currentPreviewArrow.transform.rotation = nextArrowPreviewPoint.rotation;
+    }
+
     private void ShootArrow()
     {
         if (arrowPrefab == null || arrowSpawnPoint == null)
         {
-            if (showArrowDebug)
-            {
-                Debug.LogWarning("Arrow Prefab or Arrow Spawn Point not assigned! Cannot spawn arrow.");
-            }
+            if (showArrowDebug) Debug.LogWarning("Arrow Prefab or Arrow Spawn Point not assigned!");
             return;
         }
 
         float chargePercentage = currentChargeTime / maxChargeTime;
         float arrowSpeed = Mathf.Lerp(minArrowSpeed, maxArrowSpeed, chargePercentage);
-        float calculatedDamage = Mathf.Lerp(minArrowDamage, maxArrowDamage, chargePercentage);
         float calculatedGravityScale = Mathf.Lerp(minGravityScale, maxGravityScale, chargePercentage);
 
         GameObject newArrow = Instantiate(arrowPrefab, arrowSpawnPoint.position, BowGameObject.transform.rotation);
-        activeArrows.Add(newArrow); // Add to the list of active arrows
+        activeArrows.Add(newArrow);
 
-        // Add ArrowLifecycleController to manage its state
         ArrowLifecycleController lifecycleController = newArrow.AddComponent<ArrowLifecycleController>();
         lifecycleController.bowSystem = this;
         lifecycleController.spawnTime = Time.time;
-        lifecycleController.hasBeenDestroyed = false; // Reset for new arrow
-        lifecycleController.chargePercentage = chargePercentage; // Pass charge percentage to the lifecycle controller
+        lifecycleController.hasBeenDestroyed = false;
+        lifecycleController.chargePercentage = chargePercentage;
 
         Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
-
-        Vector2 launchDirection = GetBowDirection(); // Use GetBowDirection which is now based on worldTrajectoryRotation
+        Vector2 launchDirection = GetBowDirection();
 
         if (randomSpread > 0f)
         {
             float spreadAngle = Random.Range(-randomSpread, randomSpread);
-            float currentAngle = Mathf.Atan2(launchDirection.y, launchDirection.x) * Mathf.Rad2Deg;
-            float newAngle = (currentAngle + spreadAngle) * Mathf.Rad2Deg;
-            launchDirection = new Vector2(Mathf.Cos(newAngle), Mathf.Sin(newAngle));
+            launchDirection = Quaternion.Euler(0, 0, spreadAngle) * launchDirection;
         }
 
         if (arrowRb != null)
@@ -531,49 +373,25 @@ public class BowSystems : MonoBehaviour
             arrowRb.velocity = launchDirection * arrowSpeed;
             arrowRb.gravityScale = calculatedGravityScale;
         }
-        else if (showArrowDebug)
-        {
-            Debug.LogWarning($"Arrow prefab \"{arrowPrefab.name}\" doesn\"t have Rigidbody2D component!");
-        }
+        else if (showArrowDebug) Debug.LogWarning($"Arrow prefab \"{arrowPrefab.name}\" doesn't have Rigidbody2D component!");
 
-        // Set the arrow's collider to be a trigger to allow piercing
         Collider2D arrowCollider = newArrow.GetComponent<Collider2D>();
-        if (arrowCollider != null)
-        {
-            arrowCollider.isTrigger = true; // Make it a trigger for piercing
-        }
-        else if (showArrowDebug)
-        {
-            Debug.LogWarning($"Arrow prefab \"{arrowPrefab.name}\" doesn\"t have a Collider2D component!");
-        }
+        if (arrowCollider != null) arrowCollider.isTrigger = true;
+        else if (showArrowDebug) Debug.LogWarning($"Arrow prefab \"{arrowPrefab.name}\" doesn't have a Collider2D component!");
 
-        if (showArrowDebug)
-        {
-            Debug.Log($"Spawned {arrowPrefab.name} with speed {arrowSpeed:F2}, damage {calculatedDamage:F2}, gravityScale {calculatedGravityScale:F2} in direction {launchDirection}");
-        }
+        if (showArrowDebug) Debug.Log($"Spawned {arrowPrefab.name} with speed {arrowSpeed:F2}, gravityScale {calculatedGravityScale:F2}");
 
-        if (enableSoundEffects && shootSound != null)
-        {
-            PlaySoundAtPosition(shootSound, arrowSpawnPoint.position, shootSoundVolume);
-        }
+        if (enableSoundEffects && shootSound != null) PlaySoundAtPosition(shootSound, arrowSpawnPoint.position, shootSoundVolume);
 
-        // Add ArrowRotationController to the spawned arrow
         ArrowRotationController arrowRotController = newArrow.AddComponent<ArrowRotationController>();
-        if (arrowRotController != null)
-        {
-            arrowRotController.rb = arrowRb;
-        }
-
-       
+        if (arrowRotController != null) arrowRotController.rb = arrowRb;
     }
-
-   
-
     private void UpdatePlayerFacingDirection()
     {
         if (playerTransform != null)
         {
-            // Assuming KritinaMovement is on the playerTransform or a parent
+            // This assumes you have a script like "KritinaMovement" on your player
+            // that manages the facing direction. If not, it falls back to checking the scale.
             KritinaMovement playerMovement = playerTransform.GetComponentInParent<KritinaMovement>();
             if (playerMovement != null)
             {
@@ -581,7 +399,7 @@ public class BowSystems : MonoBehaviour
             }
             else
             {
-                // Fallback if KritinaMovement is not found
+                // Fallback method if the movement script isn't found
                 isPlayerFacingRight = playerTransform.localScale.x > 0;
             }
         }
@@ -591,599 +409,229 @@ public class BowSystems : MonoBehaviour
     {
         aimFromPosition = bowAimPoint != null ? bowAimPoint.position : BowGameObject.transform.position;
         Vector2 directionToMouse = (stabilizedMouseWorldPosition - aimFromPosition);
-        float distanceToMouse = directionToMouse.magnitude;
-
-        if (distanceToMouse < minDistanceToAim)
+        if (directionToMouse.magnitude < minDistanceToAim)
         {
+            // If the aim is within the dead zone, don't update the direction
             return;
         }
 
         float worldAngleToMouse = Mathf.Atan2(directionToMouse.y, directionToMouse.x) * Mathf.Rad2Deg;
         float clampedWorldAngle = ClampWorldAngle(worldAngleToMouse);
 
-        // Set world space rotations
         worldArmRotation = clampedWorldAngle;
-
-        // Apply bow offsets
-        float currentBowOffset = isPlayerFacingRight ? bowRotationOffsetRight : bowRotationOffsetLeft;
-        worldBowRotation = clampedWorldAngle + currentBowOffset;
-
-        // Apply trajectory offsets (this controls the green line - where projectiles actually go)
-        float currentTrajectoryOffset = isPlayerFacingRight ? trajectoryRotationOffsetRight : trajectoryRotationOffsetLeft;
-        worldTrajectoryRotation = clampedWorldAngle + currentTrajectoryOffset;
-
+        worldBowRotation = clampedWorldAngle + (isPlayerFacingRight ? bowRotationOffsetRight : bowRotationOffsetLeft);
+        worldTrajectoryRotation = clampedWorldAngle + (isPlayerFacingRight ? trajectoryRotationOffsetRight : trajectoryRotationOffsetLeft);
         aimDirection = directionToMouse.normalized;
     }
 
     private float ClampWorldAngle(float worldAngle)
     {
-        while (worldAngle > 180f) worldAngle -= 360f;
-        while (worldAngle < -180f) worldAngle += 360f;
+        // Normalize angle to be within -180 to 180 range.
+        if (worldAngle > 180) worldAngle -= 360;
+        if (worldAngle < -180) worldAngle += 360;
 
-        // This clamping logic is directly from your provided RobustLauncherSystem
-        if (worldAngle >= -maxDownwardAngle && worldAngle <= maxUpwardAngle)
+        if (isPlayerFacingRight)
         {
             return Mathf.Clamp(worldAngle, -maxDownwardAngle, maxUpwardAngle);
         }
-        else if (worldAngle > 90f && worldAngle < 270f)
+        else // Player is facing left
         {
-            float leftUpLimit = 180f - maxDownwardAngle;
-            float leftDownLimit = 180f + maxDownwardAngle;
-            return Mathf.Clamp(worldAngle, leftUpLimit, leftDownLimit);
+            // This logic handles clamping when the player is flipped.
+            // It correctly clamps the world-space angle based on the player's orientation.
+            if (worldAngle > 90 || worldAngle < -90) // Aiming left
+            {
+                if (worldAngle > 0) // Top-left quadrant
+                    return Mathf.Clamp(worldAngle, 180 - maxUpwardAngle, 180);
+                else // Bottom-left quadrant
+                    return Mathf.Clamp(worldAngle, -180, -180 + maxDownwardAngle);
+            }
+            else // Aiming right (while facing left)
+            {
+                return Mathf.Clamp(worldAngle, -maxDownwardAngle, maxUpwardAngle);
+            }
         }
-
-        return worldAngle;
     }
 
     private void ApplyWorldSpaceRotations()
     {
         Quaternion armWorldRotation = Quaternion.Euler(0, 0, worldArmRotation);
         Quaternion bowWorldRotation = Quaternion.Euler(0, 0, worldBowRotation);
+        Quaternion trajectoryRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation);
 
         if (useInstantRotation)
         {
             if (Arm != null) Arm.transform.rotation = armWorldRotation;
-            if (BowGameObject != null)
-            {
-                if (independentBowRotation)
-                {
-                    BowGameObject.transform.rotation = bowWorldRotation;
-                }
-                else
-                {
-                    BowGameObject.transform.rotation = armWorldRotation;
-                }
-            }
-
-            // Apply trajectory visual rotation (controls green line direction)
-            if (trajectoryVisualPoint != null)
-            {
-                trajectoryVisualPoint.rotation = Quaternion.Euler(0, 0, worldTrajectoryRotation);
-            }
+            if (BowGameObject != null) BowGameObject.transform.rotation = independentBowRotation ? bowWorldRotation : armWorldRotation;
+            if (trajectoryVisualPoint != null) trajectoryVisualPoint.rotation = trajectoryRotation;
         }
         else
         {
-            if (Arm != null) Arm.transform.rotation = Quaternion.Lerp(Arm.transform.rotation, armWorldRotation, rotationSpeed * Time.deltaTime);
-            if (BowGameObject != null)
-            {
-                if (independentBowRotation)
-                {
-                    BowGameObject.transform.rotation = Quaternion.Lerp(BowGameObject.transform.rotation, bowWorldRotation, rotationSpeed * Time.deltaTime);
-                }
-                else
-                {
-                    BowGameObject.transform.rotation = Quaternion.Lerp(BowGameObject.transform.rotation, armWorldRotation, rotationSpeed * Time.deltaTime);
-                }
-            }
-
-            if (trajectoryVisualPoint != null)
-            {
-                trajectoryVisualPoint.rotation = Quaternion.Lerp(trajectoryVisualPoint.rotation, Quaternion.Euler(0, 0, worldTrajectoryRotation), rotationSpeed * Time.deltaTime);
-            }
+            float step = rotationSpeed * Time.deltaTime;
+            if (Arm != null) Arm.transform.rotation = Quaternion.Lerp(Arm.transform.rotation, armWorldRotation, step);
+            if (BowGameObject != null) BowGameObject.transform.rotation = Quaternion.Lerp(BowGameObject.transform.rotation, independentBowRotation ? bowWorldRotation : armWorldRotation, step);
+            if (trajectoryVisualPoint != null) trajectoryVisualPoint.rotation = Quaternion.Lerp(trajectoryVisualPoint.rotation, trajectoryRotation, step);
         }
     }
 
     private void UpdateMinDistancePointPosition()
     {
         if (minDistancePoint == null) return;
-
-        Vector2 minDistancePosition = aimFromPosition + (aimDirection.normalized * minDistanceToAim);
-        minDistancePoint.position = minDistancePosition;
+        minDistancePoint.position = aimFromPosition + (aimDirection.normalized * minDistanceToAim);
     }
 
     private void UpdateTrajectoryVisualPoint()
     {
         if (trajectoryVisualPoint == null) return;
-
-        // Position at arrow spawn point for accurate trajectory visualization
-        if (arrowSpawnPoint != null)
-        {
-            trajectoryVisualPoint.position = arrowSpawnPoint.position;
-        }
-        else if (bowAimPoint != null)
-        {
-            trajectoryVisualPoint.position = bowAimPoint.position;
-        }
-        else
-        {
-            trajectoryVisualPoint.position = BowGameObject.transform.position;
-        }
+        if (arrowSpawnPoint != null) trajectoryVisualPoint.position = arrowSpawnPoint.position;
+        else if (bowAimPoint != null) trajectoryVisualPoint.position = bowAimPoint.position;
+        else trajectoryVisualPoint.position = BowGameObject.transform.position;
     }
 
     private void CalibrateAiming()
     {
-        if (showCalibrationDebug)
-        {
-            Debug.Log("=== Bow System Calibration ===");
-            Debug.Log($"Player facing right: {isPlayerFacingRight}");
-            Debug.Log($"Arrow prefab assigned: {(arrowPrefab != null ? arrowPrefab.name : "None")}");
-            Debug.Log($"Show arrow preview: {showNextArrowPreview}");
-            Debug.Log($"Arrow destruction enabled: Collision={enableCollisionDestruction}, Time={enableTimeDestruction}");
-            Debug.Log($"Charge time: {maxChargeTime}s, Min/Max Speed: {minArrowSpeed}-{maxArrowSpeed}, Min/Max Damage: {minArrowDamage}-{maxArrowDamage}");
-            Debug.Log($"Arrow lifetime: {arrowLifetime}s");
-        }
-
+        if (showCalibrationDebug) Debug.Log("=== Bow System Calibration ===");
         worldArmRotation = 0f;
-        float currentBowOffset = isPlayerFacingRight ? bowRotationOffsetRight : bowRotationOffsetLeft;
-        float currentTrajectoryOffset = isPlayerFacingRight ? trajectoryRotationOffsetRight : trajectoryRotationOffsetLeft;
-        worldBowRotation = currentBowOffset;
-        worldTrajectoryRotation = currentTrajectoryOffset;
+        worldBowRotation = isPlayerFacingRight ? bowRotationOffsetRight : bowRotationOffsetLeft;
+        worldTrajectoryRotation = isPlayerFacingRight ? trajectoryRotationOffsetRight : trajectoryRotationOffsetLeft;
         aimDirection = Vector2.right;
-
         ApplyWorldSpaceRotations();
         UpdateMinDistancePointPosition();
         UpdateTrajectoryVisualPoint();
-
-        if (showCalibrationDebug)
-        {
-            Debug.Log($"Calibration complete - Ready for bow system!");
-        }
-    }
-
-    [ContextMenu("Calibrate Aiming")]
-    public void ManualCalibrate()
-    {
-        CalibrateAiming();
-    }
-
-    [ContextMenu("Test Arrow Spawn")]
-    public void TestArrowSpawn()
-    {
-        ShootArrow();
-    }
-
-    [ContextMenu("Refresh Arrow Preview")]
-    public void RefreshArrowPreview()
-    {
-        if (showNextArrowPreview)
-        {
-            CreatePreviewArrow();
-        }
-    }
-
-    public void SetShowArrowPreview(bool enabled)
-    {
-        showNextArrowPreview = enabled;
-        if (enabled)
-        {
-            CreatePreviewArrow();
-        }
-        else if (currentPreviewArrow != null)
-        {
-            DestroyImmediate(currentPreviewArrow);
-        }
-    }
-
-    public void SetArrowDamage(float damage)
-    {
-        minArrowDamage = damage;
-        maxArrowDamage = damage;
-        if (showDamageDebug)
-        {
-            Debug.Log($"Arrow damage set to: {damage}");
-        }
-    }
-
-    public void SetEnableDamageSystem(bool enabled)
-    {
-        enableDamageSystem = enabled;
-        if (showDamageDebug)
-        {
-            Debug.Log($"Damage system set to: {enabled}");
-        }
-    }
-
-    public void SetGravityForce(float gravity)
-    {
-        gravityForce = gravity;
-    }
-
-    public void SetMinArrowSpeed(float speed)
-    {
-        minArrowSpeed = speed;
-        if (showArrowDebug)
-        {
-            Debug.Log($"Min arrow speed set to: {speed}");
-        }
-    }
-
-    public void SetMaxArrowSpeed(float speed)
-    {
-        maxArrowSpeed = speed;
-        if (showArrowDebug)
-        {
-            Debug.Log($"Max arrow speed set to: {speed}");
-        }
-    }
-
-    public void SetArrowLifetime(float lifetime)
-    {
-        arrowLifetime = lifetime;
-        if (showDestructionDebug)
-        {
-            Debug.Log($"Arrow lifetime set to: {lifetime}s");
-        }
-    }
-
-    public void SetShootCooldown(float cooldown)
-    {
-        shootCooldown = cooldown;
-        if (showArrowDebug)
-        {
-            Debug.Log($"Shoot cooldown set to: {cooldown}s");
-        }
-    }
-
-    public Vector2 GetBowDirection()
-    {
-        // This now returns the trajectory direction (green line) - where projectiles actually go
-        float trajectoryAngleRad = worldTrajectoryRotation * Mathf.Deg2Rad;
-        return new Vector2(Mathf.Cos(trajectoryAngleRad), Mathf.Sin(trajectoryAngleRad));
-    }
-
-    public Vector2 GetAimDirection()
-    {
-        return aimDirection;
-    }
-
-    public bool IsAimingValid()
-    {
-        float distanceToMouse = (stabilizedMouseWorldPosition - aimFromPosition).magnitude;
-        return distanceToMouse >= minDistanceToAim;
-    }
-
-    public bool IsMouseInDeadZone()
-    {
-        return GetDistanceToMouse() < minDistanceToAim;
-    }
-
-    private float GetDistanceToMouse()
-    {
-        return (stabilizedMouseWorldPosition - aimFromPosition).magnitude;
-    }
-
-    public bool CanShoot()
-    {
-        return Time.time >= lastShootTime + shootCooldown && IsAimingValid();
+        if (showCalibrationDebug) Debug.Log("Calibration complete!");
     }
 
     public void DestroyArrow(GameObject arrowToDestroy, Vector2 impactPosition)
     {
-        if (arrowToDestroy == null) return; // Ensure the arrow object exists
+        if (arrowToDestroy == null) return;
+        ArrowLifecycleController lc = arrowToDestroy.GetComponent<ArrowLifecycleController>();
+        if (lc != null && lc.hasBeenDestroyed) return;
+        if (lc != null) lc.hasBeenDestroyed = true;
 
-        ArrowLifecycleController lifecycleController = arrowToDestroy.GetComponent<ArrowLifecycleController>();
-        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return; // Already marked for destruction
+        if (showDestructionDebug) Debug.Log($"Destroying arrow at {impactPosition}");
 
-        if (lifecycleController != null)
-        {
-            lifecycleController.hasBeenDestroyed = true; // Mark as destroyed
-        }
-
-        if (showDestructionDebug)
-        {
-            Debug.Log($"Destroying arrow at {impactPosition}");
-        }
-
-        HandleImpactDamage(impactPosition);
-
-        // Play particle system at impact position
         if (arrowDestroyParticleSystem != null)
         {
-            // Instantiate the particle system and immediately play it
-            ParticleSystem newParticleSystem = Instantiate(arrowDestroyParticleSystem, impactPosition, Quaternion.identity);
-            newParticleSystem.Play();
-
-            // Destroy the particle system GameObject after its duration
-            Destroy(newParticleSystem.gameObject, newParticleSystem.main.duration);
+            ParticleSystem ps = Instantiate(arrowDestroyParticleSystem, impactPosition, Quaternion.identity);
+            ps.Play();
+            Destroy(ps.gameObject, ps.main.duration);
         }
 
-
-        // Remove from active arrows list
         activeArrows.Remove(arrowToDestroy);
-
-        // Use object pooling or simply disable/destroy based on settings
-        if (instantDestruction)
-        {
-            Destroy(arrowToDestroy);
-        }
-        else
-        {
-            // For fade-out or other effects, you would trigger them here
-            Destroy(arrowToDestroy, 0.1f); // Small delay for potential effects
-        }
+        Destroy(arrowToDestroy);
     }
-
-
-
-
 
     public void HandleDamage(GameObject target, Vector2 impactPoint, float chargePercentage, GameObject arrowGameObject)
     {
-        if (enableDamageSystem)
-        {
-            if (((1 << target.layer) & enemyLayers) != 0)
-            {
-                float damageToDeal = Mathf.Lerp(minArrowDamage, maxArrowDamage, chargePercentage);
-                Vector2 attackDirection = (target.transform.position - arrowGameObject.transform.position).normalized;
+        if (!enableDamageSystem || ((1 << target.layer) & enemyLayers) == 0) return;
 
-                FleaHealth fleaHealth = target.GetComponent<FleaHealth>();
-                if (fleaHealth != null)
-                {
-                    fleaHealth.TakeDamage((int)damageToDeal, attackDirection);
-                    if (showDamageDebug)
-                    {
-                        Debug.Log($"Arrow dealt {damageToDeal} damage to Flea {target.name} at {impactPoint}");
-                    }
-                    if (enableSoundEffects && enemyImpactSound != null)
-                    {
-                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                    }
-                    return;
-                }
+        float damageToDeal = Mathf.Lerp(minArrowDamage, maxArrowDamage, chargePercentage);
+        Vector2 attackDirection = (target.transform.position - arrowGameObject.transform.position).normalized;
 
-                SprayerHealth sprayerHealth = target.GetComponent<SprayerHealth>();
-                if (sprayerHealth != null)
-                {
-                    sprayerHealth.TakeDamage((int)damageToDeal, attackDirection);
-                    if (showDamageDebug)
-                    {
-                        Debug.Log($"Arrow dealt {damageToDeal} damage to Sprayer {target.name} at {impactPoint}");
-                    }
-                    if (enableSoundEffects && enemyImpactSound != null)
-                    {
-                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                    }
-                    return;
-                }
+        // Using TryGetComponent for safer access to health scripts
+        if (target.TryGetComponent<FleaHealth>(out var fleaHealth)) fleaHealth.TakeDamage((int)damageToDeal, attackDirection);
+        else if (target.TryGetComponent<SprayerHealth>(out var sprayerHealth)) sprayerHealth.TakeDamage((int)damageToDeal, attackDirection);
+        else if (target.TryGetComponent<FlyHealth>(out var flyHealth)) flyHealth.TakeDamage((int)damageToDeal, attackDirection);
+        else if (target.TryGetComponent<InkHealth>(out var inkHealth)) inkHealth.TakeDamage(Mathf.RoundToInt(damageToDeal), attackDirection, 1f);
+        else if (target.TryGetComponent<RatKingHealth>(out var ratKingHealth)) ratKingHealth.TakeDamage(Mathf.RoundToInt(damageToDeal));
+        else if (target.TryGetComponent<BarrelExplosion>(out var barrelExplosion)) barrelExplosion.TakeDamage(Mathf.RoundToInt(damageToDeal));
+        else { if (showDamageDebug) Debug.LogWarning($"Enemy {target.name} has no recognized health component!"); return; }
 
-                FlyHealth flyHealth = target.GetComponent<FlyHealth>();
-                if (flyHealth != null)
-                {
-                    flyHealth.TakeDamage((int)damageToDeal, attackDirection);
-                    if (showDamageDebug)
-                    {
-                        Debug.Log($"Arrow dealt {damageToDeal} damage to Fly {target.name} at {impactPoint}");
-                    }
-                    if (enableSoundEffects && enemyImpactSound != null)
-                    {
-                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                    }
-                    return;
-                }
-
-                InkHealth inkHealth = target.GetComponent<InkHealth>();
-                if (inkHealth != null)
-                {
-                    inkHealth.TakeDamage(Mathf.RoundToInt(damageToDeal), attackDirection, 1f);
-                    if (showDamageDebug)
-                    {
-                        Debug.Log($"Arrow dealt {damageToDeal} damage to Ink {target.name} at {impactPoint}");
-                    }
-                    if (enableSoundEffects && enemyImpactSound != null)
-                    {
-                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                    }
-                    return;
-                }
-
-                RatKingHealth RatKingHealth = target.GetComponent<RatKingHealth>();
-                if (RatKingHealth != null)
-                {
-                    RatKingHealth.TakeDamage(Mathf.RoundToInt(damageToDeal));
-                    if (showDamageDebug)
-                    {
-                        Debug.Log($"Arrow dealt {damageToDeal} damage to RatKing {target.name} at {impactPoint}");
-                    }
-                    if (enableSoundEffects && enemyImpactSound != null)
-                    {
-                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                    }
-                    return;
-                }
-                BarrelExplosion BarrelExplosion = target.GetComponent<BarrelExplosion>();
-                if (BarrelExplosion != null)
-                {
-                    BarrelExplosion.TakeDamage(Mathf.RoundToInt(damageToDeal));
-                    if (showDamageDebug)
-                    {
-                        Debug.Log($"Arrow dealt {damageToDeal} damage to RatKing {target.name} at {impactPoint}");
-                    }
-                    if (enableSoundEffects && enemyImpactSound != null)
-                    {
-                        PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                    }
-                    return;
-                }
-
-                if (showDamageDebug)
-                {
-                    Debug.LogWarning($"Enemy {target.name} doesn\"t have a recognized health component (FleaHealth, SprayerHealth, FlyHealth, InkHealth, or RatKingHealth)!");
-                }
-            }
-        }
-    }
-
-    private void HandleImpactDamage(Vector2 impactCenter)
-    {
-        if (showDamageDebug)
-        {
-            Debug.Log($"Arrow impacted at {impactCenter}");
-        }
+        if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to {target.name}");
+        if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
     }
 
     private void OnDrawGizmos()
     {
-        if (BowGameObject != null)
-        {
-            Vector2 bowPos = BowGameObject.transform.position;
-            Vector2 aimFromPos = bowAimPoint != null ? bowAimPoint.position : bowPos;
+        if (BowGameObject == null) return;
+        Vector2 bowPos = BowGameObject.transform.position;
+        Vector2 aimFromPos = bowAimPoint != null ? bowAimPoint.position : bowPos;
 
-            if (bowAimPoint != null)
-            {
-                Gizmos.color = Color.magenta;
-                Gizmos.DrawWireSphere(bowAimPoint.position, 0.15f);
-                Gizmos.DrawLine(bowPos, bowAimPoint.position);
-            }
+        if (bowAimPoint != null) { Gizmos.color = Color.magenta; Gizmos.DrawWireSphere(bowAimPoint.position, 0.15f); }
+        if (trajectoryVisualPoint != null) { Gizmos.color = Color.cyan; Gizmos.DrawWireSphere(trajectoryVisualPoint.position, 0.12f); }
+        if (arrowSpawnPoint != null) { Gizmos.color = CanShoot() ? Color.green : Color.red; Gizmos.DrawWireSphere(arrowSpawnPoint.position, 0.1f); }
+        if (nextArrowPreviewPoint != null) { Gizmos.color = showNextArrowPreview ? Color.yellow : Color.gray; Gizmos.DrawWireSphere(nextArrowPreviewPoint.position, 0.08f); }
 
-            // Draw trajectory visual point if assigned
-            if (trajectoryVisualPoint != null)
-            {
-                Gizmos.color = Color.cyan;
-                Gizmos.DrawWireSphere(trajectoryVisualPoint.position, 0.12f);
-            }
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(aimFromPos, aimFromPos + aimDirection * 2f);
 
-            if (arrowSpawnPoint != null)
-            {
-                Gizmos.color = CanShoot() ? Color.green : Color.red;
-                Gizmos.DrawWireSphere(arrowSpawnPoint.position, 0.1f);
-            }
-
-            if (nextArrowPreviewPoint != null)
-            {
-                Gizmos.color = showNextArrowPreview ? Color.yellow : Color.gray;
-                Gizmos.DrawWireSphere(nextArrowPreviewPoint.position, 0.08f);
-            }
-
-            // Draw aim direction (yellow)
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(aimFromPos, aimFromPos + aimDirection * 2f);
-
-            // Draw min distance point (red)
-            if (minDistancePoint != null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(minDistancePoint.position, 0.05f);
-            }
-        }
+        if (minDistancePoint != null) { Gizmos.color = Color.red; Gizmos.DrawWireSphere(minDistancePoint.position, 0.05f); }
     }
 
-    // Helper to play sound at a given position
     public void PlaySoundAtPosition(AudioClip clip, Vector3 position, float volume)
     {
-        if (clip != null)
-        {
-            AudioSource.PlayClipAtPoint(clip, position, volume);
-        }
+        if (clip != null) AudioSource.PlayClipAtPoint(clip, position, volume);
     }
+
+    public Vector2 GetBowDirection()
+    {
+        float trajectoryAngleRad = worldTrajectoryRotation * Mathf.Deg2Rad;
+        return new Vector2(Mathf.Cos(trajectoryAngleRad), Mathf.Sin(trajectoryAngleRad));
+    }
+
+    public bool CanShoot() => Time.time >= lastShootTime + shootCooldown && IsAimingValid();
+    public bool IsAimingValid() => (stabilizedMouseWorldPosition - aimFromPosition).magnitude >= minDistanceToAim;
 }
 
-// ArrowLifecycleController and ArrowRotationController (if they are separate files, they should remain separate)
-// If they were nested, they should be extracted to their own files.
+// --- Helper Scripts ---
+// It's best practice to have these in their own separate files in your Unity project.
 
-// Example of ArrowLifecycleController (if it was nested, extract it to a new file named ArrowLifecycleController.cs)
+// File: ArrowLifecycleController.cs
 public class ArrowLifecycleController : MonoBehaviour
 {
     public BowSystems bowSystem;
     public float spawnTime;
     public bool hasBeenDestroyed = false;
-    public float chargePercentage; // To store the charge percentage for damage calculation
-    private List<GameObject> hitEnemies = new List<GameObject>(); // Track enemies hit by this specific arrow
+    public float chargePercentage;
+    private List<GameObject> hitEnemies = new List<GameObject>();
+
+    void Update()
+    {
+        if (bowSystem != null && bowSystem.enableTimeDestruction && !hasBeenDestroyed)
+        {
+            if (Time.time > spawnTime + bowSystem.arrowLifetime)
+            {
+                bowSystem.DestroyArrow(gameObject, transform.position);
+            }
+        }
+    }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if (bowSystem == null || hasBeenDestroyed) return;
 
-        // Check if the triggered object is an enemy
         bool isEnemy = ((1 << other.gameObject.layer) & bowSystem.enemyLayers) != 0;
+        bool isDestructible = ((1 << other.gameObject.layer) & bowSystem.destructionLayers) != 0;
 
-        if (isEnemy)
+        if (isEnemy && !hitEnemies.Contains(other.gameObject))
         {
-            // If it\'s an enemy and this specific arrow hasn\'t hit it before
-            if (!hitEnemies.Contains(other.gameObject))
-            {
-                bowSystem.HandleDamage(other.gameObject, other.transform.position, chargePercentage, gameObject);
-                hitEnemies.Add(other.gameObject);
-
-                if (bowSystem.showDamageDebug)
-                {
-                    Debug.Log($"Arrow pierced and damaged enemy (trigger): {other.gameObject.name}");
-                }
-            }
+            bowSystem.HandleDamage(other.gameObject, other.ClosestPoint(transform.position), chargePercentage, gameObject);
+            hitEnemies.Add(other.gameObject);
         }
-        else // If it\'s not an enemy, or if it\'s an object on a destruction layer
+        else if (isDestructible && !isEnemy) // Destroy on walls, but not on enemies (to allow piercing)
         {
-            // Check if the triggered object is on a destruction layer
-            if (((1 << other.gameObject.layer) & bowSystem.destructionLayers) != 0)
+            if (bowSystem.enableCollisionDestruction)
             {
-                if (bowSystem.enableCollisionDestruction)
+                if (bowSystem.enableSoundEffects && bowSystem.wallImpactSound != null)
                 {
-                    bowSystem.DestroyArrow(gameObject, gameObject.transform.position);
+                    bowSystem.PlaySoundAtPosition(bowSystem.wallImpactSound, transform.position, bowSystem.wallImpactSoundVolume);
                 }
-            }
-        }
-    }
-
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (bowSystem == null || hasBeenDestroyed) return;
-
-        // Check if the collided object is an enemy
-        bool isEnemy = ((1 << collision.gameObject.layer) & bowSystem.enemyLayers) != 0;
-
-        if (isEnemy)
-        {
-            // If it\'s an enemy and this specific arrow hasn\'t hit it before
-            if (!hitEnemies.Contains(collision.gameObject))
-            {
-                bowSystem.HandleDamage(collision.gameObject, collision.contacts[0].point, chargePercentage, gameObject);
-                hitEnemies.Add(collision.gameObject);
-
-                if (bowSystem.showDamageDebug)
-                {
-                    Debug.Log($"Arrow pierced and damaged enemy: {collision.gameObject.name}");
-                }
-            }
-        }
-        else // If it\'s not an enemy, or if it\'s an object on a destruction layer
-        {
-            // Check if the collided object is on a destruction layer
-            if (((1 << collision.gameObject.layer) & bowSystem.destructionLayers) != 0)
-            {
-                if (bowSystem.enableCollisionDestruction)
-                {
-                    if (bowSystem.enableSoundEffects && bowSystem.wallImpactSound != null)
-                    {
-                        bowSystem.PlaySoundAtPosition(bowSystem.wallImpactSound, collision.contacts[0].point, bowSystem.wallImpactSoundVolume);
-                    }
-                    bowSystem.DestroyArrow(gameObject, collision.contacts[0].point);
-                }
+                bowSystem.DestroyArrow(gameObject, transform.position);
             }
         }
     }
 }
 
-// Example of ArrowRotationController (if it was nested, extract it to a new file named ArrowRotationController.cs)
+// File: ArrowRotationController.cs
 public class ArrowRotationController : MonoBehaviour
 {
     public Rigidbody2D rb;
 
     void Update()
     {
-        if (rb != null && rb.velocity.magnitude > 0.1f)
+        if (rb != null && rb.velocity.sqrMagnitude > 0.01f)
         {
             float angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(0, 0, angle);
+            transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
         }
     }
 }
-
