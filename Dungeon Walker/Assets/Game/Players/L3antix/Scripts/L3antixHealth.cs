@@ -36,7 +36,8 @@ public class L3antixHealth : MonoBehaviour
     [SerializeField] private float damageSoundVolume = 1f;
 
     private Material[] originalMaterials; // To store original materials
-    private bool isInvincible = false;
+    [HideInInspector]
+    public bool isInvincible = false;
 
     void Awake()
     {
@@ -143,7 +144,11 @@ public class L3antixHealth : MonoBehaviour
 
     public void TakeDamage(int damage, float knockbackForce, Vector2 knockbackDirection)
     {
-        if (isInvincible) return;
+    if (isInvincible)
+        {
+            Debug.Log("Player is invincible, damage ignored.");
+            return; // Quitte la fonction immédiatement.
+        }
 
         currentHealth -= damage;
         UpdateHealthEffects();

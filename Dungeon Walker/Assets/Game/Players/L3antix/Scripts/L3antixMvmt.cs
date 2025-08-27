@@ -109,6 +109,8 @@ public class L3antixMovement : MonoBehaviour
                 rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * jumpReleaseCutMultiplier);
             }
         }
+
+        
     }
 
     void FixedUpdate()
