@@ -11,7 +11,7 @@ public class RatKingBoss : MonoBehaviour
     [SerializeField] private Animator ratKingAnimator;
     [SerializeField] public Transform playerTransform;
     [SerializeField] private RatKingAttack ratKingAttack; // Reference to the attack script
-
+    private RatKingHealth health;
     [Header("General Behavior")]
     public bool CanMove = true;
     [SerializeField] private float wanderSpeed = 2f;
@@ -42,6 +42,7 @@ public class RatKingBoss : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (ratKingAnimator == null) ratKingAnimator = GetComponent<Animator>();
         if (ratKingAttack == null) ratKingAttack = GetComponent<RatKingAttack>();
+        health = GetComponent<RatKingHealth>();
         if ( wallCheck == null || groundCheck == null)
         {
             Debug.LogError("One or more essential references are not assigned!", this);
@@ -57,6 +58,12 @@ public class RatKingBoss : MonoBehaviour
 
     void Update()
     {
+        if (health != null && health.isStunned)
+        {
+            StopMoving();
+            ratKingAnimator.SetBool("IsWalking", false);
+            return; // Skip AI logic
+        }
         timeSinceLastFlip += Time.deltaTime;
 
         if (!CanMove)

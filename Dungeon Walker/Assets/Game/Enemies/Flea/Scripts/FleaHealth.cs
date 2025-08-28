@@ -48,7 +48,7 @@ public class FleaHealth : MonoBehaviour
 
     //CameraShake
     public ShakeData CameraShakeDeath;
-
+    public bool isStunned = false;
     void Start()
     {
 

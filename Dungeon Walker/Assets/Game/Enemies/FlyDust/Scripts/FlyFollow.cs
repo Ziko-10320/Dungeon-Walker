@@ -26,10 +26,11 @@ public class FlyFollow : MonoBehaviour
     private Vector2 currentVelocity = Vector2.zero;
     private float randomMoveTimer = 0f;
     private Vector2 randomTargetPosition;
-
+    private FlyHealth health;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        health = GetComponent<FlyHealth>();
         if (rb == null)
         {
             Debug.LogError("FlyFollow: Rigidbody2D not found on this GameObject. Please add one.");
@@ -41,6 +42,11 @@ public class FlyFollow : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (health != null && health.isStunned)
+        {
+            rb.velocity = Vector2.zero; // Stop all movement
+            return; // Skip AI logic
+        }
         if (playerTransform == null || rb == null) return;
 
         Vector2 targetPosition = new Vector2(playerTransform.position.x, playerTransform.position.y + heightOffset);

@@ -285,6 +285,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2453324877085352315}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6183825532583093164
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6245911074450081132}
+  m_Layer: 7
+  m_Name: ClawSpawnPoint (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6245911074450081132
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6183825532583093164}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.1, y: 1.11, z: 0}
+  m_LocalScale: {x: 1.053, y: 1.053, z: 1.053}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5733931022801928995}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6942937200360095265
 GameObject:
   m_ObjectHideFlags: 0
@@ -1353,11 +1384,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -71.66628
+      value: -57.70211
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.4948697
+      value: 1.5362978
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1564,6 +1595,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6165009945439312054}
+    - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6245911074450081132}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
@@ -1583,6 +1617,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8652883054127700324}
+    - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1709086603644778184}
   m_SourcePrefab: {fileID: 4843985084834002234, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
 --- !u!212 &1116636856298167895 stripped
 SpriteRenderer:
@@ -1806,6 +1843,7 @@ MonoBehaviour:
   timeUntilNextInvincibilityCheck: 0
   currentInvincibilityTimer: 0
   CameraShakeDeath: {fileID: 11400000, guid: 5de216865eb2173459f490db41b47444, type: 2}
+  isStunned: 0
 --- !u!114 &8652883054127700324
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1822,6 +1860,30 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 65
   splatterOffsetZ: 0.32
+--- !u!114 &1709086603644778184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6871114477328718656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 619882bba3066864582df5032d77324f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashMaterial: {fileID: 2100000, guid: 3a0913e1ff95aa248a760a3a4d960aca, type: 2}
+  clawSpawnPoint: {fileID: 6245911074450081132}
+  renderersToFlash:
+  - {fileID: 1116636856298167895}
+  - {fileID: 2768925633136592704}
+  - {fileID: 6426796543867001761}
+  - {fileID: 1361087761514965371}
+  - {fileID: 8369018351694676266}
+  scriptsToDisable:
+  - {fileID: 7403541494615263103}
+  - {fileID: 7111232836979566327}
+  enemyAnimator: {fileID: 6622398012560137658}
 --- !u!212 &8369018351694676266 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 3213437288513731543, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}

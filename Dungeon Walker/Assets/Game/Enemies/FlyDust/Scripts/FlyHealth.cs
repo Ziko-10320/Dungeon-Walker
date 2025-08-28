@@ -46,7 +46,7 @@ public class FlyHealth : MonoBehaviour
 
     //CameraShake
     public ShakeData CameraShakeDeath;
-
+    public bool isStunned = false;
     void Awake()
     {
         // Get or add the AudioSource component

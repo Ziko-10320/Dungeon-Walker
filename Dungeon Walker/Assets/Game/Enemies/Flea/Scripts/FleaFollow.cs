@@ -10,7 +10,7 @@ public class FleaFollow : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator fleaAnimator;
     [SerializeField] public Transform playerTransform;
-
+    private FleaHealth health;
     [Header("Comportement Général")]
     [SerializeField] private float patrolSpeed = 2f;
     [SerializeField] private float chaseSpeed = 4f;
@@ -40,6 +40,7 @@ public class FleaFollow : MonoBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
+        health = GetComponent<FleaHealth>();
     }
 
     
@@ -65,6 +66,12 @@ public class FleaFollow : MonoBehaviour
 
     void Update()
     {
+        if (health != null && health.isStunned)
+        {
+            StopMoving();
+            fleaAnimator.SetBool("IsWalking", false);
+            return; // Skip all AI logic if stunned
+        }
         timeSinceLastFlip += Time.deltaTime;
         UpdateAIState();
         ExecuteCurrentState();

@@ -10,7 +10,7 @@ public class SprayerFollow : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator sprayerAnimator;
     [SerializeField] public Transform playerTransform;
-
+    private SprayerHealth health;
     [Header("Systèmes de Particules")]
     [SerializeField] private ParticleSystem groundDustImpactParticles;
     [SerializeField] private ParticleSystem otherParticles;
@@ -50,6 +50,7 @@ public class SprayerFollow : MonoBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (sprayerAnimator == null) sprayerAnimator = GetComponent<Animator>();
+        health = GetComponent<SprayerHealth>();
         if (playerTransform == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -68,6 +69,12 @@ public class SprayerFollow : MonoBehaviour
 
     void Update()
     {
+        if (health != null && health.isStunned)
+        {
+            StopMoving();
+            sprayerAnimator.SetBool("IsWalking", false);
+            return; // Skip AI logic
+        }
         if (playerTransform == null)
         {
             // Si non, on essaie de le trouver.
