@@ -218,6 +218,7 @@ public class RobustLauncherSystem : MonoBehaviour
     private float lastShootTime = 0f; // For cooldown tracking
 
     // Ball preview system
+    private bool isAimingWithJoystick = false; // Tracks if the player is currently aiming with the joystick
     private GameObject currentPreviewBall; // Current preview ball instance
     private int nextBallIndex = 0; // Index of next ball to spawn
 
@@ -474,28 +475,38 @@ public class RobustLauncherSystem : MonoBehaviour
     private void HandleInputAndShooting()
     {
         bool isAiming = false;
-        bool shootPressed = false;
+        bool shootAction = false; // This will be true only on release
 
-        // On vérifie si le joystick de visée est utilisé
+        // --- MOBILE JOYSTICK LOGIC ---
         if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f)
         {
-            // --- MODE MOBILE ---
+            // Player is holding the joystick, so they are aiming.
             isAiming = true;
-            // Pour le lanceur, le tir se fait au relâchement, donc on simule un clic
-            shootPressed = true;
+            isAimingWithJoystick = true; // Set our tracking flag
 
+            // Update the aim position based on joystick direction
             Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
-            mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f;
+            mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f; // Simulate a world position to aim at
+        }
+        else if (isAimingWithJoystick)
+        {
+            // The joystick was just released.
+            isAiming = false; // No longer actively aiming
+            isAimingWithJoystick = false; // Reset the flag
+            shootAction = true; // Trigger the shot!
         }
         else
         {
-            // --- MODE PC (SOURIS) ---
-            isAiming = true;
-            shootPressed = Mouse.current.leftButton.wasPressedThisFrame;
+            // --- PC MOUSE LOGIC (Fallback) ---
+            isAiming = true; // Always allow aiming with the mouse
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                shootAction = true; // Shoot on mouse click
+            }
             mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         }
 
-        // --- LOGIQUE DE VISÉE (reprise de votre HandleAiming) ---
+        // --- AIMING LOGIC (remains the same) ---
         if (isAiming)
         {
             stabilizedMouseWorldPosition = mouseWorldPosition;
@@ -503,8 +514,8 @@ public class RobustLauncherSystem : MonoBehaviour
             CalculateAimDirection();
         }
 
-        // --- LOGIQUE DE TIR (reprise de votre HandleShooting) ---
-        if (shootPressed && Time.time >= lastShootTime + shootCooldown)
+        // --- SHOOTING LOGIC (uses the new 'shootAction' flag) ---
+        if (shootAction && Time.time >= lastShootTime + shootCooldown)
         {
             if (IsAimingValid())
             {
@@ -513,6 +524,7 @@ public class RobustLauncherSystem : MonoBehaviour
             }
         }
     }
+
     private void SpawnNextBall()
     {
         // Check if we have valid ball prefabs

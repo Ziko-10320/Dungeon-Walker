@@ -2393,6 +2393,10 @@ PrefabInstance:
       value: Sprayer
       objectReference: {fileID: 0}
     - target: {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
       propertyPath: m_TagString
       value: Sprayer
       objectReference: {fileID: 0}
@@ -11720,6 +11724,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ink
       objectReference: {fileID: 0}
+    - target: {fileID: 6871114477328718656, guid: def788d9280bf0241b6807fd4864a96c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -15661,7 +15669,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &282212885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31402,6 +31410,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Rat boss
       objectReference: {fileID: 0}
+    - target: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4484414899429158999, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
       propertyPath: enemyAnimator
       value: 
@@ -31586,6 +31598,10 @@ PrefabInstance:
     - target: {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
       propertyPath: m_Name
       value: FlyDust
+      objectReference: {fileID: 0}
+    - target: {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5996842986850834114, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -55664,6 +55680,10 @@ PrefabInstance:
     - target: {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
       propertyPath: m_Name
       value: Flea
+      objectReference: {fileID: 0}
+    - target: {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1720233607332291632, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
       propertyPath: playerTransform
@@ -137050,6 +137070,7 @@ MonoBehaviour:
   attackCooldown: 0.3
   damage: 100
   attackJoystick: {fileID: 0}
+  runningJoystick: {fileID: 0}
   joystickAimThreshold: 0.5
   joystickTapTime: 0.2
   throwSlashPrefab: {fileID: 3818423424508464440, guid: ba5cbbda20c66394891e7f5e58f9031d, type: 3}

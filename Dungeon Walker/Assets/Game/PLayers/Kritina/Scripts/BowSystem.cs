@@ -175,23 +175,7 @@ public class BowSystems : MonoBehaviour
     private bool isAimingWithJoystick = false;
     public ShakeData CameraShakeImpact;
 
-    void OnEnable()
-    {
-        // When this script is enabled, show the aim joystick
-        if (aimJoystick != null)
-        {
-            aimJoystick.gameObject.SetActive(true);
-        }
-    }
-
-    void OnDisable()
-    {
-        // When this script is disabled (e.g., switching weapons), hide the aim joystick
-        if (aimJoystick != null)
-        {
-            aimJoystick.gameObject.SetActive(false);
-        }
-    }
+   
 
     void Start()
     {
@@ -237,8 +221,10 @@ public class BowSystems : MonoBehaviour
 
         if (isJoystickCurrentlyActive)
         {
-            // --- MOBILE JOYSTICK MODE --- 
+            // --- MOBILE JOYSTICK MODE ---
             // Always aim when joystick is active
+            stabilizedMouseWorldPosition = bowAimPoint.position + new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0) * 10f;
+
             // If this is the first frame the joystick is active, it's a "press" (start charging)
             if (!isAimingWithJoystick)
             {
@@ -248,14 +234,10 @@ public class BowSystems : MonoBehaviour
 
             // As long as the joystick is active, it's a "hold" (continue charging)
             shootHeldThisFrame = true;
-
-            // Calculate aim position based on joystick direction
-            Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
-            mouseWorldPosition = bowAimPoint.position + joystickDirection * 10f; // Project aim point
         }
         else
         {
-            // --- PC MOUSE MODE (or joystick released) --- 
+            // --- PC MOUSE MODE (or joystick released) ---
 
             // If we WERE using the joystick last frame, but not anymore, it's a "release"
             if (isAimingWithJoystick)
@@ -265,21 +247,18 @@ public class BowSystems : MonoBehaviour
             }
 
             // Fallback to mouse input for PC
-            // PC input is still handled by mouse clicks for charging/shooting
+            stabilizedMouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             shootPressedThisFrame = shootPressedThisFrame || Mouse.current.leftButton.wasPressedThisFrame;
             shootHeldThisFrame = shootHeldThisFrame || Mouse.current.leftButton.isPressed;
             shootReleasedThisFrame = shootReleasedThisFrame || Mouse.current.leftButton.wasReleasedThisFrame;
-
-            mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         }
 
-        // --- UNIFIED AIMING LOGIC (works for both inputs) --- 
-        stabilizedMouseWorldPosition = mouseWorldPosition;
+        // --- UNIFIED AIMING LOGIC (works for both inputs) ---
         UpdatePlayerFacingDirection();
         CalculateAimDirection();
         ApplyWorldSpaceRotations();
 
-        // --- UNIFIED CHARGING AND SHOOTING LOGIC (works for both inputs) --- 
+        // --- UNIFIED CHARGING AND SHOOTING LOGIC (works for both inputs) ---
         if (shootPressedThisFrame && Time.time >= lastShootTime + shootCooldown)
         {
             isCharging = true;
@@ -296,11 +275,15 @@ public class BowSystems : MonoBehaviour
         if (shootReleasedThisFrame && isCharging)
         {
             isCharging = false;
-            ShootArrow();
+            if (IsAimingValid()) // Only shoot if the aim is valid
+            {
+                ShootArrow();
+            }
             lastShootTime = Time.time;
             if (currentPreviewArrow != null) currentPreviewArrow.SetActive(true);
         }
     }
+
 
     private void CalculateDynamicSpeed()
     {

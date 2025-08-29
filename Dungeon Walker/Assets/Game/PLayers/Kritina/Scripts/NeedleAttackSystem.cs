@@ -18,6 +18,7 @@ public class BatAttackSystem : MonoBehaviour
     [Header("Mobile Controls")]
     [Tooltip("Faites glisser le joystick d'attaque de la batte ici.")]
     public Joystick attackJoystick;
+    public Joystick runningJoystick;
     [Tooltip("Seuil pour différencier un 'tap' d'une 'visée'.")]
     [SerializeField] private float joystickAimThreshold = 0.5f;
     [Tooltip("Temps maximum en secondes pour qu'un contact soit considéré comme un 'tap'.")]
@@ -213,65 +214,75 @@ public class BatAttackSystem : MonoBehaviour
     }
     private void HandleInput()
     {
-        // On ne traite aucune nouvelle entrée si on est déjà en train d'anticiper une attaque.
+        // Exit if we are already in an attack, don't have the bat, or are on cooldown.
         if (isAnticipating || !hasBat || Time.time < nextAttackTime)
         {
             return;
         }
 
-        // --- GESTION DU JOYSTICK ---
+        // --- MOBILE JOYSTICK INPUT ---
         if (attackJoystick != null && attackJoystick.gameObject.activeInHierarchy)
         {
-            // Le joueur touche le joystick
+            // Check if the attack joystick is being touched
             if (attackJoystick.Direction.sqrMagnitude > 0.01f)
             {
                 if (!isJoystickHeld)
                 {
-                    // Première frame où le joystick est touché
+                    // This is the first frame the joystick is held down
                     isJoystickHeld = true;
                     joystickHoldTime = 0f;
                 }
+                // Increment the hold timer
                 joystickHoldTime += Time.deltaTime;
             }
-            // Le joueur a relâché le joystick
+            // Check if the attack joystick was just released
             else if (isJoystickHeld)
             {
-                // On vient de relâcher
-                isJoystickHeld = false;
+                isJoystickHeld = false; // Mark as released
 
-                // On vérifie si c'était une visée ou un tap
-                if (attackJoystick.Direction.magnitude > joystickAimThreshold)
+                // Check if the release was a THROW (held long enough and dragged far enough)
+                if (joystickHoldTime > joystickTapTime || attackJoystick.Direction.magnitude > joystickAimThreshold)
                 {
-                    // C'était une VISÉE, on lance la batte
-                    // On calcule une "fausse" position de souris basée sur la direction du joystick
-                    Vector3 joystickScreenPos = new Vector3(Screen.width / 2, Screen.height / 2, 0) + (Vector3)attackJoystick.Direction * 100f;
+                    // --- THROW ATTACK ---
+                    // Calculate a simulated mouse position based on the joystick's last direction
+                    Vector3 joystickScreenPos = new Vector3(Screen.width / 2, Screen.height / 2, 0) + (Vector3)attackJoystick.Direction * 200f;
                     lastMousePosition = joystickScreenPos;
                     StartAnticipationAndThrowSlash();
                 }
-                else if (joystickHoldTime <= joystickTapTime)
+                // Otherwise, it was a quick TAP for a MELEE attack
+                else
                 {
-                    // C'était un TAP, on fait une attaque normale
-                    // On simule une visée vers l'avant pour l'attaque normale/haute
-                    bool upward = attackJoystick.Direction.y > 0.5f;
-                    StartAnticipationAttack(upward);
+                    // --- MELEE ATTACK ---
+                    bool isAimingUp = false;
+                    // Check if the RUNNING joystick is being held upwards
+                    if (runningJoystick != null && runningJoystick.Direction.y > 0.7f) // Using 0.7 as a strong upward threshold
+                    {
+                        isAimingUp = true;
+                    }
+                    StartAnticipationAttack(isAimingUp);
                 }
+
+                // Reset the timer
                 joystickHoldTime = 0f;
             }
         }
 
-        // --- GESTION DU CLAVIER/SOURIS (reste fonctionnel) ---
+        // --- PC MOUSE & KEYBOARD INPUT (remains as a fallback) ---
         if (Input.GetMouseButtonDown(0))
         {
+            // Melee Attack
             bool shouldPerformUpwardAttack = ShouldPerformUpwardAttack();
             StartAnticipationAttack(shouldPerformUpwardAttack);
         }
 
         if (Input.GetMouseButtonDown(1))
         {
+            // Throw Attack
             lastMousePosition = Input.mousePosition;
             StartAnticipationAndThrowSlash();
         }
     }
+
 
     private void InitializeComponents()
     {
