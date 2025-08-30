@@ -30,7 +30,11 @@ public class WaveManager : MonoBehaviour
     [Tooltip("Liste de tous les points où les ennemis peuvent apparaître.")]
     public List<Transform> spawnPoints;
 
-    
+    [SerializeField] private float spawnRadius = 2.0f;
+
+    [Tooltip("Le PRÉFABRIQUÉ de l'effet de particules à jouer au spawn/despawn.")]
+    [SerializeField] private GameObject spawnEffectPrefab;
+
     private List<GameObject> activeEnemies = new List<GameObject>();
     private int currentScore = -1; // Initialisé à -1 pour forcer la première vague au démarrage
     private bool waveIsActive = false;
@@ -121,6 +125,10 @@ public class WaveManager : MonoBehaviour
         {
             if (enemy != null)
             {
+                if (spawnEffectPrefab != null)
+                {
+                    Instantiate(spawnEffectPrefab, enemy.transform.position, Quaternion.identity);
+                }
                 // On se désabonne de l'événement pour éviter des erreurs
                 var healthScript = enemy.GetComponent<FleaHealth>();
                 if (healthScript != null)
@@ -147,12 +155,43 @@ public class WaveManager : MonoBehaviour
 
             // Choisis un point de spawn au hasard
             Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
-           
-            // Fais apparaître l'ennemi et ajoute-le à notre liste de suivi
-            GameObject spawnedEnemy = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
+
+            // Calcule une position aléatoire dans le rayon
+            Vector2 randomOffset = Random.insideUnitCircle * spawnRadius;
+            Vector3 spawnPosition = spawnPoint.position + new Vector3(randomOffset.x, randomOffset.y, 0);
+
+            // --- LOGIQUE DE RECHERCHE PAR TAG ---
+            Vector3 effectPosition = spawnPosition; // Par défaut, l'effet apparaît là où l'ennemi apparaît.
+
+            // On instancie l'ennemi D'ABORD, mais il est invisible et inactif.
+            // Cela nous permet de chercher ses enfants dans la hiérarchie.
+            GameObject tempEnemyInstance = Instantiate(enemyPrefab, spawnPosition, spawnPoint.rotation);
+            tempEnemyInstance.SetActive(false); // Très important pour qu'il n'apparaisse pas tout de suite
+
+            // On cherche maintenant un enfant avec le bon Tag DANS L'INSTANCE.
+            foreach (Transform child in tempEnemyInstance.transform)
+            {
+                if (child.CompareTag("EffectSpawnPoint"))
+                {
+                    effectPosition = child.position; // On récupère sa position dans le monde
+                    break; // On a trouvé, on arrête de chercher
+                }
+            }
+            // --- FIN DE LA LOGIQUE DE RECHERCHE ---
+
+            // On joue l'effet à la position trouvée (ou à la position de l'ennemi par défaut)
+            if (spawnEffectPrefab != null)
+            {
+                Instantiate(spawnEffectPrefab, effectPosition, Quaternion.identity);
+            }
+
+            // Maintenant, on active l'ennemi pour qu'il apparaisse vraiment.
+            tempEnemyInstance.SetActive(true);
+            GameObject spawnedEnemy = tempEnemyInstance; // On renomme la variable pour la clarté
+
             activeEnemies.Add(spawnedEnemy);
             InitializeEnemy(spawnedEnemy);
-         
+
             var healthScript = spawnedEnemy.GetComponent<FleaHealth>();
             if (healthScript != null)
             {
@@ -175,31 +214,52 @@ public class WaveManager : MonoBehaviour
             }
             else
             {
-                // Si tu as d'autres scripts de santé (ex: BossHealth), vérifie-les ici
                 Debug.LogWarning($"L'ennemi {spawnedEnemy.name} n'a pas de script de santé (FleaHealth) avec un événement OnDeath.");
             }
 
-            yield return new WaitForSeconds(0.5f); // Petit délai entre chaque spawn pour ne pas tout faire apparaître d'un coup
+            yield return new WaitForSeconds(0.5f); // Petit délai entre chaque spawn
         }
 
-        // 2. Faire apparaître le boss si nécessaire
+        // 2. Faire apparaître le boss si nécessaire (la logique reste la même)
         if (config.hasBoss && config.bossPrefab != null)
         {
             Debug.Log("Apparition du BOSS !");
             Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
-            GameObject spawnedBoss = Instantiate(config.bossPrefab, spawnPoint.position, spawnPoint.rotation);
+            Vector2 randomOffset = Random.insideUnitCircle * spawnRadius;
+            Vector3 spawnPosition = spawnPoint.position + new Vector3(randomOffset.x, randomOffset.y, 0);
+
+            // On peut aussi appliquer la logique de tag pour le boss s'il en a besoin
+            Vector3 bossEffectPosition = spawnPosition;
+            GameObject tempBossInstance = Instantiate(config.bossPrefab, spawnPosition, spawnPoint.rotation);
+            tempBossInstance.SetActive(false);
+            foreach (Transform child in tempBossInstance.transform)
+            {
+                if (child.CompareTag("EffectSpawnPoint"))
+                {
+                    bossEffectPosition = child.position;
+                    break;
+                }
+            }
+
+            if (spawnEffectPrefab != null)
+            {
+                Instantiate(spawnEffectPrefab, bossEffectPosition, Quaternion.identity);
+            }
+
+            tempBossInstance.SetActive(true);
+            GameObject spawnedBoss = tempBossInstance;
+
             activeEnemies.Add(spawnedBoss);
             InitializeEnemy(spawnedBoss);
-            // Abonne-toi à l'événement de mort du boss
-            var bossHealth = spawnedBoss.GetComponent<RatKingHealth>(); // Change "FleaHealth" si ton boss a un script de santé différent
+
+            var bossHealth = spawnedBoss.GetComponent<RatKingHealth>();
             if (bossHealth != null)
             {
                 bossHealth.OnDeath.AddListener(OnEnemyDied);
             }
         }
-        
-        currentWaveCoroutine = null;
 
+        currentWaveCoroutine = null;
     }
 
     private void InitializeEnemy(GameObject enemy)
@@ -307,6 +367,22 @@ public class WaveManager : MonoBehaviour
         }
         return bestConfig;
     }
+
+    private void OnDrawGizmosSelected()
+{
+    if (spawnPoints.Count > 0)
+    {
+        Gizmos.color = Color.cyan; // Choisis une couleur pour les gizmos
+        foreach (Transform spawnPoint in spawnPoints)
+        {
+            if (spawnPoint != null)
+            {
+                // Dessine un cercle qui représente le rayon de spawn
+                Gizmos.DrawWireSphere(spawnPoint.position, spawnRadius);
+            }
+        }
+    }
+}
 
     // N'oublie pas de te désabonner de l'événement quand l'objet est détruit
     void OnDestroy()

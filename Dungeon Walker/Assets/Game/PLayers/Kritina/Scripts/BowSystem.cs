@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using System.Collections;
@@ -175,7 +175,13 @@ public class BowSystems : MonoBehaviour
     private bool isAimingWithJoystick = false;
     public ShakeData CameraShakeImpact;
 
-   
+    [Header("Input Settings")]
+    [Tooltip("Activer les contrôles pour PC (souris).")]
+    public bool enablePcInput = true;
+    [Tooltip("Activer les contrôles pour Mobile (joystick).")]
+    public bool enableMobileInput = true;
+
+
 
     void Start()
     {
@@ -217,42 +223,41 @@ public class BowSystems : MonoBehaviour
         bool shootReleasedThisFrame = false;
 
         // Check if the aim joystick is being used
-        bool isJoystickCurrentlyActive = aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f;
+        bool isJoystickCurrentlyActive = enableMobileInput && aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f;
 
         if (isJoystickCurrentlyActive)
         {
-            // --- MOBILE JOYSTICK MODE ---
-            // Always aim when joystick is active
+            // --- MODE MOBILE JOYSTICK ---
+            // (Le code ici reste le même)
             stabilizedMouseWorldPosition = bowAimPoint.position + new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0) * 10f;
-
-            // If this is the first frame the joystick is active, it's a "press" (start charging)
             if (!isAimingWithJoystick)
             {
                 shootPressedThisFrame = true;
-                isAimingWithJoystick = true; // Remember we are now using the joystick
+                isAimingWithJoystick = true;
             }
-
-            // As long as the joystick is active, it's a "hold" (continue charging)
             shootHeldThisFrame = true;
         }
         else
         {
-            // --- PC MOUSE MODE (or joystick released) ---
+            // --- MODE PC SOURIS (ou joystick relâché) ---
 
-            // If we WERE using the joystick last frame, but not anymore, it's a "release"
+            // Si on VIENT de relâcher le joystick
             if (isAimingWithJoystick)
             {
                 shootReleasedThisFrame = true;
-                isAimingWithJoystick = false; // Remember we are no longer using the joystick
+                isAimingWithJoystick = false;
             }
 
-            // Fallback to mouse input for PC
-            stabilizedMouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-            shootPressedThisFrame = shootPressedThisFrame || Mouse.current.leftButton.wasPressedThisFrame;
-            shootHeldThisFrame = shootHeldThisFrame || Mouse.current.leftButton.isPressed;
-            shootReleasedThisFrame = shootReleasedThisFrame || Mouse.current.leftButton.wasReleasedThisFrame;
+            // --- MODIFICATION : On ajoute une condition pour l'input PC ---
+            if (enablePcInput)
+            {
+                // On utilise les entrées de la souris
+                stabilizedMouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+                shootPressedThisFrame = shootPressedThisFrame || Mouse.current.leftButton.wasPressedThisFrame;
+                shootHeldThisFrame = shootHeldThisFrame || Mouse.current.leftButton.isPressed;
+                shootReleasedThisFrame = shootReleasedThisFrame || Mouse.current.leftButton.wasReleasedThisFrame;
+            }
         }
-
         // --- UNIFIED AIMING LOGIC (works for both inputs) ---
         UpdatePlayerFacingDirection();
         CalculateAimDirection();

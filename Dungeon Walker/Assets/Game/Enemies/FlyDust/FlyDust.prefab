@@ -4861,6 +4861,37 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!1 &480554228911114305
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 940164034120110709}
+  m_Layer: 7
+  m_Name: EffectSpawnPoint
+  m_TagString: EffectSpawnPoint
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &940164034120110709
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480554228911114305}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.000000029802315, w: 1}
+  m_LocalPosition: {x: -0.152, y: 0.936, z: 0}
+  m_LocalScale: {x: 0.8320601, y: 0.8320601, z: 0.83206}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5996842986850834114}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1727836311648592634
 GameObject:
   m_ObjectHideFlags: 0
@@ -10501,11 +10532,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -73.69
+      value: -73.81806
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 8.2
+      value: 5.6092854
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10743,6 +10774,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8821268225086393867}
+    - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 940164034120110709}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       insertIndex: -1

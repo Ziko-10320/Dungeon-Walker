@@ -37,6 +37,9 @@ public class SuperMoveController : MonoBehaviour
     [Tooltip("Delay before re-enabling player scripts after the super move ends.")]
     public float playerReEnableDelay = 0.2f;
 
+    [SerializeField] private GameObject startSuperMoveEffectPrefab;
+    [SerializeField] private Transform particleSpawnPoint;
+
     [Header("Camera Shake")]
     public ShakeData clawImpactShake;
 
@@ -94,6 +97,28 @@ public class SuperMoveController : MonoBehaviour
     private IEnumerator ExecuteSuperMove()
     {
         isSuperMoveActive = true;
+        CameraShakerHandler.Shake(clawImpactShake);
+        if (startSuperMoveEffectPrefab != null)
+        {
+            // On détermine la position de spawn. Si le point de spawn n'est pas défini, on utilise la position du joueur.
+            Vector3 spawnPosition = (particleSpawnPoint != null) ? particleSpawnPoint.position : transform.position;
+
+            // On instancie (crée) une nouvelle copie de l'effet à la position voulue.
+            GameObject effectInstance = Instantiate(startSuperMoveEffectPrefab, spawnPosition, Quaternion.identity);
+
+            // Optionnel mais recommandé : détruire l'objet de l'effet après sa durée.
+            // Cela suppose que l'effet ne boucle pas.
+            ParticleSystem ps = effectInstance.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                Destroy(effectInstance, ps.main.duration);
+            }
+            else
+            {
+                // Si ce n'est pas un système de particules, on le détruit après quelques secondes pour éviter de polluer la scène.
+                Destroy(effectInstance, 5f);
+            }
+        }
         if (playerRb != null)
         {
             playerRb.bodyType = RigidbodyType2D.Static;
