@@ -103,6 +103,9 @@ public class RobustLauncherSystem : MonoBehaviour
     public float explosionDamageMultiplier = 1.5f;
     [Tooltip("Show damage debug info")]
     public bool showDamageDebug = false;
+    [Header("Input Settings")]
+    public bool PcInput = true;
+    public bool MobileInput = false;
 
     [Header("Sound Effects")]
     [Tooltip("Main explosion sound effect")]
@@ -475,38 +478,44 @@ public class RobustLauncherSystem : MonoBehaviour
     private void HandleInputAndShooting()
     {
         bool isAiming = false;
-        bool shootAction = false; // This will be true only on release
+        bool shootAction = false; // This will be true only on release or click
 
         // --- MOBILE JOYSTICK LOGIC ---
-        if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f)
+        if (MobileInput)
         {
-            // Player is holding the joystick, so they are aiming.
-            isAiming = true;
-            isAimingWithJoystick = true; // Set our tracking flag
+            if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f)
+            {
+                // Player is holding the joystick, so they are aiming.
+                isAiming = true;
+                isAimingWithJoystick = true; // Set our tracking flag
 
-            // Update the aim position based on joystick direction
-            Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
-            mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f; // Simulate a world position to aim at
+                // Update the aim position based on joystick direction
+                Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
+                mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f; // Simulate a world position to aim at
+            }
+            else if (isAimingWithJoystick)
+            {
+                // The joystick was just released.
+                isAiming = false; // No longer actively aiming
+                isAimingWithJoystick = false; // Reset the flag
+                shootAction = true; // Trigger the shot!
+            }
         }
-        else if (isAimingWithJoystick)
+
+        // --- PC MOUSE LOGIC (Fallback or Primary) ---
+        if (PcInput && !isAimingWithJoystick) // Only run PC input if it's enabled AND mobile isn't being used
         {
-            // The joystick was just released.
-            isAiming = false; // No longer actively aiming
-            isAimingWithJoystick = false; // Reset the flag
-            shootAction = true; // Trigger the shot!
-        }
-        else
-        {
-            // --- PC MOUSE LOGIC (Fallback) ---
             isAiming = true; // Always allow aiming with the mouse
+            mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+
+            // For PC, we shoot on click, not release
             if (Mouse.current.leftButton.wasPressedThisFrame)
             {
-                shootAction = true; // Shoot on mouse click
+                shootAction = true;
             }
-            mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         }
 
-        // --- AIMING LOGIC (remains the same) ---
+        // --- AIMING LOGIC (runs if either input is active) ---
         if (isAiming)
         {
             stabilizedMouseWorldPosition = mouseWorldPosition;
@@ -514,7 +523,7 @@ public class RobustLauncherSystem : MonoBehaviour
             CalculateAimDirection();
         }
 
-        // --- SHOOTING LOGIC (uses the new 'shootAction' flag) ---
+        // --- SHOOTING LOGIC (runs when a shoot action is triggered) ---
         if (shootAction && Time.time >= lastShootTime + shootCooldown)
         {
             if (IsAimingValid())
@@ -524,6 +533,7 @@ public class RobustLauncherSystem : MonoBehaviour
             }
         }
     }
+
 
     private void SpawnNextBall()
     {

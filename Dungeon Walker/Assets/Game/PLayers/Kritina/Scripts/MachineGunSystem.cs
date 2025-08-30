@@ -39,6 +39,9 @@ public class MachineGunSystem : MonoBehaviour
     [SerializeField] private float rotationSpeed = 25f;
     [Tooltip("Utiliser une rotation instantanée pour une réactivité maximale")]
     [SerializeField] private bool useInstantRotation = true;
+    [Header("Input Settings")]
+    public bool PcInput = true;
+    public bool MobileInput = false;
 
     [Header("LAUNCHER CALIBRATION")]
     [Tooltip("Offset de rotation pour l\"arme quand le joueur regarde à DROITE")]
@@ -136,58 +139,69 @@ public class MachineGunSystem : MonoBehaviour
         bool isAiming = false;
         bool isShooting = false;
 
-        // On vérifie si le joystick de visée est utilisé
-        if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f)
+        // --- MOBILE JOYSTICK LOGIC ---
+        if (MobileInput)
         {
-            // --- MODE MOBILE ---
-            isAiming = true;
-            isShooting = true; // Le tir est automatique avec le joystick
-            isShootingWithJoystick = true;
+            if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f)
+            {
+                // For mobile, aiming and shooting are tied to the joystick being active
+                isAiming = true;
+                isShooting = true;
+                isShootingWithJoystick = true;
 
-            // On calcule une position de visée dans le monde basée sur la direction du joystick
-            Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
-            // On projette cette direction à une distance raisonnable du joueur pour que la visée soit stable
-            mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f;
+                // Calculate a world aim position based on the joystick's direction
+                Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
+                mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f;
+            }
+            else
+            {
+                // If the joystick is released, stop shooting
+                isShootingWithJoystick = false;
+            }
         }
-        else
-        {
-            // --- MODE PC (SOURIS) ---
-            isShootingWithJoystick = false;
-            isAiming = true; // La souris vise toujours
-            isShooting = Mouse.current.leftButton.isPressed;
 
-            // On utilise la position normale de la souris
+        // --- PC MOUSE LOGIC (Fallback or Primary) ---
+        // Only run PC input if it's enabled AND the mobile joystick isn't currently being used
+        if (PcInput && !isShootingWithJoystick)
+        {
+            isAiming = true; // With a mouse, you are always aiming
+            isShooting = Mouse.current.leftButton.isPressed; // Shooting is holding the left mouse button
+
+            // Get the mouse position in the world
             mouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         }
 
-        // --- LOGIQUE DE VISÉE (reprise de votre HandleAiming) ---
+        // --- AIMING LOGIC (runs if either input is active) ---
         if (isAiming)
         {
-            // On utilise la même variable 'mouseWorldPosition' qui a été définie soit par le joystick, soit par la souris
             stabilizedMouseWorldPosition = mouseWorldPosition;
             UpdatePlayerFacingDirection();
             CalculateAimDirection();
         }
 
-        // --- LOGIQUE DE TIR (reprise de votre HandleShooting) ---
+        // --- OVERHEAT & SHOOTING LOGIC ---
         if (isOverheated)
         {
+            // If overheated, start the cooldown timer
             overheatCooldownTimer -= Time.deltaTime;
             if (overheatCooldownTimer <= 0f)
             {
                 isOverheated = false;
-                currentOverheatValue = 0f;
+                currentOverheatValue = 0f; // Reset heat when cooldown is done
             }
-            return;
+            return; // Stop here if overheated, no shooting allowed
         }
 
         if (isShooting)
         {
+            // Increase heat while shooting
             currentOverheatValue += Time.deltaTime;
             currentOverheatValue = Mathf.Min(currentOverheatValue, maxOverheatTime);
 
+            // Check if we can fire
             if (Time.time >= nextFireTime)
             {
+                // Don't shoot if the aim is inside the dead zone
                 if (Vector2.Distance(mouseWorldPosition, aimFromPosition) < minDistanceToAim) return;
 
                 Shoot();
@@ -197,12 +211,14 @@ public class MachineGunSystem : MonoBehaviour
         }
         else
         {
+            // If not shooting, cool down the weapon
             currentOverheatValue -= Time.deltaTime * (maxOverheatTime / overheatCoolDownTime);
             currentOverheatValue = Mathf.Max(0f, currentOverheatValue);
         }
     }
 
-    
+
+
 
     private void UpdatePlayerFacingDirection()
     {

@@ -16,6 +16,10 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private float attackCooldown = 1.0f; // Cooldown duration for the attack (in seconds)
     [SerializeField] private int damage = 20; // Damage amount dealt by the attack
     [Header("Mobile Controls")]
+    [Header("Input Control")]
+    public bool MobileInput = true; // Set to true to enable mobile input, false to disable
+    public bool PcInput = false;    // Set to true to enable PC input, false to disable
+
     [Tooltip("Faites glisser le joystick d'attaque de la batte ici.")]
     public Joystick attackJoystick;
     public Joystick runningJoystick;
@@ -221,7 +225,8 @@ public class BatAttackSystem : MonoBehaviour
         }
 
         // --- MOBILE JOYSTICK INPUT ---
-        if (attackJoystick != null && attackJoystick.gameObject.activeInHierarchy)
+               if (MobileInput && attackJoystick != null && attackJoystick.gameObject.activeInHierarchy)
+
         {
             // Check if the attack joystick is being touched
             if (attackJoystick.Direction.sqrMagnitude > 0.01f)
@@ -268,14 +273,16 @@ public class BatAttackSystem : MonoBehaviour
         }
 
         // --- PC MOUSE & KEYBOARD INPUT (remains as a fallback) ---
-        if (Input.GetMouseButtonDown(0))
+        if (PcInput && Input.GetMouseButtonDown(0))
+
         {
             // Melee Attack
             bool shouldPerformUpwardAttack = ShouldPerformUpwardAttack();
             StartAnticipationAttack(shouldPerformUpwardAttack);
         }
 
-        if (Input.GetMouseButtonDown(1))
+        if (PcInput && Input.GetMouseButtonDown(1))
+
         {
             // Throw Attack
             lastMousePosition = Input.mousePosition;
