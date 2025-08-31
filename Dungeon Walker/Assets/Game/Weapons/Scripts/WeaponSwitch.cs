@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using TMPro; // ---- NEW ----: Import the TextMeshPro namespace
+using UnityEngine.UI; // ---- NEW ----: Import the UI namespace
 
 public class WeaponSwitchManager : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class WeaponSwitchManager : MonoBehaviour
         public List<MonoBehaviour> weaponScripts; // List of scripts to enable/disable for this weapon
         public GameObject armGameObject; // GameObject of the arm associated with this weapon (the parent)
         public SpriteRenderer armSpriteRenderer; // The SpriteRenderer of the arm to enable/disable
+        public Sprite weaponUIIcon; // ---- NEW ----: Sprite for the weapon's UI icon
         [Range(0f, 1f)]
         public float dropChance = 0.25f; // Probability of getting this weapon
     }
@@ -25,6 +27,7 @@ public class WeaponSwitchManager : MonoBehaviour
 
     [Header("UI Settings")] // ---- NEW ----: Header for UI elements
     public TextMeshProUGUI killsLeftText; // ---- NEW ----: Reference to the UI Text element
+    public Image weaponIconUI; // ---- NEW ----: Reference to the UI Image element for weapon icon
 
     private int currentKills = 0;
     private WeaponConfig currentWeapon;
@@ -93,7 +96,7 @@ public class WeaponSwitchManager : MonoBehaviour
         if (!isSwitchingWeapon)
         {
             Debug.Log("Manual weapon switch triggered by UI button.");
-            
+
             // On réinitialise le compteur pour que le cycle soit cohérent.
             currentKills = 0;
 
@@ -142,7 +145,7 @@ public class WeaponSwitchManager : MonoBehaviour
         Debug.Log($"Switched to weapon: {currentWeapon.weaponName}");
         isSwitchingWeapon = false;
     }
-   
+
     WeaponConfig GetRandomWeapon()
     {
         float totalChance = weaponConfigs.Sum(config => config.dropChance);
@@ -199,6 +202,17 @@ public class WeaponSwitchManager : MonoBehaviour
                 weapon.armSpriteRenderer.enabled = true;
                 currentArmSpriteRenderer = weapon.armSpriteRenderer; // Update the currently active arm SpriteRenderer
                 Debug.Log($"Enabled arm SpriteRenderer: {weapon.armSpriteRenderer.name}");
+            }
+
+            // ---- NEW ----: Update the UI Image with the weapon's icon
+            if (weaponIconUI != null && weapon.weaponUIIcon != null)
+            {
+                weaponIconUI.sprite = weapon.weaponUIIcon;
+                weaponIconUI.enabled = true; // Ensure the image is visible
+            }
+            else if (weaponIconUI != null)
+            {
+                weaponIconUI.enabled = false; // Hide the image if no icon is assigned
             }
         }
     }
@@ -345,3 +359,5 @@ public class WeaponSwitchManager : MonoBehaviour
         }
     }
 }
+
+

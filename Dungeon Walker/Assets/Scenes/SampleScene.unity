@@ -2785,6 +2785,81 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &48833167
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 48833168}
+  - component: {fileID: 48833170}
+  - component: {fileID: 48833169}
+  m_Layer: 5
+  m_Name: Image
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &48833168
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 48833167}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.94697, y: 0.94697, z: 0.94697}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2007289621}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -338, y: 162}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &48833169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 48833167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &48833170
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 48833167}
+  m_CullTransparentMesh: 1
 --- !u!1 &48846899 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4933535465514860797, guid: 82dbd0b62831a694eb73f2a6fc3dcaf1, type: 3}
@@ -8397,7 +8472,7 @@ MonoBehaviour:
   waitingSound: {fileID: 0}
   waitingSoundVolume: 0.071
   timeToStay: 15
-  radius: 3
+  radius: 4
 --- !u!4 &165835183
 Transform:
   m_ObjectHideFlags: 0
@@ -50570,7 +50645,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -261, y: 177}
+  m_AnchoredPosition: {x: -186, y: 155}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &682263874
@@ -50656,7 +50731,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -16.581831, y: 0, z: -125.06217, w: 0}
+  m_margin: {x: -16.581831, y: 0, z: -11.410484, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -56427,6 +56502,7 @@ MonoBehaviour:
     - {fileID: 3782080159404412778}
     armGameObject: {fileID: 9053065826021003268}
     armSpriteRenderer: {fileID: 1970156027552053445}
+    weaponUIIcon: {fileID: 21300000, guid: 461992939535a4a4cb6d45f4310e5b18, type: 3}
     dropChance: 0.25
   - weaponName: Launcher
     weaponGameObjects:
@@ -56435,6 +56511,7 @@ MonoBehaviour:
     - {fileID: 1783101526220831786}
     armGameObject: {fileID: 9053065826021003268}
     armSpriteRenderer: {fileID: 1970156027552053445}
+    weaponUIIcon: {fileID: 1879289918211271614, guid: ecd666b5ad06fd34192eb8aa22768aac, type: 3}
     dropChance: 0.25
   - weaponName: Bow
     weaponGameObjects:
@@ -56443,6 +56520,7 @@ MonoBehaviour:
     - {fileID: 8963758816657039279}
     armGameObject: {fileID: 9053065826021003268}
     armSpriteRenderer: {fileID: 1970156027552053445}
+    weaponUIIcon: {fileID: 21300000, guid: d7456eb42a127c643acf8d412171c4f2, type: 3}
     dropChance: 0.25
   - weaponName: Bat
     weaponGameObjects:
@@ -56451,6 +56529,7 @@ MonoBehaviour:
     - {fileID: 7339564473306886488}
     armGameObject: {fileID: 1646761105}
     armSpriteRenderer: {fileID: 1646761106}
+    weaponUIIcon: {fileID: 21300000, guid: 2ad816b99b8c8264c9b00085aa3f32bc, type: 3}
     dropChance: 0.25
   - weaponName: MachineGun
     weaponGameObjects:
@@ -56459,10 +56538,12 @@ MonoBehaviour:
     - {fileID: 2118806114221858030}
     armGameObject: {fileID: 1758857249892571201}
     armSpriteRenderer: {fileID: 6897040940274384954}
+    weaponUIIcon: {fileID: -2465897257406450425, guid: 692295fe2d1118c4187a5756e3eb992a, type: 3}
     dropChance: 0.104
   killsToSwitch: 5
   switchDelay: 0.2
   killsLeftText: {fileID: 682263874}
+  weaponIconUI: {fileID: 48833169}
 --- !u!4 &776453695
 Transform:
   m_ObjectHideFlags: 0
@@ -113619,7 +113700,7 @@ RectTransform:
   m_GameObject: {fileID: 1371016091}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.9992217, y: 0.9992217, z: 0.9992217}
+  m_LocalScale: {x: 0.72543496, y: 0.72543496, z: 0.72543496}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1568948949}
@@ -113628,7 +113709,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.9, y: 167}
+  m_AnchoredPosition: {x: 17, y: 192}
   m_SizeDelta: {x: 70.581, y: 64.022}
   m_Pivot: {x: 0.5, y: 0.49999964}
 --- !u!114 &1371016093
@@ -148166,7 +148247,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: beb7a057e96e47e449524dda14068c10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 104591447}
+  player: {fileID: 1888479313}
   maxHorizontalDistance: 2
   followSpeed: 10
 --- !u!114 &1641578992
@@ -156207,7 +156288,7 @@ Transform:
   m_GameObject: {fileID: 1704337023}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.6223058, w: 0.7827742}
-  m_LocalPosition: {x: 99.95, y: -11.26, z: 0}
+  m_LocalPosition: {x: 110.12, y: -13.75, z: 0}
   m_LocalScale: {x: 6.1989155, y: 6.1989155, z: 6.1989155}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -179604,6 +179685,11 @@ Transform:
   - {fileID: 1851004711}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1888479313 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6698627959072519481, guid: 82dbd0b62831a694eb73f2a6fc3dcaf1, type: 3}
+  m_PrefabInstance: {fileID: 7351213595643890274}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1889534623
 GameObject:
   m_ObjectHideFlags: 0
@@ -186830,6 +186916,7 @@ MonoBehaviour:
     - {fileID: 1540842063}
     armGameObject: {fileID: 1093301168}
     armSpriteRenderer: {fileID: 1093301170}
+    weaponUIIcon: {fileID: 0}
     dropChance: 0.25
   - weaponName: WaterGun
     weaponGameObjects:
@@ -186838,6 +186925,7 @@ MonoBehaviour:
     - {fileID: 1540842062}
     armGameObject: {fileID: 310330046}
     armSpriteRenderer: {fileID: 310330048}
+    weaponUIIcon: {fileID: 0}
     dropChance: 0.25
   - weaponName: Launcher
     weaponGameObjects:
@@ -186846,6 +186934,7 @@ MonoBehaviour:
     - {fileID: 1540842060}
     armGameObject: {fileID: 310330046}
     armSpriteRenderer: {fileID: 310330048}
+    weaponUIIcon: {fileID: 0}
     dropChance: 0.25
   - weaponName: Bow
     weaponGameObjects:
@@ -186854,6 +186943,7 @@ MonoBehaviour:
     - {fileID: 1540842061}
     armGameObject: {fileID: 310330046}
     armSpriteRenderer: {fileID: 310330048}
+    weaponUIIcon: {fileID: 0}
     dropChance: 0.25
   - weaponName: MachineGun
     weaponGameObjects:
@@ -186862,10 +186952,12 @@ MonoBehaviour:
     - {fileID: 1540842064}
     armGameObject: {fileID: 2023862957}
     armSpriteRenderer: {fileID: 2023862959}
+    weaponUIIcon: {fileID: 0}
     dropChance: 0.086
   killsToSwitch: 3
   switchDelay: 0.1
   killsLeftText: {fileID: 682263874}
+  weaponIconUI: {fileID: 0}
 --- !u!1 &1998150855
 GameObject:
   m_ObjectHideFlags: 0
@@ -187949,6 +188041,7 @@ RectTransform:
   - {fileID: 93016015}
   - {fileID: 1371016092}
   - {fileID: 170887846}
+  - {fileID: 48833168}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -189191,7 +189284,7 @@ Transform:
   m_GameObject: {fileID: 2027857304}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.6223058, w: 0.7827742}
-  m_LocalPosition: {x: 86.88, y: -11.31, z: 0}
+  m_LocalPosition: {x: 97, y: -13.69, z: 0}
   m_LocalScale: {x: 6.1989155, y: 6.1989155, z: 6.1989155}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -206879,11 +206972,11 @@ PrefabInstance:
       objectReference: {fileID: 1758160189727153294}
     - target: {fileID: 5689588596020951161, guid: 82dbd0b62831a694eb73f2a6fc3dcaf1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -68.770004
+      value: -71.31
       objectReference: {fileID: 0}
     - target: {fileID: 5689588596020951161, guid: 82dbd0b62831a694eb73f2a6fc3dcaf1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.1
+      value: -1.1
       objectReference: {fileID: 0}
     - target: {fileID: 5689588596020951161, guid: 82dbd0b62831a694eb73f2a6fc3dcaf1, type: 3}
       propertyPath: m_LocalPosition.z
