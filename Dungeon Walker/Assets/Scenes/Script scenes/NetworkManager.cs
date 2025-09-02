@@ -19,7 +19,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     [Header("Room UI")]
     public Button leaveRoomButton;
-    public TMP_Text playerListText; // <<< NEW: Link your player list TextMeshPro object here
+    public TMP_Text playerListText;
+    public Button startGameButton; // <<< NEW: Link your Start Game button here
 
     void Start()
     {
@@ -33,7 +34,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public override void OnConnectedToMaster()
     {
         Debug.Log("Successfully Connected to Master Server!");
-        PhotonNetwork.NickName = "Player" + Random.Range(100, 1000); // <<< NEW: Assigns a random nickname to each player
+        PhotonNetwork.NickName = "Player" + Random.Range(100, 1000);
         PhotonNetwork.JoinLobby();
     }
 
@@ -46,8 +47,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
-        Debug.Log("Room list has been updated.");
-
         foreach (Transform item in roomListContent)
         {
             Destroy(item.gameObject);
@@ -64,17 +63,13 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             TMP_Text roomNameText = newRoomItem.GetComponentInChildren<TMP_Text>();
             Button joinRoomButton = newRoomItem.GetComponent<Button>();
             roomNameText.text = room.Name;
-            joinRoomButton.onClick.AddListener(() =>
-            {
-                PhotonNetwork.JoinRoom(room.Name);
-            });
+            joinRoomButton.onClick.AddListener(() => { PhotonNetwork.JoinRoom(room.Name); });
         }
     }
 
     public void OnCreateRoomButtonClicked()
     {
         LobbyPanel.SetActive(false);
-
         string roomName = roomNameInput.text;
         if (string.IsNullOrEmpty(roomName))
         {
@@ -102,7 +97,9 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         Debug.Log("Successfully joined room: " + PhotonNetwork.CurrentRoom.Name);
         RoomPanel.SetActive(true);
         LobbyPanel.SetActive(false);
-        UpdatePlayerList(); // <<< NEW: Call this to show the initial player list
+
+        UpdatePlayerList();
+        CheckIfHostAndShowStartButton(); // <<< NEW: Check if we should show the start button
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
@@ -117,33 +114,47 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         LobbyPanel.SetActive(true);
     }
 
-    // <<< --- ALL OF THIS IS NEW --- >>>
-
-    // This function is called by Photon automatically when a NEW player joins the room you are in.
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         Debug.Log(newPlayer.NickName + " joined the room.");
-        UpdatePlayerList(); // Update the list to show the new player
+        UpdatePlayerList();
     }
 
-    // This function is called by Photon automatically when a player LEAVES the room you are in.
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Debug.Log(otherPlayer.NickName + " left the room.");
-        UpdatePlayerList(); // Update the list to remove the player who left
+        UpdatePlayerList();
+        CheckIfHostAndShowStartButton(); // <<< NEW: Re-check in case the host left
     }
 
-    // This function updates the text on the screen with the current list of players.
     void UpdatePlayerList()
     {
-        // First, clear the text field
         playerListText.text = "Players in Room:\n";
-
-        // Loop through all players currently in the room and add their name to the list
         foreach (Player player in PhotonNetwork.PlayerList)
         {
             playerListText.text += player.NickName + "\n";
         }
+    }
+
+    // <<< --- ALL OF THIS IS NEW --- >>>
+
+    // This function checks if the current player is the host (Master Client).
+    void CheckIfHostAndShowStartButton()
+    {
+        // PhotonNetwork.IsMasterClient is true if you are the host.
+        startGameButton.gameObject.SetActive(PhotonNetwork.IsMasterClient);
+    }
+
+    // This function will be called by the OnClick event of the Start Game button.
+    public void OnStartGameButtonClicked()
+    {
+        // First, close the room. This prevents new players from joining a game in progress.
+        PhotonNetwork.CurrentRoom.IsOpen = false;
+        PhotonNetwork.CurrentRoom.IsVisible = false;
+
+        // Now, load the game scene for everyone in the room.
+        // Make sure "SampleScene" is in your Build Settings!
+        PhotonNetwork.LoadLevel("SampleScene");
     }
     // <<< --- END OF NEW CODE --- >>>
 }
