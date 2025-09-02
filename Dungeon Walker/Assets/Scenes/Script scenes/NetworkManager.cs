@@ -20,7 +20,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     [Header("Room UI")]
     public Button leaveRoomButton;
     public TMP_Text playerListText;
-    public Button startGameButton; // <<< NEW: Link your Start Game button here
+    public Button startGameButton;
 
     void Start()
     {
@@ -35,6 +35,13 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("Successfully Connected to Master Server!");
         PhotonNetwork.NickName = "Player" + Random.Range(100, 1000);
+
+        // --- THIS IS THE FIX ---
+        // This line tells Photon that all clients in a room should automatically
+        // load the scene that the Master Client (host) loads.
+        PhotonNetwork.AutomaticallySyncScene = true;
+        // -----------------------
+
         PhotonNetwork.JoinLobby();
     }
 
@@ -99,7 +106,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         LobbyPanel.SetActive(false);
 
         UpdatePlayerList();
-        CheckIfHostAndShowStartButton(); // <<< NEW: Check if we should show the start button
+        CheckIfHostAndShowStartButton();
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
@@ -124,7 +131,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         Debug.Log(otherPlayer.NickName + " left the room.");
         UpdatePlayerList();
-        CheckIfHostAndShowStartButton(); // <<< NEW: Re-check in case the host left
+        CheckIfHostAndShowStartButton();
     }
 
     void UpdatePlayerList()
@@ -136,25 +143,15 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
     }
 
-    // <<< --- ALL OF THIS IS NEW --- >>>
-
-    // This function checks if the current player is the host (Master Client).
     void CheckIfHostAndShowStartButton()
     {
-        // PhotonNetwork.IsMasterClient is true if you are the host.
         startGameButton.gameObject.SetActive(PhotonNetwork.IsMasterClient);
     }
 
-    // This function will be called by the OnClick event of the Start Game button.
     public void OnStartGameButtonClicked()
     {
-        // First, close the room. This prevents new players from joining a game in progress.
         PhotonNetwork.CurrentRoom.IsOpen = false;
         PhotonNetwork.CurrentRoom.IsVisible = false;
-
-        // Now, load the game scene for everyone in the room.
-        // Make sure "SampleScene" is in your Build Settings!
         PhotonNetwork.LoadLevel("SampleScene");
     }
-    // <<< --- END OF NEW CODE --- >>>
 }
