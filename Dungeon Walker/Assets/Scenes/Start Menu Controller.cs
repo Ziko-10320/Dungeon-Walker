@@ -9,7 +9,7 @@ public class StartMenuController : MonoBehaviour
     public void OnStartClick()
     {
         // This probably loads your single-player game scene
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene(1);
     }
 
     // --- ADD THIS NEW FUNCTION ---

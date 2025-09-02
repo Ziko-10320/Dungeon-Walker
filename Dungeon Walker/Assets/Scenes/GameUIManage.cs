@@ -1,59 +1,86 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI; // ---- NEW ----: Required for the Image component
+using UnityEngine.UI;
 
-// The class name is updated to reflect its broader role.
 public class GameUIManager : MonoBehaviour
 {
+    // ---- UPDATED: Now includes slots for the manager GameObjects ----
+    [Header("Character Management")]
+    [Tooltip("The visual prefab/GameObject for the Cat character.")]
+    [SerializeField] private GameObject catCharacterObject;
+    [Tooltip("The GameObject that holds the CatManager script.")]
+    [SerializeField] private GameObject catManagerObject;
+
+    [Tooltip("The visual prefab/GameObject for the Man character.")]
+    [SerializeField] private GameObject manCharacterObject;
+    [Tooltip("The GameObject that holds the ManManager script.")]
+    [SerializeField] private GameObject manManagerObject;
+
     [Header("Game State")]
-    public static bool isGamePaused = false; // ---- NEW ----: To track pause state
+    public static bool isGamePaused = false;
 
     [Header("Death Panel UI")]
-    [Tooltip("The panel that appears when the player dies.")]
-    [SerializeField] private GameObject deathPanel; // This was your 'restartPanel'
+    [SerializeField] private GameObject deathPanel;
 
-    // ---- NEW ----: All of these fields are for the new Pause Panel
     [Header("Pause Panel UI")]
     [SerializeField] private GameObject pausePanel;
-    [SerializeField] private Image resumeButtonIcon;
-    [SerializeField] private Image restartButtonIcon_Pause;
-    [SerializeField] private Image menuButtonIcon_Pause;
+    // ... (other UI fields)
+
+    // ---- UPDATED: Awake() now controls both characters and their managers ----
+    void Awake()
+    {
+        // 1. Read the saved character choice from PlayerPrefs.
+        string selectedCharacter = PlayerPrefs.GetString("SelectedCharacter", "Cat"); // Default to Cat
+
+        // 2. Activate the correct character AND its manager, and disable the other pair.
+        if (selectedCharacter == "Cat")
+        {
+            // Enable the Cat and its manager
+            if (catCharacterObject != null) catCharacterObject.SetActive(true);
+            if (catManagerObject != null) catManagerObject.SetActive(true);
+
+            // Disable the Man and its manager
+            if (manCharacterObject != null) manCharacterObject.SetActive(false);
+            if (manManagerObject != null) manManagerObject.SetActive(false);
+
+            Debug.Log("Activating Cat and CatManager.");
+        }
+        else if (selectedCharacter == "Man")
+        {
+            // Enable the Man and its manager
+            if (manCharacterObject != null) manCharacterObject.SetActive(true);
+            if (manManagerObject != null) manManagerObject.SetActive(true);
+
+            // Disable the Cat and its manager
+            if (catCharacterObject != null) catCharacterObject.SetActive(false);
+            if (catManagerObject != null) catManagerObject.SetActive(false);
+
+            Debug.Log("Activating Man and ManManager.");
+        }
+    }
 
     void Start()
     {
-        // Hide both panels at the start
+        // Hide UI panels
         if (deathPanel != null) deathPanel.SetActive(false);
-        if (pausePanel != null) pausePanel.SetActive(false); // ---- NEW ----
+        if (pausePanel != null) pausePanel.SetActive(false);
 
-        // Ensure the game is running
+        // Ensure game is running
         Time.timeScale = 1f;
         isGamePaused = false;
     }
 
-    // ---- NEW ----: This whole Update function is new
+    // ... (The rest of your script: Update, PauseGame, ResumeGame, etc. remains exactly the same)
     void Update()
     {
-        // Listen for the 'P' key to toggle the pause menu
         if (Input.GetKeyDown(KeyCode.P))
         {
-            // Don't allow pausing if the death screen is already up
-            if (deathPanel != null && deathPanel.activeInHierarchy)
-            {
-                return;
-            }
-
-            if (isGamePaused)
-            {
-                ResumeGame();
-            }
-            else
-            {
-                PauseGame();
-            }
+            if (deathPanel != null && deathPanel.activeInHierarchy) return;
+            if (isGamePaused) ResumeGame();
+            else PauseGame();
         }
     }
 
-    // ---- NEW ----: Method to handle pausing the game
     public void PauseGame()
     {
         if (pausePanel != null) pausePanel.SetActive(true);
@@ -61,7 +88,6 @@ public class GameUIManager : MonoBehaviour
         isGamePaused = true;
     }
 
-    // ---- NEW ----: Method to handle resuming the game
     public void ResumeGame()
     {
         if (pausePanel != null) pausePanel.SetActive(false);
@@ -69,18 +95,13 @@ public class GameUIManager : MonoBehaviour
         isGamePaused = false;
     }
 
-    // This is your existing method for the death screen. Let's rename it for clarity.
     public void ShowDeathScreen()
     {
-        if (deathPanel != null)
-        {
-            deathPanel.SetActive(true);
-        }
+        if (deathPanel != null) deathPanel.SetActive(true);
         Time.timeScale = 0f;
-        isGamePaused = true; // The game is also paused on death
+        isGamePaused = true;
     }
 
-    // This is your existing method. It works for both panels.
     public void RestartGame()
     {
         Time.timeScale = 1f;
@@ -88,7 +109,6 @@ public class GameUIManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    // This is your existing method. It works for both panels.
     public void ReturnToMenu()
     {
         Time.timeScale = 1f;
