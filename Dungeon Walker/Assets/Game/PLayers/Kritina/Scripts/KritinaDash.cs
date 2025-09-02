@@ -1,18 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun; // <<< 1. ADD THIS LINE
 
 public class PlayerDash : MonoBehaviour
 {
     [Header("Component References")]
     [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private GhostEffect ghostEffect; // Reference to the GhostEffect script
-    [SerializeField] private KritinaMovement kritinaMovement; // Reference to the KritinaMovement script
+    [SerializeField] private GhostEffect ghostEffect;
+    [SerializeField] private KritinaMovement kritinaMovement;
 
     [Header("Dash Settings")]
-    [SerializeField] private float dashSpeed = 25f; // The speed of the player during the dash
-    [SerializeField] private float dashDuration = 0.2f; // How long the dash lasts
-    [SerializeField] private float dashCooldown = 1f; // Time between dashes
+    [SerializeField] private float dashSpeed = 25f;
+    [SerializeField] private float dashDuration = 0.2f;
+    [SerializeField] private float dashCooldown = 1f;
 
     [Header("Sound Settings")]
     public AudioClip dashSoundClip;
@@ -24,10 +25,11 @@ public class PlayerDash : MonoBehaviour
     private bool isDashing = false;
     private float dashTimer;
     private float originalGravity;
-    private Vector2 dashDirectionVector; // Store the dash direction
+    private Vector2 dashDirectionVector;
 
-    // Public property for other scripts to check if the player is currently dashing
     public bool IsDashing => isDashing;
+
+    private PhotonView view; // <<< 2. ADD THIS VARIABLE
 
     void Awake()
     {
@@ -35,36 +37,46 @@ public class PlayerDash : MonoBehaviour
         if (ghostEffect == null) ghostEffect = GetComponent<GhostEffect>();
         if (kritinaMovement == null) kritinaMovement = GetComponent<KritinaMovement>();
         originalGravity = rb.gravityScale;
+
+        view = GetComponent<PhotonView>(); // <<< 3. GET THE COMPONENT
     }
 
     void Update()
     {
-        // Check for dash input (e.g., Left Shift key)
-        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && !isDashing)
+        // <<< 4. WRAP THE INPUT CHECK
+        // Only check for the dash key if this is my character.
+        if (view.IsMine)
         {
-            StartDash();
+            if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && !isDashing)
+            {
+                StartDash();
+            }
         }
     }
+
     public void TriggerDash()
     {
-        // On vérifie les mêmes conditions que pour le clavier.
-        if (canDash && !isDashing)
+        // <<< 5. ALSO PROTECT THE PUBLIC TRIGGER
+        // This is for your mobile button.
+        if (view.IsMine)
         {
-            StartDash();
+            if (canDash && !isDashing)
+            {
+                StartDash();
+            }
         }
     }
+
     void FixedUpdate()
     {
+        // We only need to run the dash logic if we are actually dashing.
+        // This part doesn't need the 'IsMine' check because 'isDashing' is only ever
+        // set to true on the local client that owns the character.
         if (isDashing)
         {
-            // Directly manipulate the transform position for guaranteed movement
-            // This bypasses Rigidbody physics during the dash, ensuring movement.
             transform.position += (Vector3)dashDirectionVector * dashSpeed * Time.fixedDeltaTime;
-
-            // Increment the timer
             dashTimer += Time.fixedDeltaTime;
 
-            // Check if the dash duration has ended
             if (dashTimer >= dashDuration)
             {
                 EndDash();
@@ -74,40 +86,30 @@ public class PlayerDash : MonoBehaviour
 
     private void StartDash()
     {
-        Debug.Log("Starting dash...");
-
+        // This function is now only ever called on the client that owns the character,
+        // so all the logic inside it is safe.
         isDashing = true;
         canDash = false;
         dashTimer = 0f;
 
-        // Determine dash direction based on player's facing direction at the start of the dash
         if (kritinaMovement != null)
         {
             dashDirectionVector = kritinaMovement.isFacingRight ? Vector2.right : Vector2.left;
-            // Disable KritinaMovement during dash to prevent conflicts
             kritinaMovement.enabled = false;
-            Debug.Log($"Dash direction: {dashDirectionVector}, isFacingRight: {kritinaMovement.isFacingRight}");
         }
         else
         {
-            Debug.LogWarning("KritinaMovement script not found on player. Defaulting dash direction to right.");
             dashDirectionVector = Vector2.right;
         }
 
-        // Play dash sound
         if (dashSoundClip != null)
         {
             AudioSource.PlayClipAtPoint(dashSoundClip, transform.position, dashVolume);
         }
 
-        // Prepare the Rigidbody for the dash
-        // Set velocity to zero and disable gravity to prevent interference with direct transform manipulation
         rb.velocity = Vector2.zero;
         rb.gravityScale = 0f;
 
-        Debug.Log($"Rigidbody velocity reset and gravity disabled.");
-
-        // Activate the ghost effect
         if (ghostEffect != null)
         {
             ghostEffect.StartGhostEffect();
@@ -116,27 +118,21 @@ public class PlayerDash : MonoBehaviour
 
     private void EndDash()
     {
-        Debug.Log("Ending dash...");
-
         isDashing = false;
 
-        // Re-enable KritinaMovement after dash
         if (kritinaMovement != null)
         {
             kritinaMovement.enabled = true;
         }
 
-        // Reset the Rigidbody properties
-        rb.gravityScale = originalGravity; // Restore original gravity
-        rb.velocity = Vector2.zero; // Ensure player stops after dash
+        rb.gravityScale = originalGravity;
+        rb.velocity = Vector2.zero;
 
-        // Stop the ghost effect
         if (ghostEffect != null)
         {
             ghostEffect.StopGhostEffect();
         }
 
-        // Start the cooldown using a coroutine
         StartCoroutine(DashCooldown());
     }
 
@@ -144,6 +140,5 @@ public class PlayerDash : MonoBehaviour
     {
         yield return new WaitForSeconds(dashCooldown);
         canDash = true;
-        Debug.Log("Dash cooldown finished. Can dash again.");
     }
 }

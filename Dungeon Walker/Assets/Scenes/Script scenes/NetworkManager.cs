@@ -152,6 +152,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         PhotonNetwork.CurrentRoom.IsOpen = false;
         PhotonNetwork.CurrentRoom.IsVisible = false;
-        PhotonNetwork.LoadLevel("SampleScene");
+        PhotonNetwork.LoadLevel(4);
     }
 }
