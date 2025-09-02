@@ -3,24 +3,30 @@ using UnityEngine.UI;
 using TMPro;
 using Photon.Pun;
 using Photon.Realtime;
+using System.Collections.Generic; // --- NEW --- Required for using Lists
 
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
     [Header("Lobby UI")]
     public TMP_InputField roomNameInput;
     public Button createRoomButton;
-    public GameObject LobbyPanel; // <-- Add this
-    public GameObject RoomPanel;  // <-- Add this
+    public GameObject LobbyPanel;
+    public GameObject RoomPanel;
 
-    [Header("Room UI")] // <-- Add this for organization
-    public Button leaveRoomButton; // <-- Add this
+    // --- NEW: Variables for the Room List ---
+    [Header("Room List UI")]
+    public GameObject roomListItemPrefab; // We will create this prefab in Unity
+    public Transform roomListContent;     // The parent object for the list items
+    // -----------------------------------------
+
+    [Header("Room UI")]
+    public Button leaveRoomButton;
 
     void Start()
     {
         Debug.Log("Connecting to Master Server...");
         PhotonNetwork.ConnectUsingSettings();
 
-        // Start with both panels off. We'll turn them on when ready.
         LobbyPanel.SetActive(false);
         RoomPanel.SetActive(false);
     }
@@ -28,20 +34,56 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public override void OnConnectedToMaster()
     {
         Debug.Log("Successfully Connected to Master Server!");
-        PhotonNetwork.JoinLobby(); // <-- IMPORTANT: We must join a lobby to get room lists later.
+        PhotonNetwork.JoinLobby();
     }
 
-    // This is a new callback, called when we join the lobby.
     public override void OnJoinedLobby()
     {
         Debug.Log("Successfully Joined Lobby!");
-        LobbyPanel.SetActive(true); // Show the lobby panel
-        RoomPanel.SetActive(false); // Hide the room panel
+        LobbyPanel.SetActive(true);
+        RoomPanel.SetActive(false);
     }
+
+    // --- NEW: Callback for when the list of rooms from Photon is updated ---
+    public override void OnRoomListUpdate(List<RoomInfo> roomList)
+    {
+        Debug.Log("Room list has been updated.");
+
+        // 1. Clear the old list of rooms
+        foreach (Transform item in roomListContent)
+        {
+            Destroy(item.gameObject);
+        }
+
+        // 2. Create a new UI item for each room in the new list
+        foreach (RoomInfo room in roomList)
+        {
+            // Don't show rooms that are full or have been removed
+            if (room.RemovedFromList || !room.IsVisible || room.PlayerCount == 0)
+            {
+                continue;
+            }
+
+            GameObject newRoomItem = Instantiate(roomListItemPrefab, roomListContent);
+
+            // Get the Text and Button components from the prefab
+            TMP_Text roomNameText = newRoomItem.GetComponentInChildren<TMP_Text>();
+            Button joinRoomButton = newRoomItem.GetComponent<Button>();
+
+            // Set the room name on the text component
+            roomNameText.text = room.Name;
+
+            // Add a listener to the button so it joins the correct room when clicked
+            joinRoomButton.onClick.AddListener(() =>
+            {
+                PhotonNetwork.JoinRoom(room.Name);
+            });
+        }
+    }
+    // ---------------------------------------------------------------------
 
     public void OnCreateRoomButtonClicked()
     {
-        // When we click create, disable the UI so we can't click it again.
         LobbyPanel.SetActive(false);
 
         string roomName = roomNameInput.text;
@@ -54,37 +96,37 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         PhotonNetwork.CreateRoom(roomName, roomOptions);
     }
 
-    // --- ADD THIS NEW FUNCTION ---
     public void OnLeaveRoomButtonClicked()
     {
-        PhotonNetwork.LeaveRoom(); // This tells Photon we want to leave our current room.
+        PhotonNetwork.LeaveRoom();
     }
 
-    // This is a new callback, called when we successfully leave a room.
     public override void OnLeftRoom()
     {
         Debug.Log("Left the room.");
-        // When we leave, we go back to the lobby view.
         LobbyPanel.SetActive(true);
         RoomPanel.SetActive(false);
     }
-    // -----------------------------
 
     public override void OnJoinedRoom()
     {
         Debug.Log("Successfully joined room: " + PhotonNetwork.CurrentRoom.Name);
-        RoomPanel.SetActive(true); // Show the room panel
-        LobbyPanel.SetActive(false); // Hide the lobby panel
-
-        // We will move the scene loading logic later, maybe to a "Start Game" button.
-        // For now, let's comment it out so we can test the panels.
-        // PhotonNetwork.LoadLevel("SampleScene"); 
+        RoomPanel.SetActive(true);
+        LobbyPanel.SetActive(false);
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
         Debug.LogError("Create Room Failed: " + message);
-        // If we fail, re-enable the lobby panel so the user can try again.
         LobbyPanel.SetActive(true);
     }
+
+    // --- NEW: Callback for when joining a room fails ---
+    public override void OnJoinRoomFailed(short returnCode, string message)
+    {
+        Debug.LogError("Join Room Failed: " + message);
+        // If joining fails, re-enable the lobby so the user can try again
+        LobbyPanel.SetActive(true);
+    }
+    // ----------------------------------------------------
 }

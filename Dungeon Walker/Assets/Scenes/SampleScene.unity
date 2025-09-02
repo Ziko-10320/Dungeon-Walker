@@ -15781,7 +15781,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &282212885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29946,8 +29946,8 @@ MonoBehaviour:
   player: {fileID: 8154637775395992508}
   loopCheckpoints: 1
   interactButton: {fileID: 2074331076}
-  scorePerCheckpoint: 0
-  scorePerLoop: 1
+  scorePerCheckpoint: 1
+  scorePerLoop: 0
   arrowPointer: {fileID: 1676475629}
   OnCheckpointReached:
     m_PersistentCalls:
