@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using Photon.Pun;
 using Photon.Realtime;
-using System.Collections.Generic; // --- NEW --- Required for using Lists
+using System.Collections.Generic;
 
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
@@ -13,14 +13,13 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public GameObject LobbyPanel;
     public GameObject RoomPanel;
 
-    // --- NEW: Variables for the Room List ---
     [Header("Room List UI")]
-    public GameObject roomListItemPrefab; // We will create this prefab in Unity
-    public Transform roomListContent;     // The parent object for the list items
-    // -----------------------------------------
+    public GameObject roomListItemPrefab;
+    public Transform roomListContent;
 
     [Header("Room UI")]
     public Button leaveRoomButton;
+    public TMP_Text playerListText; // <<< NEW: Link your player list TextMeshPro object here
 
     void Start()
     {
@@ -34,6 +33,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public override void OnConnectedToMaster()
     {
         Debug.Log("Successfully Connected to Master Server!");
+        PhotonNetwork.NickName = "Player" + Random.Range(100, 1000); // <<< NEW: Assigns a random nickname to each player
         PhotonNetwork.JoinLobby();
     }
 
@@ -44,43 +44,32 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         RoomPanel.SetActive(false);
     }
 
-    // --- NEW: Callback for when the list of rooms from Photon is updated ---
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         Debug.Log("Room list has been updated.");
 
-        // 1. Clear the old list of rooms
         foreach (Transform item in roomListContent)
         {
             Destroy(item.gameObject);
         }
 
-        // 2. Create a new UI item for each room in the new list
         foreach (RoomInfo room in roomList)
         {
-            // Don't show rooms that are full or have been removed
             if (room.RemovedFromList || !room.IsVisible || room.PlayerCount == 0)
             {
                 continue;
             }
 
             GameObject newRoomItem = Instantiate(roomListItemPrefab, roomListContent);
-
-            // Get the Text and Button components from the prefab
             TMP_Text roomNameText = newRoomItem.GetComponentInChildren<TMP_Text>();
             Button joinRoomButton = newRoomItem.GetComponent<Button>();
-
-            // Set the room name on the text component
             roomNameText.text = room.Name;
-
-            // Add a listener to the button so it joins the correct room when clicked
             joinRoomButton.onClick.AddListener(() =>
             {
                 PhotonNetwork.JoinRoom(room.Name);
             });
         }
     }
-    // ---------------------------------------------------------------------
 
     public void OnCreateRoomButtonClicked()
     {
@@ -113,6 +102,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         Debug.Log("Successfully joined room: " + PhotonNetwork.CurrentRoom.Name);
         RoomPanel.SetActive(true);
         LobbyPanel.SetActive(false);
+        UpdatePlayerList(); // <<< NEW: Call this to show the initial player list
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
@@ -121,12 +111,39 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         LobbyPanel.SetActive(true);
     }
 
-    // --- NEW: Callback for when joining a room fails ---
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
         Debug.LogError("Join Room Failed: " + message);
-        // If joining fails, re-enable the lobby so the user can try again
         LobbyPanel.SetActive(true);
     }
-    // ----------------------------------------------------
+
+    // <<< --- ALL OF THIS IS NEW --- >>>
+
+    // This function is called by Photon automatically when a NEW player joins the room you are in.
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        Debug.Log(newPlayer.NickName + " joined the room.");
+        UpdatePlayerList(); // Update the list to show the new player
+    }
+
+    // This function is called by Photon automatically when a player LEAVES the room you are in.
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        Debug.Log(otherPlayer.NickName + " left the room.");
+        UpdatePlayerList(); // Update the list to remove the player who left
+    }
+
+    // This function updates the text on the screen with the current list of players.
+    void UpdatePlayerList()
+    {
+        // First, clear the text field
+        playerListText.text = "Players in Room:\n";
+
+        // Loop through all players currently in the room and add their name to the list
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            playerListText.text += player.NickName + "\n";
+        }
+    }
+    // <<< --- END OF NEW CODE --- >>>
 }
