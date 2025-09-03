@@ -2,27 +2,22 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// The class name is the same, no changes needed here.
 public class GameUIManager : MonoBehaviour
 {
-    [Header("Character Management")]
-    [Tooltip("The visual prefab/GameObject for the Cat character.")]
-    [SerializeField] private GameObject catCharacterObject;
-    [Tooltip("The GameObject that holds the CatManager script.")]
-    [SerializeField] private GameObject catManagerObject;
+    // ---- NEW: A toggle for easy testing ----
+    [Header("Developer Settings")]
+    [Tooltip("If true, the game will use the characters enabled in the Hierarchy instead of PlayerPrefs. FOR TESTING ONLY.")]
+    [SerializeField] private bool developerMode = false;
 
-    [Tooltip("The visual prefab/GameObject for the Man character.")]
+    [Header("Character Management")]
+    [SerializeField] private GameObject catCharacterObject;
+    [SerializeField] private GameObject catManagerObject;
     [SerializeField] private GameObject manCharacterObject;
-    [Tooltip("The GameObject that holds the ManManager script.")]
     [SerializeField] private GameObject manManagerObject;
 
-    // ---- NEW: Fields for Custom Camera Control ----
     [Header("Camera Control")]
-    [Tooltip("The CameraFollowMouseHorizontal script attached to your main camera.")]
-    [SerializeField] private CameraFollowMouseHorizontal cameraFollowScript; // Reference to YOUR camera script
-    [Tooltip("The Transform the camera should follow for the Cat (CMM).")]
+    [SerializeField] private CameraFollowMouseHorizontal cameraFollowScript;
     [SerializeField] private Transform catFollowTarget;
-    [Tooltip("The Transform the camera should follow for the Man (CMMX).")]
     [SerializeField] private Transform manFollowTarget;
 
     [Header("Game State")]
@@ -33,49 +28,66 @@ public class GameUIManager : MonoBehaviour
 
     [Header("Pause Panel UI")]
     [SerializeField] private GameObject pausePanel;
-    // ... (other UI fields)
 
-    // ---- UPDATED: Awake() now controls characters, managers, AND the camera target ----
     void Awake()
     {
-        // 1. Read the saved character choice from PlayerPrefs.
+        // ---- NEW: Check for Developer Mode at the start ----
+        // If this is true, we skip all the PlayerPrefs logic and use what's active in the scene.
+        if (developerMode)
+        {
+            Debug.LogWarning("DEVELOPER MODE is ON. Using characters enabled in the scene hierarchy.");
+
+            // We still need to tell the camera who to follow based on the active character.
+            if (catCharacterObject != null && catCharacterObject.activeInHierarchy)
+            {
+                if (cameraFollowScript != null && catFollowTarget != null)
+                {
+                    cameraFollowScript.SetTarget(catFollowTarget);
+                }
+            }
+            else if (manCharacterObject != null && manCharacterObject.activeInHierarchy)
+            {
+                if (cameraFollowScript != null && manFollowTarget != null)
+                {
+                    cameraFollowScript.SetTarget(manFollowTarget);
+                }
+            }
+            // Exit the function early so the PlayerPrefs code below doesn't run.
+            return;
+        }
+
+        // ---- Your existing PlayerPrefs logic ----
+        // This code will only run if 'developerMode' is false.
         string selectedCharacter = PlayerPrefs.GetString("SelectedCharacter", "Cat");
 
-        // 2. Activate the correct character, manager, and set the camera target.
         if (selectedCharacter == "Cat")
         {
-            // Enable the Cat and its manager
+            // Enable Cat objects
             if (catCharacterObject != null) catCharacterObject.SetActive(true);
             if (catManagerObject != null) catManagerObject.SetActive(true);
-
-            // Disable the Man and its manager
+            // Disable Man objects
             if (manCharacterObject != null) manCharacterObject.SetActive(false);
             if (manManagerObject != null) manManagerObject.SetActive(false);
-
-            // ---- NEW: Set camera to follow the Cat's target ----
+            // Set camera target
             if (cameraFollowScript != null && catFollowTarget != null)
             {
                 cameraFollowScript.SetTarget(catFollowTarget);
             }
-
             Debug.Log("Activating Cat, CatManager, and setting camera target.");
         }
         else if (selectedCharacter == "Man")
         {
-            // Enable the Man and its manager
+            // Enable Man objects
             if (manCharacterObject != null) manCharacterObject.SetActive(true);
             if (manManagerObject != null) manManagerObject.SetActive(true);
-
-            // Disable the Cat and its manager
+            // Disable Cat objects
             if (catCharacterObject != null) catCharacterObject.SetActive(false);
             if (catManagerObject != null) catManagerObject.SetActive(false);
-
-            // ---- NEW: Set camera to follow the Man's target ----
+            // Set camera target
             if (cameraFollowScript != null && manFollowTarget != null)
             {
                 cameraFollowScript.SetTarget(manFollowTarget);
             }
-
             Debug.Log("Activating Man, ManManager, and setting camera target.");
         }
     }
@@ -91,7 +103,7 @@ public class GameUIManager : MonoBehaviour
         isGamePaused = false;
     }
 
-    // The rest of your script (Update, PauseGame, ResumeGame, etc.) remains exactly the same.
+    // ... (The rest of your script remains unchanged) ...
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.P))

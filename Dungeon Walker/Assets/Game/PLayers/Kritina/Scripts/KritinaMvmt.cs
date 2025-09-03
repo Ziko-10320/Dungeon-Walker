@@ -1,9 +1,9 @@
 using UnityEngine;
-using Photon.Pun; // <<< 1. ADD THIS LINE to use Photon's library.
 
+// This is the clean, offline version of your movement script.
+// It has no Photon dependencies.
 public class KritinaMovement : MonoBehaviour
 {
-    // --- All your existing variables are perfect and don't need changes ---
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
     public float jumpPower = 12f;
@@ -53,28 +53,17 @@ public class KritinaMovement : MonoBehaviour
     private Animator animator;
     private float moveDirection;
 
-    private PhotonView view; // <<< 2. ADD THIS VARIABLE to hold the PhotonView component.
-
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         playerDash = GetComponent<PlayerDash>();
-        view = GetComponent<PhotonView>(); // <<< 3. GET THE COMPONENT when the script wakes up.
-
         jumpsRemaining = maxJumps;
     }
 
     void Update()
     {
-        // <<< 4. THIS IS THE MAIN CHANGE. We wrap the entire Update loop in this check. >>>
-        // This ensures that only the person controlling this character can read inputs for it.
-        if (!view.IsMine)
-        {
-            return; // If this character is not mine, do nothing in Update.
-        }
-
-        // --- All your original Update code is now safely inside the check ---
+        // All Photon checks are removed. This code runs normally.
         if (playerDash != null && playerDash.IsDashing)
         {
             moveDirection = 0;
@@ -130,28 +119,17 @@ public class KritinaMovement : MonoBehaviour
 
     public void OnJumpButtonDown()
     {
-        // We also need to protect this public function, just in case.
-        if (!view.IsMine) return;
         jumpButtonPressed = true;
     }
 
     public void OnJumpButtonUp()
     {
-        // And this one too.
-        if (!view.IsMine) return;
         jumpButtonReleased = true;
     }
 
     void FixedUpdate()
     {
-        // <<< 5. WE ALSO WRAP FixedUpdate. >>>
-        // This is important because physics calculations and movement application happen here.
-        if (!view.IsMine)
-        {
-            return; // If not my character, don't apply any physics movement.
-        }
-
-        // --- All your original FixedUpdate code is now safely inside the check ---
+        // All Photon checks are removed.
         if (playerDash != null && playerDash.IsDashing)
         {
             rb.velocity = Vector2.zero;
@@ -190,9 +168,6 @@ public class KritinaMovement : MonoBehaviour
         wasGroundedLastFrame = currentlyGrounded;
     }
 
-    // --- The rest of your functions do not need the 'IsMine' check ---
-    // This is because they don't read player input. They are called by Update/FixedUpdate,
-    // which are already protected.
     void PerformJump(bool isDoubleJump)
     {
         rb.velocity = new Vector2(rb.velocity.x, 0);

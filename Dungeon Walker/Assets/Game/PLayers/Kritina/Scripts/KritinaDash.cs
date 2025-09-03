@@ -1,13 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Photon.Pun; // <<< 1. ADD THIS LINE
 
+// This is the clean, offline version of your dash script.
 public class PlayerDash : MonoBehaviour
 {
     [Header("Component References")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private GhostEffect ghostEffect;
+    // This should now reference your OFFLINE movement script.
+    // You might need to rename the class if you followed the previous advice.
     [SerializeField] private KritinaMovement kritinaMovement;
 
     [Header("Dash Settings")]
@@ -29,49 +31,34 @@ public class PlayerDash : MonoBehaviour
 
     public bool IsDashing => isDashing;
 
-    private PhotonView view; // <<< 2. ADD THIS VARIABLE
-
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (ghostEffect == null) ghostEffect = GetComponent<GhostEffect>();
         if (kritinaMovement == null) kritinaMovement = GetComponent<KritinaMovement>();
         originalGravity = rb.gravityScale;
-
-        view = GetComponent<PhotonView>(); // <<< 3. GET THE COMPONENT
     }
 
     void Update()
     {
-        // <<< 4. WRAP THE INPUT CHECK
-        // Only check for the dash key if this is my character.
-        if (view.IsMine)
+        // The Photon 'IsMine' check is removed. This now runs normally.
+        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && !isDashing)
         {
-            if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && !isDashing)
-            {
-                StartDash();
-            }
+            StartDash();
         }
     }
 
     public void TriggerDash()
     {
-        // <<< 5. ALSO PROTECT THE PUBLIC TRIGGER
-        // This is for your mobile button.
-        if (view.IsMine)
+        // The Photon 'IsMine' check is removed here as well.
+        if (canDash && !isDashing)
         {
-            if (canDash && !isDashing)
-            {
-                StartDash();
-            }
+            StartDash();
         }
     }
 
     void FixedUpdate()
     {
-        // We only need to run the dash logic if we are actually dashing.
-        // This part doesn't need the 'IsMine' check because 'isDashing' is only ever
-        // set to true on the local client that owns the character.
         if (isDashing)
         {
             transform.position += (Vector3)dashDirectionVector * dashSpeed * Time.fixedDeltaTime;
@@ -86,8 +73,6 @@ public class PlayerDash : MonoBehaviour
 
     private void StartDash()
     {
-        // This function is now only ever called on the client that owns the character,
-        // so all the logic inside it is safe.
         isDashing = true;
         canDash = false;
         dashTimer = 0f;
