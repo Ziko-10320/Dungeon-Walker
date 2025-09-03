@@ -19,37 +19,39 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     [Header("Room UI")]
     public Button leaveRoomButton;
-    public TMP_Text playerListText;
+    public TMP_Text playerListText; // This is the one that's not working
     public Button startGameButton;
 
     void Start()
     {
-        Debug.Log("Connecting to Master Server...");
-        PhotonNetwork.ConnectUsingSettings();
-
+        PhotonNetwork.KeepAliveInBackground = 120f;
         LobbyPanel.SetActive(false);
         RoomPanel.SetActive(false);
+
+        if (PhotonNetwork.IsConnected)
+        {
+            PhotonNetwork.JoinLobby();
+        }
+        else
+        {
+            PhotonNetwork.ConnectUsingSettings();
+        }
     }
 
     public override void OnConnectedToMaster()
     {
-        Debug.Log("Successfully Connected to Master Server!");
-        PhotonNetwork.NickName = "Player" + Random.Range(100, 1000);
-
-        // --- THIS IS THE FIX ---
-        // This line tells Photon that all clients in a room should automatically
-        // load the scene that the Master Client (host) loads.
-        PhotonNetwork.AutomaticallySyncScene = true;
-        // -----------------------
-
         PhotonNetwork.JoinLobby();
     }
 
     public override void OnJoinedLobby()
     {
-        Debug.Log("Successfully Joined Lobby!");
         LobbyPanel.SetActive(true);
         RoomPanel.SetActive(false);
+        // We need to set a default nickname here if it's not set
+        if (string.IsNullOrEmpty(PhotonNetwork.NickName))
+        {
+            PhotonNetwork.NickName = "Player" + Random.Range(100, 1000);
+        }
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
@@ -58,19 +60,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         {
             Destroy(item.gameObject);
         }
-
         foreach (RoomInfo room in roomList)
         {
-            if (room.RemovedFromList || !room.IsVisible || room.PlayerCount == 0)
-            {
-                continue;
-            }
-
+            if (room.RemovedFromList || !room.IsVisible || room.PlayerCount == 0) continue;
             GameObject newRoomItem = Instantiate(roomListItemPrefab, roomListContent);
-            TMP_Text roomNameText = newRoomItem.GetComponentInChildren<TMP_Text>();
-            Button joinRoomButton = newRoomItem.GetComponent<Button>();
-            roomNameText.text = room.Name;
-            joinRoomButton.onClick.AddListener(() => { PhotonNetwork.JoinRoom(room.Name); });
+            newRoomItem.GetComponentInChildren<TMP_Text>().text = room.Name;
+            newRoomItem.GetComponent<Button>().onClick.AddListener(() => { PhotonNetwork.JoinRoom(room.Name); });
         }
     }
 
@@ -78,12 +73,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         LobbyPanel.SetActive(false);
         string roomName = roomNameInput.text;
-        if (string.IsNullOrEmpty(roomName))
-        {
-            roomName = "Room " + Random.Range(1000, 10000);
-        }
-        RoomOptions roomOptions = new RoomOptions();
-        roomOptions.MaxPlayers = 2;
+        if (string.IsNullOrEmpty(roomName)) roomName = "Room " + Random.Range(1000, 10000);
+        RoomOptions roomOptions = new RoomOptions() { MaxPlayers = 2 };
         PhotonNetwork.CreateRoom(roomName, roomOptions);
     }
 
@@ -94,20 +85,39 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public override void OnLeftRoom()
     {
-        Debug.Log("Left the room.");
         LobbyPanel.SetActive(true);
         RoomPanel.SetActive(false);
     }
 
+    // --- THIS IS A CRITICAL AREA ---
     public override void OnJoinedRoom()
     {
-        Debug.Log("Successfully joined room: " + PhotonNetwork.CurrentRoom.Name);
+        Debug.Log("OnJoinedRoom() called for local player.");
         RoomPanel.SetActive(true);
         LobbyPanel.SetActive(false);
 
+        // Immediately update the list to show who is here now.
         UpdatePlayerList();
         CheckIfHostAndShowStartButton();
     }
+
+    // This is called when ANOTHER player enters the room you are already in.
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        Debug.Log(newPlayer.NickName + " entered the room.");
+        // Update the list to include the new player.
+        UpdatePlayerList();
+    }
+
+    // This is called when ANOTHER player leaves the room.
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        Debug.Log(otherPlayer.NickName + " left the room.");
+        // Update the list to remove the player who left.
+        UpdatePlayerList();
+        CheckIfHostAndShowStartButton(); // Re-check host status
+    }
+    // -----------------------------
 
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
@@ -121,37 +131,41 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         LobbyPanel.SetActive(true);
     }
 
-    public override void OnPlayerEnteredRoom(Player newPlayer)
-    {
-        Debug.Log(newPlayer.NickName + " joined the room.");
-        UpdatePlayerList();
-    }
-
-    public override void OnPlayerLeftRoom(Player otherPlayer)
-    {
-        Debug.Log(otherPlayer.NickName + " left the room.");
-        UpdatePlayerList();
-        CheckIfHostAndShowStartButton();
-    }
-
+    // --- THIS IS THE FUNCTION THAT BUILDS THE LIST ---
     void UpdatePlayerList()
     {
-        playerListText.text = "Players in Room:\n";
+        // 1. Check if the text object is assigned.
+        if (playerListText == null)
+        {
+            Debug.LogError("PlayerListText is not assigned in the NetworkManager Inspector!");
+            return;
+        }
+
+        Debug.Log("Updating player list...");
+        // 2. Clear the previous list.
+        playerListText.text = "";
+
+        // 3. Loop through Photon's official player list for the current room.
         foreach (Player player in PhotonNetwork.PlayerList)
         {
+            // 4. Add each player's name to the text field on a new line.
             playerListText.text += player.NickName + "\n";
         }
+        Debug.Log("Player list updated. Content: " + playerListText.text);
     }
 
     void CheckIfHostAndShowStartButton()
     {
-        startGameButton.gameObject.SetActive(PhotonNetwork.IsMasterClient);
+        if (startGameButton != null)
+        {
+            startGameButton.gameObject.SetActive(PhotonNetwork.IsMasterClient);
+        }
     }
 
     public void OnStartGameButtonClicked()
     {
         PhotonNetwork.CurrentRoom.IsOpen = false;
         PhotonNetwork.CurrentRoom.IsVisible = false;
-        PhotonNetwork.LoadLevel(4);
+        PhotonNetwork.LoadLevel("Co-op");
     }
 }

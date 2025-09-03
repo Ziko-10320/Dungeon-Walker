@@ -17,7 +17,7 @@ public class StartMenuController : MonoBehaviour
     public void OnOnlineClick()
     {
         // This will load our new scene dedicated to online multiplayer
-        SceneManager.LoadScene("OnlineLobbyScene");
+        SceneManager.LoadScene(3);
     }
     // -----------------------------
 

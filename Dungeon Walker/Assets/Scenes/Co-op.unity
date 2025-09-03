@@ -247,8 +247,8 @@ Transform:
   m_GameObject: {fileID: 247427693}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.6423, y: -5.26, z: 0}
-  m_LocalScale: {x: 95.51825, y: 2.263, z: 1}
+  m_LocalPosition: {x: -4.6423, y: -15.1156, z: 0}
+  m_LocalScale: {x: 260.28723, y: 21.974184, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -265,7 +265,6 @@ GameObject:
   - component: {fileID: 1600828540}
   - component: {fileID: 1600828539}
   - component: {fileID: 1600828543}
-  - component: {fileID: 1600828542}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -347,21 +346,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1600828542
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1600828538}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: beb7a057e96e47e449524dda14068c10, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  maxHorizontalDistance: 3
-  followSpeed: 5
 --- !u!114 &1600828543
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -435,8 +419,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72a0e100d6b36b8478400e9e862bab47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefabName: Kritina
   spawnPoints: []
+  defaultPlayerPrefab: {fileID: 6790693189779611674, guid: 234712291c2866543ba0dbc3dbb588cf, type: 3}
 --- !u!4 &1625947612
 Transform:
   m_ObjectHideFlags: 0

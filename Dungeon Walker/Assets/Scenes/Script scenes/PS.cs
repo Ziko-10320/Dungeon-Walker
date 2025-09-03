@@ -1,38 +1,65 @@
 using UnityEngine;
-using Photon.Pun; // Required for Photon functions
+using Photon.Pun;
 
+// We can go back to using the simple MonoBehaviour. No callbacks needed for this approach.
 public class PS : MonoBehaviour
 {
-    // This is the name of your player prefab.
-    // It MUST be located inside a "Resources" folder in your Assets.
-    public string playerPrefabName = "PlayerCharacter"; // <<< CHANGE THIS to match your prefab's exact filename.
+    [Header("Player Prefab to Spawn")]
+    public GameObject defaultPlayerPrefab; // Fallback for testing
 
-    // These are optional spawn points. If you leave them empty, it will spawn at (0,0,0).
+    [Header("Optional Spawn Points")]
     public Transform[] spawnPoints;
 
+    // We use the Start() function, which runs automatically when the scene loads.
     void Start()
     {
-        Debug.Log("Player Spawner is running...");
-
-        // Choose a spawn point.
-        Vector3 spawnPosition;
-        if (spawnPoints.Length > 0)
+        // --- THIS IS THE CRUCIAL FIX ---
+        // We check if we are actually connected and in a room.
+        // If we are not in a room, we do nothing. This prevents all errors.
+        if (!PhotonNetwork.InRoom)
         {
-            // Use the player's number to pick a spawn point (e.g., Player 1 gets spawn 0, Player 2 gets spawn 1)
+            Debug.LogError("Tried to run Player Spawner but we are not in a room. Aborting.");
+            return;
+        }
+        // -----------------------------
+
+        Debug.Log("PS.cs is starting. We are in a room. Proceeding to spawn.");
+
+        // The rest of the logic is the same as before.
+        string prefabToSpawnName;
+        var playerProperties = PhotonNetwork.LocalPlayer.CustomProperties;
+
+        if (playerProperties.ContainsKey("character"))
+        {
+            prefabToSpawnName = (string)playerProperties["character"];
+            Debug.Log("Found character choice: " + prefabToSpawnName);
+        }
+        else
+        {
+            if (defaultPlayerPrefab != null)
+            {
+                prefabToSpawnName = defaultPlayerPrefab.name;
+                Debug.LogWarning("No character choice found. Spawning default: " + prefabToSpawnName);
+            }
+            else
+            {
+                Debug.LogError("No character choice found and no default prefab is set. Cannot spawn.");
+                return;
+            }
+        }
+
+        Vector3 spawnPosition;
+        if (spawnPoints != null && spawnPoints.Length > 0)
+        {
             int playerNumber = PhotonNetwork.LocalPlayer.ActorNumber - 1;
-            int spawnIndex = playerNumber % spawnPoints.Length; // Use modulo to prevent errors if there are more players than spawns
+            int spawnIndex = playerNumber % spawnPoints.Length;
             spawnPosition = spawnPoints[spawnIndex].position;
         }
         else
         {
-            // Default spawn position if no points are set
             spawnPosition = new Vector3(0, 1, 0);
-            Debug.LogWarning("No spawn points set in PlayerSpawner. Spawning at default position.");
         }
 
-        // This is the most important line. It tells Photon to create a networked instance of the prefab.
-        PhotonNetwork.Instantiate(playerPrefabName, spawnPosition, Quaternion.identity);
-
-        Debug.Log("Player instantiated for client.");
+        PhotonNetwork.Instantiate(prefabToSpawnName, spawnPosition, Quaternion.identity);
     }
 }
