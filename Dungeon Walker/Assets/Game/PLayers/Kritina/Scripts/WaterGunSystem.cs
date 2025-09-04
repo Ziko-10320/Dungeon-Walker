@@ -3,7 +3,7 @@ using Unity.Burst.Intrinsics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using Photon.Pun;
 public class WaterGunSystem : MonoBehaviour
 {
     [Header("COMPONENT REFERENCES")]
@@ -23,6 +23,7 @@ public class WaterGunSystem : MonoBehaviour
     [SerializeField] private int bulletDamage = 15;
     [SerializeField] private LayerMask damageableLayers;
     [SerializeField] private LayerMask collisionLayers;
+    private PhotonView playerView;
 
     [Header("AIMING & ROTATION (FROM ROBUST LAUNCHER)")]
     [Tooltip("Angle maximum de visée vers le haut")]
@@ -74,6 +75,8 @@ public class WaterGunSystem : MonoBehaviour
 
     void Awake()
     {
+        playerView = GetComponentInParent<PhotonView>();
+
         currentAmmo = maxAmmo;
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
@@ -93,6 +96,10 @@ public class WaterGunSystem : MonoBehaviour
 
     private void HandleInputAndShooting()
     {
+        if (playerView != null && !playerView.IsMine)
+        {
+            return; // If this is an online character that isn't mine, do nothing.
+        }
         bool isAiming = false;
         bool isShooting = false;
 
@@ -207,21 +214,37 @@ public class WaterGunSystem : MonoBehaviour
         }
     }
 
-    
 
-    private void Shoot()
+
+    private void Shoot() // Or SpawnNextBall(), ShootArrow(), etc.
     {
+        // Calculate the rotation once.
+        Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation); // Or whatever your rotation variable is
+
+        if (playerView != null) // --- ONLINE MODE ---
+        {
+            // This part is working perfectly, so we don't touch it.
+            playerView.RPC("RPC_FireWeapon", RpcTarget.All, bulletPrefab.name, bulletSpawnPoint.position, shootRotation);
+        }
+        else // --- OFFLINE MODE (THE FIX) ---
+        {
+            // 1. Create the bullet locally, just like before.
+            GameObject bulletInstance = Instantiate(bulletPrefab, bulletSpawnPoint.position, shootRotation);
+
+            // 2. Get the BulletBehavior script from the new bullet.
+            BulletBehavior bulletBehavior = bulletInstance.GetComponent<BulletBehavior>();
+
+            // 3. THIS IS THE MISSING LINE. We must manually initialize the bullet in offline mode.
+            if (bulletBehavior != null)
+            {
+                bulletBehavior.Initialize(shootRotation * Vector3.right);
+            }
+        }
+
+        // Play sounds and effects locally for both modes.
         if (muzzleFlashEffect != null) muzzleFlashEffect.Play();
         if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
-
-        Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation);
-        Vector2 shootDirection = shootRotation * Vector2.right;
-
-        GameObject bulletInstance = Instantiate(bulletPrefab, bulletSpawnPoint.position, shootRotation);
-        WaterBullet bulletScript = bulletInstance.AddComponent<WaterBullet>();
-        bulletScript.Initialize(shootDirection, bulletSpeed, bulletLifetime, bulletDamage, damageableLayers, collisionLayers, destructionEffectPrefab, bulletCollisionSound, bulletCollisionSoundVolume);
     }
-
     private IEnumerator Reload()
     {
         if (isReloading) yield break;

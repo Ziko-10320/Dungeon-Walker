@@ -1,20 +1,22 @@
 using UnityEngine;
+using Photon.Pun; // <<< 1. ADD THIS LINE to use Photon's library.
 
 public class L3antixMovement : MonoBehaviour
 {
+    // --- All your existing variables are perfect and don't need changes ---
+    #region Variable Declarations
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
     public float jumpPower = 12f;
-    public float jumpReleaseCutMultiplier = 0.5f; // How much velocity is kept on early release
+    public float jumpReleaseCutMultiplier = 0.5f;
 
     [Header("Jump Buffer Settings")]
     private float jumpBufferTimer = 0f;
-    public float jumpBufferTime = 0.4f; // How long we accept landing after jump press
+    public float jumpBufferTime = 0.4f;
     private bool jumpPressedInAir = false;
 
-    // --- NEW: Double Jump Settings ---
     [Header("Double Jump Settings")]
-    public int maxJumps = 2; // 1 for single jump, 2 for double jump, etc.
+    public int maxJumps = 2;
     private int jumpsRemaining;
 
     [Header("Ground Check")]
@@ -43,25 +45,38 @@ public class L3antixMovement : MonoBehaviour
     public float landVolume = 1f;
 
     private PlayerDash playerDash;
-
-
     private Rigidbody2D rb;
     public bool isFacingRight = true;
     private Animator animator;
     private float moveDirection;
+    #endregion
+
+    // --- 2. ADD THIS VARIABLE to hold the PhotonView component ---
+    private PhotonView view;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         playerDash = GetComponent<PlayerDash>();
-
-        // Initialize jumpsRemaining at the start
         jumpsRemaining = maxJumps;
+
+        // --- 3. GET THE PHOTONVIEW component when the script wakes up ---
+        // In single-player, this will be null, which is exactly what we want.
+        view = GetComponent<PhotonView>();
     }
 
     void Update()
     {
+        // --- 4. ADD THE "NETWORK-AWARE" CHECK at the very top ---
+        // This single check makes the script work for both modes.
+        if (view != null && !view.IsMine)
+        {
+            return; // If this is an online character that we don't own, stop here.
+        }
+
+        // --- All your original Update code is now safely protected ---
+        #region Original Update Code
         if (playerDash != null && playerDash.IsDashing)
         {
             moveDirection = 0;
@@ -78,24 +93,21 @@ public class L3antixMovement : MonoBehaviour
             Flip();
         }
 
-        // --- MODIFIED: Jump Input Handling for Double Jump ---
         if (Input.GetKeyDown(KeyCode.Space))
         {
             animator.SetTrigger("Jump");
             if (IsGrounded())
             {
-                PerformJump(false); // First jump
+                PerformJump(false);
             }
-            else // Player is in the air
+            else
             {
-                // Check for double jump
-                if (jumpsRemaining > 0) // If maxJumps is 2, and we have 2 remaining, it's the first jump. If 1 remaining, it's the second.
+                if (jumpsRemaining > 0)
                 {
-                    PerformJump(true); // Perform the double jump
+                    PerformJump(true);
                 }
                 else
                 {
-                    // Start jump buffer if not grounded and no double jump available
                     jumpPressedInAir = true;
                     jumpBufferTimer = jumpBufferTime;
                 }
@@ -109,25 +121,28 @@ public class L3antixMovement : MonoBehaviour
                 rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * jumpReleaseCutMultiplier);
             }
         }
-
-        
+        #endregion
     }
 
     void FixedUpdate()
     {
-        if (playerDash != null && playerDash.IsDashing)
+        // --- 5. ADD THE SAME CHECK to FixedUpdate for physics ---
+        if (view != null && !view.IsMine)
         {
-            rb.velocity = Vector2.zero; // Stop movement during dash
             return;
         }
 
-        float currentXVelocity = rb.velocity.x;
-        float currentYVelocity = rb.velocity.y;
+        // --- All your original FixedUpdate code is now safely protected ---
+        #region Original FixedUpdate Code
+        if (playerDash != null && playerDash.IsDashing)
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
 
-        // Apply horizontal movement
+        float currentYVelocity = rb.velocity.y;
         rb.velocity = new Vector2(moveDirection * moveSpeed, currentYVelocity);
 
-        // Handle buffered jump
         if (jumpPressedInAir)
         {
             jumpBufferTimer -= Time.fixedDeltaTime;
@@ -145,30 +160,29 @@ public class L3antixMovement : MonoBehaviour
             }
         }
 
-        // Detect land
         bool currentlyGrounded = IsGrounded();
         if (currentlyGrounded && !wasGroundedLastFrame)
         {
             PlayLandDust();
             if (landSoundClip != null) AudioSource.PlayClipAtPoint(landSoundClip, transform.position, landVolume);
-            // --- NEW: Reset jumps when landing ---
             jumpsRemaining = maxJumps;
         }
-        // --- NEW: Also reset jumps if already grounded ---
         else if (currentlyGrounded)
         {
             jumpsRemaining = maxJumps;
         }
-
-
         wasGroundedLastFrame = currentlyGrounded;
+        #endregion
     }
 
+    // The rest of your functions (PerformJump, Flip, etc.) do not need any changes.
+    // They are only called by Update() and FixedUpdate(), which are already protected by our check.
+    #region Helper Functions
     void PerformJump(bool isDoubleJump)
     {
         rb.velocity = new Vector2(rb.velocity.x, 0);
         rb.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
-        jumpsRemaining--; // Consume a jump when performing any jump
+        jumpsRemaining--;
 
         if (isDoubleJump)
         {
@@ -182,39 +196,22 @@ public class L3antixMovement : MonoBehaviour
 
     void Flip()
     {
-        // Flip the player character
         transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
-
-        // Flip all arms
         foreach (Transform arm in playerArms)
         {
-            if (arm != null)
-            {
-                arm.localScale = new Vector3(-arm.localScale.x, -arm.localScale.y, arm.localScale.z);
-            }
+            if (arm != null) arm.localScale = new Vector3(-arm.localScale.x, -arm.localScale.y, arm.localScale.z);
         }
-
-        // Flip all guns
         foreach (Transform gun in playerGuns)
         {
-            if (gun != null)
-            {
-                gun.localScale = new Vector3(-gun.localScale.x, -gun.localScale.y, gun.localScale.z);
-            }
+            if (gun != null) gun.localScale = new Vector3(-gun.localScale.x, -gun.localScale.y, gun.localScale.z);
         }
-
         isFacingRight = !isFacingRight;
-
-        if (IsGrounded())
-            dust.Play();
+        if (IsGrounded()) dust.Play();
     }
 
     void PlayLandDust()
     {
-        if (dustLand != null)
-        {
-            dustLand.Play();
-        }
+        if (dustLand != null) dustLand.Play();
     }
 
     public bool IsGrounded()
@@ -226,16 +223,12 @@ public class L3antixMovement : MonoBehaviour
     {
         Collider2D playerCollider = GetComponent<Collider2D>();
         if (playerCollider == null) return false;
-
         float raycastDistance = 0.1f;
         Vector2 origin = playerCollider.bounds.center;
         origin.y = playerCollider.bounds.min.y + playerCollider.bounds.size.y / 2;
-
         if (direction.x > 0) origin.x = playerCollider.bounds.max.x;
         else if (direction.x < 0) origin.x = playerCollider.bounds.min.x;
-
         RaycastHit2D hit = Physics2D.Raycast(origin, direction, raycastDistance, groundLayer);
-
         return hit.collider != null;
     }
 
@@ -243,7 +236,6 @@ public class L3antixMovement : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
-
         if (GetComponent<Collider2D>() != null)
         {
             Gizmos.color = Color.magenta;
@@ -251,10 +243,10 @@ public class L3antixMovement : MonoBehaviour
             Vector2 originRight = GetComponent<Collider2D>().bounds.center;
             originRight.x = GetComponent<Collider2D>().bounds.max.x;
             Gizmos.DrawRay(originRight, Vector2.right * raycastDistance);
-
             Vector2 originLeft = GetComponent<Collider2D>().bounds.center;
             originLeft.x = GetComponent<Collider2D>().bounds.min.x;
             Gizmos.DrawRay(originLeft, Vector2.left * raycastDistance);
         }
     }
+    #endregion
 }

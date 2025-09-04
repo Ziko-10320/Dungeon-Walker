@@ -2,7 +2,7 @@ using FirstGearGames.SmoothCameraShaker;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using Photon.Pun;
 public class MachineGunSystem : MonoBehaviour
 {
     [Header("COMPONENT REFERENCES")]
@@ -27,6 +27,7 @@ public class MachineGunSystem : MonoBehaviour
     [SerializeField] private LayerMask damageableLayers;
     [SerializeField] private LayerMask collisionLayers;
     [SerializeField] private LayerMask enemyLayers;
+    private PhotonView playerView;
 
     [Header("AIMING & ROTATION (FROM ROBUST LAUNCHER)")]
     [Tooltip("Angle maximum de visée vers le haut")]
@@ -113,6 +114,8 @@ public class MachineGunSystem : MonoBehaviour
     private Vector2 stabilizedMouseWorldPosition; // Stabilized mouse world position
     void Awake()
     {
+        playerView = GetComponentInParent<PhotonView>();
+
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
@@ -136,6 +139,10 @@ public class MachineGunSystem : MonoBehaviour
     }
     private void HandleInputAndShooting()
     {
+        if (playerView != null && !playerView.IsMine)
+        {
+            return; // If this is an online character that isn't mine, do nothing.
+        }
         bool isAiming = false;
         bool isShooting = false;
 
@@ -322,21 +329,37 @@ public class MachineGunSystem : MonoBehaviour
 
     private void Shoot()
     {
-        if (muzzleFlashEffect != null) muzzleFlashEffect.Play();
-        if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
+        if (playerView != null) // --- ONLINE MODE ---
+        {
+            // We calculate the spawn parameters just like before.
+            float spread = Random.Range(-maxSpreadAngle / 2f, maxSpreadAngle / 2f);
+            Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation + spread);
+            Vector2 randomSpawnOffset = Random.insideUnitCircle * spawnAreaRadius;
+            Vector3 spawnPosition = bulletSpawnPoint.position + (Vector3)randomSpawnOffset;
 
-        float spread = Random.Range(-maxSpreadAngle / 2f, maxSpreadAngle / 2f);
-        Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation + spread);
-        Vector2 shootDirection = shootRotation * Vector2.right;
+            // THE FIX: We pass the NAME of the bullet prefab, not the GameObject itself.
+            // This ensures that the RPC sends a string, which the central RPC can then use
+            // with Resources.Load to find the correct prefab in the Resources folder.
+           playerView.RPC("RPC_FireWeapon", RpcTarget.All, "Bullets", spawnPosition, shootRotation);
+        }
+        else
+        {
+            // SINGLE-PLAYER MODE: Do exactly what you were doing before.
+            if (muzzleFlashEffect != null) muzzleFlashEffect.Play();
+            if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
 
-        Vector2 randomSpawnOffset = Random.insideUnitCircle * spawnAreaRadius;
-        Vector3 spawnPosition = bulletSpawnPoint.position + (Vector3)randomSpawnOffset;
+            float spread = Random.Range(-maxSpreadAngle / 2f, maxSpreadAngle / 2f);
+            Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation + spread);
+            Vector2 randomSpawnOffset = Random.insideUnitCircle * spawnAreaRadius;
+            Vector3 spawnPosition = bulletSpawnPoint.position + (Vector3)randomSpawnOffset;
 
-        GameObject bulletInstance = Instantiate(bulletPrefab, spawnPosition, shootRotation);
+            GameObject bulletInstance = Instantiate(bulletPrefab, spawnPosition, shootRotation);
 
-        // Add BulletComponent and initialize it
-        BulletComponent bulletComponent = bulletInstance.AddComponent<BulletComponent>();
-        bulletComponent.Initialize(shootDirection, bulletSpeed, bulletLifetime, bulletDamage, damageableLayers, collisionLayers, enemyLayers, destructionEffectPrefab, bulletCollisionSound, bulletCollisionSoundVolume);
+            // Your existing bullet initialization code for single-player
+            BulletComponent bulletComponent = bulletInstance.AddComponent<BulletComponent>();
+            Vector2 shootDirection = shootRotation * Vector2.right;
+            bulletComponent.Initialize(shootDirection, bulletSpeed, bulletLifetime, bulletDamage, damageableLayers, collisionLayers, enemyLayers, destructionEffectPrefab, bulletCollisionSound, bulletCollisionSoundVolume);
+        }
     }
 
     private void SpawnEmptyBullet()

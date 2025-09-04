@@ -39,6 +39,12 @@ MonoBehaviour:
   - DestroySpaceship
   - Fire
   - RespawnSpaceship
+  - RPC_FireWeapon
+  - RPC_PerformVisualEffect
+  - RPC_PlayAnimationTrigger
+  - RPC_DestroyBullet
+  - RPC_InitializeBullet
+  - RPC_PlayImpactEffect
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

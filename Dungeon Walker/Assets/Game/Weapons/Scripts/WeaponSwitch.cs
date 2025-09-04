@@ -4,7 +4,7 @@ using System.Collections;
 using System.Linq;
 using TMPro; // ---- NEW ----: Import the TextMeshPro namespace
 using UnityEngine.UI; // ---- NEW ----: Import the UI namespace
-
+using Photon.Pun;
 public class WeaponSwitchManager : MonoBehaviour
 {
     [System.Serializable]
@@ -335,6 +335,24 @@ public class WeaponSwitchManager : MonoBehaviour
         if (throwSlashObjects.Length > 0)
         {
             Debug.Log($"Cleaned up {throwSlashObjects.Length} ThrowSlash objects during weapon switch");
+        }
+    }
+    // In WeaponSwitchManager.cs
+
+    [PunRPC]
+    void RPC_FireWeapon(string projectilePrefabName, Vector3 position, Quaternion rotation)
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            GameObject bulletGO = PhotonNetwork.Instantiate(projectilePrefabName, position, rotation);
+
+            BulletBehavior bulletBehavior = bulletGO.GetComponent<BulletBehavior>();
+            if (bulletBehavior != null)
+            {
+                // The Master Client initializes the bullet's movement.
+                // The Rigidbody2DView will sync this movement for everyone else.
+                bulletBehavior.Initialize(rotation * Vector3.right);
+            }
         }
     }
 

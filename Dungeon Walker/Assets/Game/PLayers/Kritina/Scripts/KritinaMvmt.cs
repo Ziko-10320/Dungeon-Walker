@@ -1,12 +1,15 @@
 using UnityEngine;
+using Photon.Pun; // We need this to access Photon features.
 
-// This is the clean, offline version of your movement script.
-// It has no Photon dependencies.
+// This script will now be used for BOTH online and offline prefabs.
 public class KritinaMovement : MonoBehaviour
 {
+    // --- All your variables are perfect and stay the same ---
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
     public float jumpPower = 12f;
+    // ... (and so on for all your other variables) ...
+    #region Variable Declarations
     public float jumpReleaseCutMultiplier = 0.5f;
     [Header("Mobile Controls")]
     public Joystick joystick;
@@ -52,6 +55,10 @@ public class KritinaMovement : MonoBehaviour
     public bool isFacingRight = true;
     private Animator animator;
     private float moveDirection;
+    #endregion
+
+    // --- THIS IS THE KEY TO MAKING IT WORK FOR BOTH MODES ---
+    private PhotonView view;
 
     void Awake()
     {
@@ -59,11 +66,25 @@ public class KritinaMovement : MonoBehaviour
         animator = GetComponent<Animator>();
         playerDash = GetComponent<PlayerDash>();
         jumpsRemaining = maxJumps;
+
+        // Try to get the PhotonView component.
+        view = GetComponent<PhotonView>();
     }
 
     void Update()
     {
-        // All Photon checks are removed. This code runs normally.
+        // --- THE MAGIC CHECK ---
+        // If 'view' is not null, it means we are on the ONLINE prefab.
+        // If 'view.IsMine' is false, it means this is another player's character, so we should not control it.
+        // If 'view' IS null, it means we are on the OFFLINE prefab, so the check is skipped and the code runs.
+        if (view != null && !view.IsMine)
+        {
+            return; // Do nothing if this is a networked character that we don't own.
+        }
+
+        // --- From here on, all your movement code is the same ---
+        // This code will now only run for your local online character, or for your single-player character.
+        #region Original Update Code
         if (playerDash != null && playerDash.IsDashing)
         {
             moveDirection = 0;
@@ -115,21 +136,30 @@ public class KritinaMovement : MonoBehaviour
 
         jumpButtonPressed = false;
         jumpButtonReleased = false;
+        #endregion
     }
 
+    // --- We need to protect the public functions too ---
     public void OnJumpButtonDown()
     {
+        if (view != null && !view.IsMine) return;
         jumpButtonPressed = true;
     }
 
     public void OnJumpButtonUp()
     {
+        if (view != null && !view.IsMine) return;
         jumpButtonReleased = true;
     }
 
     void FixedUpdate()
     {
-        // All Photon checks are removed.
+        // Use the same check for physics updates.
+        if (view != null && !view.IsMine)
+        {
+            return;
+        }
+        #region Original FixedUpdate Code
         if (playerDash != null && playerDash.IsDashing)
         {
             rb.velocity = Vector2.zero;
@@ -166,8 +196,12 @@ public class KritinaMovement : MonoBehaviour
             jumpsRemaining = maxJumps;
         }
         wasGroundedLastFrame = currentlyGrounded;
+        #endregion
     }
 
+    // The rest of your functions don't need changes because they are only called
+    // by Update() and FixedUpdate(), which are already protected.
+    #region Helper Functions
     void PerformJump(bool isDoubleJump)
     {
         rb.velocity = new Vector2(rb.velocity.x, 0);
@@ -238,4 +272,5 @@ public class KritinaMovement : MonoBehaviour
             Gizmos.DrawRay(originLeft, Vector2.left * raycastDistance);
         }
     }
+    #endregion
 }

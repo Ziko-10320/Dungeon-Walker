@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections;
 using FirstGearGames.SmoothCameraShaker;
 using UnityEngine.UI;
-
+using Photon.Pun;
 public class BowSystems : MonoBehaviour
 {
     [Header("Component References")]
@@ -17,6 +17,7 @@ public class BowSystems : MonoBehaviour
     public Joystick aimJoystick;
     // --- MODIFICATION: Removed the shootButton as it's no longer needed --- 
     // public Button shootButton; // This was in the original script, but we are removing it for joystick-only control
+    private PhotonView playerView;
 
     [Header("Arrow Prefab")]
     [Tooltip("The arrow prefab to be launched")]
@@ -185,6 +186,8 @@ public class BowSystems : MonoBehaviour
 
     void Start()
     {
+        playerView = GetComponentInParent<PhotonView>();
+
         InitializeArrowPreview();
 
         if (autoCalibrate)
@@ -218,6 +221,10 @@ public class BowSystems : MonoBehaviour
     // --- MODIFICATION: This is the new, unified input handling method --- 
     private void HandleInputAndShooting()
     {
+        if (playerView != null && !playerView.IsMine)
+        {
+            return; // If this is an online character that isn't mine, do nothing.
+        }
         bool shootPressedThisFrame = false;
         bool shootHeldThisFrame = false;
         bool shootReleasedThisFrame = false;
@@ -347,67 +354,56 @@ public class BowSystems : MonoBehaviour
             return;
         }
 
-        float chargePercentage = currentChargeTime / maxChargeTime;
-        float arrowSpeed = Mathf.Lerp(minArrowSpeed, maxArrowSpeed, chargePercentage);
-        float calculatedGravityScale = Mathf.Lerp(minGravityScale, maxGravityScale, chargePercentage);
-
-        GameObject newArrow = Instantiate(arrowPrefab, arrowSpawnPoint.position, BowGameObject.transform.rotation);
-        activeArrows.Add(newArrow); // Add to the list of active arrows
-
-        // Add ArrowLifecycleController to manage its state
-        ArrowLifecycleController lifecycleController = newArrow.AddComponent<ArrowLifecycleController>();
-        lifecycleController.bowSystem = this;
-        lifecycleController.spawnTime = Time.time;
-        lifecycleController.hasBeenDestroyed = false; // Reset for new arrow
-        lifecycleController.chargePercentage = chargePercentage; // Pass charge percentage to the lifecycle controller
-
-        Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
-
-        Vector2 launchDirection = GetBowDirection(); // Use GetBowDirection which is now based on worldTrajectoryRotation
-
-        if (randomSpread > 0f)
+        // --- THIS IS THE MODIFICATION ---
+        if (playerView != null)
         {
-            float spreadAngle = Random.Range(-randomSpread, randomSpread);
-            // Rotate the launch direction by the spread angle
-            launchDirection = Quaternion.Euler(0, 0, spreadAngle) * launchDirection;
+            // ONLINE MODE: Call the RPC.
+            // We pass the arrow prefab's name and the final rotation of the bow.
+            // The RPC function "RPC_FireWeapon" must exist on a central script on your player.
+            playerView.RPC("RPC_FireWeapon", RpcTarget.All, arrowPrefab.name, arrowSpawnPoint.position, BowGameObject.transform.rotation);
         }
+        else
+        {
+            // SINGLE-PLAYER MODE: Do exactly what you were doing before.
+            float chargePercentage = currentChargeTime / maxChargeTime;
+            float arrowSpeed = Mathf.Lerp(minArrowSpeed, maxArrowSpeed, chargePercentage);
+            float calculatedGravityScale = Mathf.Lerp(minGravityScale, maxGravityScale, chargePercentage);
 
-        if (arrowRb != null)
-        {
-            arrowRb.velocity = launchDirection * arrowSpeed;
-            arrowRb.gravityScale = calculatedGravityScale;
-        }
-        else if (showArrowDebug)
-        {
-            Debug.LogWarning($"Arrow prefab \"{arrowPrefab.name}\" doesn\"t have Rigidbody2D component!");
-        }
+            GameObject newArrow = Instantiate(arrowPrefab, arrowSpawnPoint.position, BowGameObject.transform.rotation);
+            activeArrows.Add(newArrow);
 
-        // Set the arrow\"s collider to be a trigger to allow piercing
-        Collider2D arrowCollider = newArrow.GetComponent<Collider2D>();
-        if (arrowCollider != null)
-        {
-            arrowCollider.isTrigger = true; // Make it a trigger for piercing
-        }
-        else if (showArrowDebug)
-        {
-            Debug.LogWarning($"Arrow prefab \"{arrowPrefab.name}\" doesn\"t have a Collider2D component!");
-        }
+            // Your existing arrow initialization code for single-player
+            ArrowLifecycleController lifecycleController = newArrow.AddComponent<ArrowLifecycleController>();
+            lifecycleController.bowSystem = this;
+            lifecycleController.spawnTime = Time.time;
+            lifecycleController.hasBeenDestroyed = false;
+            lifecycleController.chargePercentage = chargePercentage;
 
-        if (showArrowDebug)
-        {
-            Debug.Log($"Spawned {arrowPrefab.name} with speed {arrowSpeed:F2}, gravityScale {calculatedGravityScale:F2} in direction {launchDirection}");
-        }
+            Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
+            Vector2 launchDirection = GetBowDirection();
+            if (randomSpread > 0f)
+            {
+                float spreadAngle = Random.Range(-randomSpread, randomSpread);
+                launchDirection = Quaternion.Euler(0, 0, spreadAngle) * launchDirection;
+            }
+            if (arrowRb != null)
+            {
+                arrowRb.velocity = launchDirection * arrowSpeed;
+                arrowRb.gravityScale = calculatedGravityScale;
+            }
 
+            Collider2D arrowCollider = newArrow.GetComponent<Collider2D>();
+            if (arrowCollider != null) arrowCollider.isTrigger = true;
+
+            ArrowRotationController arrowRotController = newArrow.AddComponent<ArrowRotationController>();
+            if (arrowRotController != null) arrowRotController.rb = arrowRb;
+        }
+        // --- END OF MODIFICATION ---
+
+        // This part runs for both modes
         if (enableSoundEffects && shootSound != null)
         {
             PlaySoundAtPosition(shootSound, arrowSpawnPoint.position, shootSoundVolume);
-        }
-
-        // Add ArrowRotationController to the spawned arrow
-        ArrowRotationController arrowRotController = newArrow.AddComponent<ArrowRotationController>();
-        if (arrowRotController != null)
-        {
-            arrowRotController.rb = arrowRb;
         }
     }
 

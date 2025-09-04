@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using System.Collections;
 using FirstGearGames.SmoothCameraShaker;
-
+using Photon.Pun;
 public class RobustLauncherSystem : MonoBehaviour
 {
     [Header("Component References")]
@@ -20,6 +20,7 @@ public class RobustLauncherSystem : MonoBehaviour
     [SerializeField] private GameObject blueBallPrefab;
     [Tooltip("Green ball prefab")]
     [SerializeField] private GameObject greenBallPrefab;
+    private PhotonView playerView;
 
     [Header("Explosion Effects")]
     [Tooltip("Orange ball main explosion particle system prefab")]
@@ -243,6 +244,8 @@ public class RobustLauncherSystem : MonoBehaviour
 
     void Start()
     {
+        playerView = GetComponentInParent<PhotonView>();
+
         // Initialize ball prefabs array for optimized random selection
         InitializeBallPrefabs();
 
@@ -477,6 +480,10 @@ public class RobustLauncherSystem : MonoBehaviour
 
     private void HandleInputAndShooting()
     {
+        if (playerView != null && !playerView.IsMine)
+        {
+            return; // If this is an online character that isn't mine, do nothing.
+        }
         bool isAiming = false;
         bool shootAction = false; // This will be true only on release or click
 
@@ -537,83 +544,64 @@ public class RobustLauncherSystem : MonoBehaviour
 
     private void SpawnNextBall()
     {
-        // Check if we have valid ball prefabs
-        if (ballPrefabs == null || ballPrefabs.Length == 0)
+        if (ballPrefabs == null || ballPrefabs.Length == 0 || projectileSpawnPoint == null)
         {
-            if (showBallDebug)
-            {
-                Debug.LogWarning("No ball prefabs assigned! Cannot spawn ball.");
-            }
+            if (showBallDebug) Debug.LogWarning("Cannot spawn ball - missing prefabs or spawn point.");
             return;
         }
 
-        // Check if projectile spawn point is assigned
-        if (projectileSpawnPoint == null)
-        {
-            if (showBallDebug)
-            {
-                Debug.LogWarning("No projectile spawn point assigned! Cannot spawn ball.");
-            }
-            return;
-        }
-
-        // Use the predetermined next ball
         GameObject selectedBallPrefab = ballPrefabs[nextBallIndex];
 
-        // Spawn ball at projectile spawn point
-        GameObject newProjectile = Instantiate(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
-        activeProjectiles.Add(newProjectile); // Add to the list of active projectiles
-
-        // Add ProjectileLifecycleController to manage its state
-        ProjectileLifecycleController lifecycleController = newProjectile.AddComponent<ProjectileLifecycleController>();
-        lifecycleController.launcherSystem = this;
-        lifecycleController.spawnTime = Time.time;
-        lifecycleController.hasBeenDestroyed = false; // Reset for new projectile
-
-        // Get launch direction - Use direct aim direction for accurate shooting
-        Vector2 launchDirection = GetLauncherDirection();
-
-        // Apply random spread if enabled
-        if (randomSpread > 0f)
+        // --- THIS IS THE MODIFICATION ---
+        if (playerView != null)
         {
-            float spreadAngle = Random.Range(-randomSpread, randomSpread);
-            float currentAngle = Mathf.Atan2(launchDirection.y, launchDirection.x) * Mathf.Rad2Deg;
-            float newAngle = (currentAngle + spreadAngle) * Mathf.Deg2Rad;
-            launchDirection = new Vector2(Mathf.Cos(newAngle), Mathf.Sin(newAngle));
+            // ONLINE MODE: Call the RPC.
+            // We pass the ball prefab's name and its spawn position/rotation.
+            // The RPC function "RPC_FireWeapon" must exist on a central script on your player.
+            playerView.RPC("RPC_FireWeapon", RpcTarget.All, selectedBallPrefab.name, projectileSpawnPoint.position, Quaternion.identity);
         }
-
-        // Calculate force to use
-        float forceToUse = useDynamicForce ? currentCalculatedForce : launchForce;
-
-        // Apply force to ball (check for Rigidbody2D first)
-        Rigidbody2D projectileRb = newProjectile.GetComponent<Rigidbody2D>();
-        if (projectileRb != null)
+        else
         {
-            projectileRb.AddForce(launchDirection * forceToUse, ForceMode2D.Impulse);
-        }
-        else if (showBallDebug)
-        {
-            Debug.LogWarning($"Ball prefab \"{selectedBallPrefab.name}\" doesn\"t have Rigidbody2D component!");
-        }
+            // SINGLE-PLAYER MODE: Do exactly what you were doing before.
+            GameObject newProjectile = Instantiate(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
+            activeProjectiles.Add(newProjectile);
 
-        if (showBallDebug)
-        {
-            Debug.Log($"Spawned {selectedBallPrefab.name} with force {forceToUse:F2} in direction {launchDirection}");
-        }
+            // Your existing ball initialization code for single-player
+            ProjectileLifecycleController lifecycleController = newProjectile.AddComponent<ProjectileLifecycleController>();
+            lifecycleController.launcherSystem = this;
+            lifecycleController.spawnTime = Time.time;
+            lifecycleController.hasBeenDestroyed = false;
 
-        // Play shoot sound
+            Vector2 launchDirection = GetLauncherDirection();
+            if (randomSpread > 0f)
+            {
+                float spreadAngle = Random.Range(-randomSpread, randomSpread);
+                float currentAngle = Mathf.Atan2(launchDirection.y, launchDirection.x) * Mathf.Rad2Deg;
+                float newAngle = (currentAngle + spreadAngle) * Mathf.Deg2Rad;
+                launchDirection = new Vector2(Mathf.Cos(newAngle), Mathf.Sin(newAngle));
+            }
+
+            float forceToUse = useDynamicForce ? currentCalculatedForce : launchForce;
+            Rigidbody2D projectileRb = newProjectile.GetComponent<Rigidbody2D>();
+            if (projectileRb != null)
+            {
+                projectileRb.AddForce(launchDirection * forceToUse, ForceMode2D.Impulse);
+            }
+
+            BallCollisionHandler collisionHandler = newProjectile.AddComponent<BallCollisionHandler>();
+            collisionHandler.launcherSystem = this;
+        }
+        // --- END OF MODIFICATION ---
+
+        // This part runs for both modes
         if (enableSoundEffects && shootSound != null)
         {
-            PlaySoundAtPosition(shootSound, projectileSpawnPoint.position, 0f, explosionVolume); // Use explosionVolume for now
+            PlaySoundAtPosition(shootSound, projectileSpawnPoint.position, 0f, explosionVolume);
         }
 
-        // Add a component to handle collisions for destruction/damage
-        BallCollisionHandler collisionHandler = newProjectile.AddComponent<BallCollisionHandler>();
-        collisionHandler.launcherSystem = this;
-
-        // Prepare next ball
         PrepareNextBall();
     }
+
 
 
     private void PrepareNextBall()

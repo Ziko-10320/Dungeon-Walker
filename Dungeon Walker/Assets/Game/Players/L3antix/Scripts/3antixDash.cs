@@ -1,33 +1,38 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun; // <<< 1. ADD THIS LINE to use Photon's library.
 
 public class L3antixDash : MonoBehaviour
 {
+    // --- All your existing variables are perfect and don't need changes ---
+    #region Variable Declarations
     [Header("Component References")]
     [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private GhostEffect ghostEffect; // Reference to the GhostEffect script
-    [SerializeField] private L3antixMovement l3antixMovement; // Reference to the KritinaMovement script
+    [SerializeField] private GhostEffect ghostEffect;
+    [SerializeField] private L3antixMovement l3antixMovement;
 
     [Header("Dash Settings")]
-    [SerializeField] private float dashSpeed = 25f; // The speed of the player during the dash
-    [SerializeField] private float dashDuration = 0.2f; // How long the dash lasts
-    [SerializeField] private float dashCooldown = 1f; // Time between dashes
+    [SerializeField] private float dashSpeed = 25f;
+    [SerializeField] private float dashDuration = 0.2f;
+    [SerializeField] private float dashCooldown = 1f;
 
     [Header("Sound Settings")]
     public AudioClip dashSoundClip;
     [Range(0f, 1f)]
     public float dashVolume = 1f;
 
-    // State variables
     private bool canDash = true;
     private bool isDashing = false;
     private float dashTimer;
     private float originalGravity;
-    private Vector2 dashDirectionVector; // Store the dash direction
+    private Vector2 dashDirectionVector;
+    #endregion
 
-    // Public property for other scripts to check if the player is currently dashing
     public bool IsDashing => isDashing;
+
+    // --- 2. ADD THIS VARIABLE to hold the PhotonView component ---
+    private PhotonView view;
 
     void Awake()
     {
@@ -35,36 +40,52 @@ public class L3antixDash : MonoBehaviour
         if (ghostEffect == null) ghostEffect = GetComponent<GhostEffect>();
         if (l3antixMovement == null) l3antixMovement = GetComponent<L3antixMovement>();
         originalGravity = rb.gravityScale;
+
+        // --- 3. GET THE PHOTONVIEW component when the script wakes up ---
+        // In single-player, this will be null.
+        view = GetComponentInParent<PhotonView>();
     }
 
     void Update()
     {
-        // Check for dash input (e.g., Left Shift key)
+        // --- 4. ADD THE "NETWORK-AWARE" CHECK at the very top ---
+        // This single check makes the script work for both modes.
+        if (view != null && !view.IsMine)
+        {
+            return; // If this is an online character that we don't own, stop here.
+        }
+
+        // This input check will now only run for the local player or in single-player.
         if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && !isDashing)
         {
             StartDash();
         }
     }
+
+    // We must also protect the public function for the mobile button.
     public void TriggerDash()
     {
-        // On vérifie les mêmes conditions que pour le clavier.
+        // Use the same check here.
+        if (view != null && !view.IsMine)
+        {
+            return;
+        }
+
         if (canDash && !isDashing)
         {
             StartDash();
         }
     }
+
+    // FixedUpdate does not need the check because 'isDashing' is only ever set
+    // to true on the local client, so this code won't run on other clients' versions of this character.
     void FixedUpdate()
     {
         if (isDashing)
         {
-            // Directly manipulate the transform position for guaranteed movement
-            // This bypasses Rigidbody physics during the dash, ensuring movement.
             transform.position += (Vector3)dashDirectionVector * dashSpeed * Time.fixedDeltaTime;
+            dashTimer += Time.deltaTime; // Use Time.deltaTime for consistency if called from Update
 
-            // Increment the timer
-            dashTimer += Time.fixedDeltaTime;
-
-            // Check if the dash duration has ended
             if (dashTimer >= dashDuration)
             {
                 EndDash();
@@ -72,42 +93,33 @@ public class L3antixDash : MonoBehaviour
         }
     }
 
+    // The rest of your functions are private and are only called by the protected functions,
+    // so they are already safe and do not need any changes.
+    #region Helper Functions
     private void StartDash()
     {
-        Debug.Log("Starting dash...");
-
         isDashing = true;
         canDash = false;
         dashTimer = 0f;
 
-        // Determine dash direction based on player's facing direction at the start of the dash
         if (l3antixMovement != null)
         {
             dashDirectionVector = l3antixMovement.isFacingRight ? Vector2.right : Vector2.left;
-            
             l3antixMovement.enabled = false;
-            Debug.Log($"Dash direction: {dashDirectionVector}, isFacingRight: {l3antixMovement.isFacingRight}");
         }
         else
         {
-            Debug.LogWarning("KritinaMovement script not found on player. Defaulting dash direction to right.");
             dashDirectionVector = Vector2.right;
         }
 
-        // Play dash sound
         if (dashSoundClip != null)
         {
             AudioSource.PlayClipAtPoint(dashSoundClip, transform.position, dashVolume);
         }
 
-        // Prepare the Rigidbody for the dash
-        // Set velocity to zero and disable gravity to prevent interference with direct transform manipulation
         rb.velocity = Vector2.zero;
         rb.gravityScale = 0f;
 
-        Debug.Log($"Rigidbody velocity reset and gravity disabled.");
-
-        // Activate the ghost effect
         if (ghostEffect != null)
         {
             ghostEffect.StartGhostEffect();
@@ -116,27 +128,21 @@ public class L3antixDash : MonoBehaviour
 
     private void EndDash()
     {
-        Debug.Log("Ending dash...");
-
         isDashing = false;
 
-        
         if (l3antixMovement != null)
         {
             l3antixMovement.enabled = true;
         }
 
-        // Reset the Rigidbody properties
-        rb.gravityScale = originalGravity; // Restore original gravity
-        rb.velocity = Vector2.zero; // Ensure player stops after dash
+        rb.gravityScale = originalGravity;
+        rb.velocity = Vector2.zero;
 
-        // Stop the ghost effect
         if (ghostEffect != null)
         {
             ghostEffect.StopGhostEffect();
         }
 
-        // Start the cooldown using a coroutine
         StartCoroutine(DashCooldown());
     }
 
@@ -144,6 +150,6 @@ public class L3antixDash : MonoBehaviour
     {
         yield return new WaitForSeconds(dashCooldown);
         canDash = true;
-        Debug.Log("Dash cooldown finished. Can dash again.");
     }
+    #endregion
 }

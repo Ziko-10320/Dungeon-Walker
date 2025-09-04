@@ -1,15 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun; // We need this to access Photon features.
 
-// This is the clean, offline version of your dash script.
+// This single script will now work for both online and offline modes.
 public class PlayerDash : MonoBehaviour
 {
     [Header("Component References")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private GhostEffect ghostEffect;
-    // This should now reference your OFFLINE movement script.
-    // You might need to rename the class if you followed the previous advice.
     [SerializeField] private KritinaMovement kritinaMovement;
 
     [Header("Dash Settings")]
@@ -31,32 +30,53 @@ public class PlayerDash : MonoBehaviour
 
     public bool IsDashing => isDashing;
 
+    // --- THIS IS THE KEY TO MAKING IT WORK FOR BOTH MODES ---
+    private PhotonView view;
+
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (ghostEffect == null) ghostEffect = GetComponent<GhostEffect>();
         if (kritinaMovement == null) kritinaMovement = GetComponent<KritinaMovement>();
         originalGravity = rb.gravityScale;
+
+        // Try to get the PhotonView component. This will be null on the offline prefab.
+        view = GetComponent<PhotonView>();
     }
 
     void Update()
     {
-        // The Photon 'IsMine' check is removed. This now runs normally.
+        // --- THE MAGIC CHECK ---
+        // If 'view' is not null AND this is not our character, do nothing.
+        // If 'view' IS null (offline mode), this check is skipped and the code runs.
+        if (view != null && !view.IsMine)
+        {
+            return;
+        }
+
+        // This input check will now only run for the local player or in single-player.
         if (Input.GetKeyDown(KeyCode.LeftShift) && canDash && !isDashing)
         {
             StartDash();
         }
     }
 
+    // We must also protect the public function for the mobile button.
     public void TriggerDash()
     {
-        // The Photon 'IsMine' check is removed here as well.
+        if (view != null && !view.IsMine)
+        {
+            return;
+        }
+
         if (canDash && !isDashing)
         {
             StartDash();
         }
     }
 
+    // The FixedUpdate logic doesn't need the 'IsMine' check because 'isDashing'
+    // is only ever set to true on the local client, so this code won't run on other clients' versions of this character.
     void FixedUpdate()
     {
         if (isDashing)
@@ -71,6 +91,8 @@ public class PlayerDash : MonoBehaviour
         }
     }
 
+    // The rest of the functions are private and are only called by the protected Update/TriggerDash functions,
+    // so they are already safe and do not need any changes.
     private void StartDash()
     {
         isDashing = true;

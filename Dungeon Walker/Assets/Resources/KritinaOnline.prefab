@@ -124114,6 +124114,7 @@ GameObject:
   - component: {fileID: 4745970531061244357}
   - component: {fileID: 2213158254470873288}
   - component: {fileID: 7769783021658567029}
+  - component: {fileID: 543176718933698860}
   m_Layer: 8
   m_Name: KritinaOnline
   m_TagString: Player
@@ -124898,6 +124899,68 @@ MonoBehaviour:
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 0
   m_UseLocal: 1
+--- !u!114 &543176718933698860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6790693189779611674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d000454ac7a0b9f49aaac6147fcc408c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponConfigs:
+  - weaponName: WaterGun
+    weaponGameObjects:
+    - {fileID: 747300777720662801}
+    weaponScripts:
+    - {fileID: 838453109639267503}
+    armGameObject: {fileID: 4790877911239449537}
+    armSpriteRenderer: {fileID: 2632647565020050176}
+    weaponUIIcon: {fileID: 21300000, guid: 461992939535a4a4cb6d45f4310e5b18, type: 3}
+    dropChance: 0.25
+  - weaponName: Launcher
+    weaponGameObjects:
+    - {fileID: 67490141514213469}
+    weaponScripts:
+    - {fileID: 2837465749836920815}
+    armGameObject: {fileID: 4790877911239449537}
+    armSpriteRenderer: {fileID: 2632647565020050176}
+    weaponUIIcon: {fileID: 1879289918211271614, guid: ecd666b5ad06fd34192eb8aa22768aac, type: 3}
+    dropChance: 0.25
+  - weaponName: Bow
+    weaponGameObjects:
+    - {fileID: 1020205725326330951}
+    weaponScripts:
+    - {fileID: 4880712677658907754}
+    armGameObject: {fileID: 4790877911239449537}
+    armSpriteRenderer: {fileID: 2632647565020050176}
+    weaponUIIcon: {fileID: 21300000, guid: d7456eb42a127c643acf8d412171c4f2, type: 3}
+    dropChance: 0.25
+  - weaponName: Bat
+    weaponGameObjects:
+    - {fileID: 1208478156964909872}
+    weaponScripts:
+    - {fileID: 6486646314645600925}
+    armGameObject: {fileID: 4857737905155596846}
+    armSpriteRenderer: {fileID: 2813424294025378842}
+    weaponUIIcon: {fileID: 21300000, guid: 2ad816b99b8c8264c9b00085aa3f32bc, type: 3}
+    dropChance: 0.25
+  - weaponName: MachineGun
+    weaponGameObjects:
+    - {fileID: 5333788681294591354}
+    weaponScripts:
+    - {fileID: 2502294520060319531}
+    armGameObject: {fileID: 2861714502128440196}
+    armSpriteRenderer: {fileID: 6947184254319397887}
+    weaponUIIcon: {fileID: -2465897257406450425, guid: 692295fe2d1118c4187a5756e3eb992a, type: 3}
+    dropChance: 0.104
+  killsToSwitch: 5
+  switchDelay: 0.2
+  killsLeftText: {fileID: 0}
+  weaponIconUI: {fileID: 0}
 --- !u!1 &6950290840085827452
 GameObject:
   m_ObjectHideFlags: 0
@@ -150096,7 +150159,8 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5333788681294591354}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 440386802860308534, guid: f6dfb4a231f6b7b4a9e07d1e8ec6b1bb, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f6dfb4a231f6b7b4a9e07d1e8ec6b1bb, type: 3}

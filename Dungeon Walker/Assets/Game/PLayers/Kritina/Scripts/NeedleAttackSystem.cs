@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
-
+using Photon.Pun;
 public class BatAttackSystem : MonoBehaviour
 {
     [Header("Attack Settings")]
@@ -19,7 +19,7 @@ public class BatAttackSystem : MonoBehaviour
     [Header("Input Control")]
     public bool MobileInput = true; // Set to true to enable mobile input, false to disable
     public bool PcInput = false;    // Set to true to enable PC input, false to disable
-
+    private PhotonView playerView;
     [Tooltip("Faites glisser le joystick d'attaque de la batte ici.")]
     public Joystick attackJoystick;
     public Joystick runningJoystick;
@@ -170,6 +170,7 @@ public class BatAttackSystem : MonoBehaviour
     {
         // Crée la batte dès le début pour s'assurer qu'elle existe.
         EnsureBatExists();
+        playerView = GetComponentInParent<PhotonView>();
     }
     void Start()
     {
@@ -184,8 +185,15 @@ public class BatAttackSystem : MonoBehaviour
     {
         CheckGround();
         HandleInput();
-       
-
+        if (playerView != null && !playerView.IsMine)
+        {
+            return; // If this is an online character that isn't mine, do nothing.
+        }
+        if (Input.GetButtonDown("Fire1"))
+        {
+            
+           
+        }
         if (hasBat)
         {
             EnsureBatExists();
@@ -759,7 +767,18 @@ public class BatAttackSystem : MonoBehaviour
             throwDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
         }
 
-        GameObject slashInstance = Instantiate(throwSlashPrefab, currentSpawnPoint.position, Quaternion.identity);
+        if (playerView != null)
+        {
+            // ONLINE MODE: Call the RPC to create the slash effect for everyone.
+            // We pass the NAME of the prefab you already have assigned in the Inspector.
+            playerView.RPC("RPC_PerformVisualEffect", RpcTarget.All, throwSlashPrefab.name, currentSpawnPoint.position, Quaternion.identity);
+        }
+        else
+        {
+            // SINGLE-PLAYER MODE: Instantiate it directly, just like before.
+            GameObject slashInstance = Instantiate(throwSlashPrefab, currentSpawnPoint.position, Quaternion.identity);
+            // You would also need to put your velocity/rotation code here for single-player.
+        
 
         Rigidbody2D slashRb = slashInstance.GetComponent<Rigidbody2D>();
         if (slashRb == null)
@@ -780,7 +799,7 @@ public class BatAttackSystem : MonoBehaviour
 
         float angle = Mathf.Atan2(throwDirection.y, throwDirection.x) * Mathf.Rad2Deg;
         slashInstance.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
-
+        
         // Removed ThrowSlashHandler initialization, as its logic is now integrated or simplified
         // If ThrowSlashHandler is still needed for other purposes, it should be re-evaluated.
         // For now, assuming it's solely for ThrowSlash spawning and can be removed.
@@ -802,7 +821,7 @@ public class BatAttackSystem : MonoBehaviour
 
         hasBat = false;
         activeThrowSlash = slashInstance; // Track the flying projectile
-
+        }
     }
 
     public void SetSpawnedBat2(GameObject bat2)
@@ -919,10 +938,25 @@ public class BatAttackSystem : MonoBehaviour
     {
         nextAttackTime = Time.time + attackCooldown;
 
+       if (playerView != null)
+    {
+        // ONLINE MODE: Use an RPC to tell everyone to play the animation.
+        playerView.RPC("RPC_PlayAnimationTrigger", RpcTarget.All, attackTriggerName);
+    }
+    else
+    {
+        // SINGLE-PLAYER MODE: Just play it locally like before.
         if (playerAnimator != null)
         {
             playerAnimator.SetTrigger(attackTriggerName);
         }
+    }
+    // --- END OF MODIFICATION ---
+
+    if (audioSource != null && attackSound != null)
+    {
+        audioSource.PlayOneShot(attackSound);
+    }
 
         if (audioSource != null && attackSound != null)
         {
@@ -956,6 +990,32 @@ public class BatAttackSystem : MonoBehaviour
         if (enableCameraEffects && cameraEffects != null)
         {
             cameraEffects.StartShakeEffect();
+        }
+    }
+    [PunRPC]
+    void RPC_PerformVisualEffect(string prefabName, Vector3 position, Quaternion rotation)
+    {
+        // This function is called on EVERYONE'S computer when an attack happens.
+        // Its only job is to create the visual effect so everyone can see it.
+
+        // Find the prefab in the Resources folder by its name.
+        GameObject effectPrefab = Resources.Load<GameObject>(prefabName);
+        if (effectPrefab != null)
+        {
+            // Create the visual effect locally for everyone.
+            Instantiate(effectPrefab, position, rotation);
+        }
+        else
+        {
+            Debug.LogError("Could not find effect prefab in Resources folder: " + prefabName);
+        }
+    }
+    [PunRPC]
+    void RPC_PlayAnimationTrigger(string triggerName)
+    {
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetTrigger(triggerName);
         }
     }
 
