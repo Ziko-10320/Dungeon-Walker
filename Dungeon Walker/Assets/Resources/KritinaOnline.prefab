@@ -124120,7 +124120,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &5689588596020951161
 Transform:
   m_ObjectHideFlags: 0
@@ -124302,8 +124302,8 @@ MonoBehaviour:
   anticipationDuration: 0.6
   attackCooldown: 0.3
   damage: 80
-  MobileInput: 1
-  PcInput: 0
+  MobileInput: 0
+  PcInput: 1
   attackJoystick: {fileID: 0}
   runningJoystick: {fileID: 0}
   joystickAimThreshold: 0.5
@@ -150009,7 +150009,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4629385415155356966, guid: f6dfb4a231f6b7b4a9e07d1e8ec6b1bb, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4914559211466125875, guid: f6dfb4a231f6b7b4a9e07d1e8ec6b1bb, type: 3}
       propertyPath: player
