@@ -56,10 +56,9 @@ public class KritinaMovement : MonoBehaviour
     private Animator animator;
     private float moveDirection;
     #endregion
-
-    // --- THIS IS THE KEY TO MAKING IT WORK FOR BOTH MODES ---
+    
     private PhotonView view;
-
+    private PlayerSyncManager syncManager;
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -69,21 +68,16 @@ public class KritinaMovement : MonoBehaviour
 
         // Try to get the PhotonView component.
         view = GetComponent<PhotonView>();
+        syncManager = GetComponent<PlayerSyncManager>();
     }
 
     void Update()
     {
-        // --- THE MAGIC CHECK ---
-        // If 'view' is not null, it means we are on the ONLINE prefab.
-        // If 'view.IsMine' is false, it means this is another player's character, so we should not control it.
-        // If 'view' IS null, it means we are on the OFFLINE prefab, so the check is skipped and the code runs.
         if (view != null && !view.IsMine)
         {
-            return; // Do nothing if this is a networked character that we don't own.
+            return;
         }
 
-        // --- From here on, all your movement code is the same ---
-        // This code will now only run for your local online character, or for your single-player character.
         #region Original Update Code
         if (playerDash != null && playerDash.IsDashing)
         {
@@ -220,7 +214,32 @@ public class KritinaMovement : MonoBehaviour
 
     void Flip()
     {
+        // The local player flips instantly.
+        PerformFlip();
+
+        // --- THIS IS THE CORRECTION ---
+        // If our PhotonView 'view' is not null, it means we are the online prefab.
+        // So, we send an RPC to tell everyone else to flip this character.
+        if (view != null)
+        {
+            view.RPC("RPC_Flip", RpcTarget.Others);
+        }
+    }
+
+    [PunRPC]
+    private void RPC_Flip()
+    {
+        // This function is called on all other clients to flip our character.
+        PerformFlip();
+    }
+
+    // --- ADD THIS NEW FUNCTION ---
+    // We move the actual flip logic into its own function to avoid duplicating code.
+    private void PerformFlip()
+    {
         transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+        // ... (the rest of your flip logic for arms and guns)
+        isFacingRight = !isFacingRight;
         foreach (Transform arm in playerArms)
         {
             if (arm != null) arm.localScale = new Vector3(-arm.localScale.x, -arm.localScale.y, arm.localScale.z);
@@ -229,13 +248,34 @@ public class KritinaMovement : MonoBehaviour
         {
             if (gun != null) gun.localScale = new Vector3(-gun.localScale.x, -gun.localScale.y, gun.localScale.z);
         }
-        isFacingRight = !isFacingRight;
-        if (IsGrounded()) dust.Play();
+        // The dust effect should now be triggered through the sync manager.
+        if (IsGrounded() && syncManager != null)
+        {
+            syncManager.PlayParticleEffect(dust);
+        }
+        else if (IsGrounded() && syncManager == null) // Fallback for offline mode
+        {
+            dust.Play();
+        }
     }
 
+    // --- MODIFY THE PlayLandDust() FUNCTION ---
     void PlayLandDust()
     {
-        if (dustLand != null) dustLand.Play();
+        if (dustLand != null)
+        {
+            // --- CHANGE THIS ---
+            // Instead of: dustLand.Play();
+            // Do this:
+            if (syncManager != null)
+            {
+                syncManager.PlayParticleEffect(dustLand);
+            }
+            else
+            {
+                dustLand.Play(); // Offline fallback
+            }
+        }
     }
 
     public bool IsGrounded()

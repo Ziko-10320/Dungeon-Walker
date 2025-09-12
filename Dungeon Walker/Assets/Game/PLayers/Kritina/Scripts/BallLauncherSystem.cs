@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections;
 using FirstGearGames.SmoothCameraShaker;
 using Photon.Pun;
-public class RobustLauncherSystem : MonoBehaviour
+public class RobustLauncherSystem : MonoBehaviour, IPunObservable
 {
     [Header("Component References")]
     [SerializeField] private GameObject Gun;
@@ -20,8 +20,11 @@ public class RobustLauncherSystem : MonoBehaviour
     [SerializeField] private GameObject blueBallPrefab;
     [Tooltip("Green ball prefab")]
     [SerializeField] private GameObject greenBallPrefab;
-    private PhotonView playerView;
+    private PhotonView view;
+    private bool isOnlineMode = false;
+    private PlayerSyncManager syncManager;
 
+   
     [Header("Explosion Effects")]
     [Tooltip("Orange ball main explosion particle system prefab")]
     [SerializeField] private GameObject orangeExplosionPrefab;
@@ -244,7 +247,19 @@ public class RobustLauncherSystem : MonoBehaviour
 
     void Start()
     {
-        playerView = GetComponentInParent<PhotonView>();
+        view = GetComponentInParent<PhotonView>();
+        syncManager = GetComponentInParent<PlayerSyncManager>();
+
+        if (view != null && transform.root.CompareTag("OnlinePlayer"))
+        {
+            isOnlineMode = true;
+            Debug.Log("RobustLauncherSystem: Online Mode Detected.");
+        }
+        else
+        {
+            isOnlineMode = false;
+            Debug.Log("RobustLauncherSystem: Offline Mode Detected.");
+        }
 
         // Initialize ball prefabs array for optimized random selection
         InitializeBallPrefabs();
@@ -263,6 +278,12 @@ public class RobustLauncherSystem : MonoBehaviour
 
     void Update()
     {
+        if (isOnlineMode && !view.IsMine)
+        {
+            // If we are online and this is not our character, we do nothing in Update.
+            // The rotation will be handled by OnPhotonSerializeView.
+            return;
+        }
         // Core updates every frame - ALWAYS allow rotation regardless of player movement
         HandleInputAndShooting();
         ApplyWorldSpaceRotations();
@@ -477,10 +498,28 @@ public class RobustLauncherSystem : MonoBehaviour
             Debug.Log($"Calculated {trajectoryPoints.Count} trajectory points with force {forceToUse:F2}");
         }
     }
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // This code runs on our own character.
+            // We are the owner, so we send the current rotation of our Arm and Gun to the network.
+            stream.SendNext(Arm.transform.rotation);
+            stream.SendNext(Gun.transform.rotation);
+        }
+        else
+        {
+            // This code runs on the remote clone of the character.
+            // We receive the rotation data and apply it directly.
+            // This will make the remote player's launcher aim correctly.
+            this.Arm.transform.rotation = (Quaternion)stream.ReceiveNext();
+            this.Gun.transform.rotation = (Quaternion)stream.ReceiveNext();
+        }
+    }
 
     private void HandleInputAndShooting()
     {
-        if (playerView != null && !playerView.IsMine)
+        if (view != null && !view.IsMine)
         {
             return; // If this is an online character that isn't mine, do nothing.
         }
@@ -551,55 +590,84 @@ public class RobustLauncherSystem : MonoBehaviour
         }
 
         GameObject selectedBallPrefab = ballPrefabs[nextBallIndex];
+        Vector2 launchDirection = GetLauncherDirection();
+        float forceToUse = useDynamicForce ? currentCalculatedForce : launchForce;
 
-        // --- THIS IS THE MODIFICATION ---
-        if (playerView != null)
+        // --- THE MODE-AWARE LOGIC ---
+        if (isOnlineMode)
         {
-            // ONLINE MODE: Call the RPC.
-            // We pass the ball prefab's name and its spawn position/rotation.
-            // The RPC function "RPC_FireWeapon" must exist on a central script on your player.
-            playerView.RPC("RPC_FireWeapon", RpcTarget.All, selectedBallPrefab.name, projectileSpawnPoint.position, Quaternion.identity);
+            // --- ONLINE ---
+            // 1. The shooter creates their own "real" ball locally. This is the authority.
+            GameObject myBall = Instantiate(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
+            InitializeBall(myBall, launchDirection, forceToUse, true); // true = isReal
+
+            // 2. The shooter tells everyone else to create a "visual" ball.
+            view.RPC("RPC_SpawnVisualBall", RpcTarget.Others, selectedBallPrefab.name, projectileSpawnPoint.position, launchDirection, forceToUse);
         }
         else
         {
-            // SINGLE-PLAYER MODE: Do exactly what you were doing before.
-            GameObject newProjectile = Instantiate(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
-            activeProjectiles.Add(newProjectile);
-
-            // Your existing ball initialization code for single-player
-            ProjectileLifecycleController lifecycleController = newProjectile.AddComponent<ProjectileLifecycleController>();
-            lifecycleController.launcherSystem = this;
-            lifecycleController.spawnTime = Time.time;
-            lifecycleController.hasBeenDestroyed = false;
-
-            Vector2 launchDirection = GetLauncherDirection();
-            if (randomSpread > 0f)
-            {
-                float spreadAngle = Random.Range(-randomSpread, randomSpread);
-                float currentAngle = Mathf.Atan2(launchDirection.y, launchDirection.x) * Mathf.Rad2Deg;
-                float newAngle = (currentAngle + spreadAngle) * Mathf.Deg2Rad;
-                launchDirection = new Vector2(Mathf.Cos(newAngle), Mathf.Sin(newAngle));
-            }
-
-            float forceToUse = useDynamicForce ? currentCalculatedForce : launchForce;
-            Rigidbody2D projectileRb = newProjectile.GetComponent<Rigidbody2D>();
-            if (projectileRb != null)
-            {
-                projectileRb.AddForce(launchDirection * forceToUse, ForceMode2D.Impulse);
-            }
-
-            BallCollisionHandler collisionHandler = newProjectile.AddComponent<BallCollisionHandler>();
-            collisionHandler.launcherSystem = this;
+            // --- OFFLINE ---
+            // Just create a normal, real ball.
+            GameObject myBall = Instantiate(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
+            InitializeBall(myBall, launchDirection, forceToUse, true); // true = isReal
         }
-        // --- END OF MODIFICATION ---
 
-        // This part runs for both modes
+        // Play sound locally for the shooter
         if (enableSoundEffects && shootSound != null)
         {
-            PlaySoundAtPosition(shootSound, projectileSpawnPoint.position, 0f, explosionVolume);
+            AudioSource.PlayClipAtPoint(shootSound, projectileSpawnPoint.position, explosionVolume);
         }
 
         PrepareNextBall();
+    }
+
+    // --- ADD THIS NEW HELPER FUNCTION ---
+    // This function adds the necessary components and initializes a ball.
+    private void InitializeBall(GameObject ball, Vector2 direction, float force, bool isRealBall)
+    {
+        // Add the lifecycle controller
+        ProjectileLifecycleController lifecycle = ball.AddComponent<ProjectileLifecycleController>();
+        lifecycle.launcherSystem = this;
+        lifecycle.spawnTime = Time.time;
+        lifecycle.isReal = isRealBall; // <-- IMPORTANT: We tell the ball if it's real or not.
+
+        // Add the collision handler
+        BallCollisionHandler collisionHandler = ball.AddComponent<BallCollisionHandler>();
+        collisionHandler.launcherSystem = this;
+
+        // Apply the force
+        Rigidbody2D projectileRb = ball.GetComponent<Rigidbody2D>();
+        if (projectileRb != null)
+        {
+            projectileRb.AddForce(direction * force, ForceMode2D.Impulse);
+        }
+    }
+
+    // --- ADD THIS NEW RPC FUNCTION ---
+    [PunRPC]
+    private void RPC_SpawnVisualBall(string prefabName, Vector3 position, Vector2 direction, float force)
+    {
+        // This runs on all other clients.
+        GameObject ballPrefab = GetBallPrefabByName(prefabName);
+        if (ballPrefab != null)
+        {
+            GameObject visualBall = Instantiate(ballPrefab, position, Quaternion.identity);
+            // Initialize the visual ball, but mark it as NOT real.
+            InitializeBall(visualBall, direction, force, false); // false = isReal
+        }
+    }
+
+    // --- ADD THIS HELPER TO FIND THE PREFAB FROM ITS NAME ---
+    private GameObject GetBallPrefabByName(string name)
+    {
+        foreach (GameObject prefab in ballPrefabs)
+        {
+            if (prefab.name == name)
+            {
+                return prefab;
+            }
+        }
+        return null;
     }
 
 
@@ -994,53 +1062,92 @@ public class RobustLauncherSystem : MonoBehaviour
     // Methods integrated from StableDamageExplodingBall
     public void DestroyBall(GameObject projectileToDestroy, Vector2 explosionPosition)
     {
-        if (projectileToDestroy == null) return; // Ensure the projectile object exists
+        if (projectileToDestroy == null) return;
 
         ProjectileLifecycleController lifecycleController = projectileToDestroy.GetComponent<ProjectileLifecycleController>();
-        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return; // Already marked for destruction
+        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return;
 
         if (lifecycleController != null)
         {
-            lifecycleController.hasBeenDestroyed = true; // Mark as destroyed
+            lifecycleController.hasBeenDestroyed = true;
         }
 
-        if (showDestructionDebug)
+        // 1. Get the type of the ball (e.g., "OrangeBall")
+        string ballType = GetBallType(projectileToDestroy);
+        // 2. Convert that type into a simple number (ID)
+        int explosionId = GetExplosionIdByType(ballType);
+
+        // 3. If the ID is valid, we proceed.
+        if (explosionId != -1)
         {
-            Debug.Log($"Destroying projectile at {explosionPosition}");
+            if (isOnlineMode)
+            {
+                // --- ONLINE ---
+                // We send the ID and the position over the network. This matches the error message.
+                view.RPC("RPC_PlayExplosionEffect", RpcTarget.All, explosionId, (Vector3)explosionPosition);
+            }
+            else
+            {
+                // --- OFFLINE ---
+                // We just play the effect locally using the ID.
+                PlayLocalExplosion(explosionId, explosionPosition);
+            }
         }
 
-        // Handle explosion damage first
+        // The rest of the function continues as normal...
         HandleExplosionDamage(explosionPosition);
+        if (CameraShakeExplosion != null) CameraShakerHandler.Shake(CameraShakeExplosion);
+        if (enableSoundEffects) PlayExplosionSounds(explosionPosition);
 
-        // Trigger camera shake if assigned
-        if (CameraShakeExplosion != null)
-        {
-            CameraShakerHandler.Shake(CameraShakeExplosion);
-        }
-
-        // Create explosion effects
-        if (enableExplosionEffects)
-        {
-            string ballType = GetBallType(projectileToDestroy);
-            CreateExplosionEffects(explosionPosition, ballType);
-        }
-
-        // Play explosion sounds
-        if (enableSoundEffects)
-        {
-            PlayExplosionSounds(explosionPosition);
-        }
-
-        // Remove from active projectiles list
         activeProjectiles.Remove(projectileToDestroy);
-
-        // Destroy the projectile GameObject itself
-        // This is crucial: the ball GameObject must be destroyed AFTER its effects are triggered.
         Destroy(projectileToDestroy);
     }
 
+    // --- ADD OR REPLACE THIS HELPER FUNCTION ---
+    // This function converts the ball's name into a simple ID.
+    private int GetExplosionIdByType(string ballType)
+    {
+        if (ballType.Contains("Orange")) return 0;
+        if (ballType.Contains("Blue")) return 1;
+        if (ballType.Contains("Green")) return 2;
+        return -1; // Return -1 if no match is found
+    }
 
+    // --- ADD OR REPLACE THIS HELPER FUNCTION ---
+    // This function takes an ID and plays the correct set of effects from your existing variables.
+    private void PlayLocalExplosion(int id, Vector2 position)
+    {
+        switch (id)
+        {
+            case 0: // Orange
+                if (orangeExplosionPrefab != null) CreateSingleExplosion(orangeExplosionPrefab, position, explosionScale, 0f);
+                if (orangeExplosionPrefab2 != null) StartCoroutine(CreateDelayedExplosion(orangeExplosionPrefab2, position, additionalExplosionsScale, explosionDelay));
+                if (orangeExplosionPrefab3 != null) StartCoroutine(CreateDelayedExplosion(orangeExplosionPrefab3, position, additionalExplosionsScale, explosionDelay * 2f));
+                if (orangeExplosionPrefab4 != null) StartCoroutine(CreateDelayedExplosion(orangeExplosionPrefab4, position, additionalExplosionsScale, explosionDelay * 3f));
+                break;
+            case 1: // Blue
+                if (blueExplosionPrefab != null) CreateSingleExplosion(blueExplosionPrefab, position, explosionScale, 0f);
+                if (blueExplosionPrefab2 != null) StartCoroutine(CreateDelayedExplosion(blueExplosionPrefab2, position, additionalExplosionsScale, explosionDelay));
+                if (blueExplosionPrefab3 != null) StartCoroutine(CreateDelayedExplosion(blueExplosionPrefab3, position, additionalExplosionsScale, explosionDelay * 2f));
+                if (blueExplosionPrefab4 != null) StartCoroutine(CreateDelayedExplosion(blueExplosionPrefab4, position, additionalExplosionsScale, explosionDelay * 3f));
+                break;
+            case 2: // Green
+                if (greenExplosionPrefab != null) CreateSingleExplosion(greenExplosionPrefab, position, explosionScale, 0f);
+                if (greenExplosionPrefab2 != null) StartCoroutine(CreateDelayedExplosion(greenExplosionPrefab2, position, additionalExplosionsScale, explosionDelay));
+                if (greenExplosionPrefab3 != null) StartCoroutine(CreateDelayedExplosion(greenExplosionPrefab3, position, additionalExplosionsScale, explosionDelay * 2f));
+                if (greenExplosionPrefab4 != null) StartCoroutine(CreateDelayedExplosion(greenExplosionPrefab4, position, additionalExplosionsScale, explosionDelay * 3f));
+                break;
+        }
+    }
 
+    // --- FINALLY, THE RPC FUNCTION THAT MATCHES THE ERROR MESSAGE ---
+    [PunRPC]
+    private void RPC_PlayExplosionEffect(int explosionId, Vector3 position)
+    {
+        // This code runs on EVERYONE'S machine.
+        // It simply calls our local "switchboard" function to play the correct effect.
+        PlayLocalExplosion(explosionId, position);
+    }
     private string GetBallType(GameObject ballPrefab)
     {
         if (ballPrefab.name.Contains("Orange")) return "OrangeBall";
@@ -1240,64 +1347,68 @@ public class RobustLauncherSystem : MonoBehaviour
     // Damage handling methods - FIXED FOR EXACT DAMAGE
     public void HandleCollision(GameObject collidedObject, Vector2 contactPoint, GameObject projectileGameObject)
     {
+        // First, get the lifecycle controller from the projectile that hit something.
         ProjectileLifecycleController lifecycleController = projectileGameObject.GetComponent<ProjectileLifecycleController>();
-        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return; // Already marked for destruction
+        if (lifecycleController == null || lifecycleController.hasBeenDestroyed) return;
 
         bool shouldDestroy = false;
-
-        if (enableCollisionDestruction)
+        if (enableCollisionDestruction && ((1 << collidedObject.layer) & destructionLayers) != 0)
         {
-            if (((1 << collidedObject.layer) & destructionLayers) != 0)
-            {
-                shouldDestroy = true;
-                if (showDestructionDebug)
-                {
-                    Debug.Log($"Projectile collided with destruction layer: {LayerMask.LayerToName(collidedObject.layer)}");
-                }
-            }
+            shouldDestroy = true;
         }
 
-        if (enableDamageSystem && damageOnCollision)
+        // --- THIS IS THE CRITICAL CHECK ---
+        // We only deal damage if the ball is a "real" one.
+        if (lifecycleController.isReal && enableDamageSystem && damageOnCollision)
         {
             HandleCollisionDamage(collidedObject, contactPoint, projectileGameObject);
         }
 
         if (shouldDestroy)
         {
-            DestroyBall(projectileGameObject, contactPoint);
+            // And we only trigger the big destruction sequence if the ball is real.
+            if (lifecycleController.isReal)
+            {
+                DestroyBall(projectileGameObject, contactPoint);
+            }
+            else
+            {
+                // If it's just a visual ball, destroy it quietly.
+                Destroy(projectileGameObject);
+            }
         }
     }
 
     public void HandleTrigger(GameObject triggeredObject, GameObject projectileGameObject)
     {
+        // This function follows the exact same logic as HandleCollision.
         ProjectileLifecycleController lifecycleController = projectileGameObject.GetComponent<ProjectileLifecycleController>();
-        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return; // Already marked for destruction
+        if (lifecycleController == null || lifecycleController.hasBeenDestroyed) return;
 
         bool shouldDestroy = false;
-
-        if (enableCollisionDestruction)
+        if (enableCollisionDestruction && ((1 << triggeredObject.layer) & destructionLayers) != 0)
         {
-            if (((1 << triggeredObject.layer) & destructionLayers) != 0)
-            {
-                shouldDestroy = true;
-                if (showDestructionDebug)
-                {
-                    Debug.Log($"Projectile triggered with destruction layer: {LayerMask.LayerToName(triggeredObject.layer)}");
-                }
-            }
+            shouldDestroy = true;
         }
 
-        if (enableDamageSystem && damageOnCollision)
+        if (lifecycleController.isReal && enableDamageSystem && damageOnCollision)
         {
             HandleTriggerDamage(triggeredObject, projectileGameObject.transform.position, projectileGameObject);
         }
 
         if (shouldDestroy)
         {
-            DestroyBall(projectileGameObject, projectileGameObject.transform.position);
+            if (lifecycleController.isReal)
+            {
+                DestroyBall(projectileGameObject, projectileGameObject.transform.position);
+            }
+            else
+            {
+                Destroy(projectileGameObject);
+            }
         }
     }
-
+   
     private void HandleCollisionDamage(GameObject target, Vector2 impactPoint, GameObject projectileGameObject)
     {
         if (((1 << target.layer) & enemyLayers) != 0)
@@ -1620,6 +1731,7 @@ public class ProjectileLifecycleController : MonoBehaviour
 {
     public RobustLauncherSystem launcherSystem;
     public float spawnTime;
+    public bool isReal;
     public bool hasBeenDestroyed = false;
 }
 
@@ -1632,7 +1744,8 @@ public class BallCollisionHandler : MonoBehaviour
         if (launcherSystem != null)
         {
             Vector2 contactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : transform.position;
-            launcherSystem.HandleCollision(collision.gameObject, contactPoint, gameObject);
+            // We pass the entire GameObject to the handler now.
+            launcherSystem.HandleCollision(collision.gameObject, contactPoint, this.gameObject);
         }
     }
 
@@ -1640,7 +1753,8 @@ public class BallCollisionHandler : MonoBehaviour
     {
         if (launcherSystem != null)
         {
-            launcherSystem.HandleTrigger(other.gameObject, gameObject);
+            // We pass the entire GameObject to the handler now.
+            launcherSystem.HandleTrigger(other.gameObject, this.gameObject);
         }
     }
 }

@@ -10564,6 +10564,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4969289257960167119}
+    - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6845735833444420631}
   m_SourcePrefab: {fileID: 4843985084834002234, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
 --- !u!4 &578209667700630728 stripped
 Transform:
@@ -10756,7 +10759,7 @@ MonoBehaviour:
   - {fileID: 7059399505968963755}
   - {fileID: 6158315528071319184}
   - {fileID: 5254049360258234812}
-  damageSoundClip: {fileID: 0}
+  damageSound: {fileID: 0}
   damageSoundVolume: 0.779
   weaponSwitchManager: {fileID: 0}
   OnDeath:
@@ -10786,6 +10789,29 @@ MonoBehaviour:
   - {fileID: 6463975689986382202}
   - {fileID: 1564694357942923393}
   enemyAnimator: {fileID: 2567033483754756144}
+--- !u!114 &-6845735833444420631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1787418285100596395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 0
+  ObservedComponents:
+  - {fileID: 561808408041264527}
+  sceneViewId: 0
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!212 &5254049360258234812 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: -2899259724117269334, guid: 11a163ea991a99f4189db914265efbd5, type: 3}

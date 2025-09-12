@@ -5,7 +5,7 @@ using System.Collections;
 using FirstGearGames.SmoothCameraShaker;
 using UnityEngine.UI;
 using Photon.Pun;
-public class BowSystems : MonoBehaviour
+public class BowSystems : MonoBehaviour, IPunObservable
 {
     [Header("Component References")]
     [SerializeField] private GameObject BowGameObject;
@@ -15,9 +15,10 @@ public class BowSystems : MonoBehaviour
     [SerializeField] private Transform minDistancePoint; // Transform point for minimum distance visualization
     [SerializeField] private Transform trajectoryVisualPoint; // Transform point for trajectory visualization (controls green line)
     public Joystick aimJoystick;
-    // --- MODIFICATION: Removed the shootButton as it's no longer needed --- 
-    // public Button shootButton; // This was in the original script, but we are removing it for joystick-only control
-    private PhotonView playerView;
+
+    private PhotonView view;
+    private bool isOnlineMode = false;
+    private PlayerSyncManager syncManager;
 
     [Header("Arrow Prefab")]
     [Tooltip("The arrow prefab to be launched")]
@@ -186,7 +187,19 @@ public class BowSystems : MonoBehaviour
 
     void Start()
     {
-        playerView = GetComponentInParent<PhotonView>();
+        view = GetComponentInParent<PhotonView>();
+        syncManager = GetComponentInParent<PlayerSyncManager>();
+
+        if (view != null && transform.root.CompareTag("OnlinePlayer"))
+        {
+            isOnlineMode = true;
+            Debug.Log("BowSystems: Online Mode Detected.");
+        }
+        else
+        {
+            isOnlineMode = false;
+            Debug.Log("BowSystems: Offline Mode Detected.");
+        }
 
         InitializeArrowPreview();
 
@@ -201,6 +214,11 @@ public class BowSystems : MonoBehaviour
 
     void Update()
     {
+        if (isOnlineMode && !view.IsMine)
+        {
+            return;
+        }
+
         // --- MODIFICATION: The entire Update loop is now simplified to call one master function --- 
         HandleInputAndShooting();
 
@@ -221,10 +239,7 @@ public class BowSystems : MonoBehaviour
     // --- MODIFICATION: This is the new, unified input handling method --- 
     private void HandleInputAndShooting()
     {
-        if (playerView != null && !playerView.IsMine)
-        {
-            return; // If this is an online character that isn't mine, do nothing.
-        }
+        
         bool shootPressedThisFrame = false;
         bool shootHeldThisFrame = false;
         bool shootReleasedThisFrame = false;
@@ -348,63 +363,163 @@ public class BowSystems : MonoBehaviour
 
     private void ShootArrow()
     {
-        if (arrowPrefab == null || arrowSpawnPoint == null)
-        {
-            if (showArrowDebug) Debug.LogWarning("Arrow Prefab or Arrow Spawn Point not assigned!");
-            return;
-        }
+        if (arrowPrefab == null || arrowSpawnPoint == null) return;
 
-        // --- THIS IS THE MODIFICATION ---
-        if (playerView != null)
+        float chargePercentage = currentChargeTime / maxChargeTime;
+        Vector2 launchDirection = GetBowDirection();
+
+        // --- THE MODE-AWARE LOGIC ---
+        if (isOnlineMode)
         {
-            // ONLINE MODE: Call the RPC.
-            // We pass the arrow prefab's name and the final rotation of the bow.
-            // The RPC function "RPC_FireWeapon" must exist on a central script on your player.
-            playerView.RPC("RPC_FireWeapon", RpcTarget.All, arrowPrefab.name, arrowSpawnPoint.position, BowGameObject.transform.rotation);
+            // --- ONLINE ---
+            // 1. The shooter creates their own "real" arrow locally.
+            GameObject myArrow = Instantiate(arrowPrefab, arrowSpawnPoint.position, BowGameObject.transform.rotation);
+            InitializeArrow(myArrow, launchDirection, chargePercentage, true); // true = isReal
+
+            // 2. The shooter tells everyone else to create a "visual" arrow.
+            view.RPC("RPC_SpawnVisualArrow", RpcTarget.Others, arrowSpawnPoint.position, BowGameObject.transform.rotation, launchDirection, chargePercentage);
         }
         else
         {
-            // SINGLE-PLAYER MODE: Do exactly what you were doing before.
-            float chargePercentage = currentChargeTime / maxChargeTime;
-            float arrowSpeed = Mathf.Lerp(minArrowSpeed, maxArrowSpeed, chargePercentage);
-            float calculatedGravityScale = Mathf.Lerp(minGravityScale, maxGravityScale, chargePercentage);
-
-            GameObject newArrow = Instantiate(arrowPrefab, arrowSpawnPoint.position, BowGameObject.transform.rotation);
-            activeArrows.Add(newArrow);
-
-            // Your existing arrow initialization code for single-player
-            ArrowLifecycleController lifecycleController = newArrow.AddComponent<ArrowLifecycleController>();
-            lifecycleController.bowSystem = this;
-            lifecycleController.spawnTime = Time.time;
-            lifecycleController.hasBeenDestroyed = false;
-            lifecycleController.chargePercentage = chargePercentage;
-
-            Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
-            Vector2 launchDirection = GetBowDirection();
-            if (randomSpread > 0f)
-            {
-                float spreadAngle = Random.Range(-randomSpread, randomSpread);
-                launchDirection = Quaternion.Euler(0, 0, spreadAngle) * launchDirection;
-            }
-            if (arrowRb != null)
-            {
-                arrowRb.velocity = launchDirection * arrowSpeed;
-                arrowRb.gravityScale = calculatedGravityScale;
-            }
-
-            Collider2D arrowCollider = newArrow.GetComponent<Collider2D>();
-            if (arrowCollider != null) arrowCollider.isTrigger = true;
-
-            ArrowRotationController arrowRotController = newArrow.AddComponent<ArrowRotationController>();
-            if (arrowRotController != null) arrowRotController.rb = arrowRb;
+            // --- OFFLINE ---
+            GameObject myArrow = Instantiate(arrowPrefab, arrowSpawnPoint.position, BowGameObject.transform.rotation);
+            InitializeArrow(myArrow, launchDirection, chargePercentage, true); // true = isReal
         }
-        // --- END OF MODIFICATION ---
 
-        // This part runs for both modes
+        // Play sound locally for the shooter
         if (enableSoundEffects && shootSound != null)
         {
             PlaySoundAtPosition(shootSound, arrowSpawnPoint.position, shootSoundVolume);
         }
+    }
+
+    private void CreateArrow(Vector2 direction, float charge, bool isReal)
+    {
+        GameObject arrow = Instantiate(arrowPrefab, arrowSpawnPoint.position, Quaternion.identity);
+
+        // --- PIERCING LOGIC ---
+        // We are NOT using Physics2D.IgnoreCollision anymore. It's unreliable.
+        // The logic is now entirely inside the ArrowLifecycleController's OnTriggerEnter2D.
+        // This is cleaner.
+
+        // Add and configure the behavior scripts
+        ArrowLifecycleController lifecycle = arrow.AddComponent<ArrowLifecycleController>();
+        lifecycle.bowSystem = this;
+        lifecycle.isReal = isReal;
+        lifecycle.chargePercentage = charge;
+        lifecycle.spawnTime = Time.time;
+
+        arrow.AddComponent<ArrowRotationController>().rb = arrow.GetComponent<Rigidbody2D>();
+
+        // Apply physics to make it move
+        Rigidbody2D arrowRb = arrow.GetComponent<Rigidbody2D>();
+        if (arrowRb != null)
+        {
+            float arrowSpeed = Mathf.Lerp(minArrowSpeed, maxArrowSpeed, charge);
+            arrowRb.velocity = direction * arrowSpeed;
+            arrowRb.gravityScale = Mathf.Lerp(minGravityScale, maxGravityScale, charge);
+        }
+    }
+    [PunRPC]
+    private void RPC_CreateVisualArrow(Vector3 position, Vector3 direction, float charge)
+    {
+        // This runs on remote clients. We create a "dumb" visual arrow.
+        GameObject arrow = Instantiate(arrowPrefab, position, Quaternion.identity);
+        CreateArrow(direction, charge, false); // isReal = false
+    }
+
+    // The arrow calls this function when it hits a wall.
+    [PunRPC]
+    private void RPC_PlayArrowDestructionEffect(Vector3 position)
+    {
+        // This runs on EVERYONE'S machine.
+        if (arrowDestroyParticleSystem != null)
+        {
+            // --- THIS IS THE FIX FOR THE VISUALS ---
+            // 1. We create the effect from the prefab.
+            GameObject effectInstance = Instantiate(arrowDestroyParticleSystem.gameObject, position, Quaternion.identity);
+
+            // 2. We get the ParticleSystem component from the new instance.
+            ParticleSystem ps = effectInstance.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                // 3. We tell it to play.
+                ps.Play();
+
+                // 4. We schedule it to be destroyed ONLY after it has finished playing.
+                // This is the most important line.
+                Destroy(effectInstance, ps.main.duration);
+            }
+            else
+            {
+                // Fallback: If there's no particle system, destroy it after 2 seconds.
+                Destroy(effectInstance, 2f);
+            }
+        }
+    }
+
+    // --- ALSO, REPLACE YOUR OFFLINE/LOCAL VERSION OF THIS LOGIC ---
+    public void TriggerArrowDestruction(Vector2 impactPosition)
+    {
+        if (isOnlineMode)
+        {
+            view.RPC("RPC_PlayArrowDestructionEffect", RpcTarget.All, (Vector3)impactPosition);
+        }
+        else
+        {
+            // OFFLINE: Use the same robust logic as the RPC.
+            if (arrowDestroyParticleSystem != null)
+            {
+                GameObject effectInstance = Instantiate(arrowDestroyParticleSystem.gameObject, impactPosition, Quaternion.identity);
+                ParticleSystem ps = effectInstance.GetComponent<ParticleSystem>();
+                if (ps != null)
+                {
+                    ps.Play();
+                    Destroy(effectInstance, ps.main.duration);
+                }
+                else
+                {
+                    Destroy(effectInstance, 2f);
+                }
+            }
+        }
+    }
+
+    // --- 7. ADD THIS NEW HELPER FUNCTION ---
+    // This function sets up a newly created arrow.
+    private void InitializeArrow(GameObject arrow, Vector2 direction, float charge, bool isReal)
+    {
+        // 1. Add the lifecycle controller and set its properties
+        ArrowLifecycleController lifecycle = arrow.AddComponent<ArrowLifecycleController>();
+        lifecycle.bowSystem = this;
+        lifecycle.chargePercentage = charge;
+        lifecycle.isReal = isReal;
+        lifecycle.hasBeenDestroyed = false;
+        lifecycle.spawnTime = Time.time;
+
+        // 2. Add the rotation controller
+        ArrowRotationController rotationController = arrow.AddComponent<ArrowRotationController>();
+        Rigidbody2D arrowRb = arrow.GetComponent<Rigidbody2D>(); // Get the Rigidbody2D
+        rotationController.rb = arrowRb; // Assign it to the rotation controller
+
+        // --- THIS IS THE CRITICAL FIX THAT WAS MISSING ---
+        // 3. Apply the physics directly to the Rigidbody2D.
+        // This is what makes the arrow actually fly.
+        if (arrowRb != null)
+        {
+            float arrowSpeed = Mathf.Lerp(minArrowSpeed, maxArrowSpeed, charge);
+            arrowRb.velocity = direction * arrowSpeed; // SET THE VELOCITY
+            arrowRb.gravityScale = Mathf.Lerp(minGravityScale, maxGravityScale, charge); // SET THE GRAVITY
+        }
+    }
+    // --- 8. ADD THIS NEW RPC FUNCTION ---
+    [PunRPC]
+    private void RPC_SpawnVisualArrow(Vector3 position, Quaternion rotation, Vector2 direction, float charge)
+    {
+        // This runs on all other clients.
+        GameObject visualArrow = Instantiate(arrowPrefab, position, rotation);
+        // Initialize the visual arrow, but mark it as NOT real.
+        InitializeArrow(visualArrow, direction, charge, false); // false = isReal
     }
 
     private void UpdatePlayerFacingDirection()
@@ -717,52 +832,70 @@ public class BowSystems : MonoBehaviour
 
     public void DestroyArrow(GameObject arrowToDestroy, Vector2 impactPosition)
     {
-        if (arrowToDestroy == null) return; // Ensure the arrow object exists
+        if (arrowToDestroy == null) return;
 
-        ArrowLifecycleController lifecycleController = arrowToDestroy.GetComponent<ArrowLifecycleController>();
-        if (lifecycleController != null && lifecycleController.hasBeenDestroyed) return; // Already marked for destruction
+        ArrowLifecycleController lifecycle = arrowToDestroy.GetComponent<ArrowLifecycleController>();
+        if (lifecycle != null && lifecycle.hasBeenDestroyed) return;
+        if (lifecycle != null) lifecycle.hasBeenDestroyed = true;
 
-        if (lifecycleController != null)
+        // --- THIS IS THE CRITICAL FIX ---
+
+        // 1. We always trigger the visual effect first. This is safe.
+        if (isOnlineMode)
         {
-            lifecycleController.hasBeenDestroyed = true; // Mark as destroyed
-        }
-
-        if (showDestructionDebug)
-        {
-            Debug.Log($"Destroying arrow at {impactPosition}");
-        }
-
-        HandleImpactDamage(impactPosition);
-
-        // Play particle system at impact position
-        if (arrowDestroyParticleSystem != null)
-        {
-            // Instantiate the particle system and immediately play it
-            ParticleSystem newParticleSystem = Instantiate(arrowDestroyParticleSystem, impactPosition, Quaternion.identity);
-            newParticleSystem.Play();
-
-            // Destroy the particle system GameObject after its duration
-            Destroy(newParticleSystem.gameObject, newParticleSystem.main.duration);
-        }
-
-
-        // Remove from active arrows list
-        activeArrows.Remove(arrowToDestroy);
-
-        // Use object pooling or simply disable/destroy based on settings
-        if (instantDestruction)
-        {
-            Destroy(arrowToDestroy);
+            view.RPC("RPC_PlayArrowDestructionEffect", RpcTarget.All, (Vector3)impactPosition);
         }
         else
         {
-            // For fade-out or other effects, you would trigger them here
-            Destroy(arrowToDestroy, 0.1f); // Small delay for potential effects
+            if (arrowDestroyParticleSystem != null)
+            {
+                Instantiate(arrowDestroyParticleSystem.gameObject, impactPosition, Quaternion.identity);
+            }
+        }
+
+        // 2. Now, we handle the destruction of the arrow object itself.
+        if (isOnlineMode)
+        {
+            // --- ONLINE MODE ---
+            if (lifecycle != null && lifecycle.isReal)
+            {
+                // If it's a "real" arrow, we MUST use PhotonNetwork.Destroy.
+                // This tells everyone to remove this object and ensures all final RPCs are sent.
+                PhotonNetwork.Destroy(arrowToDestroy);
+            }
+            else
+            {
+                // If it's just a "visual" arrow on a remote client, a simple local Destroy is fine.
+                Destroy(arrowToDestroy);
+            }
+        }
+        else
+        {
+            // --- OFFLINE MODE ---
+            // A simple local Destroy is all that's needed.
+            Destroy(arrowToDestroy);
+        }
+    }
+  
+    // --- 11. ADD THE ROTATION SYNC FUNCTION ---
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // We are the owner. We send our arm and bow rotation.
+            stream.SendNext(Arm.transform.rotation);
+            stream.SendNext(BowGameObject.transform.rotation);
+        }
+        else
+        {
+            // We are a remote client. We receive and apply the rotation.
+            this.Arm.transform.rotation = (Quaternion)stream.ReceiveNext();
+            this.BowGameObject.transform.rotation = (Quaternion)stream.ReceiveNext();
         }
     }
 
-    // This method is called when an arrow impacts something (wall, enemy, etc.)
-    public void HandleImpactDamage(Vector2 impactPosition)
+// This method is called when an arrow impacts something (wall, enemy, etc.)
+public void HandleImpactDamage(Vector2 impactPosition)
     {
         // This is a placeholder. In a real game, you might have an area-of-effect damage
         // or a camera shake specific to the impact, not just enemy damage.
@@ -884,7 +1017,7 @@ public class ArrowLifecycleController : MonoBehaviour
     public bool hasBeenDestroyed = false;
     public float chargePercentage; // To store the charge percentage for damage calculation
     private List<GameObject> hitEnemies = new List<GameObject>(); // Track enemies hit by this specific arrow
-
+    public bool isReal;
     void Update()
     {
         // Time-based destruction
@@ -896,36 +1029,40 @@ public class ArrowLifecycleController : MonoBehaviour
             }
         }
     }
-
     void OnTriggerEnter2D(Collider2D other)
     {
         if (bowSystem == null || hasBeenDestroyed) return;
 
+        // Check if the object we hit is an enemy
         bool isEnemy = ((1 << other.gameObject.layer) & bowSystem.enemyLayers) != 0;
+
+        // Check if the object we hit is a wall/destructible surface
         bool isDestructible = ((1 << other.gameObject.layer) & bowSystem.destructionLayers) != 0;
 
-        if (isEnemy) // If it's an enemy, apply damage
+        // --- PIERCING AND DAMAGE LOGIC ---
+        if (isReal && isEnemy && !hitEnemies.Contains(other.gameObject))
         {
-            // Only damage each enemy once per arrow
-            if (!hitEnemies.Contains(other.gameObject))
-            {
-                bowSystem.HandleDamage(other.gameObject, other.ClosestPoint(transform.position), chargePercentage, gameObject);
-                hitEnemies.Add(other.gameObject);
-            }
+            // If it's a new enemy, deal damage and add it to the list.
+            // The arrow does NOT get destroyed. This is the piercing logic.
+            bowSystem.HandleDamage(other.gameObject, other.ClosestPoint(transform.position), chargePercentage, gameObject);
+            hitEnemies.Add(other.gameObject);
         }
 
-        // If it's a destructible layer (like a wall), destroy the arrow
-        // Ensure it's not an enemy, as enemies are pierced.
-        if (isDestructible && !isEnemy)
+        // --- DESTRUCTION LOGIC ---
+        // If the arrow hits a destructible surface (like a wall), it gets destroyed.
+        // This check is now inside the same function, which is more reliable.
+        if (isDestructible)
         {
-            if (bowSystem.enableCollisionDestruction)
+            hasBeenDestroyed = true;
+
+            // If this is the "real" arrow, it's responsible for telling everyone to play the effect.
+            if (isReal)
             {
-                if (bowSystem.enableSoundEffects && bowSystem.wallImpactSound != null)
-                {
-                    bowSystem.PlaySoundAtPosition(bowSystem.wallImpactSound, transform.position, bowSystem.wallImpactSoundVolume);
-                }
-                bowSystem.DestroyArrow(gameObject, transform.position);
+                bowSystem.TriggerArrowDestruction(transform.position);
             }
+
+            // The arrow destroys itself locally.
+            Destroy(gameObject);
         }
     }
 }

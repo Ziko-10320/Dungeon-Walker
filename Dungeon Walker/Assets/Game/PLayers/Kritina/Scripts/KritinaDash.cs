@@ -32,6 +32,8 @@ public class PlayerDash : MonoBehaviour
 
     // --- THIS IS THE KEY TO MAKING IT WORK FOR BOTH MODES ---
     private PhotonView view;
+    private PlayerSyncManager syncManager;
+    private bool isOnlineMode = false;
 
     void Awake()
     {
@@ -42,14 +44,24 @@ public class PlayerDash : MonoBehaviour
 
         // Try to get the PhotonView component. This will be null on the offline prefab.
         view = GetComponent<PhotonView>();
+        syncManager = GetComponent<PlayerSyncManager>();
+       
+        if (view != null && transform.root.CompareTag("OnlinePlayer"))
+        {
+            isOnlineMode = true;
+            Debug.Log("PlayerDash: Online Mode Detected.");
+        }
+        else
+        {
+            isOnlineMode = false;
+            Debug.Log("PlayerDash: Offline Mode Detected.");
+        }
     }
 
     void Update()
     {
-        // --- THE MAGIC CHECK ---
-        // If 'view' is not null AND this is not our character, do nothing.
-        // If 'view' IS null (offline mode), this check is skipped and the code runs.
-        if (view != null && !view.IsMine)
+
+        if (isOnlineMode && !view.IsMine)
         {
             return;
         }
@@ -64,7 +76,7 @@ public class PlayerDash : MonoBehaviour
     // We must also protect the public function for the mobile button.
     public void TriggerDash()
     {
-        if (view != null && !view.IsMine)
+        if (isOnlineMode && !view.IsMine)
         {
             return;
         }
@@ -91,8 +103,6 @@ public class PlayerDash : MonoBehaviour
         }
     }
 
-    // The rest of the functions are private and are only called by the protected Update/TriggerDash functions,
-    // so they are already safe and do not need any changes.
     private void StartDash()
     {
         isDashing = true;
@@ -117,12 +127,23 @@ public class PlayerDash : MonoBehaviour
         rb.velocity = Vector2.zero;
         rb.gravityScale = 0f;
 
+        // --- THIS IS THE CORRECTION ---
         if (ghostEffect != null)
         {
-            ghostEffect.StartGhostEffect();
+            if (isOnlineMode) // If we are in online mode...
+            {
+                // ...then send the RPC to everyone.
+                view.RPC("RPC_ToggleGhostEffect", RpcTarget.All, true);
+            }
+            else // If we are in offline mode...
+            {
+                // ...just start the effect locally. No network call needed.
+                ghostEffect.StartGhostEffect();
+            }
         }
     }
 
+    // --- REPLACE YOUR EndDash() FUNCTION WITH THIS ---
     private void EndDash()
     {
         isDashing = false;
@@ -135,14 +156,38 @@ public class PlayerDash : MonoBehaviour
         rb.gravityScale = originalGravity;
         rb.velocity = Vector2.zero;
 
+        // --- THIS IS THE CORRECTION ---
         if (ghostEffect != null)
         {
-            ghostEffect.StopGhostEffect();
+            if (isOnlineMode) // If we are in online mode...
+            {
+                // ...then send the RPC to everyone.
+                view.RPC("RPC_ToggleGhostEffect", RpcTarget.All, false);
+            }
+            else // If we are in offline mode...
+            {
+                // ...just stop the effect locally.
+                ghostEffect.StopGhostEffect();
+            }
         }
 
         StartCoroutine(DashCooldown());
     }
-
+    [PunRPC]
+    private void RPC_ToggleGhostEffect(bool state)
+    {
+        if (ghostEffect != null)
+        {
+            if (state)
+            {
+                ghostEffect.StartGhostEffect();
+            }
+            else
+            {
+                ghostEffect.StopGhostEffect();
+            }
+        }
+    }
     private IEnumerator DashCooldown()
     {
         yield return new WaitForSeconds(dashCooldown);

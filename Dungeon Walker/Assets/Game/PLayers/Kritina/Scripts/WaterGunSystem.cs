@@ -4,7 +4,9 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Photon.Pun;
-public class WaterGunSystem : MonoBehaviour
+using Photon.Realtime;
+
+public class WaterGunSystem : MonoBehaviour, IPunObservable
 {
     [Header("COMPONENT REFERENCES")]
     [SerializeField] private GameObject Gun;
@@ -16,14 +18,13 @@ public class WaterGunSystem : MonoBehaviour
     public Joystick aimJoystick;
     [Header("PROJECTILE & EFFECTS")]
     [SerializeField] private GameObject bulletPrefab;
-    [SerializeField] private ParticleSystem destructionEffectPrefab;
+    [SerializeField] public ParticleSystem destructionEffectPrefab;
     [SerializeField] private ParticleSystem muzzleFlashEffect;
-    [SerializeField] private float bulletSpeed = 25f;
-    [SerializeField] private float bulletLifetime = 3f;
-    [SerializeField] private int bulletDamage = 15;
+    [SerializeField] public float bulletSpeed = 25f;
+    [SerializeField] public float bulletLifetime = 3f;
+    [SerializeField] public int bulletDamage = 15;
     [SerializeField] private LayerMask damageableLayers;
-    [SerializeField] private LayerMask collisionLayers;
-    private PhotonView playerView;
+    [SerializeField] public LayerMask collisionLayers;
 
     [Header("AIMING & ROTATION (FROM ROBUST LAUNCHER)")]
     [Tooltip("Angle maximum de visée vers le haut")]
@@ -73,10 +74,16 @@ public class WaterGunSystem : MonoBehaviour
     private bool isReloading = false;
     private float nextFireTime = 0f;
 
+    private PhotonView view;
+    private bool isOnlineMode = false;
+
     void Awake()
     {
-        playerView = GetComponentInParent<PhotonView>();
-
+        view = GetComponentInParent<PhotonView>();
+        if (view != null && transform.root.CompareTag("OnlinePlayer"))
+        {
+            isOnlineMode = true;
+        }
         currentAmmo = maxAmmo;
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
@@ -87,19 +94,20 @@ public class WaterGunSystem : MonoBehaviour
 
     void Update()
     {
+        if (isOnlineMode && !view.IsMine)
+        {
+            // La synchronisation via OnPhotonSerializeView s'occupera de la rotation.
+            return;
+        }
         // La séquence d"update la plus fiable, directement tirée du launcher
         HandleInputAndShooting();
         ApplyRotation();
-        
+
         UpdateMinDistancePointPosition(); // Mise à jour du point de visualisation
     }
 
     private void HandleInputAndShooting()
     {
-        if (playerView != null && !playerView.IsMine)
-        {
-            return; // If this is an online character that isn't mine, do nothing.
-        }
         bool isAiming = false;
         bool isShooting = false;
 
@@ -214,36 +222,83 @@ public class WaterGunSystem : MonoBehaviour
         }
     }
 
-
-
-    private void Shoot() // Or SpawnNextBall(), ShootArrow(), etc.
+    private void Shoot()
     {
-        // Calculate the rotation once.
-        Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation); // Or whatever your rotation variable is
+        // 1. Calculate direction and rotation
+        Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation);
+        Vector2 shootDirection = shootRotation * Vector2.right;
 
-        if (playerView != null) // --- ONLINE MODE ---
+        // 2. Play local effects for immediate feedback
+        if (muzzleFlashEffect != null) muzzleFlashEffect.Play();
+        if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
+
+        // 3. Create the "real" bullet that deals damage.
+        GameObject myBullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, shootRotation);
+        BulletBehavior myBulletScript = myBullet.GetComponent<BulletBehavior>();
+        if (myBulletScript != null)
         {
-            // This part is working perfectly, so we don't touch it.
-            playerView.RPC("RPC_FireWeapon", RpcTarget.All, bulletPrefab.name, bulletSpawnPoint.position, shootRotation);
-        }
-        else // --- OFFLINE MODE (THE FIX) ---
-        {
-            // 1. Create the bullet locally, just like before.
-            GameObject bulletInstance = Instantiate(bulletPrefab, bulletSpawnPoint.position, shootRotation);
+            // --- CORRECTION ICI ---
+            // On assigne les valeurs directement au lieu d'appeler une fonction.
+            myBulletScript.bulletSpeed = this.bulletSpeed;
+            myBulletScript.bulletDamage = this.bulletDamage;
+            myBulletScript.collisionLayers = this.collisionLayers;
+            myBulletScript.waterExplosionPrefab = this.destructionEffectPrefab.gameObject;
 
-            // 2. Get the BulletBehavior script from the new bullet.
-            BulletBehavior bulletBehavior = bulletInstance.GetComponent<BulletBehavior>();
-
-            // 3. THIS IS THE MISSING LINE. We must manually initialize the bullet in offline mode.
-            if (bulletBehavior != null)
+            // On donne la direction à la balle pour qu'elle se déplace.
+            // C'est la seule chose qui doit être faite après avoir réglé les stats.
+            Rigidbody2D rb = myBullet.GetComponent<Rigidbody2D>();
+            if (rb != null)
             {
-                bulletBehavior.Initialize(shootRotation * Vector3.right);
+                rb.velocity = shootDirection * myBulletScript.bulletSpeed;
             }
         }
 
-        // Play sounds and effects locally for both modes.
-        if (muzzleFlashEffect != null) muzzleFlashEffect.Play();
-        if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
+        // 4. If we are online, we send a message to everyone else.
+        if (isOnlineMode)
+        {
+            view.RPC("RPC_SpawnVisualBullet", RpcTarget.Others, bulletSpawnPoint.position, shootDirection);
+        }
+    }
+    [PunRPC]
+    private void RPC_SpawnVisualBullet(Vector3 position, Vector2 direction)
+    {
+        // This code is run by EVERYONE ELSE except the person who fired.
+        GameObject visualBullet = Instantiate(bulletPrefab, position, Quaternion.identity);
+        BulletBehavior visualBulletScript = visualBullet.GetComponent<BulletBehavior>(); // Correction du nom du script
+        if (visualBulletScript != null)
+        {
+            // --- CORRECTION ICI ---
+            // On assigne les valeurs directement.
+            visualBulletScript.bulletSpeed = this.bulletSpeed;
+            visualBulletScript.bulletDamage = 0; // Visual bullets deal no damage.
+            visualBulletScript.collisionLayers = this.collisionLayers;
+            visualBulletScript.waterExplosionPrefab = this.destructionEffectPrefab.gameObject;
+
+            // On donne la direction à la balle visuelle pour qu'elle se déplace.
+            Rigidbody2D rb = visualBullet.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.velocity = direction * visualBulletScript.bulletSpeed;
+            }
+        }
+    }
+
+
+    // --- AJOUT : LA FONCTION DE SYNCHRONISATION POUR LA ROTATION DE L'ARME ---
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // Le propriétaire envoie la rotation de l'arme et du bras.
+            stream.SendNext(Arm.transform.rotation);
+            stream.SendNext(Gun.transform.rotation);
+        }
+        else
+        {
+            // Les autres reçoivent et appliquent la rotation.
+            Arm.transform.rotation = (Quaternion)stream.ReceiveNext();
+            Gun.transform.rotation = (Quaternion)stream.ReceiveNext();
+        }
     }
     private IEnumerator Reload()
     {

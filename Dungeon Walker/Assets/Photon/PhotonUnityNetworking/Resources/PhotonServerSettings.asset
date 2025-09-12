@@ -45,6 +45,29 @@ MonoBehaviour:
   - RPC_DestroyBullet
   - RPC_InitializeBullet
   - RPC_PlayImpactEffect
+  - RPC_PlayDestructionEffect
+  - InitializeOnline
+  - RPC_DestroyAndExplode
+  - RPC_Shoot
+  - RPC_LoadGameScene
+  - RPC_Flip
+  - RPC_PlayParticleEffect
+  - RPC_ToggleGhostEffect
+  - RPC_DestroyWithEffect
+  - RPC_SpawnVisualBullet
+  - RPC_SpawnVisualBall
+  - RPC_InstantiateEffect
+  - RPC_PlayExplosionEffect
+  - RPC_PlayArrowDestructionEffect
+  - RPC_SpawnVisualArrow
+  - RPC_CreateVisualArrow
+  - RPC_ReportEnemyDeath
+  - RPC_PlaySpawnEffect
+  - RPC_TakeDamage
+  - RPC_PlayDamageEffects
+  - RPC_PlayDeathEffects
+  - RPC_SpawnVisualProjectile
+  - RPC_SynchronizeWeapon
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

@@ -1,9 +1,10 @@
 using FirstGearGames.SmoothCameraShaker;
+using Photon.Pun;
 using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Photon.Pun;
-public class MachineGunSystem : MonoBehaviour
+public class MachineGunSystem : MonoBehaviour, IPunObservable
 {
     [Header("COMPONENT REFERENCES")]
     [SerializeField] private GameObject Gun;
@@ -25,8 +26,8 @@ public class MachineGunSystem : MonoBehaviour
     [SerializeField] private float bulletLifetime = 3f;
     [SerializeField] private int bulletDamage = 15;
     [SerializeField] private LayerMask damageableLayers;
-    [SerializeField] private LayerMask collisionLayers;
-    [SerializeField] private LayerMask enemyLayers;
+    [SerializeField] public LayerMask collisionLayers;
+    [SerializeField] public LayerMask enemyLayers;
     private PhotonView playerView;
 
     [Header("AIMING & ROTATION (FROM ROBUST LAUNCHER)")]
@@ -112,9 +113,26 @@ public class MachineGunSystem : MonoBehaviour
     private Vector2 mouseScreenPosition; // Mouse screen position
    
     private Vector2 stabilizedMouseWorldPosition; // Stabilized mouse world position
+
+    private PhotonView view;
+    private PlayerSyncManager syncManager;
+    private bool isOnlineMode = false;
     void Awake()
     {
-        playerView = GetComponentInParent<PhotonView>();
+        view = GetComponentInParent<PhotonView>();
+        syncManager = GetComponentInParent<PlayerSyncManager>();
+
+        if (view != null && transform.root.CompareTag("OnlinePlayer"))
+        {
+            isOnlineMode = true;
+            Debug.Log("MachineGunSystem: Online Mode Detected.");
+        }
+        else
+        {
+            isOnlineMode = false;
+            Debug.Log("MachineGunSystem: Offline Mode Detected.");
+        }
+       
 
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
@@ -130,7 +148,12 @@ public class MachineGunSystem : MonoBehaviour
 
     void Update()
     {
-        
+        if (isOnlineMode && !view.IsMine)
+        {
+            // If we are online and this isn't our character, do nothing.
+            // The PlayerSyncManager will handle rotation.
+            return;
+        }
         HandleInputAndShooting();
         ApplyRotation();
         
@@ -328,40 +351,94 @@ public class MachineGunSystem : MonoBehaviour
    
 
     private void Shoot()
-    {
-        if (playerView != null) // --- ONLINE MODE ---
-        {
-            // We calculate the spawn parameters just like before.
-            float spread = Random.Range(-maxSpreadAngle / 2f, maxSpreadAngle / 2f);
-            Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation + spread);
-            Vector2 randomSpawnOffset = Random.insideUnitCircle * spawnAreaRadius;
-            Vector3 spawnPosition = bulletSpawnPoint.position + (Vector3)randomSpawnOffset;
+{
+    // Local effects are always played immediately for responsiveness.
+    if (muzzleFlashEffect != null) muzzleFlashEffect.Play();
+    if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
 
-            // THE FIX: We pass the NAME of the bullet prefab, not the GameObject itself.
-            // This ensures that the RPC sends a string, which the central RPC can then use
-            // with Resources.Load to find the correct prefab in the Resources folder.
-           playerView.RPC("RPC_FireWeapon", RpcTarget.All, "Bullets", spawnPosition, shootRotation);
+    // Calculate spawn parameters once.
+    float spread = Random.Range(-maxSpreadAngle / 2f, maxSpreadAngle / 2f);
+    Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation + spread);
+    Vector2 randomSpawnOffset = Random.insideUnitCircle * spawnAreaRadius;
+    Vector3 spawnPosition = bulletSpawnPoint.position + (Vector3)randomSpawnOffset;
+    Vector2 shootDirection = shootRotation * Vector2.right;
+
+    // --- THE MODE-AWARE LOGIC ---
+    if (isOnlineMode)
+    {
+        // --- ONLINE ---
+        // 1. The shooter creates their own "real" bullet locally.
+        GameObject myBullet = Instantiate(bulletPrefab, spawnPosition, shootRotation);
+        InitializeBullet(myBullet, shootDirection, true); // true = isReal
+
+        // 2. The shooter tells everyone else to create a "visual" bullet via an RPC.
+        // This RPC must be on your PlayerSyncManager.
+        if (syncManager != null)
+        {
+                view.RPC("RPC_SpawnVisualBullet", RpcTarget.Others, spawnPosition, shootRotation, shootDirection);
+            }
+    }
+    else
+    {
+        // --- OFFLINE ---
+        GameObject myBullet = Instantiate(bulletPrefab, spawnPosition, shootRotation);
+        InitializeBullet(myBullet, shootDirection, true); // true = isReal
+    }
+}
+    [PunRPC]
+    public void RPC_SpawnVisualBullet(Vector3 position, Quaternion rotation, Vector2 direction)
+    {
+        // This runs on all other clients.
+        GameObject visualBullet = Instantiate(bulletPrefab, position, rotation);
+        InitializeBullet(visualBullet, direction, false); // false = isReal
+    }
+    private void InitializeBullet(GameObject bullet, Vector2 direction, bool isReal)
+    {
+        BulletComponent bulletComponent = bullet.AddComponent<BulletComponent>();
+        bulletComponent.machineGunSystem = this; // Give it a reference back to this script
+        bulletComponent.isReal = isReal;
+        bulletComponent.Initialize(direction, bulletSpeed, bulletLifetime, bulletDamage, damageableLayers, collisionLayers, enemyLayers, destructionEffectPrefab, bulletCollisionSound, bulletCollisionSoundVolume);
+    }
+    public void TriggerNetworkedDestruction(Vector3 position)
+    {
+        if (isOnlineMode)
+        {
+            // ONLINE: We tell the PlayerSyncManager to send an RPC to EVERYONE.
+            if (syncManager != null && destructionEffectPrefab != null)
+            {
+                // We send the NAME of the prefab. It must be in a "Resources" folder.
+                syncManager.InstantiateEffect(destructionEffectPrefab.name, position, Quaternion.identity);
+            }
         }
         else
         {
-            // SINGLE-PLAYER MODE: Do exactly what you were doing before.
-            if (muzzleFlashEffect != null) muzzleFlashEffect.Play();
-            if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
+            // --- OFFLINE: THIS IS THE DEFINITIVE FIX ---
+            if (destructionEffectPrefab != null)
+            {
+                // 1. Instantiate the ParticleSystem itself, not its GameObject.
+                ParticleSystem effectInstance = Instantiate(destructionEffectPrefab, position, Quaternion.identity);
 
-            float spread = Random.Range(-maxSpreadAngle / 2f, maxSpreadAngle / 2f);
-            Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation + spread);
-            Vector2 randomSpawnOffset = Random.insideUnitCircle * spawnAreaRadius;
-            Vector3 spawnPosition = bulletSpawnPoint.position + (Vector3)randomSpawnOffset;
-
-            GameObject bulletInstance = Instantiate(bulletPrefab, spawnPosition, shootRotation);
-
-            // Your existing bullet initialization code for single-player
-            BulletComponent bulletComponent = bulletInstance.AddComponent<BulletComponent>();
-            Vector2 shootDirection = shootRotation * Vector2.right;
-            bulletComponent.Initialize(shootDirection, bulletSpeed, bulletLifetime, bulletDamage, damageableLayers, collisionLayers, enemyLayers, destructionEffectPrefab, bulletCollisionSound, bulletCollisionSoundVolume);
+                // 2. Explicitly tell it to play.
+                effectInstance.Play();
+            }
         }
     }
-
+   
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            // We are the owner. We send our arm and gun rotation.
+            stream.SendNext(Arm.transform.rotation);
+            stream.SendNext(Gun.transform.rotation);
+        }
+        else
+        {
+            // We are a remote client. We receive and apply the rotation.
+            this.Arm.transform.rotation = (Quaternion)stream.ReceiveNext();
+            this.Gun.transform.rotation = (Quaternion)stream.ReceiveNext();
+        }
+    }
     private void SpawnEmptyBullet()
     {
         if (emptyBulletPrefab == null || emptyBulletSpawnPoint == null) return;
@@ -499,45 +576,39 @@ public class BulletComponent : MonoBehaviour
     private float collisionSoundVolume;
     private Rigidbody2D rb;
     private AudioSource audioSource;
+    public MachineGunSystem machineGunSystem;
+    public bool isReal;
+    private bool hasHit = false;
 
     public void Initialize(Vector2 dir, float spd, float life, int dmg, LayerMask dmgLayers, LayerMask colLayers, LayerMask enemyLyrs, ParticleSystem destructionFx, AudioClip colSound, float colSoundVolume)
     {
-        direction = dir.normalized;
-        speed = spd;
-        lifetime = life;
-        damage = dmg;
-        damageableLayers = dmgLayers;
-        collisionLayers = colLayers;
-        enemyLayers = enemyLyrs;
-        destructionEffectPrefab = destructionFx;
-        collisionSound = colSound;
-        collisionSoundVolume = colSoundVolume;
+        // --- THIS IS THE CRITICAL FIX ---
+        // We must assign the incoming parameters to the class-level variables.
+        this.direction = dir.normalized;
+        this.speed = spd;
+        this.lifetime = life;
+        this.damage = dmg;
+        this.damageableLayers = dmgLayers;
+        this.collisionLayers = colLayers;
+        this.enemyLayers = enemyLyrs;
+        this.destructionEffectPrefab = destructionFx;
+        this.collisionSound = colSound;
+        this.collisionSoundVolume = colSoundVolume;
+        // --- END OF FIX ---
 
+        // The rest of the function was already correct.
         rb = GetComponent<Rigidbody2D>() ?? gameObject.AddComponent<Rigidbody2D>();
         rb.gravityScale = 0;
-        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
-        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-
-        if (GetComponent<Collider2D>() == null)
-        {
-            var collider = gameObject.AddComponent<CircleCollider2D>();
-            collider.isTrigger = true;
-            collider.radius = 0.1f;
-        }
+        // We no longer set the velocity here, as FixedUpdate will handle it.
 
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
-        Destroy(gameObject, lifetime);
-    }
 
-    void FixedUpdate()
-    {
-        if (rb != null) rb.velocity = direction * speed;
+        Destroy(gameObject, life);
     }
-
     void OnTriggerEnter2D(Collider2D other)
     {
         HandleCollision(other.gameObject);
@@ -548,73 +619,84 @@ public class BulletComponent : MonoBehaviour
         HandleCollision(collision.gameObject);
     }
 
+    void FixedUpdate()
+    {
+        if (rb != null) rb.velocity = direction * speed;
+    }
+
+
     private void HandleCollision(GameObject collidedObject)
     {
-        bool shouldDestroy = false;
+        // If this bullet has already processed a hit, do nothing.
+        if (hasHit) return;
 
-        if ((((1 << collidedObject.layer) & collisionLayers) != 0))
+        // Check what we hit
+        bool hitEnemy = ((1 << collidedObject.layer) & enemyLayers) != 0;
+        bool hitWall = ((1 << collidedObject.layer) & collisionLayers) != 0;
+
+        // If we didn't hit an enemy OR a wall, ignore the collision and continue flying.
+        if (!hitEnemy && !hitWall)
         {
-            shouldDestroy = true;
+            return;
         }
 
-        if ((((1 << collidedObject.layer) & enemyLayers) != 0))
+        // --- If we are here, it means we hit a valid target (enemy or wall) ---
+
+        // Mark this bullet as "hit" to prevent any further collision checks.
+        hasHit = true;
+
+        // --- LOGIC FOR THE "REAL" BULLET (THE ONE THAT DEALS DAMAGE) ---
+        if (isReal)
         {
-            Vector2 attackDirection = (collidedObject.transform.position - transform.position).normalized;
-
-            // Damage enemies
-            // Original code had specific health components. Re-adding them.
-            // Assuming these classes (FleaHealth, SprayerHealth, FlyHealth, InkHealth) exist in your project.
-            FleaHealth fleaHealth = collidedObject.GetComponent<FleaHealth>();
-            if (fleaHealth != null)
+            // 1. If it hit an enemy, deal damage.
+            if (hitEnemy)
             {
-                fleaHealth.TakeDamage(damage, attackDirection);
+                FleaHealth fleaHealth = collidedObject.GetComponent<FleaHealth>();
+                if (fleaHealth != null)
+                {
+                    fleaHealth.TakeDamage(damage, transform.right);
+                }
+
+                SprayerHealth sprayerHealth = collidedObject.GetComponent<SprayerHealth>();
+                if (sprayerHealth != null)
+                {
+                    sprayerHealth.TakeDamage(damage, transform.right);
+                }
+
+                FlyHealth flyHealth = collidedObject.GetComponent<FlyHealth>();
+                if (flyHealth != null)
+                {
+                    flyHealth.TakeDamage(damage, transform.right);
+                }
+
+                InkHealth inkHealth = collidedObject.GetComponent<InkHealth>();
+                if (inkHealth != null)
+                {
+                    inkHealth.TakeDamage(damage, transform.right, 1f);
+                }
+
+                RatKingHealth ratKingHealth = collidedObject.GetComponent<RatKingHealth>();
+                if (ratKingHealth != null)
+                {
+                    ratKingHealth.TakeDamage(damage);
+                }
+
+                BarrelExplosion barrelExplosion = collidedObject.GetComponent<BarrelExplosion>();
+                if (barrelExplosion != null)
+                {
+                    barrelExplosion.TakeDamage(damage);
+                }
             }
 
-            SprayerHealth sprayerHealth = collidedObject.GetComponent<SprayerHealth>();
-            if (sprayerHealth != null)
-            {
-                sprayerHealth.TakeDamage(damage, attackDirection);
-            }
+            machineGunSystem.TriggerNetworkedDestruction(transform.position);
 
-            FlyHealth flyHealth = collidedObject.GetComponent<FlyHealth>();
-            if (flyHealth != null)
-            {
-                flyHealth.TakeDamage(damage, attackDirection);
-            }
-
-            InkHealth inkHealth = collidedObject.GetComponent<InkHealth>();
-            if (inkHealth != null)
-            {
-                inkHealth.TakeDamage(damage, attackDirection, 1f);
-            }
-
-            RatKingHealth RatKingHealth = collidedObject.GetComponent<RatKingHealth>();
-            if (RatKingHealth != null)
-            {
-                RatKingHealth.TakeDamage(damage);
-            }
-            BarrelExplosion barrelExplosion = collidedObject.GetComponent<BarrelExplosion>();
-            if (barrelExplosion != null)
-            {
-                barrelExplosion.TakeDamage(damage);
-            }
-
-            if (audioSource != null && collisionSound != null) audioSource.PlayOneShot(collisionSound, collisionSoundVolume);
-            shouldDestroy = true;
+            // 3. The "real" bullet destroys itself.
+            Destroy(gameObject);
         }
-        else if ((((1 << collidedObject.layer) & damageableLayers) != 0))
+        else
         {
-            shouldDestroy = true;
-        }
-
-        if (shouldDestroy)
-        {
-            if (destructionEffectPrefab != null)
-            {
-                ParticleSystem newParticleSystem = Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
-                newParticleSystem.Play();
-                Destroy(newParticleSystem.gameObject, newParticleSystem.main.duration);
-            }
+            // --- LOGIC FOR THE "VISUAL" BULLET ---
+            // Visual copies just destroy themselves silently. They don't deal damage or create effects.
             Destroy(gameObject);
         }
     }

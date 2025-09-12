@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class EnemySuperTarget : MonoBehaviour
@@ -31,6 +31,7 @@ public class EnemySuperTarget : MonoBehaviour
     private RatKingHealth ratKingHealth;
     private Rigidbody2D rb;
     private float originalGravityScale;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -201,5 +202,40 @@ public class EnemySuperTarget : MonoBehaviour
             isFlashing = false;
         }
         yield return null;
+    }
+    public void Stun(bool value)
+    {
+        // Stun all health components
+        if (healthComponent != null) healthComponent.isStunned = value;
+        if (flyHealth != null) flyHealth.isStunned = value;
+        if (inkHealth != null) inkHealth.isStunned = value;
+        if (sprayerHealth != null) sprayerHealth.isStunned = value;
+        if (ratKingHealth != null) ratKingHealth.isStunned = value;
+
+        // Freeze Rigidbody if stun
+        if (rb != null)
+        {
+            if (value)
+            {
+                rb.velocity = Vector2.zero;
+                rb.gravityScale = 0f;
+            }
+            else
+            {
+                rb.gravityScale = originalGravityScale;
+            }
+        }
+
+        // Disable/Enable AI scripts
+        foreach (var script in scriptsToDisable)
+        {
+            if (script != null) script.enabled = !value;
+        }
+
+        // Disable/Enable Animator
+        if (enemyAnimator != null)
+        {
+            enemyAnimator.enabled = !value;
+        }
     }
 }

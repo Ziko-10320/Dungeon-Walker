@@ -24,6 +24,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     void Start()
     {
+        PhotonNetwork.SendRate = 60; // Sends updates 60 times per second
+        PhotonNetwork.SerializationRate = 60; // Syncs OnPhotonSerializeView 60 times per second
         PhotonNetwork.KeepAliveInBackground = 120f;
         LobbyPanel.SetActive(false);
         RoomPanel.SetActive(false);
@@ -75,6 +77,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         string roomName = roomNameInput.text;
         if (string.IsNullOrEmpty(roomName)) roomName = "Room " + Random.Range(1000, 10000);
         RoomOptions roomOptions = new RoomOptions() { MaxPlayers = 2 };
+        PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.CreateRoom(roomName, roomOptions);
     }
 
@@ -164,8 +167,30 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public void OnStartGameButtonClicked()
     {
+        // 1. L'hôte (Master Client) ferme la salle. Personne ne peut plus rejoindre.
         PhotonNetwork.CurrentRoom.IsOpen = false;
         PhotonNetwork.CurrentRoom.IsVisible = false;
+
+        // 2. L'hôte envoie un ordre à TOUS les joueurs (y compris lui-même)
+        // pour qu'ils exécutent la fonction "RPC_LoadGameScene".
+        // On utilise le PhotonView de ce NetworkManager pour envoyer le RPC.
+        // Assurez-vous que votre objet NetworkManager a un composant PhotonView.
+        PhotonView view = GetComponent<PhotonView>();
+        if (view != null)
+        {
+            view.RPC("RPC_LoadGameScene", RpcTarget.All);
+        }
+        else
+        {
+            Debug.LogError("NetworkManager n'a pas de composant PhotonView ! Impossible d'envoyer le RPC pour démarrer la partie.");
+        }
+    }
+
+    [PunRPC]
+    private void RPC_LoadGameScene()
+    {
+        Debug.Log("Ordre reçu. Chargement de la scène 'Co-op'...");
+        // Chaque client qui reçoit cet ordre charge la scène de jeu.
         PhotonNetwork.LoadLevel("Co-op");
     }
 }

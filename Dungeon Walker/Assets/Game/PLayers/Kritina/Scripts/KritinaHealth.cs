@@ -38,7 +38,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float damageSoundVolume = 1f;
 
     private Material[] originalMaterials;
-    private bool isInvincible = false;
+    public bool isInvincible = false;
 
     void Awake()
     {
@@ -89,7 +89,11 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage, float knockbackForce, Vector2 knockbackDirection)
     {
-        if (isInvincible) return;
+        if (isInvincible)
+        {
+            Debug.Log("Player is invincible – no damage taken.");
+            return;
+        }
 
         currentHealth -= damage;
         UpdateHealthEffects();
@@ -133,7 +137,14 @@ public class PlayerHealth : MonoBehaviour
 
     // ... The rest of your script (HealOverTime, UpdateHealthEffects, HandleHit, etc.) is unchanged ...
     // ... as it is all correct and does not need modification. I've included it below for completeness.
-
+    public void CancelDeathState()
+    {
+        if (currentHealth <= 0)
+        {
+            // force lock health to at least 1 so death can't trigger
+            currentHealth = 1;
+        }
+    }
     private IEnumerator HealOverTime()
     {
         Debug.Log("Health regeneration started.");
@@ -272,5 +283,14 @@ public class PlayerHealth : MonoBehaviour
                 Destroy(flashMaterialInstances[i]);
             }
         }
+    }
+    public void FullHeal()
+    {
+        currentHealth = maxHealth;
+        UpdateHealthEffects();
+
+        // Optional: trigger healing particles instantly
+        StartHealingParticles();
+        StopHealingParticles();
     }
 }

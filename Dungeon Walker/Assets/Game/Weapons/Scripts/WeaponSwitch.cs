@@ -337,29 +337,7 @@ public class WeaponSwitchManager : MonoBehaviour
             Debug.Log($"Cleaned up {throwSlashObjects.Length} ThrowSlash objects during weapon switch");
         }
     }
-    // In WeaponSwitchManager.cs
-
-    [PunRPC]
-    void RPC_FireWeapon(string projectilePrefabName, Vector3 position, Quaternion rotation)
-    {
-        if (PhotonNetwork.IsMasterClient)
-        {
-            GameObject bulletGO = PhotonNetwork.Instantiate(projectilePrefabName, position, rotation);
-
-            BulletBehavior bulletBehavior = bulletGO.GetComponent<BulletBehavior>();
-            if (bulletBehavior != null)
-            {
-                // The Master Client initializes the bullet's movement.
-                // The Rigidbody2DView will sync this movement for everyone else.
-                bulletBehavior.Initialize(rotation * Vector3.right);
-            }
-        }
-    }
-
-
-    /// <summary>
-    /// Public method to get the current weapon name for debugging
-    /// </summary>
+  
     public string GetCurrentWeaponName()
     {
         return currentWeapon?.weaponName ?? "None";
@@ -377,5 +355,4 @@ public class WeaponSwitchManager : MonoBehaviour
         }
     }
 }
-
 

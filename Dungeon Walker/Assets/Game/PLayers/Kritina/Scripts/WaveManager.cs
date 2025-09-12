@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Photon.Pun;
 
 // Classe de configuration pour chaque vague.
 // [System.Serializable] permet de la voir et de la modifier dans l'inspecteur Unity.
@@ -43,8 +44,21 @@ public class WaveManager : MonoBehaviour
  
     private Transform playerTransform;
 
+    private PhotonView view;
+    private bool isOnlineMode = false;
     void Start()
     {
+        view = GetComponent<PhotonView>();
+        if (PhotonNetwork.IsConnected)
+        {
+            isOnlineMode = true;
+            Debug.Log("WaveManager: Online Mode Detected.");
+        }
+        else
+        {
+            isOnlineMode = false;
+            Debug.Log("WaveManager: Offline Mode Detected.");
+        }
         if (checkpointManager == null)
         {
             Debug.LogError("WaveManager: La référence au CheckpointManager est manquante !");
@@ -65,7 +79,7 @@ public class WaveManager : MonoBehaviour
         // Déclenche la première vague en fonction du score initial (qui est probablement 0)
         OnScoreUpdated(checkpointManager.TotalScore);
 
-        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        GameObject playerObject = GameObject.FindGameObjectWithTag("OnlinePlayer") ?? GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
         {
             playerTransform = playerObject.transform;
@@ -73,6 +87,17 @@ public class WaveManager : MonoBehaviour
         else
         {
             Debug.LogError("WaveManager: Impossible de trouver l'objet du joueur. Assure-toi que ton joueur a le tag 'Player' !");
+            enabled = false;
+            return;
+        }
+        GameObject playerObjectOnline = GameObject.FindGameObjectWithTag("OnlinePlayer");
+        if (playerObjectOnline != null)
+        {
+            playerTransform = playerObjectOnline.transform;
+        }
+        else
+        {
+            Debug.LogError("WaveManager: Impossible de trouver l'objet du joueur. Assure-toi que ton joueur a le tag 'OnlinePlayer' !");
             enabled = false;
             return;
         }
@@ -94,6 +119,11 @@ public class WaveManager : MonoBehaviour
    
     private void TrySpawningWave()
     {
+        if (isOnlineMode && !PhotonNetwork.IsMasterClient)
+        {
+            // If we are online BUT we are not the host, do nothing.
+            return;
+        }
         WaveConfig configToSpawn = GetWaveConfigForScore(currentScore);
 
         if (configToSpawn != null)
@@ -119,6 +149,7 @@ public class WaveManager : MonoBehaviour
    
     private void ClearExistingEnemies()
     {
+        if (isOnlineMode && !PhotonNetwork.IsMasterClient) return;
         Debug.Log($"Nettoyage des {activeEnemies.Count} ennemis restants de la vague précédente.");
         // On parcourt une copie de la liste pour pouvoir la modifier en toute sécurité
         foreach (GameObject enemy in new List<GameObject>(activeEnemies))
@@ -130,12 +161,19 @@ public class WaveManager : MonoBehaviour
                     Instantiate(spawnEffectPrefab, enemy.transform.position, Quaternion.identity);
                 }
                 // On se désabonne de l'événement pour éviter des erreurs
-                var healthScript = enemy.GetComponent<FleaHealth>();
+                var healthScript = enemy.GetComponent<FleaHealth>();                                         //Back here if enemies doesn't get cleared
                 if (healthScript != null)
                 {
                     healthScript.OnDeath.RemoveListener(OnEnemyDied);
                 }
-                Destroy(enemy);
+                if (isOnlineMode)
+                {
+                    PhotonNetwork.Destroy(enemy);
+                }
+                else
+                {
+                    Destroy(enemy);
+                }
             }
         }
         activeEnemies.Clear(); // On vide la liste
@@ -145,49 +183,49 @@ public class WaveManager : MonoBehaviour
     private IEnumerator SpawnWave(WaveConfig config)
     {
         waveIsActive = true;
-        Debug.Log($"Début de la vague : {config.waveName} pour un score de {currentScore}");
+        Debug.Log($"Master Client starting wave: {config.waveName}");
 
-        // 1. Faire apparaître les ennemis normaux
+        // 1. Spawn normal enemies
         for (int i = 0; i < config.enemyCount; i++)
         {
-            // Choisis un type d'ennemi au hasard parmi ceux autorisés pour cette vague
+            // The Master Client decides which enemy and where
             GameObject enemyPrefab = config.enemyPrefabs[Random.Range(0, config.enemyPrefabs.Count)];
-
-            // Choisis un point de spawn au hasard
             Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
-
-            // Calcule une position aléatoire dans le rayon
             Vector2 randomOffset = Random.insideUnitCircle * spawnRadius;
             Vector3 spawnPosition = spawnPoint.position + new Vector3(randomOffset.x, randomOffset.y, 0);
 
-            // --- LOGIQUE DE RECHERCHE PAR TAG ---
-            Vector3 effectPosition = spawnPosition; // Par défaut, l'effet apparaît là où l'ennemi apparaît.
+            GameObject spawnedEnemy;
 
-            // On instancie l'ennemi D'ABORD, mais il est invisible et inactif.
-            // Cela nous permet de chercher ses enfants dans la hiérarchie.
-            GameObject tempEnemyInstance = Instantiate(enemyPrefab, spawnPosition, spawnPoint.rotation);
-            tempEnemyInstance.SetActive(false); // Très important pour qu'il n'apparaisse pas tout de suite
-
-            // On cherche maintenant un enfant avec le bon Tag DANS L'INSTANCE.
-            foreach (Transform child in tempEnemyInstance.transform)
+            if (isOnlineMode)
+            {
+                spawnedEnemy = PhotonNetwork.Instantiate(enemyPrefab.name, spawnPosition, spawnPoint.rotation);
+            }
+            else
+            {
+                spawnedEnemy = Instantiate(enemyPrefab, spawnPosition, spawnPoint.rotation);
+            }
+            // B. Use the reference to the NEWLY CREATED enemy to find its effect spawn point.
+            Vector3 effectPosition = spawnedEnemy.transform.position; // Default position
+            foreach (Transform child in spawnedEnemy.transform)
             {
                 if (child.CompareTag("EffectSpawnPoint"))
                 {
-                    effectPosition = child.position; // On récupère sa position dans le monde
-                    break; // On a trouvé, on arrête de chercher
+                    effectPosition = child.position;
+                    break;
                 }
             }
-            // --- FIN DE LA LOGIQUE DE RECHERCHE ---
 
-            // On joue l'effet à la position trouvée (ou à la position de l'ennemi par défaut)
             if (spawnEffectPrefab != null)
             {
-                Instantiate(spawnEffectPrefab, effectPosition, Quaternion.identity);
+                if (isOnlineMode)
+                {
+                    view.RPC("RPC_PlaySpawnEffect", RpcTarget.All, effectPosition);
+                }
+                else
+                {
+                    Instantiate(spawnEffectPrefab, effectPosition, Quaternion.identity);
+                }
             }
-
-            // Maintenant, on active l'ennemi pour qu'il apparaisse vraiment.
-            tempEnemyInstance.SetActive(true);
-            GameObject spawnedEnemy = tempEnemyInstance; // On renomme la variable pour la clarté
 
             activeEnemies.Add(spawnedEnemy);
             InitializeEnemy(spawnedEnemy);
@@ -223,16 +261,21 @@ public class WaveManager : MonoBehaviour
         // 2. Faire apparaître le boss si nécessaire (la logique reste la même)
         if (config.hasBoss && config.bossPrefab != null)
         {
-            Debug.Log("Apparition du BOSS !");
             Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
-            Vector2 randomOffset = Random.insideUnitCircle * spawnRadius;
-            Vector3 spawnPosition = spawnPoint.position + new Vector3(randomOffset.x, randomOffset.y, 0);
+            Vector3 spawnPosition = spawnPoint.position;
 
-            // On peut aussi appliquer la logique de tag pour le boss s'il en a besoin
-            Vector3 bossEffectPosition = spawnPosition;
-            GameObject tempBossInstance = Instantiate(config.bossPrefab, spawnPosition, spawnPoint.rotation);
-            tempBossInstance.SetActive(false);
-            foreach (Transform child in tempBossInstance.transform)
+            GameObject spawnedBoss;
+            if (isOnlineMode)
+            {
+                spawnedBoss = PhotonNetwork.Instantiate(config.bossPrefab.name, spawnPosition, spawnPoint.rotation);
+            }
+            else
+            {
+                spawnedBoss = Instantiate(config.bossPrefab, spawnPosition, spawnPoint.rotation);
+            }
+
+            Vector3 bossEffectPosition = spawnedBoss.transform.position;
+            foreach (Transform child in spawnedBoss.transform)
             {
                 if (child.CompareTag("EffectSpawnPoint"))
                 {
@@ -241,13 +284,11 @@ public class WaveManager : MonoBehaviour
                 }
             }
 
-            if (spawnEffectPrefab != null)
+            if (spawnEffectPrefab != null && view != null)
             {
-                Instantiate(spawnEffectPrefab, bossEffectPosition, Quaternion.identity);
+                view.RPC("RPC_PlaySpawnEffect", RpcTarget.All, bossEffectPosition);
             }
-
-            tempBossInstance.SetActive(true);
-            GameObject spawnedBoss = tempBossInstance;
+            
 
             activeEnemies.Add(spawnedBoss);
             InitializeEnemy(spawnedBoss);
@@ -261,7 +302,16 @@ public class WaveManager : MonoBehaviour
 
         currentWaveCoroutine = null;
     }
-
+    [PunRPC]
+    private void RPC_PlaySpawnEffect(Vector3 position)
+    {
+        // This code runs on every client's machine.
+        // It creates the spawn effect locally.
+        if (spawnEffectPrefab != null)
+        {
+            Instantiate(spawnEffectPrefab, position, Quaternion.identity);
+        }
+    }
     private void InitializeEnemy(GameObject enemy)
     {
         // Assigner le joueur au script de suivi (FlyFollow)
@@ -332,21 +382,48 @@ public class WaveManager : MonoBehaviour
 
     public void OnEnemyDied(GameObject deadEnemy)
     {
-        if (activeEnemies.Contains(deadEnemy))
+        if (isOnlineMode)
         {
-            activeEnemies.Remove(deadEnemy);
+            // In online mode, we report the death to the Master Client.
+            if (view != null && deadEnemy.GetComponent<PhotonView>() != null)
+            {
+                view.RPC("RPC_ReportEnemyDeath", RpcTarget.MasterClient, deadEnemy.GetComponent<PhotonView>().ViewID);
+            }
         }
-
-        Debug.Log($"Un ennemi est mort. Ennemis restants : {activeEnemies.Count}");
-
-        // On vérifie seulement si la vague est terminée.
-        if (activeEnemies.Count == 0 && waveIsActive)
+        else
         {
-            waveIsActive = false;
-            Debug.Log("Vague terminée ! En attente d'une nouvelle mise à jour de score.");
+            // In offline mode, we just update our local list directly.
+            if (activeEnemies.Contains(deadEnemy))
+            {
+                activeEnemies.Remove(deadEnemy);
+            }
+            if (activeEnemies.Count == 0 && waveIsActive)
+            {
+                waveIsActive = false;
+                Debug.Log("Offline Wave complete!");
+            }
         }
     }
 
+    [PunRPC]
+    private void RPC_ReportEnemyDeath(int viewID)
+    {
+        // This code only runs on the Master Client's machine.
+        GameObject deadEnemy = PhotonView.Find(viewID)?.gameObject;
+
+        if (deadEnemy != null && activeEnemies.Contains(deadEnemy))
+        {
+            activeEnemies.Remove(deadEnemy);
+            Debug.Log($"Master Client confirmed death. Enemies remaining: {activeEnemies.Count}");
+
+            if (activeEnemies.Count == 0 && waveIsActive)
+            {
+                waveIsActive = false;
+                Debug.Log("Master Client: Wave complete!");
+                // The Master Client could now trigger the next wave or a "wave cleared" event.
+            }
+        }
+    }
 
     // Trouve la configuration de vague appropriée pour le score actuel
     private WaveConfig GetWaveConfigForScore(int score)

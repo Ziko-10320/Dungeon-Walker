@@ -1,5 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class SprayerFollow : MonoBehaviour
 {
@@ -48,22 +49,51 @@ public class SprayerFollow : MonoBehaviour
 
     void Awake()
     {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
-        if (sprayerAnimator == null) sprayerAnimator = GetComponent<Animator>();
-        health = GetComponent<SprayerHealth>();
-        if (playerTransform == null)
+        if (playerTransform != null)
         {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
+            Debug.Log("FleaFollow: Player was assigned manually. Using that target.");
+        }
+        else
+        {
+            // 2. If not, we search for any and all players in the scene.
+            GameObject[] onlinePlayers = GameObject.FindGameObjectsWithTag("OnlinePlayer");
+            GameObject[] offlinePlayers = GameObject.FindGameObjectsWithTag("Player");
+
+            // 3. We combine these into one single list of potential targets.
+            List<GameObject> allPlayers = new List<GameObject>();
+            allPlayers.AddRange(onlinePlayers);
+            allPlayers.AddRange(offlinePlayers);
+
+            // 4. We find the player that is closest to this specific flea.
+            GameObject closestPlayer = null;
+            float minDistance = float.MaxValue;
+
+            foreach (GameObject player in allPlayers)
             {
-                playerTransform = playerObj.transform;
+                float distance = Vector3.Distance(transform.position, player.transform.position);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closestPlayer = player;
+                }
+            }
+
+            // 5. If we found a closest player, we assign its transform as our target.
+            if (closestPlayer != null)
+            {
+                playerTransform = closestPlayer.transform;
+                Debug.Log("FleaFollow: Found closest player to target: " + closestPlayer.name);
             }
         }
+        if (rb == null) rb = GetComponent<Rigidbody2D>();
+        if (sprayerAnimator == null) sprayerAnimator = GetComponent<Animator>();
+        health = GetComponent<SprayerHealth>();      
 
     }
 
     void Start()
     {
+
         ChangeState(AIState.Wandering);
     }
 
