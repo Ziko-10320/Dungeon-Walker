@@ -9,12 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 408cb81264975fd4a91662ce9c8bd8b1, type: 3}
+  m_Script: {fileID: 11500000, guid: 5b45273f6fa420346a6ed667bf9f15b4, type: 3}
   m_Name: SpeedBoost
   m_EditorClassIdentifier: 
-  id: small/potion
-  displayName: SpeedBoost
+  powerUpName: Speed socks
   description: Give you blabalablalbalba
   icon: {fileID: 21300000, guid: 575c463f7e7fb944ca3b61cd31a5df1f, type: 3}
-  price: 100
-  stackable: 1
+  price: 25
+  type: 0
+  effectValue: 0

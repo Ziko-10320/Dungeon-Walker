@@ -8,18 +8,16 @@ public class StartMenuController : MonoBehaviour
     // This is your existing function for the single-player "Start" button
     public void OnStartClick()
     {
-        // This probably loads your single-player game scene
         SceneManager.LoadScene(1);
     }
 
-    // --- ADD THIS NEW FUNCTION ---
-    // This function will be called by your new "Online" button
+    // This is your existing function for the "Online" button
     public void OnOnlineClick()
     {
-        // This will load our new scene dedicated to online multiplayer
         SceneManager.LoadScene(3);
     }
-    // -----------------------------
+
+    // --- THE OnShopClick() FUNCTION IS NO LONGER NEEDED HERE ---
 
     // This is your existing function for the "Exit" button
     public void OnExitClick()

@@ -138931,7 +138931,6 @@ GameObject:
   - component: {fileID: 4372666188120850418}
   - component: {fileID: 6624817853990017203}
   - component: {fileID: 4745970531061244357}
-  - component: {fileID: 6489618977656160567}
   m_Layer: 8
   m_Name: KritinaSingle
   m_TagString: Player
@@ -139681,29 +139680,6 @@ MonoBehaviour:
   particleSpawnPoint: {fileID: 6887849670312008350}
   clawImpactShake: {fileID: 11400000, guid: e6107c79dc59e694082721368c332589, type: 2}
   playerHealth: {fileID: 704909933309968761}
---- !u!114 &6489618977656160567
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6790693189779611674}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1ad57506ca06094191d37eafba975c7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playerMovement: {fileID: 5159600053955234360}
-  playerHealth: {fileID: 0}
-  speedMultiplier: 1.9
-  speedBoostDuration: 10
-  speedBoostParticles: {fileID: 5764499391975148318}
-  instantHealParticles:
-  - {fileID: 8599797722290836780}
-  - {fileID: 8535302252794182684}
-  - {fileID: 8122313565894208871}
-  - {fileID: 3835787056950981651}
-  - {fileID: 8917108678992454185}
 --- !u!1 &6950290840085827452
 GameObject:
   m_ObjectHideFlags: 0
