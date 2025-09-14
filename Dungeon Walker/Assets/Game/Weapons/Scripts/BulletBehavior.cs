@@ -85,30 +85,35 @@ public class BulletBehavior : MonoBehaviour
         if (enemyHealth != null)
         {
             enemyHealth.TakeDamage(bulletDamage, moveDirection);
+            FindObjectOfType<SuperMoveController>().superMeter.AddDamage(bulletDamage);
         }
 
         SprayerHealth SprayerHealth = hitObject.GetComponent<SprayerHealth>();
         if (SprayerHealth != null)
         {
             SprayerHealth.TakeDamage(bulletDamage, moveDirection);
+            FindObjectOfType<SuperMoveController>().superMeter.AddDamage(bulletDamage);
         }
 
         FlyHealth flyHealth = hitObject.GetComponent<FlyHealth>();
         if (flyHealth != null)
         {
             flyHealth.TakeDamage(bulletDamage, moveDirection);
+            FindObjectOfType<SuperMoveController>().superMeter.AddDamage(bulletDamage);
         }
 
         InkHealth inkHealth = hitObject.GetComponent<InkHealth>();
         if (inkHealth != null)
         {
             inkHealth.TakeDamage(bulletDamage, moveDirection);
+            FindObjectOfType<SuperMoveController>().superMeter.AddDamage(bulletDamage);
         }
 
         RatKingHealth RatKingHealth = hitObject.GetComponent<RatKingHealth>();
         if (RatKingHealth != null)
         {
             RatKingHealth.TakeDamage(bulletDamage);
+            FindObjectOfType<SuperMoveController>().superMeter.AddDamage(bulletDamage);
         }
         // --- LA LOGIQUE DE PARTICULE INSPIRÉE DU BOWSYSTEM ---
 

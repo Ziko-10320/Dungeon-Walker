@@ -79,7 +79,7 @@ public class WaveManager : MonoBehaviour
         // Déclenche la première vague en fonction du score initial (qui est probablement 0)
         OnScoreUpdated(checkpointManager.TotalScore);
 
-        GameObject playerObject = GameObject.FindGameObjectWithTag("OnlinePlayer") ?? GameObject.FindGameObjectWithTag("Player");
+        GameObject playerObject =  GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
         {
             playerTransform = playerObject.transform;
@@ -90,17 +90,7 @@ public class WaveManager : MonoBehaviour
             enabled = false;
             return;
         }
-        GameObject playerObjectOnline = GameObject.FindGameObjectWithTag("OnlinePlayer");
-        if (playerObjectOnline != null)
-        {
-            playerTransform = playerObjectOnline.transform;
-        }
-        else
-        {
-            Debug.LogError("WaveManager: Impossible de trouver l'objet du joueur. Assure-toi que ton joueur a le tag 'OnlinePlayer' !");
-            enabled = false;
-            return;
-        }
+       
     }
 
     // REMPLACER l'ancienne méthode OnScoreUpdated par celle-ci :

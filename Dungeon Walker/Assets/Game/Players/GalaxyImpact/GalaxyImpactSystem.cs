@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using FirstGearGames.SmoothCameraShaker;
@@ -15,28 +15,28 @@ public class GalaxyImapctSystem : MonoBehaviour
     [SerializeField] private string superMoveTriggerName = "GalaxyImpact";
     [Tooltip("La touche pour activer le super coup.")]
     [SerializeField] private KeyCode superMoveKey = KeyCode.F;
-    [Tooltip("Le cooldown en secondes avant de pouvoir réutiliser le super coup.")]
+    [Tooltip("Le cooldown en secondes avant de pouvoir rÃ©utiliser le super coup.")]
     [SerializeField] private float superMoveCooldown = 10f;
 
     [Header("Scripts to Disable During Super")]
-    [Tooltip("Faites glisser ici tous les scripts qui doivent être désactivés pendant le super coup (ex: scripts d'armes, dash, etc.).")]
+    [Tooltip("Faites glisser ici tous les scripts qui doivent Ãªtre dÃ©sactivÃ©s pendant le super coup (ex: scripts d'armes, dash, etc.).")]
     public List<MonoBehaviour> scriptsToDisable;
 
     [Header("Damage Settings")]
-    [Tooltip("Le point d'origine de la zone de dégâts.")]
+    [Tooltip("Le point d'origine de la zone de dÃ©gÃ¢ts.")]
     [SerializeField] private Transform damageAreaOrigin;
-    [Tooltip("Le rayon de la zone de dégâts.")]
+    [Tooltip("Le rayon de la zone de dÃ©gÃ¢ts.")]
     [SerializeField] private float damageRadius = 2.0f;
-    [Tooltip("Les dégâts infligés par chaque 'tick' de dégâts.")]
+    [Tooltip("Les dÃ©gÃ¢ts infligÃ©s par chaque 'tick' de dÃ©gÃ¢ts.")]
     [SerializeField] private int damagePerTick = 5;
-    [Tooltip("La couche (Layer) des ennemis pour les détecter.")]
+    [Tooltip("La couche (Layer) des ennemis pour les dÃ©tecter.")]
     [SerializeField] private LayerMask enemyLayer;
 
-    // --- NOUVELLES VARIABLES POUR LES DÉGÂTS SUR LA DURÉE ---
+    // --- NOUVELLES VARIABLES POUR LES DÃ‰GÃ‚TS SUR LA DURÃ‰E ---
     [Header("Damage Over Time Settings")]
-    [Tooltip("La durée totale pendant laquelle les dégâts sont appliqués (en secondes).")]
+    [Tooltip("La durÃ©e totale pendant laquelle les dÃ©gÃ¢ts sont appliquÃ©s (en secondes).")]
     [SerializeField] private float damageDuration = 1.5f;
-    [Tooltip("L'intervalle entre chaque 'tick' de dégâts (en secondes).")]
+    [Tooltip("L'intervalle entre chaque 'tick' de dÃ©gÃ¢ts (en secondes).")]
     [SerializeField] private float damageTickInterval = 0.3f;
 
     public ShakeData CameraShakeDeath;
@@ -45,7 +45,7 @@ public class GalaxyImapctSystem : MonoBehaviour
     private bool isPerformingSuperMove = false;
     private float originalGravityScale;
     private float lastSuperMoveTime = -100f;
-    private Coroutine damageCoroutine; // Pour garder une référence à notre coroutine
+    private Coroutine damageCoroutine; // Pour garder une rÃ©fÃ©rence Ã  notre coroutine
 
     void Awake()
     {
@@ -60,7 +60,7 @@ public class GalaxyImapctSystem : MonoBehaviour
     {
         bool canPerformSuper = !isPerformingSuperMove &&
                                 Time.time >= lastSuperMoveTime + superMoveCooldown &&
-                                (playerDash == null || !playerDash.IsDashing); // On vérifie si le script de dash n'existe pas OU s'il n'est pas en cours
+                                (playerDash == null || !playerDash.IsDashing); // On vÃ©rifie si le script de dash n'existe pas OU s'il n'est pas en cours
 
         if (Input.GetKeyDown(superMoveKey) && canPerformSuper)
         {
@@ -90,7 +90,7 @@ public class GalaxyImapctSystem : MonoBehaviour
 
         playerAnimator.SetTrigger(superMoveTriggerName);
 
-        // --- MODIFICATION : On lance la coroutine de dégâts ---
+        // --- MODIFICATION : On lance la coroutine de dÃ©gÃ¢ts ---
         if (damageCoroutine != null)
         {
             StopCoroutine(damageCoroutine);
@@ -101,13 +101,13 @@ public class GalaxyImapctSystem : MonoBehaviour
         Debug.Log("Super Move Started!");
     }
 
-    // --- NOUVELLE COROUTINE POUR LES DÉGÂTS SUR LA DURÉE ---
+    // --- NOUVELLE COROUTINE POUR LES DÃ‰GÃ‚TS SUR LA DURÃ‰E ---
     private IEnumerator DamageOverTimeRoutine()
     {
         float timer = 0f;
         while (timer < damageDuration)
         {
-            // Appliquer les dégâts
+            // Appliquer les dÃ©gÃ¢ts
             ApplyDamageTick();
 
             // Attendre le prochain intervalle
@@ -117,7 +117,7 @@ public class GalaxyImapctSystem : MonoBehaviour
         }
     }
 
-    // La fonction qui applique réellement les dégâts (appelée par la coroutine)
+    // La fonction qui applique rÃ©ellement les dÃ©gÃ¢ts (appelÃ©e par la coroutine)
     private void ApplyDamageTick()
     {
         Debug.Log("Applying Super Move damage tick!");
@@ -165,7 +165,7 @@ public class GalaxyImapctSystem : MonoBehaviour
     }
     public void FinishSuperMove()
     {
-        // On s'assure d'arrêter la coroutine de dégâts au cas où l'animation serait plus courte que la durée des dégâts
+        // On s'assure d'arrÃªter la coroutine de dÃ©gÃ¢ts au cas oÃ¹ l'animation serait plus courte que la durÃ©e des dÃ©gÃ¢ts
         if (damageCoroutine != null)
         {
             StopCoroutine(damageCoroutine);
@@ -186,7 +186,7 @@ public class GalaxyImapctSystem : MonoBehaviour
     }
 
     // --- AJOUT : VISUALISATION DES GIZMOS ---
-    // Cette fonction dessine la zone de dégâts dans l'éditeur pour un réglage facile.
+    // Cette fonction dessine la zone de dÃ©gÃ¢ts dans l'Ã©diteur pour un rÃ©glage facile.
     void OnDrawGizmosSelected()
     {
         if (damageAreaOrigin == null) return;

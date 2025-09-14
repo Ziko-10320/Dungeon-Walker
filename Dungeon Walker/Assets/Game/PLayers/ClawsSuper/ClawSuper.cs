@@ -2,7 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using FirstGearGames.SmoothCameraShaker;
-
+using UnityEngine.UI;
+using TMPro;
 public class SuperMoveController : MonoBehaviour
 {
     [Header("Activation")]
@@ -47,13 +48,62 @@ public class SuperMoveController : MonoBehaviour
 
     // ✅ track which enemies are already clawed
     private HashSet<EnemySuperTarget> processedEnemies = new HashSet<EnemySuperTarget>();
+    [Header("Super System")]
+    [SerializeField] public PlayerSuperMeter superMeter;  // drag the meter script here
 
+    [Header("Super UI")]
+    [SerializeField] private Slider superBarSlider;
+    [SerializeField] private TextMeshProUGUI superBarText;
+    [SerializeField] private GameObject superReadyIndicator;
+    [SerializeField] private Button superButton;
     void Start()
     {
         playerRb = GetComponent<Rigidbody2D>();
         playerAnimator = GetComponent<Animator>();
         playerCollider = GetComponent<Collider2D>();
         if (playerHealth == null) playerHealth = GetComponent<PlayerHealth>();
+
+        superMeter = FindObjectOfType<PlayerSuperMeter>();
+        if (superButton != null)
+        {
+            superButton.onClick.AddListener(() =>
+            {
+                TryActivateSuper();
+            });
+        }
+        if (superMeter == null)
+        {
+            Debug.LogError("❌ No PlayerSuperMeter found in scene!");
+            return;
+        }
+
+        if (superBarSlider != null)
+        {
+            superBarSlider.minValue = 0f;
+            superBarSlider.maxValue = 1f;
+            superBarSlider.value = superMeter.GetProgressNormalized();
+        }
+
+        if (superBarText != null)
+            superBarText.text = Mathf.RoundToInt(superMeter.GetProgressNormalized() * 100f) + "%";
+
+        if (superReadyIndicator != null)
+            superReadyIndicator.SetActive(superMeter.HasSuperCharge());
+
+        // hook events
+        superMeter.onSuperReady.AddListener(() =>
+        {
+            if (superBarText != null) superBarText.text = "SUPER READY";
+            if (superBarSlider != null) superBarSlider.value = 1f;
+            if (superReadyIndicator != null) superReadyIndicator.SetActive(true);
+        });
+
+        superMeter.onSuperUsed.AddListener(() =>
+        {
+            if (superBarText != null) superBarText.text = "0%";
+            if (superBarSlider != null) superBarSlider.value = 0f;
+            if (superReadyIndicator != null) superReadyIndicator.SetActive(false);
+        });
 
         if (playerRb != null) originalPlayerBodyType = playerRb.bodyType;
         if (playerRb != null) originalPlayerGravityScale = playerRb.gravityScale;
@@ -69,13 +119,36 @@ public class SuperMoveController : MonoBehaviour
         playerRenderers = new List<SpriteRenderer>(GetComponentsInChildren<SpriteRenderer>());
         originalPlayerColors = new List<Color>();
         foreach (var renderer in playerRenderers) originalPlayerColors.Add(renderer.color);
+
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(activationKey) && !isSuperMoveActive)
+        if (Input.GetKeyDown(activationKey))
         {
+            TryActivateSuper();
+        }
+        if (!superMeter.HasSuperCharge())
+        {
+            if (superBarSlider != null)
+                superBarSlider.value = superMeter.GetProgressNormalized();
+
+            if (superBarText != null)
+                superBarText.text = Mathf.RoundToInt(superMeter.GetProgressNormalized() * 100f) + "%";
+        }
+    }
+    private void TryActivateSuper()
+    {
+        if (isSuperMoveActive) return;
+
+        if (superMeter.HasSuperCharge())
+        {
+            superMeter.UseSuper();
             StartCoroutine(ExecuteSuperMove());
+        }
+        else
+        {
+            Debug.Log("❌ No super available!");
         }
     }
 
@@ -277,4 +350,3 @@ public class SuperMoveController : MonoBehaviour
             screenFadeImage.gameObject.SetActive(false);
     }
 }
-

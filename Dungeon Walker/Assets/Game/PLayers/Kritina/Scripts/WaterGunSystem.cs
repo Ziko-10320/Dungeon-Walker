@@ -408,6 +408,7 @@ public class WaterBullet : MonoBehaviour
             {
                 Vector2 attackDirection = (other.transform.position - transform.position).normalized;
                 enemyHealth.TakeDamage(damage, attackDirection);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
             }
 
             var sprayerHealth = other.GetComponent<SprayerHealth>();
@@ -415,6 +416,7 @@ public class WaterBullet : MonoBehaviour
             {
                 Vector2 attackDirection = (other.transform.position - transform.position).normalized;
                 sprayerHealth.TakeDamage(damage, attackDirection);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
             }
 
             var flyHealth = other.GetComponent<FlyHealth>();
@@ -422,6 +424,7 @@ public class WaterBullet : MonoBehaviour
             {
                 Vector2 attackDirection = (other.transform.position - transform.position).normalized;
                 flyHealth.TakeDamage(damage, attackDirection);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
             }
 
             // NEW: Handle InkHealth
@@ -432,6 +435,7 @@ public class WaterBullet : MonoBehaviour
                 // Assuming InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
                 // You might need to adjust the knockbackForce value (e.g., 1f) based on your game design.
                 inkHealth.TakeDamage(damage, attackDirection, 1f);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
             }
 
             var RatKingHealth = other.GetComponent<RatKingHealth>();
@@ -441,6 +445,7 @@ public class WaterBullet : MonoBehaviour
                 // Assuming InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
                 // You might need to adjust the knockbackForce value (e.g., 1f) based on your game design.
                 RatKingHealth.TakeDamage(damage);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
             }
 
             var BarrelExplosion = other.GetComponent<BarrelExplosion>();

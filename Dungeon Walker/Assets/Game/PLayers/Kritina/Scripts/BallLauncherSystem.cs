@@ -1418,6 +1418,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 fleaHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} damage to Flea {target.name} at {impactPoint}");
@@ -1430,6 +1431,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 sprayerHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} damage to Sprayer {target.name} at {impactPoint}");
@@ -1442,6 +1444,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 flyHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} damage to Fly {target.name} at {impactPoint}");
@@ -1454,6 +1457,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 inkHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} damage to Ink {target.name} at {impactPoint}");
@@ -1466,6 +1470,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 RatKingHealth.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
@@ -1499,6 +1504,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 fleaHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Flea {target.name} at {impactPoint}");
@@ -1511,6 +1517,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 sprayerHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Sprayer {target.name} at {impactPoint}");
@@ -1523,6 +1530,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 flyHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Fly {target.name} at {impactPoint}");
@@ -1535,6 +1543,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 inkHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
@@ -1547,6 +1556,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 RatKingHealth.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
@@ -1589,6 +1599,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
                 fleaHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO MULTIPLIERS
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Explosion dealt {ballDamage} damage to Flea {enemyCollider.name}");
@@ -1601,6 +1612,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
                 sprayerHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO MULTIPLIERS
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Explosion dealt {ballDamage} damage to Sprayer {enemyCollider.name}");
@@ -1613,6 +1625,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
                 flyHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO MULTIPLIERS
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Explosion dealt {ballDamage} damage to Fly {enemyCollider.name}");
@@ -1625,6 +1638,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
                 inkHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO MULTIPLIERS
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Explosion dealt {ballDamage} damage to Ink {enemyCollider.name}");
@@ -1637,6 +1651,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             {
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
                 RatKingHealth.TakeDamage(ballDamage); // EXACT DAMAGE - NO MULTIPLIERS
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(ballDamage);
                 if (showDamageDebug)
                 {
                     Debug.Log($"Explosion dealt {ballDamage} damage to Ink {enemyCollider.name}");

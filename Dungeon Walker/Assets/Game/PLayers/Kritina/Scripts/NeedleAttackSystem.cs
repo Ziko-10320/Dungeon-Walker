@@ -132,6 +132,7 @@ public class BatAttackSystem : MonoBehaviour
     // Static list to track all active ghost objects for cleanup
     private static List<GameObject> activeGhostObjects = new List<GameObject>();
 
+    private PlayerSuperMeter superMeter;
     void OnDisable()
     {
         Debug.Log("BatAttackSystem OnDisable called - performing comprehensive cleanup");
@@ -171,6 +172,7 @@ public class BatAttackSystem : MonoBehaviour
         // Crée la batte dès le début pour s'assurer qu'elle existe.
         EnsureBatExists();
         playerView = GetComponentInParent<PhotonView>();
+        superMeter = GetComponent<PlayerSuperMeter>();
     }
     void Start()
     {
@@ -414,22 +416,33 @@ public class BatAttackSystem : MonoBehaviour
                 if (enemyCollider.TryGetComponent<FleaHealth>(out var fleaHealth) && fleaHealth != null)
                 {
                     fleaHealth.TakeDamage(throwSlashDamage, knockbackDirection, fleaKnockbackForce);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(throwSlashDamage);
+                    superMeter.AddDamage(throwSlashDamage);
+
                 }
                 else if (enemyCollider.TryGetComponent<InkHealth>(out var inkHealth) && inkHealth != null)
                 {
                     inkHealth.TakeDamage(throwSlashDamage, knockbackDirection, inkKnockbackForce);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(throwSlashDamage);
+                    superMeter.AddDamage(throwSlashDamage);
                 }
                 else if (enemyCollider.TryGetComponent<FlyHealth>(out var flyHealth) && flyHealth != null)
                 {
                     flyHealth.TakeDamage(throwSlashDamage, knockbackDirection, flyKnockbackForce);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(throwSlashDamage);
+                    superMeter.AddDamage(throwSlashDamage);
                 }
                 else if (enemyCollider.TryGetComponent<SprayerHealth>(out var sprayerHealth) && sprayerHealth != null)
                 {
                     sprayerHealth.TakeDamage(throwSlashDamage, knockbackDirection, sprayerKnockbackForce);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(throwSlashDamage);
+                    superMeter.AddDamage(throwSlashDamage);
                 }
                 else if (enemyCollider.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
                 {
                     RatKingHealth.TakeDamage(throwSlashDamage);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(throwSlashDamage);
+                    superMeter.AddDamage(throwSlashDamage);
                 }
                 else if (enemyCollider.TryGetComponent<BarrelExplosion>(out var barrelExplosion) && barrelExplosion != null)
                 {
@@ -1058,22 +1071,37 @@ public class BatAttackSystem : MonoBehaviour
             if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth) && fleaHealth != null)
             {
                 fleaHealth.TakeDamage(damage, knockbackDirection, fleaKnockbackForce, null);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
+                superMeter.AddDamage(damage);
+
             }
             else if (enemy.TryGetComponent<InkHealth>(out var inkHealth) && inkHealth != null)
             {
                 inkHealth.TakeDamage(damage, knockbackDirection, inkKnockbackForce);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
+                superMeter.AddDamage(damage);
+
             }
             else if (enemy.TryGetComponent<FlyHealth>(out var flyHealth) && flyHealth != null)
             {
                 flyHealth.TakeDamage(damage, knockbackDirection, flyKnockbackForce);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
+                superMeter.AddDamage(damage);
+
             }
             else if (enemy.TryGetComponent<SprayerHealth>(out var sprayerHealth) && sprayerHealth != null)
             {
                 sprayerHealth.TakeDamage(damage, knockbackDirection, sprayerKnockbackForce);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
+                superMeter.AddDamage(damage);
+
             }
             else if (enemy.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
             {
                 RatKingHealth.TakeDamage(damage);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
+                superMeter.AddDamage(damage);
+
             }
             else if (enemy.TryGetComponent<BarrelExplosion>(out var barrelExplosion) && barrelExplosion != null)
             {

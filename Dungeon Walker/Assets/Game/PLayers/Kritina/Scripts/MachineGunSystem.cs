@@ -1,4 +1,4 @@
-using FirstGearGames.SmoothCameraShaker;
+ï»¿using FirstGearGames.SmoothCameraShaker;
 using Photon.Pun;
 using System.Collections.Generic;
 using Unity.VisualScripting.Antlr3.Runtime.Collections;
@@ -11,7 +11,7 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
     [SerializeField] private GameObject Arm;
     [SerializeField] private Transform playerTransform;
     [SerializeField] private Transform bulletSpawnPoint;
-    [SerializeField] private Transform launcherAimPoint; // Point d\"origine de la visée
+    [SerializeField] private Transform launcherAimPoint; // Point d\"origine de la visÃ©e
     [SerializeField] private Transform minDistancePoint; // Transform pour visualiser la distance minimale
     [SerializeField] private Transform pivotPoint; // Nouveau point de pivot pour la rotation du Gun
     [SerializeField] private Transform emptyBulletSpawnPoint; // Point de spawn des douilles vides
@@ -31,28 +31,28 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
     private PhotonView playerView;
 
     [Header("AIMING & ROTATION (FROM ROBUST LAUNCHER)")]
-    [Tooltip("Angle maximum de visée vers le haut")]
+    [Tooltip("Angle maximum de visÃ©e vers le haut")]
     [SerializeField] private float maxUpwardAngle = 80f;
-    [Tooltip("Angle maximum de visée vers le bas")]
+    [Tooltip("Angle maximum de visÃ©e vers le bas")]
     [SerializeField] private float maxDownwardAngle = 80f;
-    [Tooltip("Distance minimale pour que la visée s\"active")]
+    [Tooltip("Distance minimale pour que la visÃ©e s\"active")]
     [SerializeField] private float minDistanceToAim = 0.8f;
     [Tooltip("Vitesse de rotation de l\"arme (pour une rotation fluide)")]
     [SerializeField] private float rotationSpeed = 25f;
-    [Tooltip("Utiliser une rotation instantanée pour une réactivité maximale")]
+    [Tooltip("Utiliser une rotation instantanÃ©e pour une rÃ©activitÃ© maximale")]
     [SerializeField] private bool useInstantRotation = true;
     [Header("Input Settings")]
     public bool PcInput = true;
     public bool MobileInput = false;
 
     [Header("LAUNCHER CALIBRATION")]
-    [Tooltip("Offset de rotation pour l\"arme quand le joueur regarde à DROITE")]
+    [Tooltip("Offset de rotation pour l\"arme quand le joueur regarde Ã  DROITE")]
     public float launcherRotationOffsetRight = 0f;
-    [Tooltip("Offset de rotation pour l\"arme quand le joueur regarde à GAUCHE")]
+    [Tooltip("Offset de rotation pour l\"arme quand le joueur regarde Ã  GAUCHE")]
     public float launcherRotationOffsetLeft = 0f;
-    [Tooltip("Offset de rotation pour la TRAJECTOIRE quand le joueur regarde à DROITE")]
+    [Tooltip("Offset de rotation pour la TRAJECTOIRE quand le joueur regarde Ã  DROITE")]
     public float trajectoryRotationOffsetRight = 0f;
-    [Tooltip("Offset de rotation pour la TRAJECTOIRE quand le joueur regarde à GAUCHE")]
+    [Tooltip("Offset de rotation pour la TRAJECTOIRE quand le joueur regarde Ã  GAUCHE")]
     public float trajectoryRotationOffsetLeft = 0f;
     public bool enableAimStabilization = true;
     public bool independentLauncherRotation = true;
@@ -60,28 +60,28 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
     [SerializeField] private float fireRate = 0.2f;
 
     [Header("MACHINE GUN SPECIFIC")]
-    [Tooltip("Angle maximum de dispersion des balles (en degrés)")]
+    [Tooltip("Angle maximum de dispersion des balles (en degrÃ©s)")]
     [SerializeField] private float maxSpreadAngle = 10f;
-    [Tooltip("Rayon de la zone de spawn aléatoire des balles autour du bulletSpawnPoint")]
+    [Tooltip("Rayon de la zone de spawn alÃ©atoire des balles autour du bulletSpawnPoint")]
     [SerializeField] private float spawnAreaRadius = 0.1f;
     [SerializeField] private GameObject emptyBulletPrefab; // Prefab de la douille vide
-    [SerializeField] private float emptyBulletForce = 2f; // Force appliquée à la douille vide
-    [SerializeField] private float emptyBulletLifetime = 2f; // Durée de vie de la douille vide
-    [SerializeField] private float emptyBulletSpawnAreaRadius = 0.05f; // Rayon de la zone de spawn aléatoire des douilles vides
+    [SerializeField] private float emptyBulletForce = 2f; // Force appliquÃ©e Ã  la douille vide
+    [SerializeField] private float emptyBulletLifetime = 2f; // DurÃ©e de vie de la douille vide
+    [SerializeField] private float emptyBulletSpawnAreaRadius = 0.05f; // Rayon de la zone de spawn alÃ©atoire des douilles vides
 
     [Header("OVERHEAT SYSTEM")]
     [Tooltip("Temps maximum de tir continu avant surchauffe")]
     [SerializeField] private float maxOverheatTime = 7f;
-    [Tooltip("Temps nécessaire pour que l\"arme refroidisse complètement après surchauffe")]
+    [Tooltip("Temps nÃ©cessaire pour que l\"arme refroidisse complÃ¨tement aprÃ¨s surchauffe")]
     [SerializeField] private float overheatCoolDownTime = 7f;
-    [Tooltip("Pourcentage de surchauffe à partir duquel la couleur de l\"arme commence à changer (0.0 - 1.0)")]
+    [Tooltip("Pourcentage de surchauffe Ã  partir duquel la couleur de l\"arme commence Ã  changer (0.0 - 1.0)")]
     [SerializeField, Range(0f, 1f)] private float overheatColorThreshold = 0.6f;
-    [Tooltip("Système de particules de fumée à déclencher en cas de surchauffe")]
+    [Tooltip("SystÃ¨me de particules de fumÃ©e Ã  dÃ©clencher en cas de surchauffe")]
     [SerializeField] private ParticleSystem smokeParticleSystem;
-    [Tooltip("Son joué lorsque l\"arme surchauffe")]
+    [Tooltip("Son jouÃ© lorsque l\"arme surchauffe")]
     [SerializeField] private AudioClip overheatAudioClip;
     [SerializeField, Range(0f, 1f)] private float overheatAudioVolume = 1f;
-    [Tooltip("Référence au script CameraShake de FirstGearGames")]
+    [Tooltip("RÃ©fÃ©rence au script CameraShake de FirstGearGames")]
     public ShakeData cameraShakeOver; // Pour le Camera Shake
 
 
@@ -655,30 +655,35 @@ public class BulletComponent : MonoBehaviour
                 if (fleaHealth != null)
                 {
                     fleaHealth.TakeDamage(damage, transform.right);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
                 }
 
                 SprayerHealth sprayerHealth = collidedObject.GetComponent<SprayerHealth>();
                 if (sprayerHealth != null)
                 {
                     sprayerHealth.TakeDamage(damage, transform.right);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
                 }
 
                 FlyHealth flyHealth = collidedObject.GetComponent<FlyHealth>();
                 if (flyHealth != null)
                 {
                     flyHealth.TakeDamage(damage, transform.right);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
                 }
 
                 InkHealth inkHealth = collidedObject.GetComponent<InkHealth>();
                 if (inkHealth != null)
                 {
                     inkHealth.TakeDamage(damage, transform.right, 1f);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
                 }
 
                 RatKingHealth ratKingHealth = collidedObject.GetComponent<RatKingHealth>();
                 if (ratKingHealth != null)
                 {
                     ratKingHealth.TakeDamage(damage);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
                 }
 
                 BarrelExplosion barrelExplosion = collidedObject.GetComponent<BarrelExplosion>();

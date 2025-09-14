@@ -921,6 +921,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                 if (target.TryGetComponent<FleaHealth>(out var fleaHealth))
                 {
                     fleaHealth.TakeDamage((int)damageToDeal, attackDirection);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Flea {target.name} at {impactPoint}");
                     if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                     return;
@@ -929,6 +930,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                 if (target.TryGetComponent<SprayerHealth>(out var sprayerHealth))
                 {
                     sprayerHealth.TakeDamage((int)damageToDeal, attackDirection);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Sprayer {target.name} at {impactPoint}");
                     if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                     return;
@@ -937,6 +939,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                 if (target.TryGetComponent<FlyHealth>(out var flyHealth))
                 {
                     flyHealth.TakeDamage((int)damageToDeal, attackDirection);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Fly {target.name} at {impactPoint}");
                     if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                     return;
@@ -945,6 +948,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                 if (target.TryGetComponent<InkHealth>(out var inkHealth))
                 {
                     inkHealth.TakeDamage(Mathf.RoundToInt(damageToDeal), attackDirection, 1f);
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Ink {target.name} at {impactPoint}");
                     if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                     return;
@@ -953,6 +957,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                 if (target.TryGetComponent<RatKingHealth>(out var ratKingHealth))
                 {
                     ratKingHealth.TakeDamage(Mathf.RoundToInt(damageToDeal));
+                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to RatKing {target.name} at {impactPoint}");
                     if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                     return;
