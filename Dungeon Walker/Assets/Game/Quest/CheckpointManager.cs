@@ -9,7 +9,8 @@ public class CheckpointManager : MonoBehaviour
     public List<Checkpoint> checkpoints = new List<Checkpoint>();
     public Transform player;
     public bool loopCheckpoints = true;
-
+    [Header("Coin Settings")]
+    public int coinsPerCheckpoint = 10;
     public Button interactButton;
 
     [Header("Score Settings")]
@@ -220,7 +221,7 @@ public class CheckpointManager : MonoBehaviour
         }
         if (checkpointTimerCoroutine != null) StopCoroutine(checkpointTimerCoroutine);
         isTimerRunning = false;
-
+        WalletManager.Instance.AddCoins(coinsPerCheckpoint);
         // Hide E button
         OnShowEButton?.Invoke(false);
 
