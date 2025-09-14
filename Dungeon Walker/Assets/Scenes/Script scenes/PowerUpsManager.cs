@@ -12,8 +12,8 @@ public class PowerUpManager : MonoBehaviour
 
     [Header("Particle Systems")]
     public ParticleSystem speedBoostParticles;
-    public ParticleSystem ShiledParticules;
-
+    [Header("Shield Animation")]
+    [SerializeField] public Animator shieldAnimator;
     void Awake()
     {
         // Find components. This is correct.
@@ -65,9 +65,16 @@ public class PowerUpManager : MonoBehaviour
                 break;
 
             case PowerUpType.Shield:
-                playerHealth.isInvincible = true;
-                Debug.Log("Persistent Effect Applied: Shield 🛡️");
-                if (ShiledParticules != null) ShiledParticules.Play();
+                // Instead of infinite invincibility:
+                playerHealth.ActivateShield(Mathf.RoundToInt(data.effectValue));
+
+                if (shieldAnimator != null)
+                {
+                    shieldAnimator.SetTrigger("StartShield");
+                }
+
+                Debug.Log("Persistent Effect Applied: Shield 🛡️ with HP: " + data.effectValue);
+                
                 break;
 
             case PowerUpType.InstantHeal:

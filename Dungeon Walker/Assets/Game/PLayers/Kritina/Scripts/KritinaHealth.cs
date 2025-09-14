@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -39,7 +39,14 @@ public class PlayerHealth : MonoBehaviour
 
     private Material[] originalMaterials;
     public bool isInvincible = false;
+    [Header("Shield Settings")]
+    [SerializeField] private int shieldMaxHealth = 0; // 👈 this is what you see in the inspector
+    private int shieldCurrentHealth = 0;
 
+    public bool HasShield => shieldCurrentHealth > 0;
+
+    [Header("UI References")]
+    [SerializeField] private UnityEngine.UI.Slider shieldSlider;
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -75,7 +82,7 @@ public class PlayerHealth : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Post Process Volume ou son Profile ne sont pas assign�s !");
+            Debug.LogError("Post Process Volume ou son Profile ne sont pas assignés !");
         }
     }
 
@@ -91,8 +98,15 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isInvincible)
         {
-            Debug.Log("Player is invincible � no damage taken.");
+            Debug.Log("Player is invincible! No damage taken.");
             return;
+        }
+
+        // 🔹 Second: check shield
+        if (HasShield)
+        {
+            DamageShield(damage);
+            return; // damage absorbed by shield, no health loss
         }
 
         currentHealth -= damage;
@@ -293,4 +307,48 @@ public class PlayerHealth : MonoBehaviour
         StartHealingParticles();
         StopHealingParticles();
     }
+
+    public void ActivateShield(int health)
+    {
+        if (health <= 0) health = shieldMaxHealth;
+
+        shieldMaxHealth = health;
+        shieldCurrentHealth = health;
+
+        if (shieldSlider != null)
+        {
+            shieldSlider.maxValue = shieldMaxHealth;
+            shieldSlider.value = shieldCurrentHealth;
+            shieldSlider.gameObject.SetActive(true); // show when active
+        }
+
+        Debug.Log($"Shield activated with {shieldCurrentHealth} HP.");
+    }
+
+private void DamageShield(int damage)
+{
+    shieldCurrentHealth -= damage;
+    if (shieldCurrentHealth < 0) shieldCurrentHealth = 0;
+
+    if (shieldSlider != null)
+    {
+        shieldSlider.value = shieldCurrentHealth;
+    }
+
+    if (shieldCurrentHealth <= 0)
+    {
+        Debug.Log("Shield is broken! Player is now vulnerable.");
+        if (shieldSlider != null) shieldSlider.gameObject.SetActive(false); // hide when broken
+            PowerUpManager powerUpManager = FindObjectOfType<PowerUpManager>();
+            if (powerUpManager != null && powerUpManager.shieldAnimator != null)
+            {
+                powerUpManager.shieldAnimator.SetTrigger("EndShield");
+            }
+        }
+    else
+    {
+        Debug.Log($"Shield took {damage} damage. Remaining shield HP: {shieldCurrentHealth}");
+    }
+}
+
 }
