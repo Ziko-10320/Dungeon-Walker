@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
 
-public class PlayerSuperMeter : MonoBehaviour
+public class L3antixSuperMeter : MonoBehaviour
 {
     [Header("Super Settings")]
-    [Tooltip("Damage needed to earn 1 super charge")]
-    public int superDamageThreshold = 1000; // editable in Inspector
+    public int superDamageThreshold = 1000;
 
     [Header("Events")]
     public UnityEvent onSuperReady;
@@ -13,32 +12,25 @@ public class PlayerSuperMeter : MonoBehaviour
 
     private int currentDamageDealt = 0;
     private bool hasCharge = false;
-    public static PlayerSuperMeter Instance;
-    /// <summary>
-    /// Adds damage to the super meter.
-    /// </summary>
-    /// 
+    public static L3antixSuperMeter Instance;
     void Awake()
     {
         Instance = this;
     }
     public void AddDamage(int amount)
     {
-        if (hasCharge) return; // already full, wait for use
+        if (hasCharge) return;
 
         currentDamageDealt += amount;
         if (currentDamageDealt >= superDamageThreshold)
         {
             hasCharge = true;
-            currentDamageDealt = superDamageThreshold; // clamp
-            Debug.Log("✅ Super Ready!");
+            currentDamageDealt = superDamageThreshold;
+            Debug.Log("✅ 3antix Super Ready!");
             onSuperReady?.Invoke();
         }
     }
 
-    /// <summary>
-    /// Returns normalized fill (0 to 1).
-    /// </summary>
     public float GetProgressNormalized()
     {
         if (hasCharge) return 1f;
@@ -53,14 +45,7 @@ public class PlayerSuperMeter : MonoBehaviour
         if (!hasCharge) return;
         hasCharge = false;
         currentDamageDealt = 0;
-        Debug.Log("🔥 Super used!");
+        Debug.Log("🔥 3antix Super used!");
         onSuperUsed?.Invoke();
-    }
-
-    public void ForceGiveSuper()
-    {
-        currentDamageDealt = superDamageThreshold; // instantly fill
-        hasCharge = true;
-        onSuperReady?.Invoke();
     }
 }

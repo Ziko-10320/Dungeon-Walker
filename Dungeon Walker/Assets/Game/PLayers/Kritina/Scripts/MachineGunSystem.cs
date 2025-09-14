@@ -655,62 +655,83 @@ public class BulletComponent : MonoBehaviour
                 if (fleaHealth != null)
                 {
                     fleaHealth.TakeDamage(damage, transform.right);
-                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
+                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                        L3antixSuperMeter.Instance.AddDamage(damage);
+
+                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                        PlayerSuperMeter.Instance.AddDamage(damage);
+
                 }
 
                 SprayerHealth sprayerHealth = collidedObject.GetComponent<SprayerHealth>();
                 if (sprayerHealth != null)
                 {
                     sprayerHealth.TakeDamage(damage, transform.right);
-                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
+                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                        L3antixSuperMeter.Instance.AddDamage(damage);
+
+                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                        PlayerSuperMeter.Instance.AddDamage(damage);
                 }
 
                 FlyHealth flyHealth = collidedObject.GetComponent<FlyHealth>();
                 if (flyHealth != null)
                 {
                     flyHealth.TakeDamage(damage, transform.right);
-                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
+                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                        L3antixSuperMeter.Instance.AddDamage(damage);
+
+                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                        PlayerSuperMeter.Instance.AddDamage(damage);
                 }
 
                 InkHealth inkHealth = collidedObject.GetComponent<InkHealth>();
                 if (inkHealth != null)
                 {
                     inkHealth.TakeDamage(damage, transform.right, 1f);
-                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
+                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                        L3antixSuperMeter.Instance.AddDamage(damage);
+
+                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                        PlayerSuperMeter.Instance.AddDamage(damage);
+
+                    RatKingHealth ratKingHealth = collidedObject.GetComponent<RatKingHealth>();
+                    if (ratKingHealth != null)
+                    {
+                        ratKingHealth.TakeDamage(damage);
+                        if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                            L3antixSuperMeter.Instance.AddDamage(damage);
+
+                        if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                            PlayerSuperMeter.Instance.AddDamage(damage);
+                    }
+
+                    BarrelExplosion barrelExplosion = collidedObject.GetComponent<BarrelExplosion>();
+                    if (barrelExplosion != null)
+                    {
+                        barrelExplosion.TakeDamage(damage);
+                    }
                 }
 
-                RatKingHealth ratKingHealth = collidedObject.GetComponent<RatKingHealth>();
-                if (ratKingHealth != null)
-                {
-                    ratKingHealth.TakeDamage(damage);
-                    FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
-                }
+                machineGunSystem.TriggerNetworkedDestruction(transform.position);
 
-                BarrelExplosion barrelExplosion = collidedObject.GetComponent<BarrelExplosion>();
-                if (barrelExplosion != null)
-                {
-                    barrelExplosion.TakeDamage(damage);
-                }
+                // 3. The "real" bullet destroys itself.
+                Destroy(gameObject);
             }
-
-            machineGunSystem.TriggerNetworkedDestruction(transform.position);
-
-            // 3. The "real" bullet destroys itself.
-            Destroy(gameObject);
-        }
-        else
-        {
-            // --- LOGIC FOR THE "VISUAL" BULLET ---
-            // Visual copies just destroy themselves silently. They don't deal damage or create effects.
-            Destroy(gameObject);
+            else
+            {
+                // --- LOGIC FOR THE "VISUAL" BULLET ---
+                // Visual copies just destroy themselves silently. They don't deal damage or create effects.
+                Destroy(gameObject);
+            }
         }
     }
-}
 
-// Interface for damageable objects
-public interface IDamageable
-{
-    void TakeDamage(int damage);
+    // Interface for damageable objects
+    public interface IDamageable
+    {
+        void TakeDamage(int damage);
+    }
 }
 
 

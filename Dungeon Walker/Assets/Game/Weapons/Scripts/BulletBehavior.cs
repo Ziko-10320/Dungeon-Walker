@@ -85,35 +85,55 @@ public class BulletBehavior : MonoBehaviour
         if (enemyHealth != null)
         {
             enemyHealth.TakeDamage(bulletDamage, moveDirection);
-            FindObjectOfType<SuperMoveController>().superMeter.AddDamage(bulletDamage);
+            if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                L3antixSuperMeter.Instance.AddDamage(bulletDamage);
+
+            if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                PlayerSuperMeter.Instance.AddDamage(bulletDamage);
         }
 
         SprayerHealth SprayerHealth = hitObject.GetComponent<SprayerHealth>();
         if (SprayerHealth != null)
         {
             SprayerHealth.TakeDamage(bulletDamage, moveDirection);
-            FindObjectOfType<SuperMoveController>().superMeter.AddDamage(bulletDamage);
+            if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                L3antixSuperMeter.Instance.AddDamage(bulletDamage);
+
+            if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                PlayerSuperMeter.Instance.AddDamage(bulletDamage);
         }
 
         FlyHealth flyHealth = hitObject.GetComponent<FlyHealth>();
         if (flyHealth != null)
         {
             flyHealth.TakeDamage(bulletDamage, moveDirection);
-            FindObjectOfType<SuperMoveController>().superMeter.AddDamage(bulletDamage);
+            if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                L3antixSuperMeter.Instance.AddDamage(bulletDamage);
+
+            if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                PlayerSuperMeter.Instance.AddDamage(bulletDamage);
         }
 
         InkHealth inkHealth = hitObject.GetComponent<InkHealth>();
         if (inkHealth != null)
         {
             inkHealth.TakeDamage(bulletDamage, moveDirection);
-            FindObjectOfType<SuperMoveController>().superMeter.AddDamage(bulletDamage);
+            if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                L3antixSuperMeter.Instance.AddDamage(bulletDamage);
+
+            if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                PlayerSuperMeter.Instance.AddDamage(bulletDamage);
         }
 
         RatKingHealth RatKingHealth = hitObject.GetComponent<RatKingHealth>();
         if (RatKingHealth != null)
         {
             RatKingHealth.TakeDamage(bulletDamage);
-            FindObjectOfType<SuperMoveController>().superMeter.AddDamage(bulletDamage);
+            if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                L3antixSuperMeter.Instance.AddDamage(bulletDamage);
+
+            if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                PlayerSuperMeter.Instance.AddDamage(bulletDamage);
         }
         // --- LA LOGIQUE DE PARTICULE INSPIRÉE DU BOWSYSTEM ---
 

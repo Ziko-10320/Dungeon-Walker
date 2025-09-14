@@ -47,6 +47,14 @@ public class GalaxyImapctSystem : MonoBehaviour
     private float lastSuperMoveTime = -100f;
     private Coroutine damageCoroutine; // Pour garder une référence à notre coroutine
 
+    [Header("Super System")]
+    [SerializeField] private L3antixSuperMeter superMeter; // assign in Inspector
+
+    [Header("Super UI")]
+    [SerializeField] private UnityEngine.UI.Slider superBarSlider;
+    [SerializeField] private TMPro.TextMeshProUGUI superBarText;
+    [SerializeField] private GameObject superReadyIndicator;
+    [SerializeField] private UnityEngine.UI.Button superButton;
     void Awake()
     {
         if (playerAnimator == null) playerAnimator = GetComponent<Animator>();
@@ -54,6 +62,42 @@ public class GalaxyImapctSystem : MonoBehaviour
         if (playerHealth == null) playerHealth = GetComponent<L3antixHealth>();
         if (playerDash == null) playerDash = GetComponent<L3antixDash>();
         if (playerRb == null) playerRb = GetComponent<Rigidbody2D>();
+
+        if (superMeter == null)
+            superMeter = FindObjectOfType<L3antixSuperMeter>();
+
+        if (superButton != null)
+            superButton.onClick.AddListener(() => TryActivateSuper());
+
+        if (superMeter == null)
+            Debug.LogError("❌ No L3antixSuperMeter found!");
+
+        if (superBarSlider != null)
+        {
+            superBarSlider.minValue = 0f;
+            superBarSlider.maxValue = 1f;
+            superBarSlider.value = superMeter.GetProgressNormalized();
+        }
+
+        if (superBarText != null)
+            superBarText.text = Mathf.RoundToInt(superMeter.GetProgressNormalized() * 100f) + "%";
+
+        if (superReadyIndicator != null)
+            superReadyIndicator.SetActive(superMeter.HasSuperCharge());
+
+        superMeter.onSuperReady.AddListener(() =>
+        {
+            if (superBarText != null) superBarText.text = "SUPER READY";
+            if (superBarSlider != null) superBarSlider.value = 1f;
+            if (superReadyIndicator != null) superReadyIndicator.SetActive(true);
+        });
+
+        superMeter.onSuperUsed.AddListener(() =>
+        {
+            if (superBarText != null) superBarText.text = "0%";
+            if (superBarSlider != null) superBarSlider.value = 0f;
+            if (superReadyIndicator != null) superReadyIndicator.SetActive(false);
+        });
     }
 
     void Update()
@@ -62,11 +106,18 @@ public class GalaxyImapctSystem : MonoBehaviour
                                 Time.time >= lastSuperMoveTime + superMoveCooldown &&
                                 (playerDash == null || !playerDash.IsDashing); // On vérifie si le script de dash n'existe pas OU s'il n'est pas en cours
 
-        if (Input.GetKeyDown(superMoveKey) && canPerformSuper)
+        if (Input.GetKeyDown(superMoveKey)&& canPerformSuper)
         {
-            StartSuperMove();
+            TryActivateSuper();
         }
-        
+        if (superMeter != null && !superMeter.HasSuperCharge())
+        {
+            if (superBarSlider != null)
+                superBarSlider.value = superMeter.GetProgressNormalized();
+
+            if (superBarText != null)
+                superBarText.text = Mathf.RoundToInt(superMeter.GetProgressNormalized() * 100f) + "%";
+        }
     }
 
 
@@ -121,7 +172,7 @@ public class GalaxyImapctSystem : MonoBehaviour
     private void ApplyDamageTick()
     {
         Debug.Log("Applying Super Move damage tick!");
-
+       
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(damageAreaOrigin.position, damageRadius, enemyLayer);
 
         foreach (Collider2D enemy in hitEnemies)
@@ -158,7 +209,20 @@ public class GalaxyImapctSystem : MonoBehaviour
             }
         }
     }
-    
+
+    private void TryActivateSuper()
+    {
+        if (superMeter != null && superMeter.HasSuperCharge())
+        {
+            superMeter.UseSuper();
+            StartSuperMove();
+        }
+        else
+        {
+            Debug.Log("❌ 3antix Super not ready!");
+        }
+    }
+
     public void TriggerCameraShake()
     {
         CameraShakerHandler.Shake(CameraShakeDeath);
