@@ -32,7 +32,14 @@ public class CharacterSelectionManager : MonoBehaviour
         // After a choice is made, show the "Start Game" button.
         ShowStartButton();
     }
-
+    public void GoToMainMenu()
+    {
+        // Load the main menu scene.
+        // We use index 0, as the main menu is almost always the first scene in the build order.
+        // If you know its name, you can use SceneManager.LoadScene("MainMenuSceneName");
+        SceneManager.LoadScene(0);
+        Debug.Log("Returning to Main Menu (Scene 0).");
+    }
     // This function is called by your "Select Man" button.
     public void SelectMan()
     {

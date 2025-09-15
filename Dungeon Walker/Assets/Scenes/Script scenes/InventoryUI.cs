@@ -116,12 +116,46 @@ public class InventoryUI : MonoBehaviour
 
     private void RefreshOwnedItemsDisplay()
     {
-        foreach (Transform child in ownedItemsContainer) Destroy(child.gameObject);
+        Debug.Log("--- Refreshing Owned Items Display ---");
 
+        // Clear old items
+        foreach (Transform child in ownedItemsContainer)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Check if we have items to display
+        if (InventoryManager.Instance.ownedPowerUps.Count == 0)
+        {
+            Debug.Log("Inventory is empty. Nothing to display.");
+            return;
+        }
+
+        Debug.Log("Found " + InventoryManager.Instance.ownedPowerUps.Count + " items to display.");
+
+        // Loop through owned items
         foreach (PowerUpData item in InventoryManager.Instance.ownedPowerUps)
         {
+            if (item == null)
+            {
+                Debug.LogWarning("Found a NULL item in the inventory list. Skipping.");
+                continue;
+            }
+
+            Debug.Log("Creating button for: " + item.name);
             GameObject itemObject = Instantiate(inventoryItemPrefab, ownedItemsContainer);
-            itemObject.GetComponent<InventoryItemButton>().Setup(item);
+
+            // Get the script and call Setup
+            InventoryItemButton buttonScript = itemObject.GetComponent<InventoryItemButton>();
+            if (buttonScript != null)
+            {
+                buttonScript.Setup(item);
+            }
+            else
+            {
+                Debug.LogError("FATAL ERROR: The InventoryItem_Template prefab is MISSING the InventoryItemButton script!");
+            }
         }
+        Debug.Log("--- Finished Refreshing ---");
     }
 }

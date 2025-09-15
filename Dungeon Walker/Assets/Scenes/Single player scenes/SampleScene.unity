@@ -113984,9 +113984,25 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 382831636}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: PcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: MobileInput
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 171676214}
+    - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: PcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: MobileInput
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: aimJoystick
       value: 
@@ -114027,6 +114043,14 @@ PrefabInstance:
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 171676214}
+    - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: enablePcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: enableMobileInput
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: joystick
       value: 
@@ -114069,6 +114093,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5689588596020951161, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: PcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: MobileInput
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
@@ -114186,7 +114218,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1242731457711597805, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5019633330544358317, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target

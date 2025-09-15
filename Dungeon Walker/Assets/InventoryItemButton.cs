@@ -2,47 +2,29 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Button))]
+[RequireComponent(typeof(Image))]
 public class InventoryItemButton : MonoBehaviour
 {
-    // --- NEW: Add a direct reference to the Image component ---
-    [SerializeField] private Image iconImage;
+    private PowerUpData powerUpData; // Keep a reference to the data
 
-    private PowerUpData powerUpData;
-
-    // This function is called by the InventoryUI to set up the button
     public void Setup(PowerUpData data)
     {
-        powerUpData = data;
+        powerUpData = data; // Store the data
 
-        // --- Use the direct reference to set the sprite ---
-        if (iconImage != null)
-        {
-            iconImage.sprite = data.icon;
-        }
-        else
-        {
-            Debug.LogError("Icon Image is not assigned on the InventoryItemButton script!");
-        }
+        // Set the icon
+        GetComponent<Image>().sprite = data.icon;
 
-        // Add a listener to the button's click event
+        // --- THIS IS THE LINE I WRONGLY REMOVED. THIS MAKES THE BUTTON WORK AGAIN. ---
         GetComponent<Button>().onClick.AddListener(OnButtonClick);
     }
 
-    // When the button is clicked, it tells the main UI manager
+    // This function tells the InventoryUI to equip the item.
     private void OnButtonClick()
     {
-        // This part is correct and doesn't need to change
-        InventoryUI.Instance.OnItemClicked(powerUpData);
-    }
-
-    // --- NEW: A helper function for when the script is first added in the editor ---
-    private void OnValidate()
-    {
-        // This is a handy trick. It tries to automatically find the Image component
-        // on the same GameObject when you add the script in the Unity Editor.
-        if (iconImage == null)
+        // Safety check
+        if (powerUpData != null)
         {
-            iconImage = GetComponent<Image>();
+            InventoryUI.Instance.OnItemClicked(powerUpData);
         }
     }
 }
