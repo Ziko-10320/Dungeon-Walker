@@ -14,6 +14,7 @@ public class PowerUpManager : MonoBehaviour
     public ParticleSystem speedBoostParticles;
     [Header("Shield Animation")]
     [SerializeField] public Animator shieldAnimator;
+    [SerializeField] public GameObject shieldObject;
     void Awake()
     {
         // Find components. This is correct.
@@ -24,6 +25,9 @@ public class PowerUpManager : MonoBehaviour
 
         // Store the original speed before any modifications.
         originalMoveSpeed = playerMovement.moveSpeed;
+
+        if (shieldObject != null)
+            shieldObject.SetActive(false);
     }
 
     // We use a coroutine to ensure this runs AFTER all other Start() methods.
@@ -67,6 +71,9 @@ public class PowerUpManager : MonoBehaviour
             case PowerUpType.Shield:
                 // Instead of infinite invincibility:
                 playerHealth.ActivateShield(Mathf.RoundToInt(data.effectValue));
+                playerHealth.RestoreShieldToMax();
+                if (shieldObject != null)
+                    shieldObject.SetActive(true);
 
                 if (shieldAnimator != null)
                 {
@@ -88,4 +95,10 @@ public class PowerUpManager : MonoBehaviour
                 break;
         }
     }
+    public void OnShieldAnimationEnd()
+    {
+        if (shieldObject != null)
+            shieldObject.SetActive(false);
+    }
+
 }

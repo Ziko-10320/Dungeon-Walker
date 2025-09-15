@@ -40,6 +40,8 @@ public class CheckpointManager : MonoBehaviour
     public Vector3 CurrentTargetPosition => currentCheckpointIndex < checkpoints.Count ? checkpoints[currentCheckpointIndex].transform.position : Vector3.zero;
     public bool IsTimerRunning => isTimerRunning;
 
+    [Header("Player References")]
+    [SerializeField] private PlayerHealth playerHealth;
     void Start()
     {
 
@@ -53,6 +55,11 @@ public class CheckpointManager : MonoBehaviour
         UpdateArrowTarget();
         OnShowEButton?.Invoke(false); // Ensure E button is hidden at start
         OnCheckpointTimerUpdate?.Invoke(0f); // Ensure timer display is clear at start
+
+        if (playerHealth == null && player != null)
+        {
+            playerHealth = player.GetComponent<PlayerHealth>();
+        }
     }
 
     void Update()
@@ -214,6 +221,13 @@ public class CheckpointManager : MonoBehaviour
 
     void ReachCheckpoint()
     {
+
+        if (playerHealth != null)
+        {
+            playerHealth.RestoreShieldToMax();
+            Debug.Log("Shield restored to Max HP at checkpoint!");
+        }
+
         if (interactButton != null)
         {
             interactButton.gameObject.SetActive(false);

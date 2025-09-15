@@ -56,12 +56,17 @@ public class SuperMoveController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI superBarText;
     [SerializeField] private GameObject superReadyIndicator;
     [SerializeField] private Button superButton;
+    private void Awake()
+    {
+        if (playerHealth == null)
+            playerHealth = GetComponent<PlayerHealth>();
+    }
     void Start()
     {
         playerRb = GetComponent<Rigidbody2D>();
         playerAnimator = GetComponent<Animator>();
         playerCollider = GetComponent<Collider2D>();
-        if (playerHealth == null) playerHealth = GetComponent<PlayerHealth>();
+      
 
         superMeter = FindObjectOfType<PlayerSuperMeter>();
         if (superButton != null)
@@ -137,6 +142,7 @@ public class SuperMoveController : MonoBehaviour
                 superBarText.text = Mathf.RoundToInt(superMeter.GetProgressNormalized() * 100f) + "%";
         }
     }
+
     private void TryActivateSuper()
     {
         if (isSuperMoveActive) return;
@@ -158,6 +164,10 @@ public class SuperMoveController : MonoBehaviour
         playerHealth.isInvincible = true;
         isSuperMoveActive = true;
         processedEnemies.Clear();
+        if (playerHealth != null)
+        {
+            playerHealth.isSuperActive = true;
+        }
 
         try
         {
@@ -235,7 +245,10 @@ public class SuperMoveController : MonoBehaviour
 
         foreach (var script in playerScriptsToDisable)
             if (script != null) script.enabled = true;
-
+        if (playerHealth != null)
+        {
+            playerHealth.isSuperActive = false;
+        }
         isSuperMoveActive = false;
     }
 

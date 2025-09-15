@@ -47,6 +47,8 @@ public class PlayerHealth : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] private UnityEngine.UI.Slider shieldSlider;
+
+    [HideInInspector] public bool isSuperActive = false;
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -84,6 +86,11 @@ public class PlayerHealth : MonoBehaviour
         {
             Debug.LogError("Post Process Volume ou son Profile ne sont pas assignés !");
         }
+
+        if (shieldSlider != null)
+        {
+            shieldSlider.gameObject.SetActive(false); // hidden at the start
+        }
     }
 
     void Update()
@@ -96,9 +103,9 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage, float knockbackForce, Vector2 knockbackDirection)
     {
-        if (isInvincible)
+        if (isSuperActive || isInvincible)
         {
-            Debug.Log("Player is invincible! No damage taken.");
+            Debug.Log("Player is invincible – no damage taken.");
             return;
         }
 
@@ -212,6 +219,8 @@ public class PlayerHealth : MonoBehaviour
 
     private IEnumerator HandleHit(float knockbackForce, Vector2 knockbackDirection)
     {
+        if (isSuperActive) yield break; // ignore hits during super
+
         isInvincible = true;
         rb.velocity = Vector2.zero;
         rb.AddForce(knockbackDirection * knockbackForce, ForceMode2D.Impulse);
@@ -350,5 +359,32 @@ private void DamageShield(int damage)
         Debug.Log($"Shield took {damage} damage. Remaining shield HP: {shieldCurrentHealth}");
     }
 }
+
+    public void RestoreShieldToMax()
+    {
+        if (shieldMaxHealth <= 0) return; // No shield power-up equipped
+
+        shieldCurrentHealth = shieldMaxHealth;
+
+        if (shieldSlider != null)
+        {
+            shieldSlider.maxValue = shieldMaxHealth;
+            shieldSlider.value = shieldCurrentHealth;
+            shieldSlider.gameObject.SetActive(true);
+        }
+
+        // Reactivate visuals if shield was broken
+        PowerUpManager powerUpManager = FindObjectOfType<PowerUpManager>();
+        if (powerUpManager != null && powerUpManager.shieldObject != null)
+        {
+            powerUpManager.shieldObject.SetActive(true);
+            if (powerUpManager.shieldAnimator != null)
+            {
+                powerUpManager.shieldAnimator.SetTrigger("StartShield");
+            }
+        }
+
+        Debug.Log("Shield fully restored!");
+    }
 
 }
