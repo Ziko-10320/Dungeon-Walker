@@ -36,7 +36,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private AudioClip damageSound;
     [Range(0f, 1f)]
     [SerializeField] private float damageSoundVolume = 1f;
-
+    [SerializeField] private CheckpointManager checkpointManager;
     private Material[] originalMaterials;
     public bool isInvincible = false;
     [Header("Shield Settings")]
@@ -141,16 +141,39 @@ public class PlayerHealth : MonoBehaviour
     {
         Debug.Log("Player has died!");
 
-        // ---- UPDATED ----: Call the GameUIManager to show the death screen.
+        // --- NEW LOGIC STARTS HERE ---
+
+        // 1. Find the CheckpointManager if it's not assigned
+        if (checkpointManager == null)
+        {
+            checkpointManager = FindObjectOfType<CheckpointManager>();
+        }
+
+        // 2. Get the final score and send it to the PlayerStatsManager
+        if (checkpointManager != null && PlayerStatsManager.Instance != null)
+        {
+            // This gets the final score from your CheckpointManager
+            int finalScore = checkpointManager.TotalScore;
+            // This stores it in our persistent stats manager
+            PlayerStatsManager.Instance.SetFinalScore(finalScore);
+            Debug.Log("Final score of " + finalScore + " sent to PlayerStatsManager.");
+        }
+        else
+        {
+            Debug.LogWarning("Could not set final score. CheckpointManager or PlayerStatsManager not found.");
+        }
+
+        // 3. Call the GameUIManager to show the death screen (this part is the same as before)
         if (gameUIManager != null)
         {
-            // The method was renamed from ShowRestartScreen to ShowDeathScreen for clarity.
             gameUIManager.ShowDeathScreen();
         }
         else
         {
             Debug.LogError("GameUIManager not found! Cannot show death screen.");
         }
+
+        // --- NEW LOGIC ENDS HERE ---
 
         // This hides the player object after the death screen is triggered.
         gameObject.SetActive(false);

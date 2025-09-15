@@ -221,7 +221,6 @@ public class CheckpointManager : MonoBehaviour
 
     void ReachCheckpoint()
     {
-
         if (playerHealth != null)
         {
             playerHealth.RestoreShieldToMax();
@@ -235,7 +234,26 @@ public class CheckpointManager : MonoBehaviour
         }
         if (checkpointTimerCoroutine != null) StopCoroutine(checkpointTimerCoroutine);
         isTimerRunning = false;
-        WalletManager.Instance.AddCoins(coinsPerCheckpoint);
+
+        // --- MODIFIED SECTION ---
+        // Check if WalletManager exists before trying to use it.
+        if (WalletManager.Instance != null)
+        {
+            WalletManager.Instance.AddCoins(coinsPerCheckpoint);
+        }
+        else
+        {
+            // This log will help you if you ever wonder why coins aren't being added.
+            Debug.LogWarning("WalletManager.Instance not found. Cannot add coins.");
+        }
+
+        // Report the coins to our new stats manager (this part is safe)
+        if (PlayerStatsManager.Instance != null)
+        {
+            PlayerStatsManager.Instance.AddCoins(coinsPerCheckpoint);
+        }
+        // --- END OF MODIFICATION ---
+
         // Hide E button
         OnShowEButton?.Invoke(false);
 

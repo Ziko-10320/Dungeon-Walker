@@ -80,6 +80,10 @@ public class WeaponSwitchManager : MonoBehaviour
 
     public void OnEnemyKilled()
     {
+        if (PlayerStatsManager.Instance != null)
+        {
+            PlayerStatsManager.Instance.AddKill();
+        }
         currentKills++;
         UpdateKillsUI();
         Debug.Log($"Kill count: {currentKills}/{killsToSwitch}");

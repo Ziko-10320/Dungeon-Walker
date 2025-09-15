@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -14,7 +15,9 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject catManagerObject;
     [SerializeField] private GameObject manCharacterObject;
     [SerializeField] private GameObject manManagerObject;
-
+    [SerializeField] private TextMeshProUGUI coinsStatText;
+    [SerializeField] private TextMeshProUGUI killsStatText;
+    [SerializeField] private TextMeshProUGUI scoreStatText;
     [Header("Camera Control")]
     [SerializeField] private CameraFollowMouseHorizontal cameraFollowScript;
     [SerializeField] private Transform catFollowTarget;
@@ -130,13 +133,26 @@ public class GameUIManager : MonoBehaviour
 
     public void ShowDeathScreen()
     {
-        if (deathPanel != null) deathPanel.SetActive(true);
+        if (deathPanel != null)
+        {
+            if (PlayerStatsManager.Instance != null)
+            {
+                coinsStatText.text = "Coins Gathered: " + PlayerStatsManager.Instance.coinsGathered;
+                killsStatText.text = "Enemies Killed: " + PlayerStatsManager.Instance.enemiesKilled;
+                scoreStatText.text = "Final Score: " + PlayerStatsManager.Instance.finalScore;
+            }
+            deathPanel.SetActive(true);
+        }
         Time.timeScale = 0f;
         isGamePaused = true;
     }
 
     public void RestartGame()
     {
+        if (PlayerStatsManager.Instance != null)
+        {
+            PlayerStatsManager.Instance.ResetStats();
+        }
         Time.timeScale = 1f;
         isGamePaused = false;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
