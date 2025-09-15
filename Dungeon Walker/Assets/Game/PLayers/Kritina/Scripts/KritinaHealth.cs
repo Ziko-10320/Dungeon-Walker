@@ -409,5 +409,21 @@ private void DamageShield(int damage)
 
         Debug.Log("Shield fully restored!");
     }
+    public void RestoreShieldAtCheckpoint()
+    {
+        PowerUpManager powerUpManager = GetComponent<PowerUpManager>();
+
+        if (powerUpManager != null && powerUpManager.HasPowerUp(PowerUpType.Shield))
+        {
+            shieldCurrentHealth = shieldMaxHealth; // restore fully
+            if (shieldSlider != null)
+            {
+                shieldSlider.maxValue = shieldMaxHealth;
+                shieldSlider.value = shieldCurrentHealth;
+            }
+            Debug.Log("Shield restored at checkpoint! 🛡️");
+        }
+    }
+
 
 }

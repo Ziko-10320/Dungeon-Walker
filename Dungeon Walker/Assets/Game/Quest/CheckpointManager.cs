@@ -221,11 +221,8 @@ public class CheckpointManager : MonoBehaviour
 
     void ReachCheckpoint()
     {
-        if (playerHealth != null)
-        {
-            playerHealth.RestoreShieldToMax();
-            Debug.Log("Shield restored to Max HP at checkpoint!");
-        }
+        playerHealth.RestoreShieldAtCheckpoint();
+
 
         if (interactButton != null)
         {

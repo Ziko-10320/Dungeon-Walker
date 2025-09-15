@@ -6,7 +6,8 @@ public enum PowerUpType
     SpeedBoost,
     InstantHeal,
     InstantSuper,
-    Shield
+    Shield,
+    SoapTrail
 }
 
 [CreateAssetMenu(fileName = "NewPowerUp", menuName = "PowerUps/PowerUpData")]
