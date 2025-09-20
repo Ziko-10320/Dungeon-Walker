@@ -64,9 +64,42 @@ public class FleaChargeAttack : MonoBehaviour
         audioSource.playOnAwake = false; // Ensure it doesn't play automatically
         audioSource.volume = attackSoundVolume; // Set initial volume
     }
+    void OnEnable()
+    {
+        PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;
+    }
+
+    void OnDisable()
+    {
+        PlayerInvisibility.OnInvisibilityChanged -= HandleInvisibility;
+    }
+
+    private void HandleInvisibility(bool invisible)
+    {
+        if (invisible)
+        {
+            playerTransform = null;
+            if (followScript != null) followScript.playerTransform = null;
+        }
+        else
+        {
+            // reacquire
+            FindPlayerAgain();
+            if (followScript != null) followScript.playerTransform = playerTransform;
+        }
+    }
+
+    private void FindPlayerAgain()
+    {
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null) playerTransform = p.transform;
+    }
+
 
     void Update()
     {
+        PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+        if (invis != null && invis.IsInvisible()) return;
         if (playerTransform == null || isAttacking || !canAttack) return;
 
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);

@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+﻿using Photon.Realtime;
 using System.Collections;
+using UnityEngine;
 
 public class PowerUpManager : MonoBehaviour
 {
@@ -20,6 +21,15 @@ public class PowerUpManager : MonoBehaviour
     public GameObject[] soapTrailObjects;
     public Transform soapDamagePoint;
     public Vector2 soapDamageSize = new Vector2(1f, 0.5f);
+
+    [Header("AcidTrail PowerUp")]
+    public GameObject[] acidTrailObjects;
+    public Transform acidDamagePoint;
+    public Vector2 acidDamageSize = new Vector2(1f, 0.5f);
+
+    private ReviveSystem reviveSystem;
+
+
     void Awake()
     {
         // Find components. This is correct.
@@ -33,6 +43,7 @@ public class PowerUpManager : MonoBehaviour
 
         if (shieldObject != null)
             shieldObject.SetActive(false);
+        reviveSystem = FindObjectOfType<ReviveSystem>();
     }
 
     // We use a coroutine to ensure this runs AFTER all other Start() methods.
@@ -62,7 +73,7 @@ public class PowerUpManager : MonoBehaviour
         }
     }
 
-    private void ApplyPersistentEffect(PowerUpData data)
+    public void ApplyPersistentEffect(PowerUpData data)
     {
         switch (data.type)
         {
@@ -109,26 +120,108 @@ public class PowerUpManager : MonoBehaviour
                         soap.damagePoint = soapDamagePoint;
                         soap.damageSize = soapDamageSize;
                         soap.damage = (int)data.effectValue;
-                        soap.player = GetComponent<KritinaMovement>();
+                        soap.player = playerMovement;
 
-                        // --- FORCE ENABLE ALL TRAILS ONCE WHEN EQUIPPED ---
+                        // --- FORCE ENABLE ALL TRAILS ONCE ---
                         foreach (var trail in soapTrailObjects)
                         {
                             if (trail != null)
-                            {
                                 trail.SetActive(true);
-
-                                var ps = trail.GetComponent<ParticleSystem>();
-                                if (ps != null && !ps.isPlaying)
-                                    ps.Play();
-                            }
                         }
+
+                        // --- ENABLE permanent SoapVisuals ---
+                        foreach (var visual in soap.soapVisuals)
+                        {
+                            if (visual != null && !visual.gameObject.activeSelf)
+                                visual.gameObject.SetActive(true);
+                        }
+
+                        soap.enabled = true;
+                    }
+                    else
+                    {
+                        Debug.LogError("No SoapTrailDamage found on player!");
                     }
 
-                    Debug.Log("Persistent Effect Applied: SoapTrail 🧼 (All trails enabled!)");
+                    Debug.Log("Persistent Effect Applied: SoapTrail 🧼 (Visuals enabled + trails active!)");
                 }
                 break;
 
+            case PowerUpType.AcidTrail:
+                {
+                    AcidTrailDamage acid = GetComponent<AcidTrailDamage>();
+                    if (acid != null)
+                    {
+                        // Assign references
+                        acid.acidTrailObjects = acidTrailObjects;
+                        acid.damagePoint = acidDamagePoint;
+                        acid.damageSize = acidDamageSize;
+                        acid.damage = (int)data.effectValue;
+                        acid.player = playerMovement;
+
+                        // --- FORCE ENABLE ALL TRAILS ONCE ---
+                        foreach (var trail in acidTrailObjects)
+                        {
+                            if (trail != null)
+                                trail.SetActive(true);
+                        }
+
+                        // --- ENABLE permanent SoapVisuals ---
+                        foreach (var visual in acid.acidVisuals)
+                        {
+                            if (visual != null && !visual.gameObject.activeSelf)
+                                visual.gameObject.SetActive(true);
+                        }
+
+                        acid.enabled = true;
+                    }
+                    else
+                    {
+                        Debug.LogError("No SoapTrailDamage found on player!");
+                    }
+
+                    Debug.Log("Persistent Effect Applied: SoapTrail 🧼 (Visuals enabled + trails active!)");
+                }
+                break;
+            case PowerUpType.Revive:
+                ReviveSystem revive = GetComponent<ReviveSystem>();
+                if (revive != null)
+                {
+                    revive.hasRevivePowerUp = true;
+                    revive.hasUsedRevive = false; // optional: reset on equip
+                    Debug.Log("Revive powerup equipped.");
+                }
+                break;
+
+            case PowerUpType.ReviveUpgraded:
+                {
+                    ReviveUpgradedSystem reviveUp = GetComponent<ReviveUpgradedSystem>();
+                    if (reviveUp != null)
+                    {
+                        reviveUp.EquipReviveUpgraded();
+                        Debug.Log("Persistent Effect Applied: RevivePlus equipped");
+                    }
+                }
+                break;
+
+            case PowerUpType.Invisibility:
+                {
+                    PlayerInvisibility invis = GetComponent<PlayerInvisibility>();
+                    if (invis != null)
+                    {
+                        // You can use effectValue if you want to override default duration
+                        if (data.effectValue > 0)
+                            invis.invisibilityDuration = data.effectValue;
+
+                        invis.ActivateInvisibility();
+                        Debug.Log("Persistent Effect Applied: Invisibility 👻 Duration: " + invis.invisibilityDuration);
+                    }
+                    else
+                    {
+                        Debug.LogError("No PlayerInvisibility component found on player!");
+                    }
+                }
+                break;
         }
     }
     public void OnShieldAnimationEnd()

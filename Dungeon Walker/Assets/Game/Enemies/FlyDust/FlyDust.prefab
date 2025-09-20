@@ -5084,6 +5084,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7636949196926022625}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8407876728342711159
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2360911222258903538}
+  m_Layer: 9
+  m_Name: DetectionPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2360911222258903538
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8407876728342711159}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.11, y: 0.93, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5996842986850834114}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8409087360256137504
 GameObject:
   m_ObjectHideFlags: 0
@@ -10532,11 +10563,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -73.81806
+      value: -46.1
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.6092854
+      value: 7.6
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10777,6 +10808,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       insertIndex: -1
       addedObject: {fileID: 940164034120110709}
+    - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2360911222258903538}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 1f566bd773fc81f4d80b070f364b2442, type: 3}
       insertIndex: -1
@@ -10922,20 +10956,36 @@ MonoBehaviour:
   moveSpeed: 7
   minDistance: 5
   maxDistance: 10
-  idealDistance: 6
-  heightOffset: 6.3
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 64
+  idealDistance: 6
+  heightOffset: 6.3
   avoidanceForce: 5
   avoidanceDistance: 2
-  raycastOffset: 0.9
   wallDetectionDistance: 1
   wallFollowingForce: 3
   smoothTime: 0.32
   randomMoveRange: 2.5
   randomMoveSpeed: 3
   randomMoveInterval: 1
+  randomizeOnStart: 1
+  moveSpeedRange: {x: 3.5, y: 9.5}
+  minDistanceRange: {x: 3, y: 7.5}
+  maxDistanceRange: {x: 7, y: 14}
+  idealDistanceRange: {x: 3, y: 8}
+  heightOffsetRange: {x: 3.5, y: 8.5}
+  avoidanceForceRange: {x: 3, y: 7}
+  avoidanceDistanceRange: {x: 1, y: 4}
+  wallDetectionDistanceRange: {x: 0.5, y: 2}
+  wallFollowingForceRange: {x: 1, y: 4}
+  smoothTimeRange: {x: 0.15, y: 0.42}
+  randomMoveRangeRange: {x: 0.79, y: 4}
+  randomMoveSpeedRange: {x: 0.5, y: 5}
+  randomMoveIntervalRange: {x: 0.5, y: 3}
+  detectionRadius: 15.9
+  lostSightRadius: 22.7
+  DetectionPoint: {fileID: 2360911222258903538}
 --- !u!114 &7084638065724886995
 MonoBehaviour:
   m_ObjectHideFlags: 0

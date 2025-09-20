@@ -14,8 +14,8 @@ TagManager:
   - Rat
   - PlayerWeaponBat
   - EffectSpawnPoint
-  - OnlinePlayer
   - CM
+  - Invisible
   layers:
   - Default
   - TransparentFX
@@ -58,4 +58,7 @@ TagManager:
     locked: 0
   - name: OnTop
     uniqueID: 2798058473
+    locked: 0
+  - name: CameraSortingLayer
+    uniqueID: 3910117977
     locked: 0

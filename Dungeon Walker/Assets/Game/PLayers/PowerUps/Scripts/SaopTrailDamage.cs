@@ -1,10 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class SoapTrailDamage : MonoBehaviour
 {
     [Header("Trail Settings")]
     public GameObject[] soapTrailObjects;
+    public ParticleSystem[] soapVisuals; // 🟢 Controlled by movement + grounded
     public Transform damagePoint;
     public Vector2 damageSize = new Vector2(2f, 0.5f);
     public LayerMask enemyLayer;
@@ -15,35 +16,39 @@ public class SoapTrailDamage : MonoBehaviour
 
     private bool canDamage = true;
 
-    private bool trailsWereActive = false;
     void Update()
     {
-        if (!enabled) return;
         if (player == null) return;
 
-        bool grounded = player.IsGrounded();
+        PlayerDash dash = player.GetComponent<PlayerDash>();
 
-        // --- Control SoapTrail Particles based on grounded state ---
-        foreach (var trail in soapTrailObjects)
+        // --- Particle emission ---
+        if (soapTrailObjects != null)
         {
-            if (trail == null) continue;
-
-            var ps = trail.GetComponent<ParticleSystem>();
-            if (ps == null) continue;
-
-            if (grounded && !trailsWereActive)
+            foreach (var obj in soapTrailObjects)
             {
-                ps.Play();
-            }
-            else if (!grounded && trailsWereActive)
-            {
-                ps.Stop();
+                if (obj == null) continue;
+                ParticleSystem ps = obj.GetComponent<ParticleSystem>();
+                if (ps == null) continue;
+
+                var em = ps.emission;
+
+                // ✅ Emit if grounded OR dashing
+                bool shouldEmit = player.IsGrounded() || (dash != null && dash.IsDashing);
+                em.enabled = shouldEmit;
+
+                // --- ADD THIS TO ENSURE PARTICLES ACTUALLY PLAY ---
+                if (shouldEmit && !ps.isPlaying)
+                {
+                    ps.Play();
+                }
             }
         }
-        trailsWereActive = grounded;
 
-        // --- Damage logic works only while grounded ---
-        if (grounded && canDamage)
+        // --- Damage: only when grounded OR dashing AND moving OR dashing ---
+        if ((player.IsGrounded() || (dash != null && dash.IsDashing)) &&
+            (player.rb.velocity.x != 0 || (dash != null && dash.IsDashing)) &&
+            canDamage)
         {
             DealDamage();
             StartCoroutine(DamageCooldown());
@@ -51,6 +56,8 @@ public class SoapTrailDamage : MonoBehaviour
     }
 
 
+
+  
     void DealDamage()
     {
         if (damagePoint == null) return;
@@ -58,35 +65,11 @@ public class SoapTrailDamage : MonoBehaviour
         Collider2D[] enemies = Physics2D.OverlapBoxAll(damagePoint.position, damageSize, 0f, enemyLayer);
         foreach (var enemy in enemies)
         {
-            FleaHealth flea = enemy.GetComponent<FleaHealth>();
-            if (flea != null)
-            {
-                flea.TakeDamage(damage, Vector2.zero);
-            }
-
-            FlyHealth fly = enemy.GetComponent<FlyHealth>();
-            if (fly != null)
-            {
-                fly.TakeDamage(damage, Vector2.zero);
-            }
-
-            SprayerHealth sprayer = enemy.GetComponent<SprayerHealth>();
-            if (sprayer != null)
-            {
-                sprayer.TakeDamage(damage, Vector2.zero);
-            }
-
-            InkHealth ink = enemy.GetComponent<InkHealth>();
-            if (ink != null)
-            {
-                ink.TakeDamage(damage, Vector2.zero);
-            }
-
-            RatKingHealth rat = enemy.GetComponent<RatKingHealth>();
-            if (rat != null)
-            {
-                rat.TakeDamage(damage);
-            }
+            if (enemy.TryGetComponent(out FleaHealth flea)) flea.TakeDamage(damage, Vector2.zero);
+            if (enemy.TryGetComponent(out FlyHealth fly)) fly.TakeDamage(damage, Vector2.zero);
+            if (enemy.TryGetComponent(out SprayerHealth sprayer)) sprayer.TakeDamage(damage, Vector2.zero);
+            if (enemy.TryGetComponent(out InkHealth ink)) ink.TakeDamage(damage, Vector2.zero);
+            if (enemy.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage(damage);
         }
     }
 

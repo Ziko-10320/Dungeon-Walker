@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,28 +7,31 @@ public class FleaFollow : MonoBehaviour
     private enum AIState { Patrolling, Chasing, Fallen, Wandering }
     private AIState currentState;
 
-    [Header("Références Essentielles")]
+    [Header("RÃ©fÃ©rences Essentielles")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator fleaAnimator;
     [SerializeField] public Transform playerTransform;
     private FleaHealth health;
-    [Header("Comportement Général")]
-    [SerializeField] private float patrolSpeed = 2f;
-    [SerializeField] private float chaseSpeed = 4f;
-    [SerializeField] private float stoppingDistance = 1.5f;
-    [Tooltip("Rayon de détection quand la puce est perdue ou en errance.")]
-    [SerializeField] private float detectionRadius = 7f;
 
-    [Header("Paramètres d'Errance")]
-    [Tooltip("Temps minimum/maximum que la puce marchera dans une direction en errance.")]
+    [Header("Comportement GÃ©nÃ©ral (Ranges)")]
+    [SerializeField] private Vector2 patrolSpeedRange = new Vector2(1.5f, 2.5f);
+    [SerializeField] private Vector2 chaseSpeedRange = new Vector2(3.5f, 5f);
+    [SerializeField] private Vector2 detectionRadiusRange = new Vector2(6f, 9f);
+    [SerializeField] private Vector2 stopDistanceRange = new Vector2(1f, 2.5f);
+
+    private float patrolSpeed;
+    private float chaseSpeed;
+    private float randomDetectionRadius;
+    private float randomStopDistance;
+
+    [Header("ParamÃ¨tres d'Errance")]
     [SerializeField] private Vector2 wanderTimeRange = new Vector2(2f, 5f);
     [SerializeField] private float wanderWaitTime = 1.5f;
     private Coroutine wanderCoroutine;
 
-    [Header("Détection d'Environnement")]
+    [Header("DÃ©tection d'Environnement")]
     [SerializeField] private Transform groundCheck;
     [SerializeField] private Transform wallCheck;
-    [Tooltip("Distance pour les vérifications de sol et de mur.")]
     [SerializeField] private float checkDistance = 0.2f;
     [SerializeField] private LayerMask platformLayer;
 
@@ -44,26 +47,24 @@ public class FleaFollow : MonoBehaviour
         health = GetComponent<FleaHealth>();
     }
 
-    
-
     void Start()
     {
-        if (playerTransform != null)
+        // --- Randomize values ---
+        patrolSpeed = Random.Range(patrolSpeedRange.x, patrolSpeedRange.y);
+        chaseSpeed = Random.Range(chaseSpeedRange.x, chaseSpeedRange.y);
+        randomDetectionRadius = Random.Range(detectionRadiusRange.x, detectionRadiusRange.y);
+        randomStopDistance = Random.Range(stopDistanceRange.x, stopDistanceRange.y);
+        randomStopDistance = Mathf.Clamp(randomStopDistance, 0.5f, randomDetectionRadius - 0.5f);
+
+        if (playerTransform == null)
         {
-            Debug.Log("FleaFollow: Player was assigned manually. Using that target.");
-        }
-        else
-        {
-            // 2. If not, we search for any and all players in the scene.
             GameObject[] onlinePlayers = GameObject.FindGameObjectsWithTag("OnlinePlayer");
             GameObject[] offlinePlayers = GameObject.FindGameObjectsWithTag("Player");
 
-            // 3. We combine these into one single list of potential targets.
             List<GameObject> allPlayers = new List<GameObject>();
             allPlayers.AddRange(onlinePlayers);
             allPlayers.AddRange(offlinePlayers);
 
-            // 4. We find the player that is closest to this specific flea.
             GameObject closestPlayer = null;
             float minDistance = float.MaxValue;
 
@@ -77,7 +78,6 @@ public class FleaFollow : MonoBehaviour
                 }
             }
 
-            // 5. If we found a closest player, we assign its transform as our target.
             if (closestPlayer != null)
             {
                 playerTransform = closestPlayer.transform;
@@ -88,16 +88,54 @@ public class FleaFollow : MonoBehaviour
         initialYPosition = transform.position.y;
         ChangeState(AIState.Patrolling);
 
-        // La vérification suivante est maintenant une sécurité supplémentaire
         if (playerTransform == null)
         {
-            Debug.LogError("Impossible de trouver le joueur ! Assurez-vous que votre joueur a le tag 'Player'. Puce: " + gameObject.name);
-            enabled = false; // On désactive le script pour éviter plus d'erreurs.
+            Debug.LogError("Impossible de trouver le joueur ! VÃ©rifiez vos tags 'Player' ou 'OnlinePlayer'.");
+            enabled = false;
+        }
+    }
+    void OnEnable()
+{
+    PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;
+}
+
+void OnDisable()
+{
+    PlayerInvisibility.OnInvisibilityChanged -= HandleInvisibility;
+}
+
+private void HandleInvisibility(bool invisible)
+{
+    if (invisible)
+    {
+        // lose reference
+        playerTransform = null;
+    }
+    else
+    {
+        // reacquire
+        FindPlayerAgain();
+    }
+}
+
+private void FindPlayerAgain()
+{
+    GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+    GameObject closest = null;
+    float minDist = float.MaxValue;
+
+    foreach (GameObject p in players)
+    {
+        float d = Vector3.Distance(transform.position, p.transform.position);
+        if (d < minDist)
+        {
+            minDist = d;
+            closest = p;
         }
     }
 
-
-
+    if (closest != null) playerTransform = closest.transform;
+}
 
     void Update()
     {
@@ -105,7 +143,7 @@ public class FleaFollow : MonoBehaviour
         {
             StopMoving();
             fleaAnimator.SetBool("IsWalking", false);
-            return; // Skip all AI logic if stunned
+            return;
         }
         timeSinceLastFlip += Time.deltaTime;
         UpdateAIState();
@@ -131,19 +169,34 @@ public class FleaFollow : MonoBehaviour
 
     private void UpdateAIState()
     {
+        if (playerTransform == null) return; // don't chase
+
+
+        // --- NEW: ignore invisible player ---
+        PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+        if (invis != null && invis.IsInvisible())
+        {
+            ChangeState(AIState.Patrolling);
+            return;
+        }
+        float distanceToPlayer = playerTransform != null
+            ? Vector2.Distance(transform.position, playerTransform.position)
+            : Mathf.Infinity;
+
         if (transform.position.y < initialYPosition - 2f)
         {
-            if (IsPlayerVisible()) ChangeState(AIState.Fallen);
+            if (distanceToPlayer < randomDetectionRadius) ChangeState(AIState.Fallen);
             else if (currentState != AIState.Wandering) ChangeState(AIState.Wandering);
             return;
         }
 
-        if (IsPlayerVisible())
+        // --- CHASE LOGIC WITH HYSTERESIS ---
+        if (distanceToPlayer < randomDetectionRadius)
         {
             if (transform.position.y > initialYPosition - 2f) ChangeState(AIState.Chasing);
             else ChangeState(AIState.Fallen);
         }
-        else
+        else if (distanceToPlayer > randomDetectionRadius * 1.2f)
         {
             if (currentState == AIState.Chasing || currentState == AIState.Fallen)
             {
@@ -175,12 +228,15 @@ public class FleaFollow : MonoBehaviour
 
     private void HandleChasing()
     {
+        float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
+
         if (IsBlocked())
         {
             StopMoving();
             return;
         }
-        if (Vector2.Distance(transform.position, playerTransform.position) < stoppingDistance)
+
+        if (distanceToPlayer <= randomStopDistance)
         {
             StopMoving();
             FaceTarget(playerTransform.position);
@@ -261,16 +317,6 @@ public class FleaFollow : MonoBehaviour
         }
     }
 
-    private bool IsPlayerVisible()
-    {
-        // Ajout d'une vérification de nullité pour playerTransform
-        if (playerTransform == null)
-        {
-            Debug.LogWarning("Player Transform n'est pas assigné ou est nul pour la puce: " + gameObject.name);
-            return false; // Le joueur n'est pas visible si sa référence est nulle
-        }
-        return Vector2.Distance(transform.position, playerTransform.position) < detectionRadius;
-    }
     private bool IsBlocked()
     {
         return !IsGroundAhead() || IsWallAhead();
@@ -291,20 +337,15 @@ public class FleaFollow : MonoBehaviour
         fleaAnimator.SetBool("IsWalking", Mathf.Abs(rb.velocity.x) > 0.1f);
     }
 
-    // --- GIZMOS MODIFIÉS ICI ---
+    // --- DEBUG GIZMOS ---
     void OnDrawGizmosSelected()
     {
-        // Dessine la zone de détection comme une ligne horizontale.
         Gizmos.color = Color.yellow;
-        Vector3 leftDetectPoint = transform.position - new Vector3(detectionRadius, 0, 0);
-        Vector3 rightDetectPoint = transform.position + new Vector3(detectionRadius, 0, 0);
-        Gizmos.DrawLine(leftDetectPoint, rightDetectPoint);
-        // Ajoute des petites sphères aux extrémités pour mieux les voir.
-        Gizmos.DrawWireSphere(leftDetectPoint, 0.2f);
-        Gizmos.DrawWireSphere(rightDetectPoint, 0.2f);
+        Gizmos.DrawWireSphere(transform.position, randomDetectionRadius);
 
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, randomStopDistance);
 
-        // Dessine les rayons de détection de l'environnement.
         if (groundCheck != null)
         {
             Gizmos.color = Color.green;

@@ -56,12 +56,12 @@ public class SprayerFollow : MonoBehaviour
         else
         {
             // 2. If not, we search for any and all players in the scene.
-            GameObject[] onlinePlayers = GameObject.FindGameObjectsWithTag("OnlinePlayer");
+           
             GameObject[] offlinePlayers = GameObject.FindGameObjectsWithTag("Player");
 
             // 3. We combine these into one single list of potential targets.
             List<GameObject> allPlayers = new List<GameObject>();
-            allPlayers.AddRange(onlinePlayers);
+            
             allPlayers.AddRange(offlinePlayers);
 
             // 4. We find the player that is closest to this specific flea.
@@ -95,6 +95,48 @@ public class SprayerFollow : MonoBehaviour
     {
 
         ChangeState(AIState.Wandering);
+    }
+    void OnEnable()
+    {
+        PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;
+    }
+
+    void OnDisable()
+    {
+        PlayerInvisibility.OnInvisibilityChanged -= HandleInvisibility;
+    }
+
+    private void HandleInvisibility(bool invisible)
+    {
+        if (invisible)
+        {
+            // lose reference
+            playerTransform = null;
+        }
+        else
+        {
+            // reacquire
+            FindPlayerAgain();
+        }
+    }
+
+    private void FindPlayerAgain()
+    {
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        GameObject closest = null;
+        float minDist = float.MaxValue;
+
+        foreach (GameObject p in players)
+        {
+            float d = Vector3.Distance(transform.position, p.transform.position);
+            if (d < minDist)
+            {
+                minDist = d;
+                closest = p;
+            }
+        }
+
+        if (closest != null) playerTransform = closest.transform;
     }
 
     void Update()
@@ -156,6 +198,14 @@ public class SprayerFollow : MonoBehaviour
 
     private void UpdateAIState()
     {
+        if (playerTransform == null) return; // don't chase
+        // --- NEW: ignore invisible player ---
+        PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+        if (invis != null && invis.IsInvisible())
+        {
+            ChangeState(AIState.Wandering);
+            return;
+        }
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
 
         if (currentState == AIState.Wandering)

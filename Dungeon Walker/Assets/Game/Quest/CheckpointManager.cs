@@ -249,7 +249,37 @@ public class CheckpointManager : MonoBehaviour
         {
             PlayerStatsManager.Instance.AddCoins(coinsPerCheckpoint);
         }
-        // --- END OF MODIFICATION ---
+
+        PowerUpManager powerUpManager = player.GetComponent<PowerUpManager>();
+        if (powerUpManager != null && powerUpManager.HasPowerUp(PowerUpType.Invisibility))
+        {
+            // find PlayerInvisibility component
+            PlayerInvisibility invis = player.GetComponent<PlayerInvisibility>();
+            if (invis != null)
+            {
+                // OPTIONAL: try to get duration from equipped PowerUpData (if you store it in InventoryManager)
+                float duration = -1f;
+                var inv = InventoryManager.Instance;
+                if (inv != null)
+                {
+                    foreach (PowerUpData pd in inv.equippedPowerUps)
+                    {
+                        if (pd != null && pd.type == PowerUpType.Invisibility)
+                        {
+                            duration = pd.effectValue;
+                            break;
+                        }
+                    }
+                }
+
+                if (duration > 0f) invis.ActivateInvisibility(duration);
+                else invis.ActivateInvisibility(); // default duration
+            }
+            else
+            {
+                Debug.LogWarning("CheckpointManager: PlayerInvisibility component not found on player.");
+            }
+        }
 
         // Hide E button
         OnShowEButton?.Invoke(false);

@@ -82,10 +82,22 @@ public class FlyAttack : MonoBehaviour
 
     void Update()
     {
+        bool playerInvisible = false;
         if (playerTransform != null)
         {
-            lastKnownPlayerPosition = (Vector2)playerTransform.position + playerTargetOffset;
+            PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+            if (invis != null) playerInvisible = invis.IsInvisible();
         }
+
+        // Stop attack if player invisible
+        if (playerInvisible)
+        {
+            animator.ResetTrigger("Attack"); // stop throw animation
+            return;
+        }
+
+        lastKnownPlayerPosition = (Vector2)playerTransform.position + playerTargetOffset;
+
         if (Time.time >= nextAttackTime)
         {
             if (animator != null)
@@ -94,10 +106,15 @@ public class FlyAttack : MonoBehaviour
             }
             SetNextAttackTime();
         }
+
     }
 
     public void ThrowDust()
     {
+        if (playerTransform == null) return;
+
+        PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+        if (invis != null && invis.IsInvisible()) return;
         Debug.Log("ThrowDust method called.");
         if (dustProjectilePrefab == null || projectileSpawnPoint == null || playerTransform == null)
         {

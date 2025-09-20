@@ -51,7 +51,7 @@ public class KritinaMovement : MonoBehaviour
     public float landVolume = 1f;
 
     private PlayerDash playerDash;
-    private Rigidbody2D rb;
+    public Rigidbody2D rb;
     public bool isFacingRight = true;
     private Animator animator;
     private float moveDirection;

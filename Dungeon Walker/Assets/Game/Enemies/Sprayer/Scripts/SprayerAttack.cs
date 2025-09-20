@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class SprayerAttack : MonoBehaviour
@@ -69,7 +69,18 @@ public class SprayerAttack : MonoBehaviour
         {
             return; // Don\"t do anything else while an attack is in progress
         }
-
+        GameObject playerObj = GameObject.FindWithTag("Player");
+        if (playerObj != null)
+        {
+            PlayerInvisibility invis = playerObj.GetComponent<PlayerInvisibility>();
+            if (invis != null && invis.IsInvisible())
+            {
+                // Stop particles & disable movement
+                if (sprayParticles != null && sprayParticles.isPlaying) sprayParticles.Stop();
+                EnableMovement(); // Ensure enemy can move
+                return;
+            }
+        }
         if (Time.time >= lastAttackTime + attackCooldown)
         {
             if (IsPlayerInAttackRange())
@@ -86,6 +97,11 @@ public class SprayerAttack : MonoBehaviour
 
     private void StartAttack()
     {
+        if (IsPlayerInvisible())
+        {
+            // Player is invisible → cancel attack
+            return;
+        }
         isAttacking = true;
         lastAttackTime = Time.time;
 
@@ -127,15 +143,31 @@ public class SprayerAttack : MonoBehaviour
         float timer = 0f;
         while (timer < damageDuration)
         {
+            if (IsPlayerInvisible())
+            {
+                // Stop particles immediately
+                if (sprayParticles != null) sprayParticles.Stop();
+                break; // exit attack loop
+            }
+
             ApplyDamageTick();
             timer += damageInterval;
             yield return new WaitForSeconds(damageInterval);
         }
         EndAttack();
     }
+    private bool IsPlayerInvisible()
+    {
+        // Find player in the layer
+        Collider2D playerCollider = Physics2D.OverlapCircle(transform.position, attackRange, playerLayer);
+        if (playerCollider == null) return false;
 
+        PlayerInvisibility invis = playerCollider.GetComponent<PlayerInvisibility>();
+        return invis != null && invis.IsInvisible();
+    }
     private void ApplyDamageTick()
     {
+
         // Use the stored \"attackDirection\" for consistent damage zone position
         Vector2 flippedOffset = new Vector2(damageZoneOffset.x * attackDirection, damageZoneOffset.y);
         Vector2 attackOrigin = (Vector2)transform.position + flippedOffset;
@@ -147,6 +179,12 @@ public class SprayerAttack : MonoBehaviour
             PlayerHealth playerHealth = hit.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
+                PlayerInvisibility invis = hit.GetComponent<PlayerInvisibility>();
+                if (invis != null && invis.IsInvisible())
+                {
+                    // Player is invisible, skip damage
+                    continue;
+                }
                 float damageThisTick = damagePerSecond * damageInterval;
                 playerHealth.TakeDamage(Mathf.RoundToInt(damageThisTick), 0f, Vector2.zero);
             }

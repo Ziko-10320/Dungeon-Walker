@@ -1,171 +1,185 @@
-using UnityEngine;
+﻿using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D))]
 public class FlyFollow : MonoBehaviour
 {
+    [Header("Target")]
     public Transform playerTransform;
+
+    [Header("Base Values (used if randomizeOnStart = false)")]
     public float moveSpeed = 3f;
     public float minDistance = 5f;
     public float maxDistance = 7f;
-    public float idealDistance = 6f; // New variable for the ideal distance
+    public LayerMask obstacleLayer ; // Default to everything
+    public float idealDistance = 6f;
     public float heightOffset = 3f;
-    public LayerMask obstacleLayer;
     public float avoidanceForce = 5f;
     public float avoidanceDistance = 2f;
-    public float raycastOffset = 0.5f; // Offset for additional raycasts
-    public float wallDetectionDistance = 1f; // Distance to detect walls for wall-following
-    public float wallFollowingForce = 3f; // Force to apply when wall-following
-    public float smoothTime = 0.1f; // For smooth movement
-
-    // Random movement when stationary
+    public float wallDetectionDistance = 1f;
+    public float wallFollowingForce = 3f;
+    public float smoothTime = 0.1f;
     public float randomMoveRange = 1f;
     public float randomMoveSpeed = 1f;
     public float randomMoveInterval = 2f;
 
+    [Header("Randomization Settings")]
+    public bool randomizeOnStart = true;
+
+    public Vector2 moveSpeedRange = new Vector2(2.5f, 3.5f);
+    public Vector2 minDistanceRange = new Vector2(4f, 6f);
+    public Vector2 maxDistanceRange = new Vector2(6f, 8f);
+    public Vector2 idealDistanceRange = new Vector2(5f, 7f);
+    public Vector2 heightOffsetRange = new Vector2(2f, 4f);
+    public Vector2 avoidanceForceRange = new Vector2(3f, 7f);
+    public Vector2 avoidanceDistanceRange = new Vector2(1f, 3f);
+    public Vector2 wallDetectionDistanceRange = new Vector2(0.5f, 2f);
+    public Vector2 wallFollowingForceRange = new Vector2(1f, 4f);
+    public Vector2 smoothTimeRange = new Vector2(0.05f, 0.3f);
+    public Vector2 randomMoveRangeRange = new Vector2(0.5f, 2f);
+    public Vector2 randomMoveSpeedRange = new Vector2(0.5f, 2f);
+    public Vector2 randomMoveIntervalRange = new Vector2(1f, 3f);
+
+    [Header("Detection Settings")]
+    public float detectionRadius = 8f;
+    public float lostSightRadius = 10f;
+    public Transform DetectionPoint;
+    private bool playerDetected = false;
+
+    // Internals
     private Rigidbody2D rb;
     private bool facingRight = true;
     private Vector2 currentVelocity = Vector2.zero;
     private float randomMoveTimer = 0f;
     private Vector2 randomTargetPosition;
     private FlyHealth health;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         health = GetComponent<FlyHealth>();
+        rb.gravityScale = 0f;
+
         if (rb == null)
         {
-            Debug.LogError("FlyFollow: Rigidbody2D not found on this GameObject. Please add one.");
-            enabled = false; // Disable the script if no Rigidbody2D is found
+            Debug.LogError("FlyFollow: Rigidbody2D missing.");
+            enabled = false;
+            return;
         }
-       
+
+        if (randomizeOnStart)
+            ApplyRandomRanges();
+
+        // Stagger idle timers so all flies don’t move in sync
+        randomMoveTimer = Random.Range(0f, randomMoveInterval);
+
         GenerateRandomTarget();
+    }
+
+    private void ApplyRandomRanges()
+    {
+        moveSpeed = Rand(moveSpeedRange, moveSpeed);
+        minDistance = Rand(minDistanceRange, minDistance);
+        maxDistance = Rand(maxDistanceRange, maxDistance);
+        idealDistance = Rand(idealDistanceRange, idealDistance);
+
+        // Ensure logical order: min <= ideal <= max
+        if (minDistance > idealDistance) minDistance = idealDistance - 0.1f;
+        if (idealDistance > maxDistance) maxDistance = idealDistance + 0.1f;
+
+        heightOffset = Rand(heightOffsetRange, heightOffset);
+        avoidanceForce = Rand(avoidanceForceRange, avoidanceForce);
+        avoidanceDistance = Rand(avoidanceDistanceRange, avoidanceDistance);
+        wallDetectionDistance = Rand(wallDetectionDistanceRange, wallDetectionDistance);
+        wallFollowingForce = Rand(wallFollowingForceRange, wallFollowingForce);
+        smoothTime = Rand(smoothTimeRange, smoothTime);
+        randomMoveRange = Rand(randomMoveRangeRange, randomMoveRange);
+        randomMoveSpeed = Rand(randomMoveSpeedRange, randomMoveSpeed);
+        randomMoveInterval = Rand(randomMoveIntervalRange, randomMoveInterval);
+    }
+
+    private float Rand(Vector2 range, float fallback)
+    {
+        if (range.x == range.y) return range.x;
+        float min = Mathf.Min(range.x, range.y);
+        float max = Mathf.Max(range.x, range.y);
+        return Random.Range(min, max);
     }
 
     void FixedUpdate()
     {
-        if (health != null && health.isStunned)
-        {
-            rb.velocity = Vector2.zero; // Stop all movement
-            return; // Skip AI logic
-        }
-        if (playerTransform == null || rb == null) return;
-
-        Vector2 targetPosition = new Vector2(playerTransform.position.x, playerTransform.position.y + heightOffset);
+  
         Vector2 currentPosition = rb.position;
-
         Vector2 desiredMovement = Vector2.zero;
 
-        // Calculate direction to player
-        Vector2 directionToPlayer = targetPosition - currentPosition;
+        if (playerTransform != null)
+        {
+            float distanceToPlayer = Vector2.Distance(currentPosition, playerTransform.position);
 
-        // Maintain distance
-        float currentDistance = directionToPlayer.magnitude;
+            // Check detection zone
+            if (!playerDetected && distanceToPlayer <= detectionRadius)
+            {
+                playerDetected = true; // start chasing
+            }
 
-        if (currentDistance < minDistance)
-        {
-            // Move away from player if too close (below minDistance)
-            desiredMovement = -directionToPlayer.normalized * moveSpeed * 1.5f; // Stronger push away
-        }
-        else if (currentDistance > maxDistance)
-        {
-            // Move towards player if too far (above maxDistance)
-            desiredMovement = directionToPlayer.normalized * moveSpeed;
-        }
-        else if (currentDistance < idealDistance)
-        {
-            // If between minDistance and idealDistance, gently move away
-            desiredMovement = -directionToPlayer.normalized * moveSpeed * 0.5f;
-        }
-        else if (currentDistance > idealDistance)
-        {
-            // If between idealDistance and maxDistance, gently move towards
-            desiredMovement = directionToPlayer.normalized * moveSpeed * 0.5f;
+            // Check lost sight zone
+            if (playerDetected && distanceToPlayer > lostSightRadius)
+            {
+                playerDetected = false; // stop chasing
+            }
+
+            bool playerInvisible = false;
+            PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+            if (invis != null) playerInvisible = invis.IsInvisible();
+
+            if (playerDetected && !playerInvisible)
+            {
+                // --- Chase player ---
+                Vector2 targetPosition = new Vector2(playerTransform.position.x, playerTransform.position.y + heightOffset);
+                Vector2 directionToPlayer = (targetPosition - currentPosition).normalized;
+
+                float currentDistance = Vector2.Distance(currentPosition, targetPosition);
+
+                if (currentDistance < minDistance)
+                    desiredMovement = -directionToPlayer * moveSpeed * 1.5f; // move away if too close
+                else if (currentDistance > maxDistance)
+                    desiredMovement = directionToPlayer * moveSpeed; // move closer if too far
+                else if (currentDistance < idealDistance)
+                    desiredMovement = -directionToPlayer * moveSpeed * 0.5f; // gently move away
+                else if (currentDistance > idealDistance)
+                    desiredMovement = directionToPlayer * moveSpeed * 0.5f; // gently move closer
+                else
+                    desiredMovement = Vector2.zero;
+
+                // Always adjust vertical position
+                if (Mathf.Abs(targetPosition.y - currentPosition.y) > 0.1f)
+                {
+                    desiredMovement.y = (targetPosition.y > currentPosition.y) ? moveSpeed : -moveSpeed;
+                }
+            }
+            else
+            {
+                // --- Idle hover ---
+                float hoverSpeed = 2f;    // speed of up/down movement
+                float hoverHeight = 0.5f; // amplitude of hover
+                desiredMovement = new Vector2(0, Mathf.Sin(Time.time * hoverSpeed) * hoverHeight);
+            }
         }
         else
         {
-            // Exactly at idealDistance, try to stay there
-            desiredMovement = Vector2.zero;
+            // --- No player: just hover ---
+            float hoverSpeed = 2f;
+            float hoverHeight = 0.5f;
+            desiredMovement = new Vector2(0, Mathf.Sin(Time.time * hoverSpeed) * hoverHeight);
         }
 
-        // Always adjust vertical position if not at target height
-        if (Mathf.Abs(targetPosition.y - currentPosition.y) > 0.1f)
+        // --- Smooth movement ---
+        rb.velocity = Vector2.SmoothDamp(rb.velocity, desiredMovement, ref currentVelocity, smoothTime);
+
+        // --- Flip to look at player (only if detected) ---
+        if (playerDetected && playerTransform != null)
         {
-            desiredMovement.y = (targetPosition.y > currentPosition.y) ? moveSpeed : -moveSpeed;
-        }
-
-        // If stationary (or very slow) and not actively moving towards/away from player, perform random movement
-        if (desiredMovement.magnitude < 0.1f && rb.velocity.magnitude < 0.1f)
-        {
-            randomMoveTimer -= Time.fixedDeltaTime;
-            if (randomMoveTimer <= 0f)
-            {
-                GenerateRandomTarget();
-                randomMoveTimer = randomMoveInterval;
-            }
-            desiredMovement = (randomTargetPosition - currentPosition).normalized * randomMoveSpeed;
-        }
-
-        // Obstacle avoidance (using multiple Raycasts for better detection and wall-following)
-        Vector2 avoidanceDirection = Vector2.zero;
-        Vector2[] raycastDirections = {
-            rb.velocity.normalized, // Forward
-            Quaternion.Euler(0, 0, 30) * rb.velocity.normalized, // Forward-right (slight angle)
-            Quaternion.Euler(0, 0, -30) * rb.velocity.normalized, // Forward-left (slight angle)
-            Vector2.up, // Up
-            Vector2.down, // Down
-            Vector2.right, // Right
-            Vector2.left // Left
-        };
-
-        foreach (Vector2 dir in raycastDirections)
-        {
-            RaycastHit2D hit = Physics2D.Raycast(currentPosition, dir, avoidanceDistance, obstacleLayer);
-            if (hit.collider != null)
-            {
-                // Calculate avoidance force based on hit normal and distance
-                Vector2 perpendicular = Vector2.Perpendicular(hit.normal);
-                // Determine if we should go left or right around the obstacle
-                float dot = Vector2.Dot(perpendicular, rb.velocity.normalized);
-                if (dot < 0) perpendicular = -perpendicular;
-
-                avoidanceDirection += perpendicular * (avoidanceDistance - hit.distance);
-            }
-        }
-
-        // Wall following logic
-        RaycastHit2D frontHit = Physics2D.Raycast(currentPosition, rb.velocity.normalized, wallDetectionDistance, obstacleLayer);
-        if (frontHit.collider != null)
-        {
-            // If we hit a wall directly in front, try to move along it
-            Vector2 wallNormal = frontHit.normal;
-            Vector2 wallTangent = Vector2.Perpendicular(wallNormal);
-
-            // Determine if we should go up or down along the wall
-            float dotUp = Vector2.Dot(wallTangent, Vector2.up);
-            if (dotUp < 0) wallTangent = -wallTangent; // Adjust tangent to go upwards if possible
-
-            avoidanceDirection += wallTangent * wallFollowingForce;
-        }
-
-        // Normalize avoidance direction if there\"s any avoidance force
-        if (avoidanceDirection.magnitude > 0.1f)
-        {
-            avoidanceDirection.Normalize();
-        }
-
-        // Combine movement and avoidance
-        Vector2 finalDesiredVelocity = desiredMovement + (avoidanceDirection * avoidanceForce);
-
-        // Apply smooth movement
-        rb.velocity = Vector2.SmoothDamp(rb.velocity, finalDesiredVelocity, ref currentVelocity, smoothTime);
-
-        // Flip logic: only flip if player surpasses the fly horizontally
-        if (playerTransform.position.x > transform.position.x && !facingRight)
-        {
-            Flip();
-        }
-        else if (playerTransform.position.x < transform.position.x && facingRight)
-        {
-            Flip();
+            if (playerTransform.position.x > transform.position.x && !facingRight) Flip();
+            else if (playerTransform.position.x < transform.position.x && facingRight) Flip();
         }
     }
 
@@ -177,62 +191,52 @@ public class FlyFollow : MonoBehaviour
     void Flip()
     {
         facingRight = !facingRight;
-        Vector3 theScale = transform.localScale;
-        theScale.x *= -1;
-        transform.localScale = theScale;
+        Vector3 s = transform.localScale;
+        s.x *= -1;
+        transform.localScale = s;
     }
 
-    // Optional: Draw Gizmos for visualization in the editor
     void OnDrawGizmosSelected()
     {
         if (rb == null) return;
 
-        Vector2 currentPosition = rb.position;
+        Vector2 currentPosition = Application.isPlaying ? rb.position : (Vector2)transform.position;
+        Vector2 forwardDir = rb.velocity.sqrMagnitude > 0.01f ? rb.velocity.normalized : Vector2.right;
 
-        // Draw avoidance raycasts
-        Gizmos.color = Color.cyan; // Changed to Cyan for better visibility
-        Vector2[] raycastDirections = {
-            rb.velocity.normalized, // Forward
-            Quaternion.Euler(0, 0, 30) * rb.velocity.normalized, // Forward-right (slight angle)
-            Quaternion.Euler(0, 0, -30) * rb.velocity.normalized, // Forward-left (slight angle)
-            Vector2.up, // Up
-            Vector2.down, // Down
-            Vector2.right, // Right
-            Vector2.left // Left
+        Gizmos.color = Color.cyan;
+        Vector2[] rayDirs = {
+            forwardDir,
+            Quaternion.Euler(0,0,30) * forwardDir,
+            Quaternion.Euler(0,0,-30) * forwardDir,
+            Vector2.up, Vector2.down, Vector2.right, Vector2.left
         };
-
-        foreach (Vector2 dir in raycastDirections)
-        {
+        foreach (Vector2 dir in rayDirs)
             Gizmos.DrawRay(currentPosition, dir * avoidanceDistance);
-        }
 
-        // Draw wall detection ray
-        Gizmos.color = Color.yellow; // Changed to Yellow for better visibility
-        Gizmos.DrawRay(currentPosition, rb.velocity.normalized * wallDetectionDistance);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawRay(currentPosition, forwardDir * wallDetectionDistance);
 
-        // Draw target position
         if (playerTransform != null)
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawWireSphere(new Vector2(playerTransform.position.x, playerTransform.position.y + heightOffset), 0.2f);
-        }
 
-        // Draw min/max distance circles
-        if (playerTransform != null)
-        {
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(playerTransform.position, minDistance);
-            Gizmos.color = Color.red; // Changed to Red for max distance for better contrast
+            Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(playerTransform.position, maxDistance);
-
-            // Draw ideal distance circle (new Gizmo)
-            Gizmos.color = Color.white; // White for ideal distance
+            Gizmos.color = Color.white;
             Gizmos.DrawWireSphere(playerTransform.position, idealDistance);
         }
 
-        // Draw random movement target
         Gizmos.color = Color.white;
         Gizmos.DrawWireSphere(randomTargetPosition, 0.1f);
+
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireSphere(currentPosition, detectionRadius);
+
+        Gizmos.color = Color.gray;
+        Gizmos.DrawWireSphere(currentPosition, lostSightRadius);
     }
 }
 

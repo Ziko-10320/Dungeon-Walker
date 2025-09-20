@@ -7,7 +7,11 @@ public enum PowerUpType
     InstantHeal,
     InstantSuper,
     Shield,
-    SoapTrail
+    SoapTrail,
+    AcidTrail,
+    Revive,
+    ReviveUpgraded,
+    Invisibility
 }
 
 [CreateAssetMenu(fileName = "NewPowerUp", menuName = "PowerUps/PowerUpData")]
