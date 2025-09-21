@@ -239,6 +239,24 @@ public class PowerUpManager : MonoBehaviour
                     }
                 }
                 break;
+            case PowerUpType.BeePowerUp:
+                {
+                    BeePowerUp bee = GetComponent<BeePowerUp>();
+                    if (bee != null)
+                    {
+                        if (data.effectValue > 0)
+                            bee.damage = data.effectValue; // override damage if defined in PowerUpData
+
+                        bee.EnableBeePowerUp();
+                        Debug.Log("Persistent Effect Applied: Bee Swarm 🐝 Active! Damage: " + bee.damage);
+                    }
+                    else
+                    {
+                        Debug.LogError("No BeePowerUp component found on player!");
+                    }
+                }
+                break;
+
         }
     }
     public void OnShieldAnimationEnd()
