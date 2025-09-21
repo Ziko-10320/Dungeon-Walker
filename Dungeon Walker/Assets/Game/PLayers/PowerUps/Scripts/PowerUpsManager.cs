@@ -222,6 +222,23 @@ public class PowerUpManager : MonoBehaviour
                     }
                 }
                 break;
+            case PowerUpType.ExplosiveCoins:
+                {
+                    ExplosiveCoinsPowerUp explosive = GetComponent<ExplosiveCoinsPowerUp>();
+                    if (explosive != null)
+                    {
+                        if (data.effectValue > 0)
+                            explosive.spawnChance = Mathf.Clamp01(data.effectValue);
+
+                        explosive.enabled = true; // Only enabled if equipped
+                        Debug.Log("Persistent Effect Applied: Explosive Coins 💰💥 Chance: " + explosive.spawnChance);
+                    }
+                    else
+                    {
+                        Debug.LogError("No ExplosiveCoinsPowerUp component found on player!");
+                    }
+                }
+                break;
         }
     }
     public void OnShieldAnimationEnd()

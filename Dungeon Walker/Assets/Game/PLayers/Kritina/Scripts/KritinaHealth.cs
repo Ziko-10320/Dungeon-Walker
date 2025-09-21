@@ -50,6 +50,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Slider shieldSlider;
 
     [HideInInspector] public bool isSuperActive = false;
+  
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -140,7 +141,14 @@ public class PlayerHealth : MonoBehaviour
             Die();
         }
 
+        ExplosiveCoinsPowerUp explosive = GetComponent<ExplosiveCoinsPowerUp>();
+        PowerUpManager powerUpManager = FindObjectOfType<PowerUpManager>();
+        if (explosive != null && powerUpManager != null && powerUpManager.HasPowerUp(PowerUpType.ExplosiveCoins))
+        {
+            explosive.TrySpawnCoin();
+        }
         PlayDamageSound();
+       
     }
 
     private void Die()

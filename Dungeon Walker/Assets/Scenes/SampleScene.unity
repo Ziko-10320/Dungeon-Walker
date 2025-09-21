@@ -31679,6 +31679,37 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &655332871
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 655332872}
+  m_Layer: 8
+  m_Name: CoinSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &655332872
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 655332871}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.15, y: 3.66, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1249352954}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &659244599
 GameObject:
   m_ObjectHideFlags: 0
@@ -62149,6 +62180,11 @@ SpriteMask:
   m_BackSortingOrder: 0
   m_IsCustomRangeActive: 0
   m_SpriteSortPoint: 0
+--- !u!4 &1249352954 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5384984792622734752, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+  m_PrefabInstance: {fileID: 2741814453123183690}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1251421163
 GameObject:
   m_ObjectHideFlags: 0
@@ -108496,7 +108532,7 @@ PrefabInstance:
       objectReference: {fileID: 8509869940308739949}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: maxHealth
-      value: 50
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: shieldSlider
@@ -108720,8 +108756,14 @@ PrefabInstance:
       objectReference: {fileID: 80940859}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 5384984792622734752, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 655332872}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6790693189779611674, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4464427790814270215}
   m_SourcePrefab: {fileID: 100100000, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
 --- !u!198 &2756118813767827608 stripped
 ParticleSystem:
@@ -108903,6 +108945,51 @@ Rigidbody2D:
   m_CorrespondingSourceObject: {fileID: 3638036865984811249, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
   m_PrefabInstance: {fileID: 2741814453123183690}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4464427790814270215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4051448195775605368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f37759f28c8285d4d9b0059497af9289, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnChance: 0.8
+  spawnPoint: {fileID: 655332872}
+  launchForce: 14
+  splitForceMultiplier: 0.5
+  splitDelay: 0.2
+  explosionDuration: 1
+  explosionRadius: 2.79
+  damageTickInterval: 0.12
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 640
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  goldenCoinPrefab: {fileID: 4775781348660078546, guid: 6774f7e1b4b16a9479091edb39cf6534, type: 3}
+  silverCoinPrefab: {fileID: 7080973320739549405, guid: 474f2dac281a06a48a3450969eb4f7f5, type: 3}
+  bronzeCoinPrefab: {fileID: 1400538125793392266, guid: 12d0dc89506a32249816e713791233b4, type: 3}
+  goldenDamage: 30
+  silverDamage: 20
+  bronzeDamage: 10
+  goldenExplosionParticles:
+  - {fileID: 5248389061815266600, guid: 8e56fda095f8882469a2d972b4880610, type: 3}
+  - {fileID: 4340923095521893823, guid: b075109a05a2d854ebd8c386df7ba3f4, type: 3}
+  silverExplosionParticles:
+  - {fileID: 3530907551894296611, guid: 6e677fa19ffb67a49b68fe3d4de2590c, type: 3}
+  - {fileID: 8636995647527333612, guid: c1fdbb2861159cd4694a23e6c55450dc, type: 3}
+  bronzeExplosionParticles:
+  - {fileID: 8400834026435030469, guid: 452e043081d9ed849ad9bbb716fc1a76, type: 3}
+  - {fileID: 8027755336850624125, guid: 1cc251135d3028a4c96f5978ba484713, type: 3}
+  coinRotationSpeed: 720
 --- !u!1001 &4617959566137443153
 PrefabInstance:
   m_ObjectHideFlags: 0

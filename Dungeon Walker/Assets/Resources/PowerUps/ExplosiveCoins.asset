@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09ec49850296f3649b09375a126bb880, type: 3}
+  m_Name: ExplosiveCoins
+  m_EditorClassIdentifier: 
+  type: 9
+  enabledByDefault: 0
+  speedMultiplier: 2
+  duration: 5
+  powerUpName: ExplosiveCoins
+  description: 
+  icon: {fileID: 9142785297579119951, guid: bc60cb7b408dfa344b677a081fb1f3a3, type: 3}
+  price: 100
+  effectValue: 0

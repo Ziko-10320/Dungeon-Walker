@@ -11,7 +11,8 @@ public enum PowerUpType
     AcidTrail,
     Revive,
     ReviveUpgraded,
-    Invisibility
+    Invisibility,
+    ExplosiveCoins
 }
 
 [CreateAssetMenu(fileName = "NewPowerUp", menuName = "PowerUps/PowerUpData")]
