@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
 using UnityEngine.UI;
-
+using System.Collections;
 public class ShopUI : MonoBehaviour
 {
     public static ShopUI Instance { get; private set; }
@@ -10,7 +10,9 @@ public class ShopUI : MonoBehaviour
     [Header("UI Elements")]
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private TextMeshProUGUI coinCountText;
-
+    [Header("Animation Settings")]
+    [SerializeField] private CanvasGroup panelCanvasGroup;
+    [SerializeField] private float animationDuration = 0.3f;
     // --- THE NEW SYSTEM ---
     [Header("Shop Items Configuration")]
     [SerializeField] private List<ShopItemEntry> shopItems; // The list you wanted!
@@ -25,7 +27,10 @@ public class ShopUI : MonoBehaviour
             return;
         }
         Instance = this;
-
+        if (panelCanvasGroup == null)
+        {
+            panelCanvasGroup = shopPanel.GetComponent<CanvasGroup>();
+        }
         // --- Automatically set up all buttons ---
         SetupButtons();
     }
@@ -89,7 +94,8 @@ public class ShopUI : MonoBehaviour
     {
         if (shopPanel != null)
         {
-            shopPanel.SetActive(true);
+            StopAllCoroutines();
+            StartCoroutine(AnimatePanel(true));
             UpdateCoinCount();
         }
     }
@@ -98,8 +104,42 @@ public class ShopUI : MonoBehaviour
     {
         if (shopPanel != null)
         {
+            StopAllCoroutines();
+            StartCoroutine(AnimatePanel(false));
+        }
+    }
+    private IEnumerator AnimatePanel(bool opening)
+    {
+        float startAlpha = opening ? 0f : 1f;
+        float endAlpha = opening ? 1f : 0f;
+        Vector3 startScale = opening ? new Vector3(0.8f, 0.8f, 1f) : Vector3.one;
+        Vector3 endScale = opening ? Vector3.one : new Vector3(0.8f, 0.8f, 1f);
+
+        if (opening)
+        {
+            shopPanel.SetActive(true);
+            panelCanvasGroup.interactable = false;
+        }
+
+        float timer = 0f;
+        while (timer < animationDuration)
+        {
+            float progress = timer / animationDuration;
+            panelCanvasGroup.alpha = Mathf.Lerp(startAlpha, endAlpha, progress);
+            shopPanel.transform.localScale = Vector3.Lerp(startScale, endScale, progress);
+            timer += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        panelCanvasGroup.alpha = endAlpha;
+        shopPanel.transform.localScale = endScale;
+
+        if (!opening)
+        {
             shopPanel.SetActive(false);
         }
+
+        panelCanvasGroup.interactable = opening;
     }
 
     public void UpdateCoinCount()

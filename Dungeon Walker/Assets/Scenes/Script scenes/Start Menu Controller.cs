@@ -5,16 +5,19 @@ using UnityEngine.SceneManagement;
 
 public class StartMenuController : MonoBehaviour
 {
+    [Header("Scene Transition")]
+    [SerializeField] private CanvasGroup fadeCanvasGroup;
+    [SerializeField] private float fadeDuration = 0.5f;
     // This is your existing function for the single-player "Start" button
     public void OnStartClick()
     {
-        SceneManager.LoadScene(1);
+        StartCoroutine(FadeAndLoadScene(1));
     }
-
+   
     // This is your existing function for the "Online" button
     public void OnOnlineClick()
     {
-        SceneManager.LoadScene(3);
+        StartCoroutine(FadeAndLoadScene(3));
     }
 
     // --- THE OnShopClick() FUNCTION IS NO LONGER NEEDED HERE ---
@@ -26,5 +29,20 @@ public class StartMenuController : MonoBehaviour
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
         Application.Quit();
+    }
+    public IEnumerator FadeAndLoadScene(int sceneIndex)
+    {
+        // Fade Out
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+            fadeCanvasGroup.alpha = timer / fadeDuration;
+            yield return null;
+        }
+        fadeCanvasGroup.alpha = 1;
+
+        // Load Scene
+        SceneManager.LoadScene(sceneIndex);
     }
 }

@@ -1,9 +1,12 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-
+using System.Collections;
 public class CharacterSelectionManager : MonoBehaviour
 {
+    [Header("Scene Transition")]
+    [SerializeField] private CanvasGroup fadeCanvasGroup;
+    [SerializeField] private float fadeDuration = 0.5f;
     [Header("UI Elements")]
     [SerializeField] private GameObject startGameButton;
     // ---- NEW: Add references for the map selection UI ----
@@ -18,6 +21,7 @@ public class CharacterSelectionManager : MonoBehaviour
         // Hide both the start button and the map selection buttons at the beginning.
         if (startGameButton != null) startGameButton.SetActive(false);
         if (mapSelectionGroup != null) mapSelectionGroup.SetActive(false);
+        StartCoroutine(FadeIn());
     }
 
     // --- CHARACTER SELECTION ---
@@ -96,7 +100,7 @@ public class CharacterSelectionManager : MonoBehaviour
             // Save the final choices before loading the scene.
             PlayerPrefs.Save();
             // Load the scene the player chose!
-            SceneManager.LoadScene(selectedMapSceneName);
+            StartCoroutine(FadeAndLoadScene(selectedMapSceneName));
         }
         else
         {
@@ -107,6 +111,34 @@ public class CharacterSelectionManager : MonoBehaviour
     // This function remains the same.
     public void GoToMainMenu()
     {
-        SceneManager.LoadScene(0);
+        StartCoroutine(FadeAndLoadScene("start scene"));
+    }
+    private IEnumerator FadeIn()
+    {
+        // This coroutine fades the screen from black to clear
+        fadeCanvasGroup.alpha = 1; // Start fully faded
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+            fadeCanvasGroup.alpha = 1 - (timer / fadeDuration);
+            yield return null;
+        }
+        fadeCanvasGroup.alpha = 0;
+    }
+
+    public IEnumerator FadeAndLoadScene(string sceneName)
+    {
+        // This coroutine fades the screen to black and then loads the scene
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+            fadeCanvasGroup.alpha = timer / fadeDuration;
+            yield return null;
+        }
+        fadeCanvasGroup.alpha = 1;
+
+        SceneManager.LoadScene(sceneName);
     }
 }

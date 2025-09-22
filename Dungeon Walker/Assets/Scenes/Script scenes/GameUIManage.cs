@@ -2,14 +2,16 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-
+using System.Collections;
 public class GameUIManager : MonoBehaviour
 {
     // ---- NEW: A toggle for easy testing ----
     [Header("Developer Settings")]
     [Tooltip("If true, the game will use the characters enabled in the Hierarchy instead of PlayerPrefs. FOR TESTING ONLY.")]
     [SerializeField] private bool developerMode = false;
-
+    [Header("Scene Transition")]
+    [SerializeField] private CanvasGroup fadeCanvasGroup;
+    [SerializeField] private float fadeDuration = 0.5f;
     [Header("Character Management")]
     [SerializeField] private GameObject catCharacterObject;
     [SerializeField] private GameObject catManagerObject;
@@ -100,7 +102,10 @@ public class GameUIManager : MonoBehaviour
         // Hide UI panels
         if (deathPanel != null) deathPanel.SetActive(false);
         if (pausePanel != null) pausePanel.SetActive(false);
-
+        if (fadeCanvasGroup != null)
+        {
+            StartCoroutine(FadeIn());
+        }
         // Ensure game is running
         Time.timeScale = 1f;
         isGamePaused = false;
@@ -149,19 +154,62 @@ public class GameUIManager : MonoBehaviour
 
     public void RestartGame()
     {
-        if (PlayerStatsManager.Instance != null)
-        {
-            PlayerStatsManager.Instance.ResetStats();
-        }
-        Time.timeScale = 1f;
-        isGamePaused = false;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        StartCoroutine(FadeAndRestart());
     }
 
     public void ReturnToMenu()
     {
+        StartCoroutine(FadeAndLoadScene(0));
+    }
+    private IEnumerator FadeIn()
+    {
+        fadeCanvasGroup.alpha = 1;
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime; // Use unscaled time for UI that works when paused
+            fadeCanvasGroup.alpha = 1 - (timer / fadeDuration);
+            yield return null;
+        }
+        fadeCanvasGroup.alpha = 0;
+    }
+
+    private IEnumerator FadeAndLoadScene(int sceneIndex)
+    {
+        Time.timeScale = 1f; // Ensure time is running before we fade
+        isGamePaused = false;
+
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            fadeCanvasGroup.alpha = timer / fadeDuration;
+            yield return null;
+        }
+        fadeCanvasGroup.alpha = 1;
+
+        SceneManager.LoadScene(sceneIndex);
+    }
+
+    private IEnumerator FadeAndRestart()
+    {
         Time.timeScale = 1f;
         isGamePaused = false;
-        SceneManager.LoadScene(0);
+
+        if (PlayerStatsManager.Instance != null)
+        {
+            PlayerStatsManager.Instance.ResetStats();
+        }
+
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            fadeCanvasGroup.alpha = timer / fadeDuration;
+            yield return null;
+        }
+        fadeCanvasGroup.alpha = 1;
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

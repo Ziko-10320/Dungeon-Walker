@@ -2,14 +2,16 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
-
+using System.Collections;
 public class InventoryUI : MonoBehaviour
 {
     public static InventoryUI Instance { get; private set; }
 
     [Header("Main Panel")]
     [SerializeField] private GameObject inventoryPanel;
-
+    [Header("Animation Settings")]
+    [SerializeField] private CanvasGroup panelCanvasGroup;
+    [SerializeField] private float animationDuration = 0.3f;
     [Header("Equipped Slots Display")]
     [SerializeField] private Image equippedIcon_1;
     [SerializeField] private TextMeshProUGUI equippedName_1;
@@ -27,6 +29,10 @@ public class InventoryUI : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        if (panelCanvasGroup == null)
+        {
+            panelCanvasGroup = inventoryPanel.GetComponent<CanvasGroup>();
+        }
     }
     public void OnUnequipSlot1()
     {
@@ -56,14 +62,20 @@ public class InventoryUI : MonoBehaviour
     {
         if (inventoryPanel != null)
         {
-            inventoryPanel.SetActive(true);
+            // Stop any previous animations and start the new one.
+            StopAllCoroutines();
+            StartCoroutine(AnimatePanel(true));
             RefreshAllDisplays();
         }
     }
 
     public void CloseInventory()
     {
-        if (inventoryPanel != null) inventoryPanel.SetActive(false);
+        if (inventoryPanel != null)
+        {
+            StopAllCoroutines();
+            StartCoroutine(AnimatePanel(false));
+        }
     }
 
     public void OnItemClicked(PowerUpData item)
@@ -113,7 +125,47 @@ public class InventoryUI : MonoBehaviour
             unequipButton.gameObject.SetActive(false);
         }
     }
+    private IEnumerator AnimatePanel(bool opening)
+    {
+        // Define start and end values based on whether we are opening or closing
+        float startAlpha = opening ? 0f : 1f;
+        float endAlpha = opening ? 1f : 0f;
+        Vector3 startScale = opening ? new Vector3(0.8f, 0.8f, 1f) : Vector3.one;
+        Vector3 endScale = opening ? Vector3.one : new Vector3(0.8f, 0.8f, 1f);
 
+        // If opening, first activate the panel and set initial state
+        if (opening)
+        {
+            inventoryPanel.SetActive(true);
+            panelCanvasGroup.interactable = false; // Disable clicks during animation
+        }
+
+        float timer = 0f;
+        while (timer < animationDuration)
+        {
+            // Calculate the progress of the animation (a value from 0 to 1)
+            float progress = timer / animationDuration;
+
+            // Interpolate (Lerp) the alpha and scale based on progress
+            panelCanvasGroup.alpha = Mathf.Lerp(startAlpha, endAlpha, progress);
+            inventoryPanel.transform.localScale = Vector3.Lerp(startScale, endScale, progress);
+
+            timer += Time.unscaledDeltaTime; // Use unscaled time for UI
+            yield return null; // Wait for the next frame
+        }
+
+        // Ensure final values are set perfectly
+        panelCanvasGroup.alpha = endAlpha;
+        inventoryPanel.transform.localScale = endScale;
+
+        // If closing, deactivate the panel at the end
+        if (!opening)
+        {
+            inventoryPanel.SetActive(false);
+        }
+
+        panelCanvasGroup.interactable = opening; // Re-enable clicks only if panel is open
+    }
     private void RefreshOwnedItemsDisplay()
     {
         Debug.Log("--- Refreshing Owned Items Display ---");
