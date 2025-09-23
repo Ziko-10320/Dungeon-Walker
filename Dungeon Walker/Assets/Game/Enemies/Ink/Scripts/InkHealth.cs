@@ -1,4 +1,4 @@
-using FirstGearGames.SmoothCameraShaker;
+﻿using FirstGearGames.SmoothCameraShaker;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
@@ -137,7 +137,8 @@ public class InkHealth : MonoBehaviour
     [SerializeField] private float currentInvincibilityTimer = 0f;
 
     // Private variables
-    private int currentHealth;
+    [HideInInspector]
+    public int currentHealth;
     private bool isKnockedBack = false; // Is the ink enemy currently being knocked back?
     private bool isFlashing = false; // Added to prevent multiple flash coroutines
     private AudioSource audioSource; // Reference to the AudioSource component
@@ -559,7 +560,14 @@ public class InkHealth : MonoBehaviour
         {
             StartCoroutine(FlashDamage());
         }
-
+        if (currentHealth > 0)
+        {
+            SoulLinkEnemy soul = GetComponent<SoulLinkEnemy>();
+            if (soul != null)
+            {
+                soul.TryStartLink();
+            }
+        }
         // Check if the ink enemy is dead
         if (currentHealth <= 0)
         {
@@ -598,8 +606,9 @@ public class InkHealth : MonoBehaviour
     }
 
     // Method to handle death
-    private void Die()
+    public void Die()
     {
+       
         // Stop invincibility system when dying
         if (invincibilityCoroutine != null)
         {
@@ -645,9 +654,14 @@ public class InkHealth : MonoBehaviour
             Debug.Log("Enemy died, notifying WeaponSwitchManager.");
         }
 
+        SoulLinkEnemy soul = GetComponent<SoulLinkEnemy>();
+        if (soul != null && soul.inChain)
+        {
+            soul.NotifyDied();
+        }
         // Destroy the ink enemy
         Destroy(gameObject);
-
+       
     }
 
     // Helper method to instantiate and play a particle system

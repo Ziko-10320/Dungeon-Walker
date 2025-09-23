@@ -13,7 +13,8 @@ public enum PowerUpType
     ReviveUpgraded,
     Invisibility,
     ExplosiveCoins,
-    BeePowerUp
+    BeePowerUp,
+    SoulLink
 }
 
 [CreateAssetMenu(fileName = "NewPowerUp", menuName = "PowerUps/PowerUpData")]

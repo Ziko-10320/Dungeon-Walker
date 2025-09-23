@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using FirstGearGames.SmoothCameraShaker;
 using UnityEngine.Events;
@@ -39,7 +39,8 @@ public class FlyHealth : MonoBehaviour
     public WeaponSwitchManager weaponSwitchManager;
     public UnityEvent<GameObject> OnDeath;
     // Private variables
-    private int currentHealth;
+    [HideInInspector]
+    public int currentHealth;
     private bool isKnockedBack = false; // Is the mushroom currently being knocked back?
     private bool isFlashing = false; // Added to prevent multiple flash coroutines
     private AudioSource audioSource; // Reference to the AudioSource component
@@ -105,6 +106,14 @@ public class FlyHealth : MonoBehaviour
             StartCoroutine(FlashDamage());
         }
 
+        if (currentHealth > 0)
+        {
+            SoulLinkEnemy soul = GetComponent<SoulLinkEnemy>();
+            if (soul != null)
+            {
+                soul.TryStartLink();
+            }
+        }
         // Check if the mushroom is dead
         if (currentHealth <= 0)
         {
@@ -135,8 +144,9 @@ public class FlyHealth : MonoBehaviour
     }
 
     // Method to handle death
-    private void Die()
+    public void Die()
     {
+       
         if (DeathMushroomSpawn != null && DeathMushroomParticules != null)
         {
             InstantiateAndPlayParticleSystem(DeathMushroomParticules, DeathMushroomSpawn.position);
@@ -172,9 +182,14 @@ public class FlyHealth : MonoBehaviour
             weaponSwitchManager.OnEnemyKilled();
             Debug.Log("Enemy died, notifying WeaponSwitchManager.");
         }
-
+        SoulLinkEnemy soul = GetComponent<SoulLinkEnemy>();
+        if (soul != null && soul.inChain)
+        {
+            soul.NotifyDied();
+        }
         // Destroy the mushroom
         Destroy(gameObject);
+        
     }
 
     // Helper method to instantiate and play a particle system

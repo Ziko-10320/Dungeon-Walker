@@ -28,7 +28,7 @@ public class PowerUpManager : MonoBehaviour
     public Vector2 acidDamageSize = new Vector2(1f, 0.5f);
 
     private ReviveSystem reviveSystem;
-
+    public static bool SoulLinkEquipped = false;
 
     void Awake()
     {
@@ -75,6 +75,16 @@ public class PowerUpManager : MonoBehaviour
 
     public void ApplyPersistentEffect(PowerUpData data)
     {
+        if (data.type != PowerUpType.SoulLink)
+        {
+            SoulLinkEquipped = false;
+            SoulLinkEnemy[] allEnemies = FindObjectsOfType<SoulLinkEnemy>();
+            foreach (SoulLinkEnemy e in allEnemies)
+            {
+                if (e != null)
+                    e.linkChance = 0f;
+            }
+        }
         switch (data.type)
         {
             case PowerUpType.SpeedBoost:
@@ -254,6 +264,21 @@ public class PowerUpManager : MonoBehaviour
                     {
                         Debug.LogError("No BeePowerUp component found on player!");
                     }
+                } 
+                break;
+            case PowerUpType.SoulLink:
+                {
+                    // Player equipped the power-up
+                    float chance = Mathf.Clamp01(data.effectValue);
+                    SoulLinkEquipped = true;
+
+                    SoulLinkEnemy[] enemies = FindObjectsOfType<SoulLinkEnemy>();
+                    foreach (SoulLinkEnemy e in enemies)
+                    {
+                        if (e != null)
+                            e.linkChance = chance; // only now they can link
+                    }
+                    Debug.Log("Persistent Effect Applied: SoulLink 🔮 Chance: " + data.effectValue);
                 }
                 break;
 

@@ -1,4 +1,4 @@
-using FirstGearGames.SmoothCameraShaker;
+﻿using FirstGearGames.SmoothCameraShaker;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
@@ -40,7 +40,8 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
     public WeaponSwitchManager weaponSwitchManager;
     public UnityEvent<GameObject> OnDeath;
     // Private variables
-    private int currentHealth;
+    [HideInInspector]
+    public int currentHealth;
     private bool isKnockedBack = false; // Is the mushroom currently being knocked back?
     private bool isFlashing = false; // Added to prevent multiple flash coroutines
     private AudioSource audioSource; // Reference to the AudioSource component
@@ -89,6 +90,14 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
         {
             // OFFLINE MODE: We are the authority, so we apply damage and effects directly.
             ApplyDamageAndEffects((int)damage, attackDirection, knockbackForce);
+        }
+        if (currentHealth > 0)
+        {
+            SoulLinkEnemy soul = GetComponent<SoulLinkEnemy>();
+            if (soul != null)
+            {
+                soul.TryStartLink();
+            }
         }
     }
     [PunRPC]
@@ -207,8 +216,14 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
     }
 
     // Method to handle death
-    private void Die(GameObject attacker = null)
+    public void Die(GameObject attacker = null)
     {
+        SoulLinkEnemy soul = GetComponent<SoulLinkEnemy>();
+        if (soul != null && soul.inChain)
+        {
+            // Notify the chain BEFORE we destroy the GameObject so the chain can capture position/linePoint.
+            soul.NotifyDied();
+        }
         if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
         {
             if (view != null && PhotonNetwork.IsConnected)
@@ -233,6 +248,7 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
             weaponSwitchManager.OnEnemyKilled();
             Debug.Log("Enemy died, notifying WeaponSwitchManager.");
         }
+          
             if (PhotonNetwork.IsConnected)
             {
                 PhotonNetwork.Destroy(gameObject);
@@ -243,6 +259,7 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
                 Destroy(gameObject);
             }
         }
+       
     }
     [PunRPC]
     private void RPC_PlayDeathEffects(Vector3 deathPosition)

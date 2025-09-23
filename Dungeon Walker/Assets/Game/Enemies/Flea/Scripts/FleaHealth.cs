@@ -1,4 +1,4 @@
-using FirstGearGames.SmoothCameraShaker;
+ï»¿using FirstGearGames.SmoothCameraShaker;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
@@ -43,7 +43,8 @@ public class FleaHealth : MonoBehaviour, IPunObservable
     private AudioSource audioSource; // Reference to the AudioSource component
 
     // Private variables
-    private int currentHealth;
+    [HideInInspector]
+    public int currentHealth;
     private bool isKnockedBack = false; // Is the mushroom currently being knocked back?
     private bool isFlashing = false; // Added to prevent multiple flash coroutines
 
@@ -92,6 +93,15 @@ public class FleaHealth : MonoBehaviour, IPunObservable
             // OFFLINE MODE: We are the authority, so we apply damage and effects directly.
             ApplyDamageAndEffects((int)damage, attackDirection, knockbackForce);
         }
+        if (currentHealth > 0)
+        {
+            SoulLinkEnemy soul = GetComponent<SoulLinkEnemy>();
+            if (soul != null)
+            {
+                soul.TryStartLink();
+            }
+        }
+
     }
     [PunRPC]
     private void RPC_TakeDamage(int damage, Vector2 attackDirection, float knockbackForce)
@@ -208,8 +218,14 @@ public class FleaHealth : MonoBehaviour, IPunObservable
     }
 
     // Method to handle death
-    private void Die(GameObject attacker = null)
+    public void Die(GameObject attacker = null)
     {
+        SoulLinkEnemy soul = GetComponent<SoulLinkEnemy>();
+        if (soul != null && soul.inChain)
+        {
+            // Notify the chain BEFORE we destroy the GameObject so the chain can capture position/linePoint.
+            soul.NotifyDied();
+        }
 
         if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
         {
@@ -229,7 +245,7 @@ public class FleaHealth : MonoBehaviour, IPunObservable
 
             if (attacker != null && attacker.CompareTag("Projectile"))
             {
-                OnDeath?.Invoke(attacker); // Invoque l'événement uniquement pour les projectiles
+                OnDeath?.Invoke(attacker); // Invoque l'Ã©vÃ©nement uniquement pour les projectiles
             }
 
             if (weaponSwitchManager != null)
@@ -237,6 +253,9 @@ public class FleaHealth : MonoBehaviour, IPunObservable
                 weaponSwitchManager.OnEnemyKilled();
                 Debug.Log("Enemy died, notifying WeaponSwitchManager.");
             }
+
+           
+
             if (PhotonNetwork.IsConnected)
             {
                 PhotonNetwork.Destroy(gameObject);
@@ -247,6 +266,7 @@ public class FleaHealth : MonoBehaviour, IPunObservable
                 Destroy(gameObject);
             }
         }
+    
     }
     [PunRPC]
     private void RPC_PlayDeathEffects(Vector3 deathPosition)
