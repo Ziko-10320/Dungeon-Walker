@@ -13,9 +13,18 @@ public class PowerUpManager : MonoBehaviour
 
     [Header("Particle Systems")]
     public ParticleSystem speedBoostParticles;
+    public ParticleSystem speedBoostParticles2;
     [Header("Shield Animation")]
     [SerializeField] public Animator shieldAnimator;
     [SerializeField] public GameObject shieldObject;
+
+    [Header("Upgraded Shield References")]
+    public GameObject upgradedShieldObject;   // 🆕 Upgraded Shield object
+    public Animator upgradedShieldAnimator;
+
+    [Header("Upgraded Shield Destruction Effect")]
+    public GameObject destructionShieldPrefab;   // prefab with particle system
+    public Transform[] destructionSpawnPoints;
 
     [Header("SoapTrail PowerUp")]
     public GameObject[] soapTrailObjects;
@@ -93,6 +102,12 @@ public class PowerUpManager : MonoBehaviour
                 Debug.Log("Persistent Effect Applied: SpeedBoost 🚀 New Speed: " + playerMovement.moveSpeed);
                 if (speedBoostParticles != null) speedBoostParticles.Play();
                 break;
+            case PowerUpType.SpeedBoost2:
+                // Same logic but with its own multiplier and particles
+                playerMovement.moveSpeed = originalMoveSpeed * data.speedMultiplier;
+                Debug.Log("Persistent Effect Applied: SpeedBoost2 ⚡ New Speed: " + playerMovement.moveSpeed);
+                if (speedBoostParticles2 != null) speedBoostParticles2.Play();
+                break;
 
             case PowerUpType.Shield:
                 // Instead of infinite invincibility:
@@ -109,7 +124,18 @@ public class PowerUpManager : MonoBehaviour
                 Debug.Log("Persistent Effect Applied: Shield 🛡️ with HP: " + data.effectValue);
                 
                 break;
+            case PowerUpType.ShieldUpgraded:
+                playerHealth.ActivateShield(playerHealth.upgradedShieldMaxHealth, true);
+                playerHealth.RestoreShieldToMax();
 
+                if (upgradedShieldObject != null)
+                    upgradedShieldObject.SetActive(true);
+
+                if (upgradedShieldAnimator != null)
+                    upgradedShieldAnimator.SetTrigger("StartShield");
+
+                Debug.Log("Persistent Effect Applied: Upgraded Shield 🛡️ with HP: " + playerHealth.upgradedShieldMaxHealth);
+                break;
             case PowerUpType.InstantHeal:
                 playerHealth.FullHeal();
                 Debug.Log("Instant Effect Applied: Full Heal ❤️");

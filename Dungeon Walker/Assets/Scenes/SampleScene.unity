@@ -72249,6 +72249,16 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1458257758 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6315686769556476770, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+  m_PrefabInstance: {fileID: 2741814453123183690}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1458257761 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 3461193676427977583, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+  m_PrefabInstance: {fileID: 2741814453123183690}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1463291817
 GameObject:
   m_ObjectHideFlags: 0
@@ -108390,10 +108400,34 @@ PrefabInstance:
       propertyPath: timerImageUI
       value: 
       objectReference: {fileID: 949514125}
-    - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
-      propertyPath: maxHealth
-      value: 1000
+    - target: {fileID: 556636709978226019, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: upgradedShieldObject
+      value: 
+      objectReference: {fileID: 1458257758}
+    - target: {fileID: 556636709978226019, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: upgradedShieldAnimator
+      value: 
+      objectReference: {fileID: 1458257761}
+    - target: {fileID: 556636709978226019, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: destructionShieldPrefab
+      value: 
+      objectReference: {fileID: 3354863377863335780, guid: a087704bba3485b499fd53a70b764de6, type: 3}
+    - target: {fileID: 556636709978226019, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: destructionSpawnPoints.Array.size
+      value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 556636709978226019, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: destructionSpawnPoints.Array.data[0]
+      value: 
+      objectReference: {fileID: 2741814453123183693}
+    - target: {fileID: 556636709978226019, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: destructionSpawnPoints.Array.data[1]
+      value: 
+      objectReference: {fileID: 2741814453123183692}
+    - target: {fileID: 556636709978226019, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: destructionSpawnPoints.Array.data[2]
+      value: 
+      objectReference: {fileID: 2741814453123183691}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: shieldSlider
       value: 
@@ -108402,6 +108436,10 @@ PrefabInstance:
       propertyPath: gameUIManager
       value: 
       objectReference: {fileID: 1289097344}
+    - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: shieldMaxHealth
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: postProcessVolume
       value: 
@@ -108534,6 +108572,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6315686769556476770, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: cameraEffects
       value: 
@@ -108567,6 +108609,21 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+--- !u!4 &2741814453123183691 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4607101448566369041, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+  m_PrefabInstance: {fileID: 2741814453123183690}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2741814453123183692 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5294881020872913892, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+  m_PrefabInstance: {fileID: 2741814453123183690}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2741814453123183693 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4308499025979561394, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+  m_PrefabInstance: {fileID: 2741814453123183690}
+  m_PrefabAsset: {fileID: 0}
 --- !u!198 &2756118813767827608 stripped
 ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 4628419092784040698, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
@@ -108607,7 +108664,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1242731457711597805, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5019633330544358317, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -108920,6 +108977,22 @@ PrefabInstance:
       propertyPath: checkpoints.Array.data[4]
       value: 
       objectReference: {fileID: 382831636}
+    - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: PcInput
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: MobileInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: damageOnCollision
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: destructionLayers.m_Bits
+      value: 704
+      objectReference: {fileID: 0}
     - target: {fileID: 3125200794304404667, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: superButton
       value: 
@@ -108936,6 +109009,10 @@ PrefabInstance:
       propertyPath: superReadyIndicator
       value: 
       objectReference: {fileID: 846890}
+    - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: enablePcInput
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6734370145734748242, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: postProcessVolume
       value: 
@@ -108992,14 +109069,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: L3antix
       objectReference: {fileID: 0}
-    - target: {fileID: 7796940568639449547, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: m_IsActive
+    - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: PcInput
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: MobileInput
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: smokeParticleSystem
       value: 
       objectReference: {fileID: 2756118813767827608}
+    - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: PcInput
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: MobileInput
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: audioSource
       value: 

@@ -101659,7 +101659,7 @@ MonoBehaviour:
   previewFollowsLauncher: 1
   destructionLayers:
     serializedVersion: 2
-    m_Bits: 713
+    m_Bits: 0
   ballLifetime: 3
   enableCollisionDestruction: 1
   enableTimeDestruction: 1
@@ -101675,8 +101675,8 @@ MonoBehaviour:
   explosionDamageRadius: 2
   explosionDamageMultiplier: 2
   showDamageDebug: 0
-  PcInput: 1
-  MobileInput: 0
+  PcInput: 0
+  MobileInput: 1
   explosionSound: {fileID: 0}
   additionalExplosionSounds: []
   shootSound: {fileID: 0}
@@ -101789,7 +101789,7 @@ MonoBehaviour:
   autoCalibrate: 1
   showCalibrationDebug: 1
   CameraShakeImpact: {fileID: 0}
-  enablePcInput: 1
+  enablePcInput: 0
   enableMobileInput: 1
 --- !u!114 &8558709009588466802
 MonoBehaviour:
@@ -101811,8 +101811,8 @@ MonoBehaviour:
   anticipationDuration: 0.6
   attackCooldown: 0.3
   damage: 100
-  MobileInput: 0
-  PcInput: 1
+  MobileInput: 1
+  PcInput: 0
   attackJoystick: {fileID: 0}
   runningJoystick: {fileID: 0}
   joystickAimThreshold: 0.5
@@ -101966,8 +101966,8 @@ MonoBehaviour:
   minDistanceToAim: 1.87
   rotationSpeed: 17
   useInstantRotation: 1
-  PcInput: 1
-  MobileInput: 0
+  PcInput: 0
+  MobileInput: 1
   launcherRotationOffsetRight: 0
   launcherRotationOffsetLeft: 180
   trajectoryRotationOffsetRight: 0
@@ -102137,6 +102137,7 @@ MonoBehaviour:
   playerMovement: {fileID: 0}
   playerHealth: {fileID: 0}
   speedBoostParticles: {fileID: 8133111116429483344}
+  speedBoostParticles2: {fileID: 0}
   shieldAnimator: {fileID: 0}
   shieldObject: {fileID: 0}
   soapTrailObjects: []
@@ -102160,6 +102161,7 @@ MonoBehaviour:
   playerMovement: {fileID: 0}
   playerHealth: {fileID: 0}
   speedBoostParticles: {fileID: 2261707086133039193}
+  speedBoostParticles2: {fileID: 0}
   shieldAnimator: {fileID: 0}
   shieldObject: {fileID: 0}
   soapTrailObjects: []

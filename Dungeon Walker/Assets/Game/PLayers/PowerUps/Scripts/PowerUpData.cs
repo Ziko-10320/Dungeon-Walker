@@ -4,6 +4,7 @@ using System.Collections;
 public enum PowerUpType
 {
     SpeedBoost,
+    SpeedBoost2,
     InstantHeal,
     InstantSuper,
     Shield,
@@ -14,7 +15,8 @@ public enum PowerUpType
     Invisibility,
     ExplosiveCoins,
     BeePowerUp,
-    SoulLink
+    SoulLink,
+    ShieldUpgraded
 }
 
 [CreateAssetMenu(fileName = "NewPowerUp", menuName = "PowerUps/PowerUpData")]

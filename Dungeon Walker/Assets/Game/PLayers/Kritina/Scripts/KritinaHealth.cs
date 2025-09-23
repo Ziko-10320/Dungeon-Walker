@@ -42,8 +42,10 @@ public class PlayerHealth : MonoBehaviour
     public bool isInvincible = false;
     [Header("Shield Settings")]
     [SerializeField] private int shieldMaxHealth = 0; // 👈 this is what you see in the inspector
+     public int upgradedShieldMaxHealth = 100;
     private int shieldCurrentHealth = 0;
 
+    private bool usingUpgradedShield = false;
     public bool HasShield => shieldCurrentHealth > 0;
 
     [Header("UI References")]
@@ -363,21 +365,33 @@ public class PlayerHealth : MonoBehaviour
         StopHealingParticles();
     }
 
-    public void ActivateShield(int health)
+    public void ActivateShield(int health, bool upgraded = false)
     {
-        if (health <= 0) health = shieldMaxHealth;
+        usingUpgradedShield = upgraded;
 
-        shieldMaxHealth = health;
+        if (upgraded)
+        {
+            if (health <= 0) health = upgradedShieldMaxHealth;
+            upgradedShieldMaxHealth = health;
+        }
+        else
+        {
+            if (health <= 0) health = shieldMaxHealth;
+            shieldMaxHealth = health;
+        }
+
         shieldCurrentHealth = health;
 
         if (shieldSlider != null)
         {
-            shieldSlider.maxValue = shieldMaxHealth;
+            shieldSlider.maxValue = shieldCurrentHealth;
             shieldSlider.value = shieldCurrentHealth;
-            shieldSlider.gameObject.SetActive(true); // show when active
+            shieldSlider.gameObject.SetActive(true);
         }
 
-        Debug.Log($"Shield activated with {shieldCurrentHealth} HP.");
+        Debug.Log(upgraded
+            ? $"🛡️ Upgraded Shield activated with {shieldCurrentHealth} HP."
+            : $"🛡️ Normal Shield activated with {shieldCurrentHealth} HP.");
     }
 
     private void DamageShield(int damage)
@@ -386,30 +400,149 @@ public class PlayerHealth : MonoBehaviour
         if (shieldCurrentHealth < 0) shieldCurrentHealth = 0;
 
         if (shieldSlider != null)
-        {
             shieldSlider.value = shieldCurrentHealth;
-        }
 
         if (shieldCurrentHealth <= 0)
         {
-            Debug.Log("Shield is broken! Player is now vulnerable.");
+            PowerUpManager pm = FindObjectOfType<PowerUpManager>();
+            if (pm != null)
+            {
+                if (usingUpgradedShield)
+                {
+                    Debug.Log("🛡️ Upgraded Shield is broken!");
+                    if (pm.upgradedShieldAnimator != null)
+                        pm.upgradedShieldAnimator.SetTrigger("EndShield");
+
+                    if (pm.upgradedShieldObject != null)
+                        pm.upgradedShieldObject.SetActive(false);
+
+                    // 🔥 Spawn destruction particles
+                    if (pm.destructionShieldPrefab != null && pm.destructionSpawnPoints != null)
+                    {
+                        foreach (Transform spawn in pm.destructionSpawnPoints)
+                        {
+                            if (spawn != null)
+                                GameObject.Instantiate(pm.destructionShieldPrefab, spawn.position, spawn.rotation);
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.Log("🛡️ Normal Shield is broken!");
+                    if (pm.shieldAnimator != null)
+                        pm.shieldAnimator.SetTrigger("EndShield");
+
+                    if (pm.shieldObject != null)
+                        pm.shieldObject.SetActive(false);
+                }
+            }
 
             if (shieldSlider != null)
-                shieldSlider.gameObject.SetActive(false); // hide UI when broken
-
-            PowerUpManager powerUpManager = FindObjectOfType<PowerUpManager>();
-            if (powerUpManager != null && powerUpManager.shieldAnimator != null)
-            {
-                powerUpManager.shieldAnimator.SetTrigger("EndShield");
-                StartCoroutine(DisableShieldAfterAnim(powerUpManager));
-            }
+                shieldSlider.gameObject.SetActive(false);
         }
         else
         {
-            Debug.Log($"Shield took {damage} damage. Remaining shield HP: {shieldCurrentHealth}");
+            Debug.Log($"Shield took {damage} damage. Remaining HP: {shieldCurrentHealth}");
         }
     }
 
+
+    public void RestoreShieldToMax()
+    {
+        if (!HasShield) return;
+
+        if (usingUpgradedShield)
+            shieldCurrentHealth = upgradedShieldMaxHealth;
+        else
+            shieldCurrentHealth = shieldMaxHealth;
+
+        if (shieldSlider != null)
+        {
+            shieldSlider.maxValue = shieldCurrentHealth;
+            shieldSlider.value = shieldCurrentHealth;
+            shieldSlider.gameObject.SetActive(true);
+        }
+
+        PowerUpManager pm = FindObjectOfType<PowerUpManager>();
+        if (pm != null)
+        {
+            if (usingUpgradedShield)
+            {
+                if (pm.upgradedShieldAnimator != null)
+                {
+                    pm.upgradedShieldAnimator.Rebind();
+                    pm.upgradedShieldAnimator.Update(0f);
+                    pm.upgradedShieldAnimator.SetTrigger("StartShield");
+                }
+
+                if (pm.upgradedShieldObject != null)
+                    pm.upgradedShieldObject.SetActive(true);
+            }
+            else
+            {
+                if (pm.shieldAnimator != null)
+                {
+                    pm.shieldAnimator.Rebind();
+                    pm.shieldAnimator.Update(0f);
+                    pm.shieldAnimator.SetTrigger("StartShield");
+                }
+
+                if (pm.shieldObject != null)
+                    pm.shieldObject.SetActive(true);
+            }
+        }
+
+        Debug.Log(usingUpgradedShield
+            ? "🛡️ Upgraded Shield fully restored!"
+            : "🛡️ Normal Shield fully restored!");
+    }
+    public void RestoreShieldAtCheckpoint()
+    {
+        PowerUpManager pm = GetComponent<PowerUpManager>();
+        if (pm == null) return;
+
+        bool hasNormal = pm.HasPowerUp(PowerUpType.Shield);
+        bool hasUpgraded = pm.HasPowerUp(PowerUpType.ShieldUpgraded);
+
+        usingUpgradedShield = hasUpgraded; // If upgraded is equipped → FORCE upgraded
+        if (!hasNormal && !hasUpgraded) return;
+
+        shieldCurrentHealth = usingUpgradedShield ? upgradedShieldMaxHealth : shieldMaxHealth;
+
+        if (shieldSlider != null)
+        {
+            shieldSlider.maxValue = shieldCurrentHealth;
+            shieldSlider.value = shieldCurrentHealth;
+            shieldSlider.gameObject.SetActive(true);
+        }
+
+        // --- Activate only the correct shield ---
+        if (pm.shieldObject != null) pm.shieldObject.SetActive(false);
+        if (pm.upgradedShieldObject != null) pm.upgradedShieldObject.SetActive(false);
+
+        if (usingUpgradedShield)
+        {
+            if (pm.upgradedShieldObject != null) pm.upgradedShieldObject.SetActive(true);
+            if (pm.upgradedShieldAnimator != null)
+            {
+                pm.upgradedShieldAnimator.Rebind();
+                pm.upgradedShieldAnimator.Update(0f);
+                pm.upgradedShieldAnimator.SetTrigger("StartShield");
+            }
+            Debug.Log("🛡️ Upgraded Shield restored at checkpoint!");
+        }
+        else
+        {
+            if (pm.shieldObject != null) pm.shieldObject.SetActive(true);
+            if (pm.shieldAnimator != null)
+            {
+                pm.shieldAnimator.Rebind();
+                pm.shieldAnimator.Update(0f);
+                pm.shieldAnimator.SetTrigger("StartShield");
+            }
+            Debug.Log("🛡️ Normal Shield restored at checkpoint!");
+        }
+    }
     private IEnumerator DisableShieldAfterAnim(PowerUpManager powerUpManager)
     {
         // Wait one frame so animator applies the trigger
@@ -429,39 +562,7 @@ public class PlayerHealth : MonoBehaviour
     }
 
 
-    public void RestoreShieldToMax()
-    {
-        if (shieldMaxHealth <= 0) return; // No shield power-up equipped
-
-        shieldCurrentHealth = shieldMaxHealth;
-
-        if (shieldSlider != null)
-        {
-            shieldSlider.maxValue = shieldMaxHealth;
-            shieldSlider.value = shieldCurrentHealth;
-            shieldSlider.gameObject.SetActive(true); // ✅ Always re-enable UI
-        }
-
-        PowerUpManager powerUpManager = FindObjectOfType<PowerUpManager>();
-        if (powerUpManager != null && powerUpManager.shieldObject != null)
-        {
-            // ✅ Reset animator BEFORE enabling
-            if (powerUpManager.shieldAnimator != null)
-            {
-                powerUpManager.shieldAnimator.Rebind();
-                powerUpManager.shieldAnimator.Update(0f);
-            }
-
-            // Enable shield object
-            powerUpManager.shieldObject.SetActive(true);
-
-            // ✅ Delay 0.2s before playing StartShield
-            StartCoroutine(PlayStartShieldAnimWithDelay(powerUpManager, 0.5f));
-        }
-
-        Debug.Log("Shield fully restored!");
-    }
-
+   
     private IEnumerator PlayStartShieldAnimWithDelay(PowerUpManager powerUpManager, float delay)
     {
         yield return new WaitForSeconds(delay);
@@ -472,37 +573,7 @@ public class PlayerHealth : MonoBehaviour
     }
 
 
-    public void RestoreShieldAtCheckpoint()
-    {
-        PowerUpManager powerUpManager = GetComponent<PowerUpManager>();
-
-        if (powerUpManager != null && powerUpManager.HasPowerUp(PowerUpType.Shield))
-        {
-            shieldCurrentHealth = shieldMaxHealth;
-
-            if (shieldSlider != null)
-            {
-                shieldSlider.maxValue = shieldMaxHealth;
-                shieldSlider.value = shieldCurrentHealth;
-                shieldSlider.gameObject.SetActive(true); // 🟢 Always bring UI back
-            }
-
-            if (powerUpManager.shieldObject != null)
-            {
-                powerUpManager.shieldObject.SetActive(true); // 🟢 Bring shield back
-
-                if (powerUpManager.shieldAnimator != null)
-                {
-                    powerUpManager.shieldAnimator.Rebind();
-                    powerUpManager.shieldAnimator.Update(0f);
-                    powerUpManager.shieldAnimator.SetTrigger("StartShield");
-                }
-            }
-
-            Debug.Log("Shield restored at checkpoint! 🛡️");
-        }
-    }
-
+   
 
 
 }
