@@ -1,4 +1,4 @@
-using System.Collections;
+Ôªøusing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -44,23 +44,30 @@ public class CheckpointManager : MonoBehaviour
     [SerializeField] private PlayerHealth playerHealth;
     void Start()
     {
-
         if (interactButton != null)
         {
-            interactButton.gameObject.SetActive(false); // On cache l'objet du bouton
-            interactButton.interactable = false;      // On le rend non cliquable
+            interactButton.gameObject.SetActive(false);
+            interactButton.interactable = false;
         }
 
         InitializeCheckpoints();
         UpdateArrowTarget();
-        OnShowEButton?.Invoke(false); // Ensure E button is hidden at start
-        OnCheckpointTimerUpdate?.Invoke(0f); // Ensure timer display is clear at start
+        OnShowEButton?.Invoke(false);
+        OnCheckpointTimerUpdate?.Invoke(0f);
 
-        if (playerHealth == null && player != null)
+        // üëá New: auto-assign player by tag
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null)
         {
-            playerHealth = player.GetComponent<PlayerHealth>();
+            player = p.transform;
+            playerHealth = p.GetComponent<PlayerHealth>();
+        }
+        else
+        {
+            Debug.LogError("‚ö†Ô∏è No GameObject with tag 'Player' found in the scene!");
         }
     }
+
 
     void Update()
     {
@@ -132,7 +139,7 @@ public class CheckpointManager : MonoBehaviour
             if (!currentCheckpoint.QuestStarted)
             {
                 shouldBeVisible = true;
-                // On pourrait mettre ‡ jour le texte du bouton ici si nÈcessaire
+                // On pourrait mettre √† jour le texte du bouton ici si n√©cessaire
                 // interactButton.GetComponentInChildren<TMPro.TextMeshProUGU>().text = "Start";
             }
             else if (currentCheckpoint.TimerEnded)
@@ -151,7 +158,7 @@ public class CheckpointManager : MonoBehaviour
 
     void HandleInput()
     {
-        // On vÈrifie uniquement l'input clavier ici.
+        // On v√©rifie uniquement l'input clavier ici.
         if (Input.GetKeyDown(KeyCode.E))
         {
             // On ne simule un clic que si le bouton est visible et interactif
@@ -168,8 +175,8 @@ public class CheckpointManager : MonoBehaviour
         if (currentCheckpointIndex >= checkpoints.Count) return;
         Checkpoint currentCheckpoint = checkpoints[currentCheckpointIndex];
 
-        // La vÈrification 'isPlayerAtCheckpoint' est implicitement gÈrÈe par la visibilitÈ du bouton,
-        // mais on peut la garder pour plus de sÈcuritÈ.
+        // La v√©rification 'isPlayerAtCheckpoint' est implicitement g√©r√©e par la visibilit√© du bouton,
+        // mais on peut la garder pour plus de s√©curit√©.
         if (!isPlayerAtCheckpoint) return;
 
         if (!currentCheckpoint.QuestStarted)
@@ -178,7 +185,7 @@ public class CheckpointManager : MonoBehaviour
             currentCheckpointTimer = currentCheckpoint.TimeToStay;
             isTimerRunning = true;
 
-            // On cache et dÈsactive le bouton pendant la quÍte
+            // On cache et d√©sactive le bouton pendant la qu√™te
             if (interactButton != null)
             {
                 interactButton.gameObject.SetActive(false);

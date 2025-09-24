@@ -58,21 +58,18 @@ public class PowerUpManager : MonoBehaviour
     // We use a coroutine to ensure this runs AFTER all other Start() methods.
     IEnumerator Start()
     {
-        // 1. Wait for the end of the very first frame.
-        // This gives all other scripts time to complete their initial setup.
         yield return new WaitForEndOfFrame();
 
-        // 2. Find the InventoryManager instance.
         InventoryManager inventory = InventoryManager.Instance;
         if (inventory == null)
         {
             Debug.LogError("PowerUpManager could not find InventoryManager.Instance! The system will not work.");
-            yield break; // Stop the coroutine here.
+            yield break;
         }
 
         Debug.Log("Applying persistent power-up effects for this level...");
 
-        // 3. Loop through the player's equipped items.
+        // First apply all power-ups
         foreach (PowerUpData equippedItem in inventory.equippedPowerUps)
         {
             if (equippedItem != null)
@@ -80,20 +77,48 @@ public class PowerUpManager : MonoBehaviour
                 ApplyPersistentEffect(equippedItem);
             }
         }
-    }
 
-    public void ApplyPersistentEffect(PowerUpData data)
-    {
-        if (data.type != PowerUpType.SoulLink)
+        // ✅ Handle SoulLink once, after all power-ups are processed
+        PowerUpData soulLinkData = null;
+        foreach (PowerUpData equippedItem in inventory.equippedPowerUps)
+        {
+            if (equippedItem != null && equippedItem.type == PowerUpType.SoulLink)
+            {
+                soulLinkData = equippedItem;
+                break;
+            }
+        }
+
+        SoulLinkEnemy[] enemies = FindObjectsOfType<SoulLinkEnemy>();
+        if (soulLinkData != null)
+        {
+            SoulLinkEquipped = true;
+            float chance = Mathf.Clamp01(soulLinkData.effectValue);
+
+            foreach (SoulLinkEnemy e in enemies)
+            {
+                if (e != null)
+                    e.linkChance = chance;
+            }
+
+            Debug.Log("Persistent Effect Applied: SoulLink 🔮 Chance: " + soulLinkData.effectValue);
+        }
+        else
         {
             SoulLinkEquipped = false;
-            SoulLinkEnemy[] allEnemies = FindObjectsOfType<SoulLinkEnemy>();
-            foreach (SoulLinkEnemy e in allEnemies)
+            foreach (SoulLinkEnemy e in enemies)
             {
                 if (e != null)
                     e.linkChance = 0f;
             }
+            Debug.Log("SoulLink not equipped. Enemies cannot link.");
         }
+    }
+
+
+    public void ApplyPersistentEffect(PowerUpData data)
+    {
+        
         switch (data.type)
         {
             case PowerUpType.SpeedBoost:

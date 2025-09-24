@@ -191,12 +191,23 @@ public class SoulLinkChain : MonoBehaviour
         {
             if (members == null || segments == null) break;
 
+            // 🔥 New: if all members are gone or destroyed, cleanup immediately
+            bool allGone = true;
+            foreach (var m in members)
+            {
+                if (m != null) { allGone = false; break; }
+            }
+            if (allGone)
+            {
+                CleanupAndFinish();
+                yield break;
+            }
+
             for (int i = 0; i < segments.Count; i++)
             {
                 LineRenderer lr = segments[i];
                 if (lr == null) continue;
 
-                // If member indices fall out of range, destroy the segment safely
                 if (i >= members.Count - 1)
                 {
                     Destroy(lr.gameObject);
@@ -210,7 +221,6 @@ public class SoulLinkChain : MonoBehaviour
                 Vector3 aPos = (a != null && a.linePoint != null) ? a.linePoint.position : lastKnownPositions[i];
                 Vector3 bPos = (b != null && b.linePoint != null) ? b.linePoint.position : lastKnownPositions[i + 1];
 
-                // Defensive: if both endpoints somehow are zero, remove segment to avoid showing prefab pos.
                 if (aPos == Vector3.zero && bPos == Vector3.zero)
                 {
                     Destroy(lr.gameObject);
@@ -225,6 +235,7 @@ public class SoulLinkChain : MonoBehaviour
             yield return null;
         }
     }
+
 
     /// <summary>
     /// Called by a member's health.Die() at the start, before destruction.

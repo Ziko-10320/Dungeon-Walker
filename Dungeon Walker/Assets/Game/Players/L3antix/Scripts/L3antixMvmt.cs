@@ -1,14 +1,20 @@
 using UnityEngine;
-using Photon.Pun; // <<< 1. ADD THIS LINE to use Photon's library.
+using Photon.Pun; // We need this to access Photon features.
 
+// This script will now be used for BOTH online and offline prefabs.
 public class L3antixMovement : MonoBehaviour
 {
-    // --- All your existing variables are perfect and don't need changes ---
-    #region Variable Declarations
+    // --- All your variables are perfect and stay the same ---
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
     public float jumpPower = 12f;
+    // ... (and so on for all your other variables) ...
+    #region Variable Declarations
     public float jumpReleaseCutMultiplier = 0.5f;
+    [Header("Mobile Controls")]
+    public Joystick joystick;
+    private bool jumpButtonPressed = false;
+    private bool jumpButtonReleased = false;
 
     [Header("Jump Buffer Settings")]
     private float jumpBufferTimer = 0f;
@@ -25,13 +31,13 @@ public class L3antixMovement : MonoBehaviour
     public float groundCheckRadius = 0.2f;
     private bool wasGroundedLastFrame = false;
 
-    [Header("Arm and Gun Flip")]
-    public Transform[] playerArms;
-    public Transform[] playerGuns;
-
     [Header("Particle System")]
     public ParticleSystem dust;
     public ParticleSystem dustLand;
+
+    [Header("Arm and Gun Flip")]
+    public Transform[] playerArms;
+    public Transform[] playerGuns;
 
     [Header("Sound Settings")]
     public AudioClip jumpSoundClip;
@@ -44,48 +50,48 @@ public class L3antixMovement : MonoBehaviour
     [Range(0f, 1f)]
     public float landVolume = 1f;
 
-    private PlayerDash playerDash;
-    private Rigidbody2D rb;
+    private L3antixDash L3antixDash;
+    public Rigidbody2D rb;
     public bool isFacingRight = true;
     private Animator animator;
     private float moveDirection;
     #endregion
-
-    // --- 2. ADD THIS VARIABLE to hold the PhotonView component ---
+    
     private PhotonView view;
-
+    private PlayerSyncManager syncManager;
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        playerDash = GetComponent<PlayerDash>();
+        L3antixDash = GetComponent<L3antixDash>();
         jumpsRemaining = maxJumps;
 
-        // --- 3. GET THE PHOTONVIEW component when the script wakes up ---
-        // In single-player, this will be null, which is exactly what we want.
+        // Try to get the PhotonView component.
         view = GetComponent<PhotonView>();
+        syncManager = GetComponent<PlayerSyncManager>();
     }
 
     void Update()
     {
-        // --- 4. ADD THE "NETWORK-AWARE" CHECK at the very top ---
-        // This single check makes the script work for both modes.
         if (view != null && !view.IsMine)
         {
-            return; // If this is an online character that we don't own, stop here.
+            return;
         }
 
-        // --- All your original Update code is now safely protected ---
         #region Original Update Code
-        if (playerDash != null && playerDash.IsDashing)
+        if (L3antixDash != null && L3antixDash.IsDashing)
         {
             moveDirection = 0;
             return;
         }
 
         moveDirection = Input.GetAxisRaw("Horizontal");
-        bool isMoving = Mathf.Abs(moveDirection) > 0.1f;
+        if (moveDirection == 0 && joystick != null && joystick.gameObject.activeInHierarchy)
+        {
+            moveDirection = joystick.Horizontal;
+        }
 
+        bool isMoving = Mathf.Abs(moveDirection) > 0.1f;
         animator.SetBool("isRunning", isMoving);
 
         if ((moveDirection > 0 && !isFacingRight) || (moveDirection < 0 && isFacingRight))
@@ -93,7 +99,7 @@ public class L3antixMovement : MonoBehaviour
             Flip();
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) || jumpButtonPressed)
         {
             animator.SetTrigger("Jump");
             if (IsGrounded())
@@ -114,27 +120,41 @@ public class L3antixMovement : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyUp(KeyCode.Space))
+        if (Input.GetKeyUp(KeyCode.Space) || jumpButtonReleased)
         {
             if (rb.velocity.y > 0)
             {
                 rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * jumpReleaseCutMultiplier);
             }
         }
+
+        jumpButtonPressed = false;
+        jumpButtonReleased = false;
         #endregion
+    }
+
+    // --- We need to protect the public functions too ---
+    public void OnJumpButtonDown()
+    {
+        if (view != null && !view.IsMine) return;
+        jumpButtonPressed = true;
+    }
+
+    public void OnJumpButtonUp()
+    {
+        if (view != null && !view.IsMine) return;
+        jumpButtonReleased = true;
     }
 
     void FixedUpdate()
     {
-        // --- 5. ADD THE SAME CHECK to FixedUpdate for physics ---
+        // Use the same check for physics updates.
         if (view != null && !view.IsMine)
         {
             return;
         }
-
-        // --- All your original FixedUpdate code is now safely protected ---
         #region Original FixedUpdate Code
-        if (playerDash != null && playerDash.IsDashing)
+        if (L3antixDash != null && L3antixDash.IsDashing)
         {
             rb.velocity = Vector2.zero;
             return;
@@ -146,14 +166,12 @@ public class L3antixMovement : MonoBehaviour
         if (jumpPressedInAir)
         {
             jumpBufferTimer -= Time.fixedDeltaTime;
-
             if (IsGrounded())
             {
                 PerformJump(false);
                 jumpPressedInAir = false;
                 jumpBufferTimer = 0f;
             }
-
             if (jumpBufferTimer <= 0f)
             {
                 jumpPressedInAir = false;
@@ -175,8 +193,8 @@ public class L3antixMovement : MonoBehaviour
         #endregion
     }
 
-    // The rest of your functions (PerformJump, Flip, etc.) do not need any changes.
-    // They are only called by Update() and FixedUpdate(), which are already protected by our check.
+    // The rest of your functions don't need changes because they are only called
+    // by Update() and FixedUpdate(), which are already protected.
     #region Helper Functions
     void PerformJump(bool isDoubleJump)
     {
@@ -196,7 +214,32 @@ public class L3antixMovement : MonoBehaviour
 
     void Flip()
     {
+        // The local player flips instantly.
+        PerformFlip();
+
+        // --- THIS IS THE CORRECTION ---
+        // If our PhotonView 'view' is not null, it means we are the online prefab.
+        // So, we send an RPC to tell everyone else to flip this character.
+        if (view != null)
+        {
+            view.RPC("RPC_Flip", RpcTarget.Others);
+        }
+    }
+
+    [PunRPC]
+    private void RPC_Flip()
+    {
+        // This function is called on all other clients to flip our character.
+        PerformFlip();
+    }
+
+    // --- ADD THIS NEW FUNCTION ---
+    // We move the actual flip logic into its own function to avoid duplicating code.
+    private void PerformFlip()
+    {
         transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+        // ... (the rest of your flip logic for arms and guns)
+        isFacingRight = !isFacingRight;
         foreach (Transform arm in playerArms)
         {
             if (arm != null) arm.localScale = new Vector3(-arm.localScale.x, -arm.localScale.y, arm.localScale.z);
@@ -205,13 +248,34 @@ public class L3antixMovement : MonoBehaviour
         {
             if (gun != null) gun.localScale = new Vector3(-gun.localScale.x, -gun.localScale.y, gun.localScale.z);
         }
-        isFacingRight = !isFacingRight;
-        if (IsGrounded()) dust.Play();
+        // The dust effect should now be triggered through the sync manager.
+        if (IsGrounded() && syncManager != null)
+        {
+            syncManager.PlayParticleEffect(dust);
+        }
+        else if (IsGrounded() && syncManager == null) // Fallback for offline mode
+        {
+            dust.Play();
+        }
     }
 
+    // --- MODIFY THE PlayLandDust() FUNCTION ---
     void PlayLandDust()
     {
-        if (dustLand != null) dustLand.Play();
+        if (dustLand != null)
+        {
+            // --- CHANGE THIS ---
+            // Instead of: dustLand.Play();
+            // Do this:
+            if (syncManager != null)
+            {
+                syncManager.PlayParticleEffect(dustLand);
+            }
+            else
+            {
+                dustLand.Play(); // Offline fallback
+            }
+        }
     }
 
     public bool IsGrounded()

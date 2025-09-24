@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using System.Collections.Generic;
 public class SoapTrailDamage : MonoBehaviour
 {
     [Header("Trail Settings")]
@@ -12,7 +12,13 @@ public class SoapTrailDamage : MonoBehaviour
     public int damage = 15;
     public float damageInterval = 1f;
 
+    [Header("Stun Settings")]
+    public int hitsBeforeStun = 3; // how many hits before stun
+    public float stunDuration = 2f; // how long the stun lasts
+
     [HideInInspector] public KritinaMovement player;
+
+    private Dictionary<GameObject, int> hitCounter = new Dictionary<GameObject, int>();
 
     private bool canDamage = true;
 
@@ -55,9 +61,6 @@ public class SoapTrailDamage : MonoBehaviour
         }
     }
 
-
-
-  
     void DealDamage()
     {
         if (damagePoint == null) return;
@@ -65,13 +68,32 @@ public class SoapTrailDamage : MonoBehaviour
         Collider2D[] enemies = Physics2D.OverlapBoxAll(damagePoint.position, damageSize, 0f, enemyLayer);
         foreach (var enemy in enemies)
         {
+            // Deal normal damage
             if (enemy.TryGetComponent(out FleaHealth flea)) flea.TakeDamage(damage, Vector2.zero);
             if (enemy.TryGetComponent(out FlyHealth fly)) fly.TakeDamage(damage, Vector2.zero);
             if (enemy.TryGetComponent(out SprayerHealth sprayer)) sprayer.TakeDamage(damage, Vector2.zero);
             if (enemy.TryGetComponent(out InkHealth ink)) ink.TakeDamage(damage, Vector2.zero);
             if (enemy.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage(damage);
+
+            // --- Stun counter ---
+            if (!hitCounter.ContainsKey(enemy.gameObject))
+                hitCounter[enemy.gameObject] = 0;
+
+            hitCounter[enemy.gameObject]++;
+
+            if (hitCounter[enemy.gameObject] >= hitsBeforeStun)
+            {
+                if (enemy.TryGetComponent(out EnemyStun stunComp))
+                {
+                    stunComp.Stun(stunDuration);
+                }
+
+                hitCounter[enemy.gameObject] = 0; // reset counter after stun
+            }
         }
     }
+
+
 
     IEnumerator DamageCooldown()
     {

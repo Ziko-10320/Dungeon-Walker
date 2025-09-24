@@ -68,6 +68,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5733931022801928995}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &859616821261479270
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3558282070363824776}
+  m_Layer: 7
+  m_Name: StunSpawnPoint (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3558282070363824776
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 859616821261479270}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.000000029802315, w: 1}
+  m_LocalPosition: {x: -0.05, y: 1.31, z: 0}
+  m_LocalScale: {x: 0.8320601, y: 0.8320601, z: 0.83206}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5733931022801928995}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &980835816284610068
 GameObject:
   m_ObjectHideFlags: 0
@@ -1666,6 +1697,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7551910079739806443}
+    - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3558282070363824776}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
@@ -1697,6 +1731,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8644003064316928950}
+    - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2493172402540829681}
   m_SourcePrefab: {fileID: 4843985084834002234, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
 --- !u!212 &1116636856298167895 stripped
 SpriteRenderer:
@@ -2015,6 +2052,8 @@ MonoBehaviour:
   fleaHealth: {fileID: 0}
   sprayerHealth: {fileID: 0}
   flyHealth: {fileID: 0}
+  inChain: 0
+  chain: {fileID: 0}
 --- !u!212 &8644003064316928950
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2067,6 +2106,25 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &2493172402540829681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6871114477328718656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f89f5731f1d308f41b44d3c09694b06a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stunDuration: 2
+  enemyAnimator: {fileID: 6622398012560137658}
+  rb: {fileID: 177311769247025339}
+  scriptsToDisable:
+  - {fileID: 7403541494615263103}
+  stunEffectPrefab: {fileID: 1032346235029450486, guid: da9903449e7a5ac43890ea76cfbe0772, type: 3}
+  stunEffectSpawnPoint: {fileID: 3558282070363824776}
 --- !u!212 &8369018351694676266 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 3213437288513731543, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
