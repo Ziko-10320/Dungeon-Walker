@@ -67,11 +67,13 @@ public class FleaChargeAttack : MonoBehaviour
     void OnEnable()
     {
         PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;
+        PlayerInvisibility3antix.OnInvisibilityChanged += HandleInvisibility;
     }
 
     void OnDisable()
     {
         PlayerInvisibility.OnInvisibilityChanged -= HandleInvisibility;
+        PlayerInvisibility3antix.OnInvisibilityChanged -= HandleInvisibility;
     }
 
     private void HandleInvisibility(bool invisible)
@@ -99,7 +101,9 @@ public class FleaChargeAttack : MonoBehaviour
     void Update()
     {
         PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+        PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
         if (invis != null && invis.IsInvisible()) return;
+        if (invis3antix != null && invis3antix.IsInvisible()) return;
         if (playerTransform == null || isAttacking || !canAttack) return;
 
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);

@@ -88,7 +88,11 @@ public class FlyAttack : MonoBehaviour
             PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
             if (invis != null) playerInvisible = invis.IsInvisible();
         }
-
+        if (playerTransform != null)
+        {
+            PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
+            if (invis3antix != null) playerInvisible = invis3antix.IsInvisible();
+        }
         // Stop attack if player invisible
         if (playerInvisible)
         {
@@ -114,7 +118,9 @@ public class FlyAttack : MonoBehaviour
         if (playerTransform == null) return;
 
         PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+        PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
         if (invis != null && invis.IsInvisible()) return;
+        if (invis3antix != null && invis3antix.IsInvisible()) return;
         Debug.Log("ThrowDust method called.");
         if (dustProjectilePrefab == null || projectileSpawnPoint == null || playerTransform == null)
         {

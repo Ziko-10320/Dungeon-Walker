@@ -96,7 +96,7 @@ public class InkAttack : MonoBehaviour
         CheckPlayerDetection();
 
         // Only face the player if they are in range and the enemy is not hiding
-        if (playerInDetectionRange && !IsHiding() && !IsPlayerInvisible())
+        if (playerInDetectionRange && !IsHiding() && !IsPlayerInvisible() && !IsPlayerInvisible3antix())
         {
             Vector3 directionToPlayer = playerTransform.position - transform.position;
             if (directionToPlayer.x > 0 && !facingRight)
@@ -110,6 +110,12 @@ public class InkAttack : MonoBehaviour
         if (playerTransform == null) return false;
         PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
         return invis != null && invis.IsInvisible();
+    }
+    private bool IsPlayerInvisible3antix()
+    {
+        if (playerTransform == null) return false;
+        PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
+        return invis3antix != null && invis3antix.IsInvisible();
     }
     private void CheckPlayerDetection()
     {
@@ -153,7 +159,7 @@ public class InkAttack : MonoBehaviour
             yield return new WaitForSeconds(attackCooldown);
 
             // Check if enemy can attack: must be in range, not on cooldown, and not hiding/invincible
-            if (playerInDetectionRange && canAttack && !IsHiding() && !IsPlayerInvisible())
+            if (playerInDetectionRange && canAttack && !IsHiding() && !IsPlayerInvisible() && !IsPlayerInvisible3antix())
             {
                 Attack();
             }
@@ -172,6 +178,7 @@ public class InkAttack : MonoBehaviour
     void Attack()
     {
         if (IsPlayerInvisible()) return;
+        if (IsPlayerInvisible3antix()) return;
         canAttack = false;
 
         // Play attack sound

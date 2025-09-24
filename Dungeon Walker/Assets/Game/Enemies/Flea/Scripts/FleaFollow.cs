@@ -97,12 +97,14 @@ public class FleaFollow : MonoBehaviour
     void OnEnable()
 {
     PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;
-}
+        PlayerInvisibility3antix.OnInvisibilityChanged += HandleInvisibility;
+    }
 
 void OnDisable()
 {
     PlayerInvisibility.OnInvisibilityChanged -= HandleInvisibility;
-}
+        PlayerInvisibility3antix.OnInvisibilityChanged -= HandleInvisibility;
+    }
 
 private void HandleInvisibility(bool invisible)
 {
@@ -174,7 +176,13 @@ private void FindPlayerAgain()
 
         // --- NEW: ignore invisible player ---
         PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+        PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
         if (invis != null && invis.IsInvisible())
+        {
+            ChangeState(AIState.Patrolling);
+            return;
+        }
+        if (invis3antix != null && invis3antix.IsInvisible())
         {
             ChangeState(AIState.Patrolling);
             return;

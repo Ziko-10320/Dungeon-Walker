@@ -73,7 +73,15 @@ public class SprayerAttack : MonoBehaviour
         if (playerObj != null)
         {
             PlayerInvisibility invis = playerObj.GetComponent<PlayerInvisibility>();
+            PlayerInvisibility3antix invis3antix = playerObj.GetComponent<PlayerInvisibility3antix>();
             if (invis != null && invis.IsInvisible())
+            {
+                // Stop particles & disable movement
+                if (sprayParticles != null && sprayParticles.isPlaying) sprayParticles.Stop();
+                EnableMovement(); // Ensure enemy can move
+                return;
+            }
+            if (invis3antix != null && invis3antix.IsInvisible())
             {
                 // Stop particles & disable movement
                 if (sprayParticles != null && sprayParticles.isPlaying) sprayParticles.Stop();
@@ -98,6 +106,11 @@ public class SprayerAttack : MonoBehaviour
     private void StartAttack()
     {
         if (IsPlayerInvisible())
+        {
+            // Player is invisible → cancel attack
+            return;
+        }
+        if (IsPlayerInvisible3antix())
         {
             // Player is invisible → cancel attack
             return;
@@ -149,13 +162,18 @@ public class SprayerAttack : MonoBehaviour
                 if (sprayParticles != null) sprayParticles.Stop();
                 break; // exit attack loop
             }
-
+            if (IsPlayerInvisible3antix())
+            {
+                // Stop particles immediately
+                if (sprayParticles != null) sprayParticles.Stop();
+                break; // exit attack loop
+            }
             ApplyDamageTick();
             timer += damageInterval;
             yield return new WaitForSeconds(damageInterval);
         }
         EndAttack();
-    }
+    } 
     private bool IsPlayerInvisible()
     {
         // Find player in the layer
@@ -163,7 +181,20 @@ public class SprayerAttack : MonoBehaviour
         if (playerCollider == null) return false;
 
         PlayerInvisibility invis = playerCollider.GetComponent<PlayerInvisibility>();
+       
         return invis != null && invis.IsInvisible();
+
+    }
+    private bool IsPlayerInvisible3antix()
+    {
+        // Find player in the layer
+        Collider2D playerCollider = Physics2D.OverlapCircle(transform.position, attackRange, playerLayer);
+        if (playerCollider == null) return false;
+
+        PlayerInvisibility3antix invis3antix = playerCollider.GetComponent<PlayerInvisibility3antix>();
+
+        return invis3antix != null && invis3antix.IsInvisible();
+
     }
     private void ApplyDamageTick()
     {
@@ -180,7 +211,13 @@ public class SprayerAttack : MonoBehaviour
             if (playerHealth != null)
             {
                 PlayerInvisibility invis = hit.GetComponent<PlayerInvisibility>();
+                PlayerInvisibility3antix invis3antix = hit.GetComponent<PlayerInvisibility3antix>();
                 if (invis != null && invis.IsInvisible())
+                {
+                    // Player is invisible, skip damage
+                    continue;
+                }
+                if (invis3antix != null && invis3antix.IsInvisible())
                 {
                     // Player is invisible, skip damage
                     continue;

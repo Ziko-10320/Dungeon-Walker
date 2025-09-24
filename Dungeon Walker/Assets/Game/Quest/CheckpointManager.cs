@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+  
 public class CheckpointManager : MonoBehaviour
 {
     [Header("Checkpoint Settings")]
     public List<Checkpoint> checkpoints = new List<Checkpoint>();
     public Transform player;
     public bool loopCheckpoints = true;
+
     [Header("Coin Settings")]
     public int coinsPerCheckpoint = 10;
     public Button interactButton;
@@ -25,14 +27,14 @@ public class CheckpointManager : MonoBehaviour
     public UnityEvent<int> OnLoopCompleted;
     public UnityEvent<int> OnScoreChanged;
     public UnityEvent<float> OnCheckpointTimerUpdate;
-    public UnityEvent<bool> OnShowEButton; // New: Event to show/hide E button
-    public UnityEvent<string> OnEButtonTextUpdate; // New: Event to update E button text
+    public UnityEvent<bool> OnShowEButton; // Show/hide E button
+    public UnityEvent<string> OnEButtonTextUpdate; // Update E button text
 
     private int currentCheckpointIndex = 0;
     private int totalScore = 0;
     private float currentCheckpointTimer = 0f;
-    private bool isPlayerAtCheckpoint = false; // Tracks if player is currently within the active checkpoint\"s radius
-    private bool isTimerRunning = false; // Tracks if the quest timer is actively counting down
+    private bool isPlayerAtCheckpoint = false;
+    private bool isTimerRunning = false;
     private Coroutine checkpointTimerCoroutine;
 
     public int CurrentCheckpointIndex => currentCheckpointIndex;
@@ -42,12 +44,20 @@ public class CheckpointManager : MonoBehaviour
 
     [Header("Player References")]
     [SerializeField] private PlayerHealth playerHealth;
+    [SerializeField] private L3antixHealth l3antixHealth;
+
     void Start()
     {
         if (interactButton != null)
         {
-            interactButton.gameObject.SetActive(false);
-            interactButton.interactable = false;
+            if (interactButton.interactable)
+            {
+                interactButton.gameObject.SetActive(false);
+                interactButton.interactable = false;
+            }
+
+            // 👇 Hook UI button directly
+            interactButton.onClick.AddListener(OnInteractButtonPressed);
         }
 
         InitializeCheckpoints();
@@ -55,28 +65,45 @@ public class CheckpointManager : MonoBehaviour
         OnShowEButton?.Invoke(false);
         OnCheckpointTimerUpdate?.Invoke(0f);
 
-        // 👇 New: auto-assign player by tag
-        GameObject p = GameObject.FindGameObjectWithTag("Player");
-        if (p != null)
+        // 👇 New: auto-assign the active player
+        if (player == null || (playerHealth == null && l3antixHealth == null))
         {
-            player = p.transform;
-            playerHealth = p.GetComponent<PlayerHealth>();
-        }
-        else
-        {
-            Debug.LogError("⚠️ No GameObject with tag 'Player' found in the scene!");
+            GameObject[] allPlayers = GameObject.FindGameObjectsWithTag("Player");
+
+            if (allPlayers.Length == 0)
+            {
+                Debug.LogError("⚠️ No GameObject with tag 'Player' found in the scene!");
+            }
+            else
+            {
+                foreach (GameObject p in allPlayers)
+                {
+                    if (p.activeInHierarchy)
+                    {
+                        player = p.transform;
+
+                        // Try first type of health
+                        playerHealth = p.GetComponent<PlayerHealth>();
+
+                        // If not found, try the second one
+                        if (playerHealth == null)
+                        {
+                            l3antixHealth = p.GetComponent<L3antixHealth>();
+                        }
+
+                        break;
+                    }
+                }
+            }
         }
     }
-
 
     void Update()
     {
         if (player == null || checkpoints.Count == 0) return;
 
-        // Ensure currentCheckpointIndex is valid
         if (currentCheckpointIndex >= checkpoints.Count)
         {
-            // This case should ideally be handled by loop logic or game end, but as a safeguard
             return;
         }
 
@@ -86,7 +113,6 @@ public class CheckpointManager : MonoBehaviour
         float distance = Vector3.Distance(player.position, currentCheckpoint.transform.position);
         bool playerIsNowInRadius = (distance <= currentCheckpoint.Radius);
 
-        // Handle player entering/leaving radius
         if (playerIsNowInRadius && !isPlayerAtCheckpoint)
         {
             isPlayerAtCheckpoint = true;
@@ -99,9 +125,8 @@ public class CheckpointManager : MonoBehaviour
         {
             isPlayerAtCheckpoint = false;
             currentCheckpoint.SetPlayerInRadius(false);
-            OnShowEButton?.Invoke(false); // Hide E button when leaving radius
+            OnShowEButton?.Invoke(false);
 
-            // Only play exit sound if quest hasn\"t started yet and timer is not running
             if (!currentCheckpoint.QuestStarted && !isTimerRunning)
             {
                 currentCheckpoint.PlayRadiusExitPrematureSound();
@@ -109,8 +134,11 @@ public class CheckpointManager : MonoBehaviour
             Debug.Log($"Player left checkpoint {currentCheckpointIndex + 1} radius.");
         }
 
-        // Handle E-press input
-        HandleInput();
+        // 👇 Optional: pressing E simulates button click
+        if (Input.GetKeyDown(KeyCode.E) && interactButton != null && interactButton.gameObject.activeSelf)
+        {
+            interactButton.onClick.Invoke();
+        }
     }
 
     void InitializeCheckpoints()
@@ -120,7 +148,7 @@ public class CheckpointManager : MonoBehaviour
             if (checkpoints[i] != null)
             {
                 checkpoints[i].SetCheckpointIndex(i);
-                checkpoints[i].SetActive(i == 0); // Only the first checkpoint is active initially
+                checkpoints[i].SetActive(i == 0);
             }
         }
 
@@ -139,44 +167,23 @@ public class CheckpointManager : MonoBehaviour
             if (!currentCheckpoint.QuestStarted)
             {
                 shouldBeVisible = true;
-                // On pourrait mettre à jour le texte du bouton ici si nécessaire
-                // interactButton.GetComponentInChildren<TMPro.TextMeshProUGU>().text = "Start";
             }
             else if (currentCheckpoint.TimerEnded)
             {
                 shouldBeVisible = true;
-                // interactButton.GetComponentInChildren<TMPro.TextMeshProUGU>().text = "Complete";
             }
         }
 
-        // On affiche ou on cache l'objet du bouton
         interactButton.gameObject.SetActive(shouldBeVisible);
-        // On le rend cliquable ou non
         interactButton.interactable = shouldBeVisible;
     }
 
-
-    void HandleInput()
-    {
-        // On vérifie uniquement l'input clavier ici.
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            // On ne simule un clic que si le bouton est visible et interactif
-            if (interactButton != null && interactButton.interactable)
-            {
-                OnInteractButtonPressed();
-            }
-        }
-    }
-
-    // --- MODIFICATION : La fonction publique est maintenant plus simple ---
+    // --- Public: called by UI or E key ---
     public void OnInteractButtonPressed()
     {
         if (currentCheckpointIndex >= checkpoints.Count) return;
         Checkpoint currentCheckpoint = checkpoints[currentCheckpointIndex];
 
-        // La vérification 'isPlayerAtCheckpoint' est implicitement gérée par la visibilité du bouton,
-        // mais on peut la garder pour plus de sécurité.
         if (!isPlayerAtCheckpoint) return;
 
         if (!currentCheckpoint.QuestStarted)
@@ -185,11 +192,13 @@ public class CheckpointManager : MonoBehaviour
             currentCheckpointTimer = currentCheckpoint.TimeToStay;
             isTimerRunning = true;
 
-            // On cache et désactive le bouton pendant la quête
             if (interactButton != null)
             {
-                interactButton.gameObject.SetActive(false);
-                interactButton.interactable = false;
+                if (interactButton.interactable)
+                {
+                    interactButton.gameObject.SetActive(false);
+                    interactButton.interactable = false;
+                }
             }
 
             if (checkpointTimerCoroutine != null) StopCoroutine(checkpointTimerCoroutine);
@@ -201,8 +210,6 @@ public class CheckpointManager : MonoBehaviour
         }
     }
 
-   
-
     IEnumerator CheckpointTimer()
     {
         while (currentCheckpointTimer > 0)
@@ -212,15 +219,19 @@ public class CheckpointManager : MonoBehaviour
             OnCheckpointTimerUpdate?.Invoke(currentCheckpointTimer);
         }
 
-        // Timer ended
         if (currentCheckpointIndex < checkpoints.Count)
         {
             Checkpoint currentCheckpoint = checkpoints[currentCheckpointIndex];
             currentCheckpoint.EndTimer();
             isTimerRunning = false;
 
-            // Show E button to complete quest if player is still in radius
-            UpdateEButtonVisibility();
+            foreach (CheckpointManager mgr in FindObjectsOfType<CheckpointManager>())
+            {
+                if (mgr != null)
+                {
+                    mgr.UpdateEButtonVisibility();
+                }
+            }
 
             Debug.Log($"Timer ended for checkpoint {currentCheckpointIndex + 1}");
         }
@@ -228,30 +239,34 @@ public class CheckpointManager : MonoBehaviour
 
     void ReachCheckpoint()
     {
-        playerHealth.RestoreShieldAtCheckpoint();
-
-
+        if (playerHealth != null)
+        {
+            playerHealth.RestoreShieldAtCheckpoint();
+        }
+        else if (l3antixHealth != null)
+        {
+            l3antixHealth.RestoreShieldAtCheckpoint();
+        }
         if (interactButton != null)
         {
-            interactButton.gameObject.SetActive(false);
-            interactButton.interactable = false;
+            if (interactButton.interactable)
+            {
+                interactButton.gameObject.SetActive(false);
+                interactButton.interactable = false;
+            }
         }
         if (checkpointTimerCoroutine != null) StopCoroutine(checkpointTimerCoroutine);
         isTimerRunning = false;
 
-        // --- MODIFIED SECTION ---
-        // Check if WalletManager exists before trying to use it.
         if (WalletManager.Instance != null)
         {
             WalletManager.Instance.AddCoins(coinsPerCheckpoint);
         }
         else
         {
-            // This log will help you if you ever wonder why coins aren't being added.
             Debug.LogWarning("WalletManager.Instance not found. Cannot add coins.");
         }
 
-        // Report the coins to our new stats manager (this part is safe)
         if (PlayerStatsManager.Instance != null)
         {
             PlayerStatsManager.Instance.AddCoins(coinsPerCheckpoint);
@@ -260,11 +275,9 @@ public class CheckpointManager : MonoBehaviour
         PowerUpManager powerUpManager = player.GetComponent<PowerUpManager>();
         if (powerUpManager != null && powerUpManager.HasPowerUp(PowerUpType.Invisibility))
         {
-            // find PlayerInvisibility component
             PlayerInvisibility invis = player.GetComponent<PlayerInvisibility>();
             if (invis != null)
             {
-                // OPTIONAL: try to get duration from equipped PowerUpData (if you store it in InventoryManager)
                 float duration = -1f;
                 var inv = InventoryManager.Instance;
                 if (inv != null)
@@ -280,15 +293,42 @@ public class CheckpointManager : MonoBehaviour
                 }
 
                 if (duration > 0f) invis.ActivateInvisibility(duration);
-                else invis.ActivateInvisibility(); // default duration
+                else invis.ActivateInvisibility();
             }
             else
             {
-                Debug.LogWarning("CheckpointManager: PlayerInvisibility component not found on player.");
+                Debug.LogWarning("CheckpointManager: PlayerInvisibility not found on player.");
+            }
+        }
+        PowerUpManagerL3antix PowerUpManagerL3antix = player.GetComponent<PowerUpManagerL3antix>();
+        if (PowerUpManagerL3antix != null && PowerUpManagerL3antix.HasPowerUp(PowerUpType.Invisibility))
+        {
+            PlayerInvisibility3antix invis3antix = player.GetComponent<PlayerInvisibility3antix>();
+            if (invis3antix != null)
+            {
+                float duration = -1f;
+                var inv = InventoryManager.Instance;
+                if (inv != null)
+                {
+                    foreach (PowerUpData pd in inv.equippedPowerUps)
+                    {
+                        if (pd != null && pd.type == PowerUpType.Invisibility)
+                        {
+                            duration = pd.effectValue;
+                            break;
+                        }
+                    }
+                }
+
+                if (duration > 0f) invis3antix.ActivateInvisibility(duration);
+                else invis3antix.ActivateInvisibility();
+            }
+            else
+            {
+                Debug.LogWarning("CheckpointManager: PlayerInvisibility not found on player.");
             }
         }
 
-        // Hide E button
         OnShowEButton?.Invoke(false);
 
         checkpoints[currentCheckpointIndex].SetReached();
@@ -303,12 +343,10 @@ public class CheckpointManager : MonoBehaviour
 
         if (currentCheckpointIndex >= checkpoints.Count)
         {
-            // Loop completed
             AddScore(scorePerLoop);
             OnLoopCompleted?.Invoke(totalScore);
             Debug.Log($"Loop completed! Score: +{scorePerLoop}. Total Score: {totalScore}");
 
-            // Reset for next loop
             currentCheckpointIndex = 0;
             foreach (Checkpoint cp in checkpoints)
             {

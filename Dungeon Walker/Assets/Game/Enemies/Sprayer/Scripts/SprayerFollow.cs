@@ -98,12 +98,14 @@ public class SprayerFollow : MonoBehaviour
     }
     void OnEnable()
     {
-        PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;
+        PlayerInvisibility3antix.OnInvisibilityChanged += HandleInvisibility;
+        PlayerInvisibility3antix.OnInvisibilityChanged += HandleInvisibility;
     }
 
     void OnDisable()
     {
-        PlayerInvisibility.OnInvisibilityChanged -= HandleInvisibility;
+        PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;
+        PlayerInvisibility3antix.OnInvisibilityChanged += HandleInvisibility;
     }
 
     private void HandleInvisibility(bool invisible)
@@ -201,7 +203,13 @@ public class SprayerFollow : MonoBehaviour
         if (playerTransform == null) return; // don't chase
         // --- NEW: ignore invisible player ---
         PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+        PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
         if (invis != null && invis.IsInvisible())
+        {
+            ChangeState(AIState.Wandering);
+            return;
+        }
+        if (invis3antix != null && invis3antix.IsInvisible())
         {
             ChangeState(AIState.Wandering);
             return;

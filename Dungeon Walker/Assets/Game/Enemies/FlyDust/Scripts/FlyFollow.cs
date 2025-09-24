@@ -129,7 +129,9 @@ public class FlyFollow : MonoBehaviour
 
             bool playerInvisible = false;
             PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+            PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
             if (invis != null) playerInvisible = invis.IsInvisible();
+            if (invis3antix != null) playerInvisible = invis3antix.IsInvisible();
 
             if (playerDetected && !playerInvisible)
             {
