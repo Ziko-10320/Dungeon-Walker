@@ -6,7 +6,13 @@ using System.Collections;
 public class ShopUI : MonoBehaviour
 {
     public static ShopUI Instance { get; private set; }
-
+    [Header("Description Panel")]
+    [SerializeField] private GameObject descriptionPanel;
+    [SerializeField] private Image selectedItemIcon;
+    [SerializeField] private TextMeshProUGUI selectedItemDescription;
+    [SerializeField] private Button selectedItemBuyButton;
+    [SerializeField] private TextMeshProUGUI buyButtonText; // The text on the buy button for the price
+    private PowerUpData currentlySelectedItem;
     [Header("UI Elements")]
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private TextMeshProUGUI coinCountText;
@@ -16,7 +22,7 @@ public class ShopUI : MonoBehaviour
     // --- THE NEW SYSTEM ---
     [Header("Shop Items Configuration")]
     [SerializeField] private List<ShopItemEntry> shopItems; // The list you wanted!
-
+    [SerializeField] private TextMeshProUGUI selectedItemName; // For the item's name
     private List<PowerUpData> purchasedPowerUps = new List<PowerUpData>();
 
     private void Awake()
@@ -33,8 +39,16 @@ public class ShopUI : MonoBehaviour
         }
         // --- Automatically set up all buttons ---
         SetupButtons();
+        selectedItemBuyButton.onClick.AddListener(OnBuyButtonPressed);
     }
-
+    private void Start()
+    {
+        // Hide the description panel at the start
+        if (descriptionPanel != null)
+        {
+            descriptionPanel.SetActive(false);
+        }
+    }
     /// <summary>
     /// This function loops through our list and configures each button's click event automatically.
     /// </summary>
@@ -43,25 +57,46 @@ public class ShopUI : MonoBehaviour
         foreach (ShopItemEntry entry in shopItems)
         {
             PowerUpData currentItem = entry.powerUpData;
-            Button currentButton = entry.purchaseButton;
+            Button itemButton = entry.purchaseButton;
 
-            // --- NEW PART: SET THE PRICE TEXT ---
-            if (entry.priceText != null)
-            {
-                entry.priceText.text = currentItem.price.ToString();
-            }
-            // ------------------------------------
-
-            currentButton.onClick.RemoveAllListeners();
-            currentButton.onClick.AddListener(() => AttemptPurchase(currentItem, currentButton));
+            itemButton.onClick.RemoveAllListeners();
+            // When a power-up button is clicked, call OnItemSelected
+            itemButton.onClick.AddListener(() => OnItemSelected(currentItem));
         }
     }
-
-    private void AttemptPurchase(PowerUpData item, Button button)
+    private void OnItemSelected(PowerUpData item)
     {
         if (item == null) return;
 
-        // CHANGE THIS: Check the InventoryManager's list, not the local one.
+        // Store the selected item
+        currentlySelectedItem = item;
+
+        // Show the description panel
+        descriptionPanel.SetActive(true);
+
+        // Populate the panel with the item's data
+        selectedItemIcon.sprite = item.icon;
+        selectedItemDescription.text = item.description;
+        selectedItemName.text = item.powerUpName;
+        // Update the buy button's text to show the price
+        buyButtonText.text = item.price.ToString();
+
+        // Check if the item is already owned and disable the button if so
+        if (InventoryManager.Instance.ownedPowerUps.Contains(item))
+        {
+            selectedItemBuyButton.interactable = false;
+            buyButtonText.text = "Owned";
+        }
+        else
+        {
+            selectedItemBuyButton.interactable = true;
+        }
+    }
+
+    private void AttemptPurchase(PowerUpData item)
+    {
+        if (item == null) return;
+
         if (InventoryManager.Instance.ownedPowerUps.Contains(item))
         {
             Debug.Log("Item already purchased: " + item.powerUpName);
@@ -73,23 +108,25 @@ public class ShopUI : MonoBehaviour
         if (purchaseSuccessful)
         {
             Debug.Log("Purchase successful: " + item.powerUpName);
-
-            // CHANGE THIS: Add the item to the InventoryManager.
             InventoryManager.Instance.AddOwnedPowerUp(item);
-
             UpdateCoinCount();
 
-            if (button != null)
-            {
-                button.interactable = false;
-            }
+            // --- NEW: After buying, update the description panel's state ---
+            // Disable the buy button and change its text to "Owned"
+            selectedItemBuyButton.interactable = false;
+            buyButtonText.text = "Owned";
         }
         else
         {
             Debug.Log("Purchase failed. Not enough coins.");
+            // You could add a visual/sound effect here for failure
         }
     }
-
+    private void OnBuyButtonPressed()
+    {
+        // Attempt to purchase the item we currently have selected
+        AttemptPurchase(currentlySelectedItem);
+    }
     public void OpenShop()
     {
         if (shopPanel != null)
@@ -97,6 +134,7 @@ public class ShopUI : MonoBehaviour
             StopAllCoroutines();
             StartCoroutine(AnimatePanel(true));
             UpdateCoinCount();
+            descriptionPanel.SetActive(false);
         }
     }
 
