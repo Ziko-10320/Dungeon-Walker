@@ -11,11 +11,23 @@ public class CharacterSelectionManager : MonoBehaviour
     [SerializeField] private GameObject startGameButton;
     // ---- NEW: Add references for the map selection UI ----
     [SerializeField] private GameObject mapSelectionGroup; // An empty GameObject holding your map buttons
-
+    [Header("Selection Animation")]
+    [Tooltip("How fast the selection animation plays.")]
+    [SerializeField] private float animationSpeed = 0.2f;
+    [Tooltip("The scale of the selected button (e.g., 1.1).")]
+    [SerializeField] private float selectedScale = 1.1f;
+    [Tooltip("The scale of the unselected buttons (e.g., 0.9).")]
+    [SerializeField] private float deselectedScale = 0.9f;
+    [Tooltip("The opacity of the unselected buttons (0 = invisible, 1 = fully visible).")]
+    [SerializeField] private float deselectedAlpha = 0.6f;
     // ---- NEW: Variables to store the player's choices ----
     private string selectedCharacter;
     private string selectedMapSceneName; // We'll store the scene name to load
-
+    [Header("Button References")]
+    [SerializeField] private Button catButton;
+    [SerializeField] private Button manButton;
+    [SerializeField] private Button map1Button;
+    [SerializeField] private Button map2Button;
     void Start()
     {
         // Hide both the start button and the map selection buttons at the beginning.
@@ -31,7 +43,7 @@ public class CharacterSelectionManager : MonoBehaviour
         selectedCharacter = "Cat";
         PlayerPrefs.SetString("SelectedCharacter", selectedCharacter);
         Debug.Log("Character selected: Cat");
-
+        AnimateSelection(catButton, manButton);
         // ---- NEW: Show the map buttons ----
         ShowMapSelection();
     }
@@ -41,7 +53,7 @@ public class CharacterSelectionManager : MonoBehaviour
         selectedCharacter = "Man";
         PlayerPrefs.SetString("SelectedCharacter", selectedCharacter);
         Debug.Log("Character selected: Man");
-
+        AnimateSelection(manButton, catButton);
         // ---- NEW: Show the map buttons ----
         ShowMapSelection();
     }
@@ -64,7 +76,7 @@ public class CharacterSelectionManager : MonoBehaviour
         // IMPORTANT: Replace "SampleScene" with the actual name of your first map scene.
         selectedMapSceneName = "SampleScene";
         Debug.Log("Map selected: " + selectedMapSceneName);
-
+        AnimateSelection(map1Button, map2Button);
         // Now that a map is also chosen, show the start button.
         ShowStartButton();
     }
@@ -75,9 +87,43 @@ public class CharacterSelectionManager : MonoBehaviour
         // IMPORTANT: Replace "NewMapScene" with the actual name of your second map scene.
         selectedMapSceneName = "MapII";
         Debug.Log("Map selected: " + selectedMapSceneName);
-
+        AnimateSelection(map2Button, map1Button);
         // Now that a map is also chosen, show the start button.
         ShowStartButton();
+    }
+    private void AnimateSelection(Button selected, Button deselected)
+    {
+        // Start the animation coroutines for both buttons
+        StartCoroutine(AnimateButton(selected, selectedScale, 1.0f));
+        StartCoroutine(AnimateButton(deselected, deselectedScale, deselectedAlpha));
+    }
+
+    private IEnumerator AnimateButton(Button button, float targetScale, float targetAlpha)
+    {
+        // Get the components we need to animate
+        RectTransform rectTransform = button.GetComponent<RectTransform>();
+        CanvasGroup canvasGroup = button.GetComponent<CanvasGroup>();
+
+        // Get the starting values
+        Vector3 startScale = rectTransform.localScale;
+        float startAlpha = canvasGroup.alpha;
+
+        float timer = 0f;
+        while (timer < animationSpeed)
+        {
+            timer += Time.deltaTime;
+            float progress = timer / animationSpeed;
+
+            // Smoothly interpolate (Lerp) between the start and target values
+            rectTransform.localScale = Vector3.Lerp(startScale, Vector3.one * targetScale, progress);
+            canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, progress);
+
+            yield return null; // Wait for the next frame
+        }
+
+        // Ensure the final values are set exactly
+        rectTransform.localScale = Vector3.one * targetScale;
+        canvasGroup.alpha = targetAlpha;
     }
 
     // This function now gets called after a map is selected.

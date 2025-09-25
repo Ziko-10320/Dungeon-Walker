@@ -17,14 +17,11 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject catManagerObject;
     [SerializeField] private GameObject manCharacterObject;
     [SerializeField] private GameObject manManagerObject;
-    [SerializeField] private TextMeshProUGUI coinsStatText;
-    [SerializeField] private TextMeshProUGUI killsStatText;
-    [SerializeField] private TextMeshProUGUI scoreStatText;
-    [Header("Camera Control")]
+       [Header("Camera Control")]
     [SerializeField] private CameraFollowMouseHorizontal cameraFollowScript;
     [SerializeField] private Transform catFollowTarget;
     [SerializeField] private Transform manFollowTarget;
-
+    [SerializeField] private StatCounterAnimation statAnimation;
     [Header("Game State")]
     public static bool isGamePaused = false;
 
@@ -99,6 +96,7 @@ public class GameUIManager : MonoBehaviour
 
     void Start()
     {
+        if (statAnimation != null) statAnimation.ResetUI();
         // Hide UI panels
         if (deathPanel != null) deathPanel.SetActive(false);
         if (pausePanel != null) pausePanel.SetActive(false);
@@ -140,18 +138,24 @@ public class GameUIManager : MonoBehaviour
     {
         if (deathPanel != null)
         {
-            if (PlayerStatsManager.Instance != null)
+            deathPanel.SetActive(true); // Show the panel first
+
+            // --- REPLACE THE OLD LOGIC WITH THIS ---
+            if (PlayerStatsManager.Instance != null && statAnimation != null)
             {
-                coinsStatText.text = "Coins Gathered: " + PlayerStatsManager.Instance.coinsGathered;
-                killsStatText.text = "Enemies Killed: " + PlayerStatsManager.Instance.enemiesKilled;
-                scoreStatText.text = "Final Score: " + PlayerStatsManager.Instance.finalScore;
+                // Get the final stats
+                int finalScore = PlayerStatsManager.Instance.finalScore;
+                int finalKills = PlayerStatsManager.Instance.enemiesKilled;
+                int finalCoins = PlayerStatsManager.Instance.coinsGathered;
+
+                // Start the animation sequence!
+                statAnimation.StartAnimation(finalScore, finalKills, finalCoins);
             }
-            deathPanel.SetActive(true);
+            // --- END OF REPLACEMENT ---
         }
         Time.timeScale = 0f;
         isGamePaused = true;
     }
-
     public void RestartGame()
     {
         StartCoroutine(FadeAndRestart());
@@ -178,7 +182,11 @@ public class GameUIManager : MonoBehaviour
     {
         Time.timeScale = 1f; // Ensure time is running before we fade
         isGamePaused = false;
-
+        if (PlayerStatsManager.Instance != null)
+        {
+            PlayerStatsManager.Instance.ResetStats();
+            Debug.Log("Player stats reset before returning to menu.");
+        }
         float timer = 0f;
         while (timer < fadeDuration)
         {
