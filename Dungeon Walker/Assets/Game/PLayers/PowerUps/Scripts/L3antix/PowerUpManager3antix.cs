@@ -285,7 +285,7 @@ public class PowerUpManagerL3antix : MonoBehaviour
                 break;
             case PowerUpType.ExplosiveCoins:
                 {
-                    ExplosiveCoinsPowerUp explosive = GetComponent<ExplosiveCoinsPowerUp>();
+                    ExplosiveCoinsPowerUpL3antix explosive = GetComponent<ExplosiveCoinsPowerUpL3antix>();
                     if (explosive != null)
                     {
                         if (data.effectValue > 0)

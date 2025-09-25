@@ -54366,7 +54366,7 @@ Transform:
   m_GameObject: {fileID: 1877101315800042136}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0.065322876, y: 0.046820164, z: -0.77}
+  m_LocalPosition: {x: 0.065322876, y: 0.046820134, z: -0.77}
   m_LocalScale: {x: 1.5728, y: 1.5728002, z: 1.5728002}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -188278,6 +188278,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   playerHealth: {fileID: 0}
+  l3antixHealth: {fileID: 0}
 --- !u!1 &6790693189779611674
 GameObject:
   m_ObjectHideFlags: 0
@@ -188413,7 +188414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25a9638816af18642a933e762121101b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 1000
+  maxHealth: 100
   currentHealth: 0
   rb: {fileID: 3638036865984811249}
   movementScript: {fileID: 5159600053955234360}
@@ -189130,8 +189131,8 @@ MonoBehaviour:
   damageSize: {x: 7.57, y: 2.48}
   enemyLayer:
     serializedVersion: 2
-    m_Bits: 128
-  damage: 10
+    m_Bits: 640
+  damage: 5
   damageInterval: 0.5
   hitsBeforeStun: 2
   stunDuration: 2
@@ -189263,7 +189264,7 @@ MonoBehaviour:
   - {fileID: 3726848722146222962}
   - {fileID: 1220082075272087002}
   invisibleMaterial: {fileID: 2100000, guid: 3c3b9c3c813cda240982ab433631c19b, type: 2}
-  invisibilityDuration: 7
+  invisibilityDuration: 10
 --- !u!114 &2309832231095394448
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189283,7 +189284,7 @@ MonoBehaviour:
   splitDelay: 0.2
   explosionDuration: 1
   explosionRadius: 2.79
-  damageTickInterval: 0.12
+  damageTickInterval: 0.7
   enemyLayer:
     serializedVersion: 2
     m_Bits: 640

@@ -30,14 +30,7 @@ public class PlayerInvisibility3antix : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        // Cancel invisibility if player clicks mouse
-        if (isInvisible && (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1)))
-        {
-            DeactivateInvisibility();
-        }
-    }
+   
     void LateUpdate()
     {
         // Only check if currently invisible
@@ -102,10 +95,6 @@ public class PlayerInvisibility3antix : MonoBehaviour
         SetInvisible(false);
     }
 
-    public void OnTakeDamage()
-    {
-        if (isInvisible) DeactivateInvisibility();
-    }
     public void ForceVisible()
     {
         if (isInvisible)

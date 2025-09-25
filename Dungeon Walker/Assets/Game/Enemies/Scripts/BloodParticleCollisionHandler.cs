@@ -13,7 +13,7 @@ public class BloodParticleCollisionHandler : MonoBehaviour
             ParticleSystem ps = GetComponent<ParticleSystem>();
             if (ps == null) return;
 
-            ParticleCollisionEvent[] collisionEvents = new ParticleCollisionEvent[ps.main.maxParticles];
+            var collisionEvents = new System.Collections.Generic.List<ParticleCollisionEvent>();
             int numCollisionEvents = ps.GetCollisionEvents(other, collisionEvents);
 
             string enemyTag = transform.root.tag;

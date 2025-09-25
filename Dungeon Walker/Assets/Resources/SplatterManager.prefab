@@ -1,0 +1,177 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3715496865021253064
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4222640860329313389}
+  - component: {fileID: 6781423558834814930}
+  m_Layer: 0
+  m_Name: SplatterManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4222640860329313389
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3715496865021253064}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -85.26107, y: 30.013271, z: -1.9017634}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6781423558834814930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3715496865021253064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d7fb77d309774d45a5f4fa48a66e473, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minOrderInLayer: 1
+  maxOrderInLayer: 3
+  randomRotation: 1
+  randomFlipX: 1
+  randomFlipY: 1
+  enemySplatterConfigs:
+  - enemyTag: Flea
+    hitSplatterSettings:
+      prefabs:
+      - {fileID: 5712972273585749812, guid: 5d78940ba4bd69f408cfe041dd359e0a, type: 3}
+      - {fileID: 5712972273585749812, guid: c5201a12bfa982941b8ba47fe7849650, type: 3}
+      initialDisplayDuration: 0
+      fadeDuration: 2
+      lifetime: 2
+      overrideSize: 1
+      minSize: 0.66
+      maxSize: 0.99
+      specificDeathSplatterPrefab: {fileID: 0}
+      specificDeathSplatterLimit: 2
+    deathSplatterSettings:
+      prefabs:
+      - {fileID: 5712972273585749812, guid: 5d78940ba4bd69f408cfe041dd359e0a, type: 3}
+      - {fileID: 5712972273585749812, guid: c5201a12bfa982941b8ba47fe7849650, type: 3}
+      initialDisplayDuration: 0
+      fadeDuration: 2.5
+      lifetime: 10
+      overrideSize: 1
+      minSize: 1.1
+      maxSize: 3.89
+      specificDeathSplatterPrefab: {fileID: 5712972273585749812, guid: 12fc4b853c9ef844fa19bfd5123b8f96, type: 3}
+      specificDeathSplatterLimit: 47
+  - enemyTag: Ink
+    hitSplatterSettings:
+      prefabs:
+      - {fileID: 5712972273585749812, guid: e68662c5287601f4694d802987e45a87, type: 3}
+      - {fileID: 5712972273585749812, guid: 5c760c83907439d46ae06ac428c62284, type: 3}
+      initialDisplayDuration: 0
+      fadeDuration: 2
+      lifetime: 2
+      overrideSize: 1
+      minSize: 0.83
+      maxSize: 1.01
+      specificDeathSplatterPrefab: {fileID: 0}
+      specificDeathSplatterLimit: 0
+    deathSplatterSettings:
+      prefabs:
+      - {fileID: 5712972273585749812, guid: e68662c5287601f4694d802987e45a87, type: 3}
+      - {fileID: 5712972273585749812, guid: 9644a86cabff8ca4992015b43dfded52, type: 3}
+      initialDisplayDuration: 0
+      fadeDuration: 2.5
+      lifetime: 10
+      overrideSize: 1
+      minSize: 1.09
+      maxSize: 4.4
+      specificDeathSplatterPrefab: {fileID: 5712972273585749812, guid: 5c760c83907439d46ae06ac428c62284, type: 3}
+      specificDeathSplatterLimit: 50
+  - enemyTag: Sprayer
+    hitSplatterSettings:
+      prefabs:
+      - {fileID: 1084043084666364658, guid: 942e766788fc2d94f89434e3537703c8, type: 3}
+      - {fileID: 4895635684018331405, guid: 0db939f492db4d74898abfe5df90972e, type: 3}
+      initialDisplayDuration: 0
+      fadeDuration: 2
+      lifetime: 2
+      overrideSize: 1
+      minSize: 0.68
+      maxSize: 0.9
+      specificDeathSplatterPrefab: {fileID: 0}
+      specificDeathSplatterLimit: 0
+    deathSplatterSettings:
+      prefabs:
+      - {fileID: 5712972273585749812, guid: de6c2b53ebd25a641b1e3929a89cb631, type: 3}
+      - {fileID: 5712972273585749812, guid: 1830c61c75528ab4096753512d3481b3, type: 3}
+      initialDisplayDuration: 0
+      fadeDuration: 2.5
+      lifetime: 10
+      overrideSize: 1
+      minSize: 1.09
+      maxSize: 4.4
+      specificDeathSplatterPrefab: {fileID: 5712972273585749812, guid: 8ada22d75e0c3a14ab3aeec9f184c8b2, type: 3}
+      specificDeathSplatterLimit: 44
+  - enemyTag: Fly
+    hitSplatterSettings:
+      prefabs:
+      - {fileID: 5712972273585749812, guid: b7f6f1425e8143e45a438c32cfe53af1, type: 3}
+      - {fileID: 5712972273585749812, guid: 6ee2267068393c549a37afe6924ad3ac, type: 3}
+      initialDisplayDuration: 0
+      fadeDuration: 2
+      lifetime: 2
+      overrideSize: 1
+      minSize: 0.63
+      maxSize: 0.88
+      specificDeathSplatterPrefab: {fileID: 0}
+      specificDeathSplatterLimit: 0
+    deathSplatterSettings:
+      prefabs:
+      - {fileID: 5712972273585749812, guid: b7f6f1425e8143e45a438c32cfe53af1, type: 3}
+      - {fileID: 5712972273585749812, guid: 6ee2267068393c549a37afe6924ad3ac, type: 3}
+      initialDisplayDuration: 0
+      fadeDuration: 2.5
+      lifetime: 10
+      overrideSize: 1
+      minSize: 1.09
+      maxSize: 4.4
+      specificDeathSplatterPrefab: {fileID: 5712972273585749812, guid: 2d77b26e2801def4aa320cf0ac765e0d, type: 3}
+      specificDeathSplatterLimit: 50
+  - enemyTag: Rat
+    hitSplatterSettings:
+      prefabs:
+      - {fileID: 5712972273585749812, guid: 3b6772a1005ca8b449d13d24668b6209, type: 3}
+      - {fileID: 5712972273585749812, guid: 4f2c8ef97243f3e4a948891ec82816ed, type: 3}
+      initialDisplayDuration: 0
+      fadeDuration: 2
+      lifetime: 3.5
+      overrideSize: 1
+      minSize: 0.94
+      maxSize: 1.91
+      specificDeathSplatterPrefab: {fileID: 5712972273585749812, guid: 51cf6d8e3ad74d7468e26f09d8fb9c0b, type: 3}
+      specificDeathSplatterLimit: 5
+    deathSplatterSettings:
+      prefabs:
+      - {fileID: 5712972273585749812, guid: 3b6772a1005ca8b449d13d24668b6209, type: 3}
+      - {fileID: 5712972273585749812, guid: 4f2c8ef97243f3e4a948891ec82816ed, type: 3}
+      initialDisplayDuration: 0
+      fadeDuration: 3.13
+      lifetime: 12.32
+      overrideSize: 1
+      minSize: 3.21
+      maxSize: 7.36
+      specificDeathSplatterPrefab: {fileID: 5712972273585749812, guid: 51cf6d8e3ad74d7468e26f09d8fb9c0b, type: 3}
+      specificDeathSplatterLimit: 50

@@ -107,11 +107,8 @@ public class L3antixHealth : MonoBehaviour
 
     public void TakeDamage(int damage, float knockbackForce, Vector2 knockbackDirection)
     {
-        PlayerInvisibility3antix invis = GetComponent<PlayerInvisibility3antix>();
-        if (invis != null && invis.IsInvisible())
-        {
-            invis.ForceVisible();
-        }
+       
+        
         if (isSuperActive || isInvincible)
         {
             Debug.Log("Player is invincible – no damage taken.");
@@ -143,8 +140,8 @@ public class L3antixHealth : MonoBehaviour
             Die();
         }
 
-        ExplosiveCoinsPowerUp explosive = GetComponent<ExplosiveCoinsPowerUp>();
-        PowerUpManager powerUpManager = FindObjectOfType<PowerUpManager>();
+        ExplosiveCoinsPowerUpL3antix explosive = GetComponent<ExplosiveCoinsPowerUpL3antix>();
+        PowerUpManagerL3antix powerUpManager = FindObjectOfType<PowerUpManagerL3antix>();
         if (explosive != null && powerUpManager != null && powerUpManager.HasPowerUp(PowerUpType.ExplosiveCoins))
         {
             explosive.TrySpawnCoin();

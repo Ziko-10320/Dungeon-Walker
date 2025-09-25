@@ -61,9 +61,31 @@ public class WaveManager : MonoBehaviour
         }
         if (checkpointManager == null)
         {
-            Debug.LogError("WaveManager: La référence au CheckpointManager est manquante !");
-            enabled = false; // Désactive ce script s'il n'est pas configuré
-            return;
+            GameObject[] cpObjects = GameObject.FindGameObjectsWithTag("CP");
+
+            if (cpObjects.Length == 0)
+            {
+                Debug.LogError("WaveManager: Aucun GameObject avec le tag 'CP' trouvé !");
+                enabled = false;
+                return;
+            }
+
+            // Cherche celui qui est actif dans la hiérarchie
+            foreach (GameObject cpObj in cpObjects)
+            {
+                if (cpObj.activeInHierarchy)
+                {
+                    checkpointManager = cpObj.GetComponent<CheckpointManager>();
+                    break;
+                }
+            }
+
+            if (checkpointManager == null)
+            {
+                Debug.LogError("WaveManager: Impossible de trouver un CheckpointManager actif !");
+                enabled = false;
+                return;
+            }
         }
 
         if (spawnPoints.Count == 0)

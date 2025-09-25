@@ -107,11 +107,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage, float knockbackForce, Vector2 knockbackDirection)
     {
-        PlayerInvisibility invis = GetComponent<PlayerInvisibility>();
-        if (invis != null && invis.IsInvisible())
-        {
-            invis.ForceVisible();
-        }
+        
         if (isSuperActive || isInvincible)
         {
             Debug.Log("Player is invincible – no damage taken.");
