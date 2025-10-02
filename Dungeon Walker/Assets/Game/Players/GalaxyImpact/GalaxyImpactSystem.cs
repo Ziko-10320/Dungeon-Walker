@@ -127,6 +127,10 @@ public class GalaxyImapctSystem : MonoBehaviour
         isPerformingSuperMove = true;
         lastSuperMoveTime = Time.time;
 
+        if (playerRb != null)
+        {
+            playerRb.bodyType = RigidbodyType2D.Static;
+        }
         playerMovement.enabled = false;
         foreach (MonoBehaviour script in scriptsToDisable)
         {
@@ -242,6 +246,10 @@ public class GalaxyImapctSystem : MonoBehaviour
             {
                 script.enabled = true;
             }
+        }
+        if (playerRb != null)
+        {
+            playerRb.bodyType = RigidbodyType2D.Dynamic;
         }
         playerRb.gravityScale = originalGravityScale;
         playerMovement.enabled = true;

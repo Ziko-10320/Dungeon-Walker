@@ -4874,6 +4874,7 @@ GameObject:
   - component: {fileID: 8171096585000278448}
   - component: {fileID: 7283673299127538223}
   - component: {fileID: 7157974518484348894}
+  - component: {fileID: -11246154886943206}
   m_Layer: 0
   m_Name: BatSlashThrow_0
   m_TagString: Untagged
@@ -5034,6 +5035,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &-11246154886943206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3818423424508464440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cea095fafd10ab94595a1eb07e0e5fc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6600368636798330689
 GameObject:
   m_ObjectHideFlags: 0

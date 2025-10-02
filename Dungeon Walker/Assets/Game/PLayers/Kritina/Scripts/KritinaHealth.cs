@@ -539,37 +539,5 @@ public class PlayerHealth : MonoBehaviour
             Debug.Log("🛡️ Normal Shield restored at checkpoint!");
         }
     }
-    private IEnumerator DisableShieldAfterAnim(PowerUpManager powerUpManager)
-    {
-        // Wait one frame so animator applies the trigger
-        yield return null;
-
-        // Wait until EndShield animation finishes (assuming it has length)
-        AnimatorStateInfo stateInfo = powerUpManager.shieldAnimator.GetCurrentAnimatorStateInfo(0);
-        yield return new WaitForSeconds(stateInfo.length);
-
-        // Disable shield object
-        if (powerUpManager.shieldObject != null)
-            powerUpManager.shieldObject.SetActive(false);
-
-        // Reset animator to default (so next time it works fine)
-        powerUpManager.shieldAnimator.Rebind();
-        powerUpManager.shieldAnimator.Update(0f);
-    }
-
-
    
-    private IEnumerator PlayStartShieldAnimWithDelay(PowerUpManager powerUpManager, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (powerUpManager.shieldAnimator != null)
-        {
-            powerUpManager.shieldAnimator.SetTrigger("StartShield");
-        }
-    }
-
-
-   
-
-
 }

@@ -259,29 +259,7 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable
             view.RPC("RPC_SpawnVisualBullet", RpcTarget.Others, bulletSpawnPoint.position, shootDirection);
         }
     }
-    [PunRPC]
-    private void RPC_SpawnVisualBullet(Vector3 position, Vector2 direction)
-    {
-        // This code is run by EVERYONE ELSE except the person who fired.
-        GameObject visualBullet = Instantiate(bulletPrefab, position, Quaternion.identity);
-        BulletBehavior visualBulletScript = visualBullet.GetComponent<BulletBehavior>(); // Correction du nom du script
-        if (visualBulletScript != null)
-        {
-            // --- CORRECTION ICI ---
-            // On assigne les valeurs directement.
-            visualBulletScript.bulletSpeed = this.bulletSpeed;
-            visualBulletScript.bulletDamage = 0; // Visual bullets deal no damage.
-            visualBulletScript.collisionLayers = this.collisionLayers;
-            visualBulletScript.waterExplosionPrefab = this.destructionEffectPrefab.gameObject;
-
-            // On donne la direction à la balle visuelle pour qu'elle se déplace.
-            Rigidbody2D rb = visualBullet.GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.velocity = direction * visualBulletScript.bulletSpeed;
-            }
-        }
-    }
+  
 
 
     // --- AJOUT : LA FONCTION DE SYNCHRONISATION POUR LA ROTATION DE L'ARME ---
@@ -469,7 +447,7 @@ public class WaterBullet : MonoBehaviour
         {
             Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
         }
-        Destroy(gameObject);
+        Destroy(gameObject,2f);
     }
 }
 

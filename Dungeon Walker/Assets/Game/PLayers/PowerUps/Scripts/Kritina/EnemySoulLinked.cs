@@ -56,17 +56,31 @@ public class SoulLinkEnemy : MonoBehaviour
     /// </summary>
     public void TryStartLink()
     {
-        if (!PowerUpManager.SoulLinkEquipped) return;
+        // --- THE FIX: We will perform the same check here ---
+        // OLD WAY: if (!PowerUpManager.SoulLinkEquipped) return;
+
+        // NEW WAY: Check both players directly.
+        PowerUpManager p1Manager = FindObjectOfType<PowerUpManager>();
+        PowerUpManagerL3antix p2Manager = FindObjectOfType<PowerUpManagerL3antix>();
+
+        bool p1HasIt = p1Manager != null && p1Manager.HasPowerUp(PowerUpType.SoulLink);
+        bool p2HasIt = p2Manager != null && p2Manager.HasPowerUp(PowerUpType.SoulLink);
+
+        // If neither player has the power-up, exit.
+        if (!p1HasIt && !p2HasIt) return;
+        // --- END OF THE FIX ---
+
+        // The rest of your function is correct.
         if (inChain) return;
         if (Random.value > linkChance) return;
 
-        // Require a valid linePoint and a line prefab to start linking
         if (linePoint == null || linePrefab == null)
             return;
 
         SoulLinkChain.CreateChain(this, minLinkEnemies, maxLinkEnemies, maxLinkDistance,
                                   linePrefab, outlineMaterial, lineSpeed, deathDelay);
     }
+
     /// <summary>
     /// Called by health scripts *at the start of Die()* (before destroy).
     /// Notifies the chain manager (if any) that this member has died.

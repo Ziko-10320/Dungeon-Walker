@@ -16,6 +16,8 @@ public class BowSystems : MonoBehaviour, IPunObservable
     [SerializeField] private Transform trajectoryVisualPoint; // Transform point for trajectory visualization (controls green line)
     public Joystick aimJoystick;
 
+    public bool isJoystickHeldDown = false;
+
     private PhotonView view;
     private bool isOnlineMode = false;
     private PlayerSyncManager syncManager;
@@ -143,6 +145,26 @@ public class BowSystems : MonoBehaviour, IPunObservable
     [Tooltip("Show calibration info in console")]
     public bool showCalibrationDebug = true;
 
+    [Header("Arrow Launch Settings")]
+    [Tooltip("The number of arrows to fire with each shot.")]
+    [SerializeField] private int arrowsPerShot = 1; // **NEW**
+    [Tooltip("The maximum radius of the random spread at the spawn point.")]
+    [SerializeField] private float spawnRadius = 0f; // **NEW**
+    [Tooltip("The maximum angle of directional spread for each arrow (in degrees).")]
+    [SerializeField] private float spreadAngle = 5f; // **NEW** (replaces your old 'randomSpread')
+
+
+    [Header("UI and Aiming Visuals")]
+    [Tooltip("The UI Slider for the charge circle, set to Radial 360 fill.")]
+    [SerializeField] private Slider chargeSlider;
+    [Tooltip("The world-space transform the charge slider should follow (e.g., the player's head or torso).")]
+    [SerializeField] private Transform chargeSliderFollowTarget; // **NEW VARIABLE**
+    [SerializeField] private Image fullyChargedIndicator;
+    [Tooltip("The Line Renderer component for the aim line.")]
+    [SerializeField] private LineRenderer aimLineRenderer;
+    [Tooltip("The length of the aim line.")]
+    [SerializeField] private float aimLineLength = 15f;
+
     // Core aiming variables
     private Vector2 aimDirection;
     private Vector2 mouseWorldPosition;
@@ -184,7 +206,34 @@ public class BowSystems : MonoBehaviour, IPunObservable
     public bool enableMobileInput = true;
 
 
+    void OnDisable()
+    {
+        Debug.Log("BowSystems OnDisable called - cleaning up UI.");
 
+        // --- THE FIX: Hide all bow-specific UI elements ---
+
+        // Hide the charge slider
+        if (chargeSlider != null)
+        {
+            chargeSlider.gameObject.SetActive(false);
+        }
+
+        // Hide the "fully charged" indicator
+        if (fullyChargedIndicator != null)
+        {
+            fullyChargedIndicator.gameObject.SetActive(false);
+        }
+
+        // Hide the aim line
+        if (aimLineRenderer != null)
+        {
+            aimLineRenderer.enabled = false;
+        }
+
+        // Also, reset the charging state just in case
+        isCharging = false;
+        currentChargeTime = 0f;
+    }
     void Start()
     {
         view = GetComponentInParent<PhotonView>();
@@ -234,6 +283,7 @@ public class BowSystems : MonoBehaviour, IPunObservable
             }
             lastAimUpdate = Time.time;
         }
+        UpdateChargeSliderPosition();
     }
 
     // --- MODIFICATION: This is the new, unified input handling method --- 
@@ -241,45 +291,53 @@ public class BowSystems : MonoBehaviour, IPunObservable
     {
         
         bool shootPressedThisFrame = false;
-        bool shootHeldThisFrame = false;
-        bool shootReleasedThisFrame = false;
+    bool shootHeldThisFrame = false;
+    bool shootReleasedThisFrame = false;
 
-        // Check if the aim joystick is being used
-        bool isJoystickCurrentlyActive = enableMobileInput && aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f;
+    // --- START OF THE FIX ---
 
-        if (isJoystickCurrentlyActive)
+    // Check if the player is touching the joystick UI element.
+    // (This requires the Event Trigger setup from the previous step).
+    bool isJoystickTouched = enableMobileInput && aimJoystick != null && isJoystickHeldDown;
+
+    // Check if the joystick handle is actively being dragged away from the center.
+    bool isJoystickDragged = enableMobileInput && aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f;
+
+    if (isJoystickDragged)
+    {
+        // --- JOYSTICK AIMING MODE ---
+        // We are actively aiming.
+        stabilizedMouseWorldPosition = bowAimPoint.position + new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0) * 10f;
+        
+        // If this is the first frame we started aiming, set 'pressed'.
+        if (!isAimingWithJoystick)
         {
-            // --- MODE MOBILE JOYSTICK ---
-            // (Le code ici reste le même)
-            stabilizedMouseWorldPosition = bowAimPoint.position + new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0) * 10f;
-            if (!isAimingWithJoystick)
-            {
-                shootPressedThisFrame = true;
-                isAimingWithJoystick = true;
-            }
-            shootHeldThisFrame = true;
+            shootPressedThisFrame = true;
+            isAimingWithJoystick = true; // Mark that we are now in joystick aiming mode.
         }
-        else
+        
+        // As long as we're dragging, 'held' is true.
+        shootHeldThisFrame = true;
+    }
+    else if (isAimingWithJoystick && !isJoystickTouched)
+    {
+        // --- JOYSTICK RELEASED MODE ---
+        // This is the key: we were aiming, but now the finger is LIFTED.
+        shootReleasedThisFrame = true;
+        isAimingWithJoystick = false; // Exit joystick aiming mode.
+    }
+    else
+    {
+        // --- PC MOUSE MODE (or joystick is idle) ---
+        // This block now only runs if the joystick isn't being used for a shot.
+        if (enablePcInput)
         {
-            // --- MODE PC SOURIS (ou joystick relâché) ---
-
-            // Si on VIENT de relâcher le joystick
-            if (isAimingWithJoystick)
-            {
-                shootReleasedThisFrame = true;
-                isAimingWithJoystick = false;
-            }
-
-            // --- MODIFICATION : On ajoute une condition pour l'input PC ---
-            if (enablePcInput)
-            {
-                // On utilise les entrées de la souris
-                stabilizedMouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-                shootPressedThisFrame = shootPressedThisFrame || Mouse.current.leftButton.wasPressedThisFrame;
-                shootHeldThisFrame = shootHeldThisFrame || Mouse.current.leftButton.isPressed;
-                shootReleasedThisFrame = shootReleasedThisFrame || Mouse.current.leftButton.wasReleasedThisFrame;
-            }
+            stabilizedMouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+            shootPressedThisFrame = shootPressedThisFrame || Mouse.current.leftButton.wasPressedThisFrame;
+            shootHeldThisFrame = shootHeldThisFrame || Mouse.current.leftButton.isPressed;
+            shootReleasedThisFrame = shootReleasedThisFrame || Mouse.current.leftButton.wasReleasedThisFrame;
         }
+    }
         // --- UNIFIED AIMING LOGIC (works for both inputs) ---
         UpdatePlayerFacingDirection();
         CalculateAimDirection();
@@ -291,27 +349,114 @@ public class BowSystems : MonoBehaviour, IPunObservable
             isCharging = true;
             currentChargeTime = 0f;
             if (currentPreviewArrow != null) currentPreviewArrow.SetActive(false);
+
+            // Show the main slider UI
+            if (chargeSlider != null) chargeSlider.gameObject.SetActive(true);
+            // Make sure the indicator is hidden at the start
+            if (fullyChargedIndicator != null) fullyChargedIndicator.gameObject.SetActive(false);
+            // No need to enable the aim line here, we'll do it in the "hold" block to be safer.
         }
 
+        // WHILE CHARGE IS HELD (Every Frame)
         if (shootHeldThisFrame && isCharging)
         {
             currentChargeTime += Time.deltaTime;
+            bool isChargeFull = currentChargeTime >= maxChargeTime;
             currentChargeTime = Mathf.Min(currentChargeTime, maxChargeTime);
+
+            // Update the slider value
+            if (chargeSlider != null)
+            {
+                chargeSlider.value = currentChargeTime / maxChargeTime;
+            }
+
+            // Update the "fully charged" indicator
+            if (fullyChargedIndicator != null)
+            {
+                fullyChargedIndicator.gameObject.SetActive(isChargeFull);
+            }
+
+            // --- AIM LINE FIX ---
+            // This is the most robust place for this logic.
+            // It ensures the line is both ENABLED and UPDATED every frame you are aiming.
+            if (aimLineRenderer != null && arrowSpawnPoint != null)
+            {
+                // 1. Force it to be enabled. This prevents it from ever being accidentally hidden.
+                aimLineRenderer.enabled = true;
+
+                // 2. Update its position and direction.
+                Vector3 startPoint = arrowSpawnPoint.position;
+                Vector3 direction = GetBowDirection();
+                aimLineRenderer.SetPosition(0, startPoint);
+                aimLineRenderer.SetPosition(1, startPoint + (direction * aimLineLength));
+            }
         }
 
+        // WHEN SHOT IS RELEASED
         if (shootReleasedThisFrame && isCharging)
         {
             isCharging = false;
-            if (IsAimingValid()) // Only shoot if the aim is valid
-            {
-                ShootArrow();
-            }
+            if (IsAimingValid()) ShootArrow();
             lastShootTime = Time.time;
             if (currentPreviewArrow != null) currentPreviewArrow.SetActive(true);
+
+            // Hide all UI
+            if (chargeSlider != null)
+            {
+                chargeSlider.value = 0;
+                chargeSlider.gameObject.SetActive(false);
+            }
+            if (fullyChargedIndicator != null) fullyChargedIndicator.gameObject.SetActive(false);
+            if (aimLineRenderer != null) aimLineRenderer.enabled = false; // Hide the aim line
+        }
+
+        // WHEN AIM IS CANCELED (Player stops holding without releasing)
+        if (!shootHeldThisFrame && isCharging)
+        {
+            isCharging = false;
+            if (currentPreviewArrow != null) currentPreviewArrow.SetActive(true);
+
+            // Hide all UI
+            if (chargeSlider != null)
+            {
+                chargeSlider.value = 0;
+                chargeSlider.gameObject.SetActive(false);
+            }
+            if (fullyChargedIndicator != null) fullyChargedIndicator.gameObject.SetActive(false);
+            if (aimLineRenderer != null) aimLineRenderer.enabled = false; // Hide the aim line
         }
     }
 
+    private void UpdateChargeSliderPosition()
+    {
+        // If the slider or target is missing, or if the slider is inactive, do nothing.
+        if (chargeSlider == null || chargeSliderFollowTarget == null || !chargeSlider.gameObject.activeInHierarchy)
+        {
+            return;
+        }
 
+        // --- THE DEFINITIVE FIX FOR A "SCREEN SPACE - CAMERA" CANVAS ---
+
+        // Step 1: Get the world position of our follow target.
+        Vector3 worldPos = chargeSliderFollowTarget.position;
+
+        // Step 2: Convert that world position into a screen position (pixels).
+        Vector2 screenPoint = Camera.main.WorldToScreenPoint(worldPos);
+
+        // Step 3: This is the crucial step you taught me. We must convert the screen point
+        // into a local position within the canvas's coordinate system.
+        Vector2 localPointerPosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            (RectTransform)chargeSlider.transform.parent, // The parent of the slider (the Canvas)
+            screenPoint,          // The pixel position we calculated
+            Camera.main,          // The camera associated with the canvas
+            out localPointerPosition // The resulting local position
+        );
+
+        // Step 4: Apply the correctly converted local position to the slider's anchoredPosition.
+        // This will work perfectly in Screen Space - Camera.
+        chargeSlider.transform.localPosition = localPointerPosition;
+    }
     private void CalculateDynamicSpeed()
     {
         float chargePercentage = currentChargeTime / maxChargeTime;
@@ -361,37 +506,57 @@ public class BowSystems : MonoBehaviour, IPunObservable
         if (previewFollowsBow) currentPreviewArrow.transform.rotation = nextArrowPreviewPoint.rotation;
     }
 
+    // --- START OF CHANGE 2: The New ShootArrow() Method ---
     private void ShootArrow()
     {
         if (arrowPrefab == null || arrowSpawnPoint == null) return;
 
         float chargePercentage = currentChargeTime / maxChargeTime;
-        Vector2 launchDirection = GetBowDirection();
 
-        // --- THE MODE-AWARE LOGIC ---
-        if (isOnlineMode)
-        {
-            // --- ONLINE ---
-            // 1. The shooter creates their own "real" arrow locally.
-            GameObject myArrow = Instantiate(arrowPrefab, arrowSpawnPoint.position, BowGameObject.transform.rotation);
-            InitializeArrow(myArrow, launchDirection, chargePercentage, true); // true = isReal
-
-            // 2. The shooter tells everyone else to create a "visual" arrow.
-            view.RPC("RPC_SpawnVisualArrow", RpcTarget.Others, arrowSpawnPoint.position, BowGameObject.transform.rotation, launchDirection, chargePercentage);
-        }
-        else
-        {
-            // --- OFFLINE ---
-            GameObject myArrow = Instantiate(arrowPrefab, arrowSpawnPoint.position, BowGameObject.transform.rotation);
-            InitializeArrow(myArrow, launchDirection, chargePercentage, true); // true = isReal
-        }
-
-        // Play sound locally for the shooter
+        // Play the shoot sound ONCE per shot, not per arrow.
         if (enableSoundEffects && shootSound != null)
         {
             PlaySoundAtPosition(shootSound, arrowSpawnPoint.position, shootSoundVolume);
         }
+
+        // --- THE SHOTGUN LOOP ---
+        // This loop will run for the number of arrows you want to fire.
+        for (int i = 0; i < arrowsPerShot; i++)
+        {
+            // 1. Calculate Directional Spread
+            // Get the main aim direction.
+            Vector2 baseDirection = GetBowDirection();
+            // Create a random angle for spread.
+            float angleOffset = Random.Range(-spreadAngle / 2, spreadAngle / 2);
+            // Apply the random angle to the base direction.
+            Vector2 launchDirection = Quaternion.Euler(0, 0, angleOffset) * baseDirection;
+
+            // 2. Calculate Positional Spread
+            // Get a random point within a circle.
+            Vector2 randomSpawnOffset = Random.insideUnitCircle * spawnRadius;
+            // Apply the offset to the main spawn point.
+            Vector3 spawnPosition = arrowSpawnPoint.position + (Vector3)randomSpawnOffset;
+
+            // 3. Spawn the Arrow (using your existing robust logic)
+            if (isOnlineMode)
+            {
+                // Online: The shooter creates their own "real" arrow.
+                GameObject myArrow = Instantiate(arrowPrefab, spawnPosition, Quaternion.identity);
+                InitializeArrow(myArrow, launchDirection, chargePercentage, true); // true = isReal
+
+                // Tell everyone else to create a "visual" arrow.
+                view.RPC("RPC_SpawnVisualArrow", RpcTarget.Others, spawnPosition, Quaternion.identity, launchDirection, chargePercentage);
+            }
+            else
+            {
+                // Offline: Just create one "real" arrow.
+                GameObject myArrow = Instantiate(arrowPrefab, spawnPosition, Quaternion.identity);
+                InitializeArrow(myArrow, launchDirection, chargePercentage, true); // true = isReal
+            }
+        }
     }
+    // --- END OF CHANGE 2 ---
+
 
     private void CreateArrow(Vector2 direction, float charge, bool isReal)
     {

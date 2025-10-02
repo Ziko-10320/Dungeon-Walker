@@ -11146,7 +11146,7 @@ Rigidbody2D:
   m_Mass: 5
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 2
+  m_GravityScale: 3.5
   m_Material: {fileID: 6200000, guid: 725bd66c2e36b7149b12a4996305c8dc, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
@@ -11231,12 +11231,12 @@ MonoBehaviour:
   playerTransform: {fileID: 0}
   ratKingBoss: {fileID: 1264289404633083085}
   jumpAttackRange: 14.7
-  jumpForceY: 16
+  jumpForceY: 21
   jumpCooldown: 4.5
   jumpProbability: 0.51
-  jumpAnticipationDuration: 0.5
+  jumpAnticipationDuration: 0.3
   cameraShakeImpact: {fileID: 11400000, guid: c09a47171b56bb94b910790a6bd8c684, type: 2}
-  horizontalSpeedMultiplier: 2.1
+  horizontalSpeedMultiplier: 5.5
   groundImpactParticles: {fileID: 3962489236768551362}
   damageZoneOrigin: {fileID: 2937064212468406145}
   damageZoneRadius: 3.87
@@ -11246,7 +11246,7 @@ MonoBehaviour:
     m_Bits: 256
   knockbackForce: 15
   knockbackDuration: 0.2
-  consecutiveJumpChance: 0.24
+  consecutiveJumpChance: 0.352
   consecutiveJumpDelay: 0.5
   throwAttackRange: 13.4
   cheesePrefab: {fileID: 4809819129619181200, guid: 60643ecd89d1f364b9719e16cd71eb31, type: 3}
@@ -11281,8 +11281,8 @@ MonoBehaviour:
   playerTransform: {fileID: 0}
   ratKingAttack: {fileID: 3449960890957057112}
   CanMove: 1
-  wanderSpeed: 2
-  chaseSpeed: 4
+  wanderSpeed: 4
+  chaseSpeed: 7
   stoppingDistance: 5
   detectionRadius: 10.38
   lostSightRadius: 16.3
@@ -11306,7 +11306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff768d6f3799df3469bcb76d3724f5f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 500
+  maxHealth: 1000
   deathEffect: {fileID: 3487477894333288293}
   bloodSpawnPoint: {fileID: 4506034669272728072}
   bloodParticle: {fileID: 2645654069939671888}

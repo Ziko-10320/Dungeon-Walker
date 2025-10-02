@@ -352,9 +352,22 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
 
     private void Shoot()
 {
-    // Local effects are always played immediately for responsiveness.
-    if (muzzleFlashEffect != null) muzzleFlashEffect.Play();
-    if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
+        // Local effects are always played immediately for responsiveness.
+        if (muzzleFlashEffect != null && bulletSpawnPoint != null)
+        {
+            // 1. Instantiate the prefab at the bullet spawn point's position and rotation.
+            ParticleSystem flashInstance = Instantiate(muzzleFlashEffect, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
+
+            // 2. (Optional but good practice) Destroy the effect after it has played.
+            // This prevents your Hierarchy from filling up with thousands of old effects.
+            Destroy(flashInstance.gameObject, flashInstance.main.duration);
+        }
+        else
+        {
+            if (muzzleFlashEffect == null) Debug.LogWarning("MuzzleFlashEffect prefab is not assigned in the Inspector!");
+            if (bulletSpawnPoint == null) Debug.LogWarning("BulletSpawnPoint is not assigned in the Inspector!");
+        } 
+        if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
 
     // Calculate spawn parameters once.
     float spread = Random.Range(-maxSpreadAngle / 2f, maxSpreadAngle / 2f);
@@ -519,7 +532,38 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
             if (smokeParticleSystem != null) smokeParticleSystem.Stop();
         }
     }
+    public void TriggerDestructionEffect(Vector3 position)
+    {
+        // If the destruction effect prefab isn't assigned, do nothing.
+        if (destructionEffectPrefab == null) return;
 
+        // --- This is the proven logic from your BowSystems script ---
+
+        // 1. Instantiate the effect from the prefab at the impact position.
+        GameObject effectInstance = Instantiate(destructionEffectPrefab.gameObject, position, Quaternion.identity);
+
+        // 2. Get the ParticleSystem component from the new instance.
+        ParticleSystem ps = effectInstance.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            // 3. Tell it to play.
+            ps.Play();
+
+            // 4. IMPORTANT: Schedule the effect's GameObject to be destroyed only after it has finished playing.
+            Destroy(effectInstance, ps.main.duration);
+        }
+        else
+        {
+            // Fallback: If for some reason there's no particle system, destroy it after 2 seconds.
+            Destroy(effectInstance, 2f);
+        }
+
+        // Play the collision sound at the impact point
+        if (audioSource != null && bulletCollisionSound != null)
+        {
+            AudioSource.PlayClipAtPoint(bulletCollisionSound, position, bulletCollisionSoundVolume);
+        }
+    }
     private void UpdateMinDistancePointPosition()
     {
         if (minDistancePoint == null) return;
@@ -695,16 +739,17 @@ public class BulletComponent : MonoBehaviour
                     if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                         PlayerSuperMeter.Instance.AddDamage(damage);
 
-                    RatKingHealth ratKingHealth = collidedObject.GetComponent<RatKingHealth>();
-                    if (ratKingHealth != null)
-                    {
-                        ratKingHealth.TakeDamage(damage);
+                }
+                RatKingHealth ratKingHealth = collidedObject.GetComponent<RatKingHealth>();
+                if (ratKingHealth != null)
+                {
+                     ratKingHealth.TakeDamage(damage);
                         if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                             L3antixSuperMeter.Instance.AddDamage(damage);
 
                         if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
-                            PlayerSuperMeter.Instance.AddDamage(damage);
-                    }
+                            PlayerSuperMeter.Instance.AddDamage(damage);   
+                }
 
                     BarrelExplosion barrelExplosion = collidedObject.GetComponent<BarrelExplosion>();
                     if (barrelExplosion != null)
@@ -713,7 +758,7 @@ public class BulletComponent : MonoBehaviour
                     }
                 }
 
-                machineGunSystem.TriggerNetworkedDestruction(transform.position);
+                machineGunSystem.TriggerDestructionEffect(transform.position);
 
                 // 3. The "real" bullet destroys itself.
                 Destroy(gameObject);
@@ -732,6 +777,6 @@ public class BulletComponent : MonoBehaviour
     {
         void TakeDamage(int damage);
     }
-}
+
 
 

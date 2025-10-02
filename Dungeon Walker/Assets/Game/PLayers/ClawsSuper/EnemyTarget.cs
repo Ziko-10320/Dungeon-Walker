@@ -111,6 +111,10 @@ public class EnemySuperTarget : MonoBehaviour
             {
                 rb.velocity = Vector2.zero;
                 rb.gravityScale = 0f;
+                if (sprayerHealth != null)
+                {
+                    rb.bodyType = RigidbodyType2D.Static;
+                }
             }
             if (healthComponent != null)
             {
@@ -167,6 +171,10 @@ public class EnemySuperTarget : MonoBehaviour
             if (rb != null)
             {
                 rb.gravityScale = originalGravityScale;
+                if (sprayerHealth != null)
+                {
+                    rb.bodyType = RigidbodyType2D.Dynamic;
+                }
             }
             // --- END OF RE-ENABLE ---
             if (healthComponent != null)

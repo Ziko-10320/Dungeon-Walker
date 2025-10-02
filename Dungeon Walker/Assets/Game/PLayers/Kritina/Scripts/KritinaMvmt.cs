@@ -1,7 +1,6 @@
 using UnityEngine;
 using Photon.Pun; // We need this to access Photon features.
 
-// This script will now be used for BOTH online and offline prefabs.
 public class KritinaMovement : MonoBehaviour
 {
     // --- All your variables are perfect and stay the same ---

@@ -1,9 +1,10 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
 using Photon.Pun;
+using TMPro;
 public class BatAttackSystem : MonoBehaviour
 {
     [Header("Attack Settings")]
@@ -23,9 +24,9 @@ public class BatAttackSystem : MonoBehaviour
     [Tooltip("Faites glisser le joystick d'attaque de la batte ici.")]
     public Joystick attackJoystick;
     public Joystick runningJoystick;
-    [Tooltip("Seuil pour différencier un 'tap' d'une 'visée'.")]
+    [Tooltip("Seuil pour diffÃ©rencier un 'tap' d'une 'visÃ©e'.")]
     [SerializeField] private float joystickAimThreshold = 0.5f;
-    [Tooltip("Temps maximum en secondes pour qu'un contact soit considéré comme un 'tap'.")]
+    [Tooltip("Temps maximum en secondes pour qu'un contact soit considÃ©rÃ© comme un 'tap'.")]
     [SerializeField] private float joystickTapTime = 0.2f;
 
     private bool isJoystickHeld = false;
@@ -70,7 +71,7 @@ public class BatAttackSystem : MonoBehaviour
 
     [Header("Bat Protection Settings")]
    
-    [SerializeField] private Transform batParent; // Le parent de la batte (l'épaule/bras du joueur)
+    [SerializeField] private Transform batParent; // Le parent de la batte (l'Ã©paule/bras du joueur)
     private GameObject _currentBatInstance;
 
     [Header("Ghost Effect Settings")]
@@ -110,6 +111,27 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private Slider sfxVolumeSlider; // UI Slider for SFX Volume
     private GameObject activeThrowSlash; // Reference to the currently flying ThrowSlash projectile
     private List<Collider2D> hitEnemies = new List<Collider2D>();
+
+    [Header("Attack Button UI (Mobile)")]
+    [SerializeField] private RectTransform attackButtonRect;          // The visible attack button area (assign the button RectTransform)
+    [SerializeField] private RectTransform attackButtonHandle;        // Handle (child) that will move when aiming (assign)
+    [SerializeField] private RectTransform attackButtonBackground;    // Background (joystick circle) that will appear on hold (assign)
+    [SerializeField] private RectTransform uiCanvasRectTransform;     // Root Canvas RectTransform (assign)
+    [SerializeField] private LineRenderer aimLineRenderer;             // **NEW**: Assign your LineRenderer component here
+    [SerializeField] private float holdToAimTime = 0.4f;              // Hold time to switch to aim mode
+    [SerializeField] private float maxHandleDistance = 100f;       // Max distance in pixels the handle can move from background center
+
+    [SerializeField] private TextMeshProUGUI debugText;
+    // runtime state
+    private bool isAttackButtonPressed = false;
+    private float attackButtonPressTimer = 0f;
+    private Vector2 attackButtonStartScreenPos;
+    private bool isAimingWithButton = false;
+    private Vector2 buttonAimDirection = Vector2.right;
+
+    [SerializeField] private GameObject attackButtonUI; // assign your Attack Button object in Inspector
+    [SerializeField] private GameObject joystickUI;
+    [SerializeField] private Image attackButtonImage;
     // Private variables
     private float nextAttackTime = 0f;
     private bool canDealDamage = false;
@@ -158,6 +180,26 @@ public class BatAttackSystem : MonoBehaviour
         isAnticipating = false;
         Time.timeScale = 1.0f; // Ensure time scale is reset
         Debug.Log("BatAttackSystem state reset in OnDisable.");
+
+        if (attackJoystick != null)
+            attackJoystick.gameObject.SetActive(false);
+
+        if (attackButtonBackground != null)
+            attackButtonBackground.gameObject.SetActive(false);
+
+        if (attackButtonHandle != null)
+            attackButtonHandle.gameObject.SetActive(false);
+
+        if (attackButtonUI != null) attackButtonUI.SetActive(false);
+
+        if (attackJoystick != null)
+        {
+            attackJoystick.gameObject.SetActive(true); // This hands control back!
+        }
+        if (batPointerRectTransform != null)
+        {
+            batPointerRectTransform.gameObject.SetActive(false);
+        }
     }
 
     void OnEnable()
@@ -165,11 +207,16 @@ public class BatAttackSystem : MonoBehaviour
         Debug.Log("BatAttackSystem OnEnable called - resetting to fresh state");
         EnsureBatExists();
         ResetBatSystemState();
+        if (attackButtonUI != null) attackButtonUI.SetActive(true);
+        if (attackJoystick != null)
+        {
+            attackJoystick.gameObject.SetActive(false);
+        }
     }
 
     void Awake()
     {
-        // Crée la batte dès le début pour s'assurer qu'elle existe.
+        // CrÃ©e la batte dÃ¨s le dÃ©but pour s'assurer qu'elle existe.
         EnsureBatExists();
         playerView = GetComponentInParent<PhotonView>();
         superMeter = GetComponent<PlayerSuperMeter>();
@@ -235,50 +282,116 @@ public class BatAttackSystem : MonoBehaviour
         }
 
         // --- MOBILE JOYSTICK INPUT ---
-               if (MobileInput && attackJoystick != null && attackJoystick.gameObject.activeInHierarchy)
-
+        if (MobileInput && attackButtonRect != null && attackButtonRect.gameObject.activeInHierarchy)
         {
-            // Check if the attack joystick is being touched
-            if (attackJoystick.Direction.sqrMagnitude > 0.01f)
+            // TOUCH PATH (mobile)
+            if (Input.touchCount > 0)
             {
-                if (!isJoystickHeld)
-                {
-                    // This is the first frame the joystick is held down
-                    isJoystickHeld = true;
-                    joystickHoldTime = 0f;
-                }
-                // Increment the hold timer
-                joystickHoldTime += Time.deltaTime;
-            }
-            // Check if the attack joystick was just released
-            else if (isJoystickHeld)
-            {
-                isJoystickHeld = false; // Mark as released
+                Touch touch = Input.GetTouch(0);
+                Vector2 touchPos = touch.position;
 
-                // Check if the release was a THROW (held long enough and dragged far enough)
-                if (joystickHoldTime > joystickTapTime || attackJoystick.Direction.magnitude > joystickAimThreshold)
+                if (touch.phase == TouchPhase.Began)
                 {
-                    // --- THROW ATTACK ---
-                    // Calculate a simulated mouse position based on the joystick's last direction
-                    Vector3 joystickScreenPos = new Vector3(Screen.width / 2, Screen.height / 2, 0) + (Vector3)attackJoystick.Direction * 200f;
-                    lastMousePosition = joystickScreenPos;
-                    StartAnticipationAndThrowSlash();
-                }
-                // Otherwise, it was a quick TAP for a MELEE attack
-                else
-                {
-                    // --- MELEE ATTACK ---
-                    bool isAimingUp = false;
-                    // Check if the RUNNING joystick is being held upwards
-                    if (runningJoystick != null && runningJoystick.Direction.y > 0.7f) // Using 0.7 as a strong upward threshold
+                    // Did we press the attack button area?
+                    if (IsScreenPointOverRectTransform(attackButtonRect, touchPos))
                     {
-                        isAimingUp = true;
+                        isAttackButtonPressed = true;
+                        attackButtonPressTimer = 0f;
+                        attackButtonStartScreenPos = touchPos;
                     }
-                    StartAnticipationAttack(isAimingUp);
                 }
+                else if (isAttackButtonPressed && (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary))
+                {
+                    attackButtonPressTimer += Time.deltaTime;
 
-                // Reset the timer
-                joystickHoldTime = 0f;
+                    // Enter aim mode after hold time
+                    if (!isAimingWithButton && attackButtonPressTimer >= holdToAimTime)
+                    {
+                        isAimingWithButton = true;
+                        ShowAimJoystickAtScreenPos(attackButtonRect.position);
+                    }
+
+                    // If we're aiming, update handle position & direction
+                    if (isAimingWithButton)
+                    {
+                        UpdateHandleWithScreenPoint(touchPos);
+                    }
+                }
+                else if (isAttackButtonPressed && (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled))
+                {
+                    // Release
+                    isAttackButtonPressed = false;
+
+                    if (isAimingWithButton)
+                    {
+                        // perform throw in direction of handle
+                        isAimingWithButton = false;
+                        HideAimJoystick();
+
+                        // build a simulated screen target from the aim direction
+                        if (buttonAimDirection.sqrMagnitude < 0.01f) buttonAimDirection = Vector2.right;
+                        Vector3 screenCenter = playerCamera != null ? playerCamera.WorldToScreenPoint(transform.position) : new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
+                        lastMousePosition = (Vector3)(screenCenter + (Vector3)buttonAimDirection * 300f); // 300 px distance -> you can tweak
+                        ThrowSlash();
+                    }
+                    else
+                    {
+                        // quick tap -> melee attack
+                        bool isAimingUp = runningJoystick != null && runningJoystick.Direction.y > 0.7f;
+                        StartAnticipationAttack(isAimingUp);
+                    }
+
+                    attackButtonPressTimer = 0f;
+                }
+            }
+            // MOUSE PATH (editor / PC mobile testing)
+            else
+            {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    Vector2 mousePos = Input.mousePosition;
+                    if (IsScreenPointOverRectTransform(attackButtonRect, mousePos))
+                    {
+                        isAttackButtonPressed = true;
+                        attackButtonPressTimer = 0f;
+                        attackButtonStartScreenPos = mousePos;
+                    }
+                }
+                else if (isAttackButtonPressed && Input.GetMouseButton(0))
+                {
+                    attackButtonPressTimer += Time.deltaTime;
+                    if (!isAimingWithButton && attackButtonPressTimer >= holdToAimTime)
+                    {
+                        isAimingWithButton = true;
+                        // FIX: Use the stored start position, not Vector2.zero
+                        ShowAimJoystickAtScreenPos(attackButtonStartScreenPos);
+                    }
+                    if (isAimingWithButton)
+                    {
+                        UpdateHandleWithScreenPoint(Input.mousePosition);
+                    }
+                }
+                else if (isAttackButtonPressed && Input.GetMouseButtonUp(0))
+                {
+                    isAttackButtonPressed = false;
+
+                    if (isAimingWithButton)
+                    {
+                        isAimingWithButton = false;
+                        HideAimJoystick();
+                        if (buttonAimDirection.sqrMagnitude < 0.01f) buttonAimDirection = Vector2.right;
+                        Vector3 screenCenter = playerCamera != null ? playerCamera.WorldToScreenPoint(transform.position) : new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
+                        lastMousePosition = (Vector3)(screenCenter + (Vector3)buttonAimDirection * 300f);
+                        ThrowSlash();
+                    }
+                    else
+                    {
+                        bool isAimingUp = runningJoystick != null && runningJoystick.Direction.y > 0.7f;
+                        StartAnticipationAttack(isAimingUp);
+                    }
+
+                    attackButtonPressTimer = 0f;
+                }
             }
         }
 
@@ -296,11 +409,115 @@ public class BatAttackSystem : MonoBehaviour
         {
             // Throw Attack
             lastMousePosition = Input.mousePosition;
-            StartAnticipationAndThrowSlash();
+            ThrowSlash();
         }
     }
 
+    private bool IsScreenPointOverRectTransform(RectTransform rect, Vector2 screenPoint)
+    {
+        if (rect == null) return false;
+        Canvas canvas = uiCanvasRectTransform != null ? uiCanvasRectTransform.GetComponent<Canvas>() : null;
+        Camera cam = (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay) ? (canvas.worldCamera ?? playerCamera) : null;
 
+        Vector2 local;
+        bool ok = RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, screenPoint, cam, out local);
+        if (!ok) return false;
+        return rect.rect.Contains(local);
+    }
+
+    // --- START OF THE FINAL CHANGE: The Correct ShowAimJoystickAtScreenPos() Method ---
+    private void ShowAimJoystickAtScreenPos(Vector2 screenPos)
+    {
+        if (attackButtonBackground == null || attackButtonHandle == null) return;
+
+        // Step 1: Enable the UI. They will appear at their fixed editor positions.
+        attackButtonBackground.gameObject.SetActive(true);
+        attackButtonHandle.gameObject.SetActive(true);
+
+        // Step 2: Force the handle to start at the center of the background.
+        // Since the handle is a child of the background with centered anchors,
+        // (0,0) is its exact center.
+        attackButtonHandle.anchoredPosition = Vector2.zero;
+
+        // Step 3: Hide the main attack button.
+        if (attackButtonImage != null)
+        {
+            attackButtonImage.enabled = false;
+        }
+
+        // Step 4: Activate the aim line and set a default direction.
+        if (aimLineRenderer != null)
+        {
+            aimLineRenderer.enabled = true;
+            // Default aim is where the player is facing until you drag.
+            Vector2 initialDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+            buttonAimDirection = initialDirection;
+            UpdateAimLineDirection(initialDirection);
+        }
+    }
+    private void UpdateHandleWithScreenPoint(Vector2 screenPoint)
+    {
+        if (attackButtonBackground == null || attackButtonHandle == null) return;
+
+        // This is the most reliable way to handle joystick logic when the background is fixed.
+
+        // Step 1: Convert the screen touch point to a local point INSIDE the background's rectangle.
+        // This is the key: the frame of reference is the background itself.
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            attackButtonBackground, // The frame of reference is the background.
+            screenPoint,
+            playerCamera, // Use the main camera for coordinate conversion.
+            out localPoint
+        );
+
+        // Step 2: Clamp the magnitude of this local point.
+        // This ensures the handle's local position never exceeds the joystick's radius.
+        Vector2 clampedLocalPoint = Vector2.ClampMagnitude(localPoint, maxHandleDistance);
+
+        // Step 3: Apply this clamped local position to the handle.
+        // Because the handle is a child of the background, this works perfectly.
+        attackButtonHandle.anchoredPosition = clampedLocalPoint;
+
+        // Step 4: Update the aim direction based on the handle's movement.
+        // If the handle is near the center, keep the last direction to prevent aim from resetting.
+        if (clampedLocalPoint.sqrMagnitude > 0.01f)
+        {
+            buttonAimDirection = clampedLocalPoint.normalized;
+        }
+
+        // Step 5: Update the aim line visualization.
+        UpdateAimLineDirection(buttonAimDirection);
+    }
+    private void UpdateAimLineDirection(Vector2 direction)
+    {
+        if (aimLineRenderer == null) return;
+
+        Transform spawnPoint = (transform.localScale.x > 0) ? throwSlashSpawnPointRight : throwSlashSpawnPointLeft;
+        if (spawnPoint != null)
+        {
+            aimLineRenderer.SetPosition(0, spawnPoint.position);
+            aimLineRenderer.SetPosition(1, spawnPoint.position + (Vector3)direction.normalized * 15f);
+        }
+    }
+    private void HideAimJoystick()
+    {
+        if (attackButtonBackground != null) attackButtonBackground.gameObject.SetActive(false);
+        if (attackButtonHandle != null) attackButtonHandle.gameObject.SetActive(false);
+
+        if (attackButtonHandle != null) attackButtonHandle.anchoredPosition = Vector2.zero;
+
+        if (aimLineRenderer != null)
+        {
+            aimLineRenderer.enabled = false;
+        }
+
+        // --- NEW: Show the main attack button again ---
+        if (attackButtonImage != null)
+        {
+            attackButtonImage.enabled = true;
+        }
+    }
     private void InitializeComponents()
     {
         if (cameraEffects == null)
@@ -329,6 +546,16 @@ public class BatAttackSystem : MonoBehaviour
             groundCheck = transform;
         }
 
+        if (attackButtonBackground != null)
+            attackButtonBackground.gameObject.SetActive(false);
+        if (attackButtonHandle != null)
+            attackButtonHandle.gameObject.SetActive(false);
+
+        // If you want to completely hide the old attack joystick (so it's never visible),
+        // keep it disabled by default in inspector or force-disable here:
+        if (attackJoystick != null)
+            attackJoystick.gameObject.SetActive(false);
+
         if (batPointerRectTransform != null)
         {
             batPointerRectTransform.gameObject.SetActive(false); // Initially hide the pointer
@@ -337,26 +564,26 @@ public class BatAttackSystem : MonoBehaviour
 
     public void EnsureBatExists()
     {
-        // Étape 1: On ne cherche la batte que si notre référence est vide.
-        // C'est plus performant que de chercher à chaque fois.
+        // Ã‰tape 1: On ne cherche la batte que si notre rÃ©fÃ©rence est vide.
+        // C'est plus performant que de chercher Ã  chaque fois.
         if (_currentBatInstance == null)
         {
-            Debug.Log("Référence de la batte est nulle, tentative de recherche avec le tag 'PlayerWeaponBat'...");
+            Debug.Log("RÃ©fÃ©rence de la batte est nulle, tentative de recherche avec le tag 'PlayerWeaponBat'...");
             _currentBatInstance = GameObject.FindGameObjectWithTag("PlayerWeaponBat");
         }
 
-        // Étape 2: LA VÉRIFICATION CRUCIALE.
-        // Si, après la recherche, la référence est TOUJOURS nulle, on arrête TOUT.
-        // C'est ce qui empêche le NullReferenceException.
+        // Ã‰tape 2: LA VÃ‰RIFICATION CRUCIALE.
+        // Si, aprÃ¨s la recherche, la rÃ©fÃ©rence est TOUJOURS nulle, on arrÃªte TOUT.
+        // C'est ce qui empÃªche le NullReferenceException.
         if (_currentBatInstance == null)
         {
-            // On affiche une erreur claire pour le débogage et on quitte la fonction.
-            Debug.LogError("ÉCHEC DE LA RECHERCHE : Impossible de trouver un GameObject actif avec le tag 'PlayerWeaponBat'. Le script ne peut pas continuer.");
-            return; // Quitte la fonction pour éviter le crash.
+            // On affiche une erreur claire pour le dÃ©bogage et on quitte la fonction.
+            Debug.LogError("Ã‰CHEC DE LA RECHERCHE : Impossible de trouver un GameObject actif avec le tag 'PlayerWeaponBat'. Le script ne peut pas continuer.");
+            return; // Quitte la fonction pour Ã©viter le crash.
         }
 
-        // Étape 3: Si on arrive ici, c'est que _currentBatInstance a été trouvé avec succès.
-        // On peut maintenant assigner les autres variables en toute sécurité.
+        // Ã‰tape 3: Si on arrive ici, c'est que _currentBatInstance a Ã©tÃ© trouvÃ© avec succÃ¨s.
+        // On peut maintenant assigner les autres variables en toute sÃ©curitÃ©.
         if (playerBatVisual == null)
         {
             playerBatVisual = _currentBatInstance;
@@ -421,7 +648,7 @@ public class BatAttackSystem : MonoBehaviour
 
                     if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                         PlayerSuperMeter.Instance.AddDamage(throwSlashDamage);
-
+                     
                 }
                 else if (enemyCollider.TryGetComponent<InkHealth>(out var inkHealth) && inkHealth != null)
                 {
@@ -505,15 +732,18 @@ public class BatAttackSystem : MonoBehaviour
         // Spawn the pickupable bat (bat2Prefab) at the hit position
         if (bat2Prefab != null)
         {
-            // Adjust spawn position slightly above the hit point to prevent sinking
             Vector3 spawnPosition = hitPosition;
-            spawnPosition.y += 0.1f;
+            spawnPosition.y += 0.1f; // Adjust to prevent sinking
 
-            GameObject newBat2 = Instantiate(bat2Prefab, spawnPosition, Quaternion.identity);
-            SetSpawnedBat2(newBat2);
+            // --- THE FIX: Directly assign the new instance to spawnedBat2 ---
+            // This is the most important step. We create it and immediately track it.
+            spawnedBat2 = Instantiate(bat2Prefab, spawnPosition, Quaternion.identity);
 
-            // Add to tracking list
-            activeBat2Objects.Add(newBat2);
+            // Add to the static tracking list for cleanup, which is good practice.
+            if (!activeBat2Objects.Contains(spawnedBat2))
+            {
+                activeBat2Objects.Add(spawnedBat2);
+            }
         }
 
         // Destroy the ThrowSlash projectile
@@ -699,157 +929,57 @@ public class BatAttackSystem : MonoBehaviour
         isAnticipating = false;
     }
 
-    void StartAnticipationAndThrowSlash()
-    {
-        isAnticipating = true;
-        nextAttackTime = Time.time + anticipationDuration + attackCooldown;
-        hasBat = false;
-
-        if (playerBatSpriteRenderer != null)
-        {
-            playerBatSpriteRenderer.enabled = false; // Disable the SpriteRenderer to hide the bat visual
-            Debug.Log("Player bat SpriteRenderer disabled after throwing ThrowSlash.");
-        }
-
-
-        if (playerAnimator != null)
-        {
-            playerAnimator.SetTrigger(anticipationTriggerName);
-        }
-
-        if (enableCameraEffects && cameraEffects != null)
-        {
-            cameraEffects.StartHoldAndReleaseEffect();
-        }
-
-        if (ghostTargets.Count > 0)
-        {
-            ghostEffectCoroutine = StartCoroutine(GhostEffectRoutine());
-        }
-
-        StartCoroutine(AnticipationRoutineForThrowSlash());
-    }
-
-    IEnumerator AnticipationRoutineForThrowSlash()
-    {
-        Time.timeScale = 0.8f;
-        yield return new WaitForSecondsRealtime(anticipationDuration);
-        Time.timeScale = 1.0f;
-
-        if (ghostEffectCoroutine != null)
-        {
-            StopCoroutine(ghostEffectCoroutine);
-            ghostEffectCoroutine = null;
-        }
-
-        ThrowSlash();
-        isAnticipating = false;
-    }
 
     void ThrowSlash()
     {
         hitEnemies.Clear();
 
-        if (throwSlashPrefab == null || playerCamera == null)
+        if (throwSlashPrefab == null)
         {
-            Debug.LogWarning("Cannot throw - missing prefab or camera");
+            Debug.LogWarning("Cannot throw - throwSlashPrefab is not assigned!");
             return;
         }
 
-        Transform currentSpawnPoint = null;
-        if (transform.localScale.x > 0)
-        { // Player is facing right
-            currentSpawnPoint = throwSlashSpawnPointRight;
-        }
-        else
-        { // Player is facing left
-            currentSpawnPoint = throwSlashSpawnPointLeft;
-        }
-
+        Transform currentSpawnPoint = (transform.localScale.x > 0) ? throwSlashSpawnPointRight : throwSlashSpawnPointLeft;
         if (currentSpawnPoint == null)
         {
             Debug.LogWarning("ThrowSlash spawn point is not assigned for the current direction.");
             return;
         }
 
-        Vector3 targetWorldPoint = playerCamera.ScreenToWorldPoint(new Vector3(lastMousePosition.x, lastMousePosition.y, playerCamera.nearClipPlane));
-        targetWorldPoint.z = currentSpawnPoint.position.z;
-
-        // Determine if the cursor is to the right or left of the player
-        float playerScreenX = playerCamera.WorldToScreenPoint(transform.position).x;
-        float cursorScreenX = lastMousePosition.x;
-
-        if (cursorScreenX > playerScreenX) // Cursor is to the right of the player
-        {
-            targetWorldPoint.y += aimVerticalOffsetRightCursor;
-        }
-        else // Cursor is to the left of the player
-        {
-            targetWorldPoint.y += aimVerticalOffsetLeftCursor;
-        }
-
-        Vector2 throwDirection = (targetWorldPoint - currentSpawnPoint.position).normalized;
-
-        if (throwDirection.magnitude < 0.1f)
+        Vector2 throwDirection = buttonAimDirection;
+        if (throwDirection.sqrMagnitude < 0.01f)
         {
             throwDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
         }
 
-        if (playerView != null)
+        // Step 1: Instantiate the projectile at the exact spawn point.
+        GameObject slashInstance = Instantiate(throwSlashPrefab, currentSpawnPoint.position, Quaternion.identity);
+        activeThrowSlash = slashInstance;
+
+        // Step 2: Rotate it to face the correct direction.
+        float angle = Mathf.Atan2(throwDirection.y, throwDirection.x) * Mathf.Rad2Deg;
+        slashInstance.transform.rotation = Quaternion.Euler(0, 0, angle);
+
+        // Step 3: Get our new mover script and tell it where to go.
+        // This is the key to perfect accuracy.
+        ProjectileMover mover = slashInstance.GetComponent<ProjectileMover>();
+        if (mover != null)
         {
-            // ONLINE MODE: Call the RPC to create the slash effect for everyone.
-            // We pass the NAME of the prefab you already have assigned in the Inspector.
-            playerView.RPC("RPC_PerformVisualEffect", RpcTarget.All, throwSlashPrefab.name, currentSpawnPoint.position, Quaternion.identity);
+            mover.Initialize(throwDirection, throwSlashSpeed);
         }
         else
         {
-            // SINGLE-PLAYER MODE: Instantiate it directly, just like before.
-            GameObject slashInstance = Instantiate(throwSlashPrefab, currentSpawnPoint.position, Quaternion.identity);
-            // You would also need to put your velocity/rotation code here for single-player.
-        
-
-        Rigidbody2D slashRb = slashInstance.GetComponent<Rigidbody2D>();
-        if (slashRb == null)
-        {
-            slashRb = slashInstance.AddComponent<Rigidbody2D>();
-            slashRb.gravityScale = 0;
-        }
-        slashRb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-
-        Collider2D slashCollider = slashInstance.GetComponent<Collider2D>();
-        if (slashCollider == null)
-        {
-            slashCollider = slashInstance.AddComponent<BoxCollider2D>();
-            slashCollider.isTrigger = true;
+            Debug.LogError("ThrowSlash prefab is missing the ProjectileMover script!");
         }
 
-        slashRb.velocity = throwDirection * throwSlashSpeed;
+        // Step 4: Trigger animations and sound.
+        if (playerAnimator != null) playerAnimator.SetTrigger(throwBatTriggerName);
+        if (audioSource != null && throwBatSound != null) audioSource.PlayOneShot(throwBatSound);
 
-        float angle = Mathf.Atan2(throwDirection.y, throwDirection.x) * Mathf.Rad2Deg;
-        slashInstance.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
-        
-        // Removed ThrowSlashHandler initialization, as its logic is now integrated or simplified
-        // If ThrowSlashHandler is still needed for other purposes, it should be re-evaluated.
-        // For now, assuming it's solely for ThrowSlash spawning and can be removed.
-
-        if (playerAnimator != null)
-        {
-            playerAnimator.SetTrigger(throwBatTriggerName);
-        }
-
-        if (audioSource != null && throwBatSound != null)
-        {
-            audioSource.PlayOneShot(throwBatSound);
-        }
-
-        if (playerBatVisual != null)
-        {
-            playerBatVisual.SetActive(false);
-        }
-
+        // Step 5: Hide the player's bat.
+        if (playerBatVisual != null) playerBatVisual.SetActive(false);
         hasBat = false;
-        activeThrowSlash = slashInstance; // Track the flying projectile
-        }
     }
 
     public void SetSpawnedBat2(GameObject bat2)
@@ -870,13 +1000,19 @@ public class BatAttackSystem : MonoBehaviour
             spawnedBat2 = null;
         }
         hasBat = true;
+
+        // --- THE FIX: Explicitly hide the pointer when the bat is picked up ---
+        if (batPointerRectTransform != null)
+        {
+            batPointerRectTransform.gameObject.SetActive(false);
+        }
+
         if (playerBatSpriteRenderer != null)
         {
-            playerBatSpriteRenderer.enabled = true; // Enable the SpriteRenderer to show the bat visual
+            playerBatSpriteRenderer.enabled = true;
             Debug.Log("Player bat SpriteRenderer enabled after picking up Bat2.");
         }
 
-        // When picking up the bat, reset the system state as if nothing happened
         ResetBatSystemState();
         Debug.Log("Picked up Bat2! Bat visual enabled and system state reset.");
     }
@@ -1161,16 +1297,16 @@ public class BatAttackSystem : MonoBehaviour
     // New: Bat Pointer Logic
     private void UpdateBatPointer()
     {
-        if (spawnedBat2 == null || playerCamera == null || batPointerRectTransform == null)
+        if (batPointerRectTransform == null || spawnedBat2 == null || playerCamera == null)
         {
             if (batPointerRectTransform != null) batPointerRectTransform.gameObject.SetActive(false);
             return;
         }
 
-        Vector3 screenPoint = playerCamera.WorldToViewportPoint(spawnedBat2.transform.position);
-        bool onScreen = screenPoint.z > 0 && screenPoint.x > 0 && screenPoint.x < 1 && screenPoint.y > 0 && screenPoint.y < 1;
+        Vector3 targetScreenPos = playerCamera.WorldToScreenPoint(spawnedBat2.transform.position);
+        bool isTargetOnScreen = targetScreenPos.z > 0 && targetScreenPos.x > 0 && targetScreenPos.x < Screen.width && targetScreenPos.y > 0 && targetScreenPos.y < Screen.height;
 
-        if (onScreen)
+        if (isTargetOnScreen)
         {
             batPointerRectTransform.gameObject.SetActive(false);
         }
@@ -1178,25 +1314,40 @@ public class BatAttackSystem : MonoBehaviour
         {
             batPointerRectTransform.gameObject.SetActive(true);
 
+            if (targetScreenPos.z < 0)
+            {
+                targetScreenPos *= -1;
+            }
+
+            Vector3 screenCenter = new Vector3(Screen.width, Screen.height, 0) / 2;
+            Vector3 direction = (targetScreenPos - screenCenter).normalized;
+            float pointerX = screenCenter.x + direction.x * (screenCenter.x - edgeOffset);
+            float pointerY = screenCenter.y + direction.y * (screenCenter.y - edgeOffset);
+
+            // This is the clamped screen position in pixels. This part of the logic is correct.
+            Vector3 pointerScreenPos = new Vector3(Mathf.Clamp(pointerX, edgeOffset, Screen.width - edgeOffset), Mathf.Clamp(pointerY, edgeOffset, Screen.height - edgeOffset), 0);
+
+            // --- THE CRUCIAL FIX FOR "SCREEN SPACE - CAMERA" ---
+            // Instead of setting .position directly, we must convert the screen point
+            // into a local position within the canvas.
+
+            Vector2 localPointerPosition;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                (RectTransform)batPointerRectTransform.parent, // The parent of the pointer (usually the whole canvas)
+                pointerScreenPos, // The pixel position we calculated
+                playerCamera,     // The camera associated with the canvas
+                out localPointerPosition // The resulting local position
+            );
+
+            // Apply the correctly converted local position. This will work in Screen Space - Camera.
+            batPointerRectTransform.anchoredPosition = localPointerPosition;
+
+            // --- Rotation Logic (This remains the same and is correct) ---
             Vector3 directionToBat = (spawnedBat2.transform.position - transform.position).normalized;
-            Vector3 pointerPosition = playerCamera.WorldToScreenPoint(spawnedBat2.transform.position);
-
-            // Clamp pointer position to screen edges with offset
-            pointerPosition.x = Mathf.Clamp(pointerPosition.x, edgeOffset, Screen.width - edgeOffset);
-            pointerPosition.y = Mathf.Clamp(pointerPosition.y, edgeOffset, Screen.height - edgeOffset);
-
-            batPointerRectTransform.position = pointerPosition;
-
             float angle = Mathf.Atan2(directionToBat.y, directionToBat.x) * Mathf.Rad2Deg;
-            batPointerRectTransform.rotation = Quaternion.Euler(0, 0, angle - 90); // Adjust for pointer sprite orientation
-
-            float distance = Vector3.Distance(transform.position, spawnedBat2.transform.position);
-            float normalizedDistance = Mathf.Clamp01(distance / maxDistanceForScaling);
-            float scale = Mathf.Lerp(minPointerSize, maxPointerSize, normalizedDistance);
-            batPointerRectTransform.localScale = new Vector3(scale, scale, 1f);
+            batPointerRectTransform.rotation = Quaternion.Euler(0, 0, angle);
         }
     }
-
     // New: Volume Control Logic
     void LoadVolumeSettings()
     {
@@ -1317,6 +1468,7 @@ public class BatAttackSystem : MonoBehaviour
         Vector3 upwardZoneMax = new Vector3(playerPos.x + 1f, playerPos.y + upwardZoneMaxY, playerPos.z);
         Gizmos.DrawCube(new Vector3(playerPos.x, (upwardZoneMin.y + upwardZoneMax.y) / 2, playerPos.z), new Vector3(2f, upwardZoneMax.y - upwardZoneMin.y, 0.1f));
     }
+
 }
 
 

@@ -14,17 +14,45 @@ public class SoulLinkChain : MonoBehaviour
     private float deathDelay; // kept for compatibility (not used for sequential waiting now)
     private bool isKilling = false;
 
+
+    private static bool IsSoulLinkActive()
+    {
+        // Find both power-up manager instances in the scene.
+        PowerUpManager player1Manager = FindObjectOfType<PowerUpManager>();
+        PowerUpManagerL3antix player2Manager = FindObjectOfType<PowerUpManagerL3antix>();
+
+        // Check if player 1 has the power-up.
+        if (player1Manager != null && player1Manager.HasPowerUp(PowerUpType.SoulLink))
+        {
+            return true;
+        }
+
+        // Check if player 2 has the power-up.
+        if (player2Manager != null && player2Manager.HasPowerUp(PowerUpType.SoulLink))
+        {
+            return true;
+        }
+
+        // If neither player has it, return false.
+        return false;
+    }
     /// <summary>
     /// Factory: create chain manager and start building the chain.
     /// </summary>
     public static SoulLinkChain CreateChain(SoulLinkEnemy startEnemy, int minLinks, int maxLinks,
-                                           float maxLinkDistance, LineRenderer linePrefab,
-                                           Material outlineMaterial, float lineSpeed, float deathDelay)
+                                          float maxLinkDistance, LineRenderer linePrefab,
+                                          Material outlineMaterial, float lineSpeed, float deathDelay)
     {
-        if (!PowerUpManager.SoulLinkEquipped)
+        // --- THE FIX: Use the new helper function ---
+        // OLD WAY: if (!PowerUpManager.SoulLinkEquipped)
+        // NEW WAY:
+        if (!IsSoulLinkActive())
             return null;
+        // --- END OF THE FIX ---
+
         GameObject go = new GameObject("SoulLinkChain");
         SoulLinkChain chain = go.AddComponent<SoulLinkChain>();
+        // ... (the rest of your CreateChain method is correct and stays the same) ...
         chain.linePrefab = linePrefab;
         chain.outlineMaterial = outlineMaterial;
         chain.lineSpeed = lineSpeed;
