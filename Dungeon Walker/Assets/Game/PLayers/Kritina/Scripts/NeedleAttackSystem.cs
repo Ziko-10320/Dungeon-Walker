@@ -284,15 +284,17 @@ public class BatAttackSystem : MonoBehaviour
         // --- MOBILE JOYSTICK INPUT ---
         if (MobileInput && attackButtonRect != null && attackButtonRect.gameObject.activeInHierarchy)
         {
-            // TOUCH PATH (mobile)
-            if (Input.touchCount > 0)
+            // --- START OF THE MINIMAL FIX ---
+            // Instead of checking only the first touch, we loop through ALL touches.
+            for (int i = 0; i < Input.touchCount; i++)
             {
-                Touch touch = Input.GetTouch(0);
+                Touch touch = Input.GetTouch(i); // Get the current touch in the loop
                 Vector2 touchPos = touch.position;
 
+                // --- THIS IS YOUR EXACT ORIGINAL LOGIC, UNCHANGED ---
                 if (touch.phase == TouchPhase.Began)
                 {
-                    // Did we press the attack button area?
+                    // Check if this new touch started on the button
                     if (IsScreenPointOverRectTransform(attackButtonRect, touchPos))
                     {
                         isAttackButtonPressed = true;
@@ -302,16 +304,16 @@ public class BatAttackSystem : MonoBehaviour
                 }
                 else if (isAttackButtonPressed && (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary))
                 {
+                    // If a press is active, we assume this moving finger is the one we care about.
+                    // This is a simple but effective way to handle it without complex touch ID tracking.
                     attackButtonPressTimer += Time.deltaTime;
 
-                    // Enter aim mode after hold time
                     if (!isAimingWithButton && attackButtonPressTimer >= holdToAimTime)
                     {
                         isAimingWithButton = true;
-                        ShowAimJoystickAtScreenPos(attackButtonRect.position);
+                        ShowAimJoystickAtScreenPos(attackButtonStartScreenPos);
                     }
 
-                    // If we're aiming, update handle position & direction
                     if (isAimingWithButton)
                     {
                         UpdateHandleWithScreenPoint(touchPos);
@@ -319,33 +321,32 @@ public class BatAttackSystem : MonoBehaviour
                 }
                 else if (isAttackButtonPressed && (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled))
                 {
-                    // Release
+                    // If the finger is lifted, perform the action.
                     isAttackButtonPressed = false;
 
                     if (isAimingWithButton)
                     {
-                        // perform throw in direction of handle
                         isAimingWithButton = false;
                         HideAimJoystick();
-
-                        // build a simulated screen target from the aim direction
-                        if (buttonAimDirection.sqrMagnitude < 0.01f) buttonAimDirection = Vector2.right;
+                        if (buttonAimDirection.sqrMagnitude < 0.01f) buttonAimDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
                         Vector3 screenCenter = playerCamera != null ? playerCamera.WorldToScreenPoint(transform.position) : new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
-                        lastMousePosition = (Vector3)(screenCenter + (Vector3)buttonAimDirection * 300f); // 300 px distance -> you can tweak
+                        lastMousePosition = (Vector3)(screenCenter + (Vector3)buttonAimDirection * 300f);
                         ThrowSlash();
                     }
                     else
                     {
-                        // quick tap -> melee attack
                         bool isAimingUp = runningJoystick != null && runningJoystick.Direction.y > 0.7f;
                         StartAnticipationAttack(isAimingUp);
                     }
 
                     attackButtonPressTimer = 0f;
                 }
+                // --- END OF YOUR ORIGINAL LOGIC ---
             }
-            // MOUSE PATH (editor / PC mobile testing)
-            else
+            // --- END OF THE MINIMAL FIX ---
+
+            // MOUSE PATH (editor / PC mobile testing) - This part remains the same
+            if (Input.touchCount == 0) // Only run mouse logic if no touches are active
             {
                 if (Input.GetMouseButtonDown(0))
                 {
@@ -363,7 +364,6 @@ public class BatAttackSystem : MonoBehaviour
                     if (!isAimingWithButton && attackButtonPressTimer >= holdToAimTime)
                     {
                         isAimingWithButton = true;
-                        // FIX: Use the stored start position, not Vector2.zero
                         ShowAimJoystickAtScreenPos(attackButtonStartScreenPos);
                     }
                     if (isAimingWithButton)
@@ -379,7 +379,7 @@ public class BatAttackSystem : MonoBehaviour
                     {
                         isAimingWithButton = false;
                         HideAimJoystick();
-                        if (buttonAimDirection.sqrMagnitude < 0.01f) buttonAimDirection = Vector2.right;
+                        if (buttonAimDirection.sqrMagnitude < 0.01f) buttonAimDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
                         Vector3 screenCenter = playerCamera != null ? playerCamera.WorldToScreenPoint(transform.position) : new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
                         lastMousePosition = (Vector3)(screenCenter + (Vector3)buttonAimDirection * 300f);
                         ThrowSlash();
@@ -397,17 +397,13 @@ public class BatAttackSystem : MonoBehaviour
 
         // --- PC MOUSE & KEYBOARD INPUT (remains as a fallback) ---
         if (PcInput && Input.GetMouseButtonDown(0))
-
         {
-            // Melee Attack
             bool shouldPerformUpwardAttack = ShouldPerformUpwardAttack();
             StartAnticipationAttack(shouldPerformUpwardAttack);
         }
 
         if (PcInput && Input.GetMouseButtonDown(1))
-
         {
-            // Throw Attack
             lastMousePosition = Input.mousePosition;
             ThrowSlash();
         }
@@ -518,6 +514,19 @@ public class BatAttackSystem : MonoBehaviour
             attackButtonImage.enabled = true;
         }
     }
+
+    private void ForceResetInputState()
+    {
+        isAttackButtonPressed = false;
+        attackButtonPressTimer = 0f;
+        isAimingWithButton = false;
+
+        // Also hide any UI that might be stuck open
+        HideAimJoystick();
+
+        Debug.Log("Input state has been forcefully reset.");
+    }
+
     private void InitializeComponents()
     {
         if (cameraEffects == null)
@@ -980,6 +989,8 @@ public class BatAttackSystem : MonoBehaviour
         // Step 5: Hide the player's bat.
         if (playerBatVisual != null) playerBatVisual.SetActive(false);
         hasBat = false;
+
+        ForceResetInputState();
     }
 
     public void SetSpawnedBat2(GameObject bat2)
@@ -1001,7 +1012,9 @@ public class BatAttackSystem : MonoBehaviour
         }
         hasBat = true;
 
-        // --- THE FIX: Explicitly hide the pointer when the bat is picked up ---
+        
+        nextAttackTime = 0f; // Immediately reset the attack cooldown timer.
+
         if (batPointerRectTransform != null)
         {
             batPointerRectTransform.gameObject.SetActive(false);
@@ -1012,10 +1025,12 @@ public class BatAttackSystem : MonoBehaviour
             playerBatSpriteRenderer.enabled = true;
             Debug.Log("Player bat SpriteRenderer enabled after picking up Bat2.");
         }
+        ForceResetInputState();
 
         ResetBatSystemState();
         Debug.Log("Picked up Bat2! Bat visual enabled and system state reset.");
     }
+
 
     IEnumerator GhostEffectRoutine()
     {

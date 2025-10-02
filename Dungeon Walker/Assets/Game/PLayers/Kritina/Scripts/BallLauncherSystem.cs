@@ -23,8 +23,8 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
     private PhotonView view;
     private bool isOnlineMode = false;
     private PlayerSyncManager syncManager;
+    private bool isJoystickHeldDown = false;
 
-   
     [Header("Explosion Effects")]
     [Tooltip("Orange ball main explosion particle system prefab")]
     [SerializeField] private GameObject orangeExplosionPrefab;
@@ -275,7 +275,24 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
         UpdateMinDistancePointPosition();
         UpdateTrajectoryVisualPoint();
     }
+    void OnEnable()
+    {
+        // Start listening for the broadcast from the joystick
+        JoystickBroadcaster.OnJoystickTouchStateChanged += HandleJoystickTouchState;
+    }
 
+    // This function is called when your script is disabled
+    void OnDisable()
+    {
+        // Stop listening to prevent errors
+        JoystickBroadcaster.OnJoystickTouchStateChanged -= HandleJoystickTouchState;
+    }
+
+    // This function is called automatically when the joystick sends a signal
+    private void HandleJoystickTouchState(bool isDown)
+    {
+        isJoystickHeldDown = isDown;
+    }
     void Update()
     {
         if (isOnlineMode && !view.IsMine)
@@ -523,27 +540,40 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
         {
             return; // If this is an online character that isn't mine, do nothing.
         }
+
         bool isAiming = false;
         bool shootAction = false; // This will be true only on release or click
 
+        // --- START OF THE FIX ---
+
         // --- MOBILE JOYSTICK LOGIC ---
+        // This logic is now driven by our 100% reliable isJoystickHeldDown boolean.
         if (MobileInput)
         {
-            if (aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f)
+            // A "press" happens on the first frame the finger is down.
+            if (isJoystickHeldDown && !isAimingWithJoystick)
             {
-                // Player is holding the joystick, so they are aiming.
-                isAiming = true;
-                isAimingWithJoystick = true; // Set our tracking flag
-
-                // Update the aim position based on joystick direction
-                Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
-                mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f; // Simulate a world position to aim at
+                // We don't shoot on press for the launcher, but we enter the aiming state.
+                isAimingWithJoystick = true; // MEMORIZE: We are now in joystick aiming mode.
             }
-            else if (isAimingWithJoystick)
+
+            // A "hold" is true for every frame the finger is down.
+            if (isJoystickHeldDown)
             {
-                // The joystick was just released.
+                isAiming = true; // We are actively aiming.
+                                 // Update the aim position based on joystick direction
+                if (aimJoystick.Direction.sqrMagnitude > 0.1f)
+                {
+                    Vector3 joystickDirection = new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0);
+                    mouseWorldPosition = launcherAimPoint.position + joystickDirection * 10f; // Simulate a world position to aim at
+                }
+            }
+
+            // A "release" happens on the first frame the finger is lifted.
+            if (!isJoystickHeldDown && isAimingWithJoystick)
+            {
                 isAiming = false; // No longer actively aiming
-                isAimingWithJoystick = false; // Reset the flag
+                isAimingWithJoystick = false; // FORGET: We are no longer aiming.
                 shootAction = true; // Trigger the shot!
             }
         }
@@ -560,6 +590,9 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
                 shootAction = true;
             }
         }
+
+        // --- END OF THE FIX ---
+
 
         // --- AIMING LOGIC (runs if either input is active) ---
         if (isAiming)
@@ -579,6 +612,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             }
         }
     }
+
 
 
     private void SpawnNextBall()

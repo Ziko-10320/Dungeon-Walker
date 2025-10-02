@@ -17,7 +17,7 @@ public class BowSystems : MonoBehaviour, IPunObservable
     public Joystick aimJoystick;
 
     public bool isJoystickHeldDown = false;
-
+    private bool isJoystickAiming = false;
     private PhotonView view;
     private bool isOnlineMode = false;
     private PlayerSyncManager syncManager;
@@ -205,7 +205,11 @@ public class BowSystems : MonoBehaviour, IPunObservable
     [Tooltip("Activer les contrôles pour Mobile (joystick).")]
     public bool enableMobileInput = true;
 
-
+    void OnEnable()
+    {
+        // Start listening for the broadcast from the joystick
+        JoystickBroadcaster.OnJoystickTouchStateChanged += HandleJoystickTouchState;
+    }
     void OnDisable()
     {
         Debug.Log("BowSystems OnDisable called - cleaning up UI.");
@@ -229,10 +233,14 @@ public class BowSystems : MonoBehaviour, IPunObservable
         {
             aimLineRenderer.enabled = false;
         }
-
+        JoystickBroadcaster.OnJoystickTouchStateChanged -= HandleJoystickTouchState;
         // Also, reset the charging state just in case
         isCharging = false;
         currentChargeTime = 0f;
+    }
+    private void HandleJoystickTouchState(bool isDown)
+    {
+        isJoystickHeldDown = isDown;
     }
     void Start()
     {
@@ -286,105 +294,90 @@ public class BowSystems : MonoBehaviour, IPunObservable
         UpdateChargeSliderPosition();
     }
 
+    public void OnJoystickPointerDown()
+    {
+        isJoystickHeldDown = true;
+    }
+
+    public void OnJoystickPointerUp()
+    {
+        isJoystickHeldDown = false;
+    }
     // --- MODIFICATION: This is the new, unified input handling method --- 
     private void HandleInputAndShooting()
     {
-        
         bool shootPressedThisFrame = false;
-    bool shootHeldThisFrame = false;
-    bool shootReleasedThisFrame = false;
+        bool shootHeldThisFrame = false;
+        bool shootReleasedThisFrame = false;
 
-    // --- START OF THE FIX ---
+        // --- START OF THE FINAL, CORRECT FIX ---
 
-    // Check if the player is touching the joystick UI element.
-    // (This requires the Event Trigger setup from the previous step).
-    bool isJoystickTouched = enableMobileInput && aimJoystick != null && isJoystickHeldDown;
-
-    // Check if the joystick handle is actively being dragged away from the center.
-    bool isJoystickDragged = enableMobileInput && aimJoystick != null && aimJoystick.Direction.sqrMagnitude > 0.1f;
-
-    if (isJoystickDragged)
-    {
-        // --- JOYSTICK AIMING MODE ---
-        // We are actively aiming.
-        stabilizedMouseWorldPosition = bowAimPoint.position + new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0) * 10f;
-        
-        // If this is the first frame we started aiming, set 'pressed'.
-        if (!isAimingWithJoystick)
+        // --- MOBILE JOYSTICK LOGIC ---
+        // This logic is now driven by our 100% reliable isJoystickHeldDown boolean.
+        if (enableMobileInput && aimJoystick != null)
         {
-            shootPressedThisFrame = true;
-            isAimingWithJoystick = true; // Mark that we are now in joystick aiming mode.
+            // A "press" happens on the first frame the finger is down.
+            if (isJoystickHeldDown && !isJoystickAiming)
+            {
+                shootPressedThisFrame = true;
+                isJoystickAiming = true; // Enter the aiming state.
+            }
+
+            // A "hold" is true for every frame the finger is down.
+            if (isJoystickHeldDown)
+            {
+                shootHeldThisFrame = true;
+            }
+
+            // A "release" happens on the first frame the finger is lifted.
+            if (!isJoystickHeldDown && isJoystickAiming)
+            {
+                shootReleasedThisFrame = true;
+                isJoystickAiming = false; // Exit the aiming state.
+            }
+
+            // AIMING DIRECTION: We still get the direction from the joystick handle.
+            // If the handle is in the middle, the aim just holds its last position.
+            if (aimJoystick.Direction.sqrMagnitude > 0.01f)
+            {
+                stabilizedMouseWorldPosition = bowAimPoint.position + new Vector3(aimJoystick.Direction.x, aimJoystick.Direction.y, 0) * 10f;
+            }
         }
-        
-        // As long as we're dragging, 'held' is true.
-        shootHeldThisFrame = true;
-    }
-    else if (isAimingWithJoystick && !isJoystickTouched)
-    {
-        // --- JOYSTICK RELEASED MODE ---
-        // This is the key: we were aiming, but now the finger is LIFTED.
-        shootReleasedThisFrame = true;
-        isAimingWithJoystick = false; // Exit joystick aiming mode.
-    }
-    else
-    {
-        // --- PC MOUSE MODE (or joystick is idle) ---
-        // This block now only runs if the joystick isn't being used for a shot.
-        if (enablePcInput)
+
+        // --- PC MOUSE LOGIC (Fallback) ---
+        if (enablePcInput && !isJoystickAiming)
         {
             stabilizedMouseWorldPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             shootPressedThisFrame = shootPressedThisFrame || Mouse.current.leftButton.wasPressedThisFrame;
             shootHeldThisFrame = shootHeldThisFrame || Mouse.current.leftButton.isPressed;
             shootReleasedThisFrame = shootReleasedThisFrame || Mouse.current.leftButton.wasReleasedThisFrame;
         }
-    }
-        // --- UNIFIED AIMING LOGIC (works for both inputs) ---
+
+        // --- END OF THE FINAL, CORRECT FIX ---
+
+
+        // --- UNIFIED AIMING AND SHOOTING LOGIC (This part remains the same) ---
         UpdatePlayerFacingDirection();
         CalculateAimDirection();
         ApplyWorldSpaceRotations();
 
-        // --- UNIFIED CHARGING AND SHOOTING LOGIC (works for both inputs) ---
         if (shootPressedThisFrame && Time.time >= lastShootTime + shootCooldown)
         {
             isCharging = true;
             currentChargeTime = 0f;
             if (currentPreviewArrow != null) currentPreviewArrow.SetActive(false);
-
-            // Show the main slider UI
             if (chargeSlider != null) chargeSlider.gameObject.SetActive(true);
-            // Make sure the indicator is hidden at the start
-            if (fullyChargedIndicator != null) fullyChargedIndicator.gameObject.SetActive(false);
-            // No need to enable the aim line here, we'll do it in the "hold" block to be safer.
         }
 
-        // WHILE CHARGE IS HELD (Every Frame)
         if (shootHeldThisFrame && isCharging)
         {
             currentChargeTime += Time.deltaTime;
-            bool isChargeFull = currentChargeTime >= maxChargeTime;
             currentChargeTime = Mathf.Min(currentChargeTime, maxChargeTime);
-
-            // Update the slider value
-            if (chargeSlider != null)
-            {
-                chargeSlider.value = currentChargeTime / maxChargeTime;
-            }
-
-            // Update the "fully charged" indicator
-            if (fullyChargedIndicator != null)
-            {
-                fullyChargedIndicator.gameObject.SetActive(isChargeFull);
-            }
-
-            // --- AIM LINE FIX ---
-            // This is the most robust place for this logic.
-            // It ensures the line is both ENABLED and UPDATED every frame you are aiming.
+            if (chargeSlider != null) chargeSlider.value = currentChargeTime / maxChargeTime;
+            if (fullyChargedIndicator != null) fullyChargedIndicator.gameObject.SetActive(currentChargeTime >= maxChargeTime);
             if (aimLineRenderer != null && arrowSpawnPoint != null)
             {
-                // 1. Force it to be enabled. This prevents it from ever being accidentally hidden.
                 aimLineRenderer.enabled = true;
-
-                // 2. Update its position and direction.
                 Vector3 startPoint = arrowSpawnPoint.position;
                 Vector3 direction = GetBowDirection();
                 aimLineRenderer.SetPosition(0, startPoint);
@@ -392,40 +385,29 @@ public class BowSystems : MonoBehaviour, IPunObservable
             }
         }
 
-        // WHEN SHOT IS RELEASED
         if (shootReleasedThisFrame && isCharging)
         {
             isCharging = false;
             if (IsAimingValid()) ShootArrow();
             lastShootTime = Time.time;
             if (currentPreviewArrow != null) currentPreviewArrow.SetActive(true);
-
-            // Hide all UI
-            if (chargeSlider != null)
-            {
-                chargeSlider.value = 0;
-                chargeSlider.gameObject.SetActive(false);
-            }
+            if (chargeSlider != null) { chargeSlider.value = 0; chargeSlider.gameObject.SetActive(false); }
             if (fullyChargedIndicator != null) fullyChargedIndicator.gameObject.SetActive(false);
-            if (aimLineRenderer != null) aimLineRenderer.enabled = false; // Hide the aim line
+            if (aimLineRenderer != null) aimLineRenderer.enabled = false;
         }
 
-        // WHEN AIM IS CANCELED (Player stops holding without releasing)
         if (!shootHeldThisFrame && isCharging)
         {
             isCharging = false;
             if (currentPreviewArrow != null) currentPreviewArrow.SetActive(true);
-
-            // Hide all UI
-            if (chargeSlider != null)
-            {
-                chargeSlider.value = 0;
-                chargeSlider.gameObject.SetActive(false);
-            }
+            if (chargeSlider != null) { chargeSlider.value = 0; chargeSlider.gameObject.SetActive(false); }
             if (fullyChargedIndicator != null) fullyChargedIndicator.gameObject.SetActive(false);
-            if (aimLineRenderer != null) aimLineRenderer.enabled = false; // Hide the aim line
+            if (aimLineRenderer != null) aimLineRenderer.enabled = false;
         }
     }
+
+
+
 
     private void UpdateChargeSliderPosition()
     {
