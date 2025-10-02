@@ -29,6 +29,8 @@ public class BatAttackSystem : MonoBehaviour
     [Tooltip("Temps maximum en secondes pour qu'un contact soit considéré comme un 'tap'.")]
     [SerializeField] private float joystickTapTime = 0.2f;
 
+    private int attackTouchId = -1;
+
     private bool isJoystickHeld = false;
     private float joystickHoldTime = 0f;
     [Header("Throw Slash Settings")]
@@ -247,7 +249,11 @@ public class BatAttackSystem : MonoBehaviour
         {
             EnsureBatExists();
         }
-
+        if (hasBat)
+        {
+            // --- THE FIX: Call the guardian function here! ---
+            EnsurePlayerHasBat();
+        }
         if (!hasBat)
         {
             // Check for flying ThrowSlash collision with walls
@@ -284,69 +290,76 @@ public class BatAttackSystem : MonoBehaviour
         // --- MOBILE JOYSTICK INPUT ---
         if (MobileInput && attackButtonRect != null && attackButtonRect.gameObject.activeInHierarchy)
         {
-            // --- START OF THE MINIMAL FIX ---
-            // Instead of checking only the first touch, we loop through ALL touches.
+            // --- START OF THE FINGER TRACKING FIX ---
             for (int i = 0; i < Input.touchCount; i++)
             {
-                Touch touch = Input.GetTouch(i); // Get the current touch in the loop
+                Touch touch = Input.GetTouch(i);
                 Vector2 touchPos = touch.position;
 
-                // --- THIS IS YOUR EXACT ORIGINAL LOGIC, UNCHANGED ---
+                // --- TOUCH BEGAN ---
                 if (touch.phase == TouchPhase.Began)
                 {
-                    // Check if this new touch started on the button
-                    if (IsScreenPointOverRectTransform(attackButtonRect, touchPos))
+                    // If no attack is in progress AND this new touch is on the button...
+                    if (!isAttackButtonPressed && IsScreenPointOverRectTransform(attackButtonRect, touchPos))
                     {
+                        // ...this is our attack finger.
                         isAttackButtonPressed = true;
+                        attackTouchId = touch.fingerId; // REMEMBER this finger's ID
                         attackButtonPressTimer = 0f;
                         attackButtonStartScreenPos = touchPos;
                     }
                 }
-                else if (isAttackButtonPressed && (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary))
+
+                // --- TOUCH MOVED / HELD ---
+                // Only proceed if an attack is active AND this is the correct finger.
+                if (isAttackButtonPressed && touch.fingerId == attackTouchId)
                 {
-                    // If a press is active, we assume this moving finger is the one we care about.
-                    // This is a simple but effective way to handle it without complex touch ID tracking.
-                    attackButtonPressTimer += Time.deltaTime;
-
-                    if (!isAimingWithButton && attackButtonPressTimer >= holdToAimTime)
+                    if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
                     {
-                        isAimingWithButton = true;
-                        ShowAimJoystickAtScreenPos(attackButtonStartScreenPos);
+                        attackButtonPressTimer += Time.deltaTime;
+
+                        if (!isAimingWithButton && attackButtonPressTimer >= holdToAimTime)
+                        {
+                            isAimingWithButton = true;
+                            ShowAimJoystickAtScreenPos(attackButtonStartScreenPos);
+                        }
+
+                        if (isAimingWithButton)
+                        {
+                            // We are now 100% sure we are using the position of the correct finger.
+                            UpdateHandleWithScreenPoint(touchPos);
+                        }
                     }
-
-                    if (isAimingWithButton)
+                    // --- TOUCH ENDED ---
+                    else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
                     {
-                        UpdateHandleWithScreenPoint(touchPos);
+                        // Our specific attack finger was lifted.
+                        isAttackButtonPressed = false;
+                        attackTouchId = -1; // FORGET the finger ID
+
+                        if (isAimingWithButton)
+                        {
+                            isAimingWithButton = false;
+                            HideAimJoystick();
+                            if (buttonAimDirection.sqrMagnitude < 0.01f) buttonAimDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+                            Vector3 screenCenter = playerCamera != null ? playerCamera.WorldToScreenPoint(transform.position) : new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
+                            lastMousePosition = (Vector3)(screenCenter + (Vector3)buttonAimDirection * 300f);
+                            ThrowSlash();
+                        }
+                        else
+                        {
+                            bool isAimingUp = runningJoystick != null && runningJoystick.Direction.y > 0.7f;
+                            StartAnticipationAttack(isAimingUp);
+                        }
+
+                        attackButtonPressTimer = 0f;
                     }
                 }
-                else if (isAttackButtonPressed && (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled))
-                {
-                    // If the finger is lifted, perform the action.
-                    isAttackButtonPressed = false;
-
-                    if (isAimingWithButton)
-                    {
-                        isAimingWithButton = false;
-                        HideAimJoystick();
-                        if (buttonAimDirection.sqrMagnitude < 0.01f) buttonAimDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
-                        Vector3 screenCenter = playerCamera != null ? playerCamera.WorldToScreenPoint(transform.position) : new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
-                        lastMousePosition = (Vector3)(screenCenter + (Vector3)buttonAimDirection * 300f);
-                        ThrowSlash();
-                    }
-                    else
-                    {
-                        bool isAimingUp = runningJoystick != null && runningJoystick.Direction.y > 0.7f;
-                        StartAnticipationAttack(isAimingUp);
-                    }
-
-                    attackButtonPressTimer = 0f;
-                }
-                // --- END OF YOUR ORIGINAL LOGIC ---
             }
-            // --- END OF THE MINIMAL FIX ---
+            // --- END OF THE FINGER TRACKING FIX ---
 
             // MOUSE PATH (editor / PC mobile testing) - This part remains the same
-            if (Input.touchCount == 0) // Only run mouse logic if no touches are active
+            if (Input.touchCount == 0)
             {
                 if (Input.GetMouseButtonDown(0))
                 {
@@ -374,7 +387,6 @@ public class BatAttackSystem : MonoBehaviour
                 else if (isAttackButtonPressed && Input.GetMouseButtonUp(0))
                 {
                     isAttackButtonPressed = false;
-
                     if (isAimingWithButton)
                     {
                         isAimingWithButton = false;
@@ -389,25 +401,27 @@ public class BatAttackSystem : MonoBehaviour
                         bool isAimingUp = runningJoystick != null && runningJoystick.Direction.y > 0.7f;
                         StartAnticipationAttack(isAimingUp);
                     }
-
                     attackButtonPressTimer = 0f;
                 }
             }
         }
 
         // --- PC MOUSE & KEYBOARD INPUT (remains as a fallback) ---
-        if (PcInput && Input.GetMouseButtonDown(0))
+        if (PcInput)
         {
-            bool shouldPerformUpwardAttack = ShouldPerformUpwardAttack();
-            StartAnticipationAttack(shouldPerformUpwardAttack);
-        }
-
-        if (PcInput && Input.GetMouseButtonDown(1))
-        {
-            lastMousePosition = Input.mousePosition;
-            ThrowSlash();
+            if (Input.GetMouseButtonDown(0))
+            {
+                bool shouldPerformUpwardAttack = ShouldPerformUpwardAttack();
+                StartAnticipationAttack(shouldPerformUpwardAttack);
+            }
+            if (Input.GetMouseButtonDown(1))
+            {
+                lastMousePosition = Input.mousePosition;
+                ThrowSlash();
+            }
         }
     }
+
 
     private bool IsScreenPointOverRectTransform(RectTransform rect, Vector2 screenPoint)
     {
@@ -1006,32 +1020,79 @@ public class BatAttackSystem : MonoBehaviour
     {
         if (spawnedBat2 != null)
         {
-            activeBat2Objects.Remove(spawnedBat2);
+            // ... destroy spawnedBat2 ...
             Destroy(spawnedBat2);
             spawnedBat2 = null;
         }
-        hasBat = true;
 
-        
-        nextAttackTime = 0f; // Immediately reset the attack cooldown timer.
+        hasBat = true;
+        nextAttackTime = 0f;
+
+        // --- THE FIX: Call the guardian function immediately after getting the bat back ---
+        EnsurePlayerHasBat();
 
         if (batPointerRectTransform != null)
         {
             batPointerRectTransform.gameObject.SetActive(false);
         }
 
+        // This part is now less critical because our guardian function handles it, but it's good to keep.
         if (playerBatSpriteRenderer != null)
         {
             playerBatSpriteRenderer.enabled = true;
-            Debug.Log("Player bat SpriteRenderer enabled after picking up Bat2.");
         }
-        ForceResetInputState();
 
+        ForceResetInputState();
         ResetBatSystemState();
         Debug.Log("Picked up Bat2! Bat visual enabled and system state reset.");
     }
 
 
+    private void EnsurePlayerHasBat()
+    {
+        // If we are supposed to have the bat, but the visual is missing or inactive...
+        if (hasBat && (playerBatVisual == null || !playerBatVisual.activeSelf))
+        {
+            Debug.LogWarning("Player's main bat was missing or inactive! Attempting to restore...");
+
+            // First, try to find the original bat if the reference was lost.
+            if (playerBatVisual == null && _currentBatInstance != null)
+            {
+                playerBatVisual = _currentBatInstance;
+            }
+
+            // If it's still null, try finding it by tag.
+            if (playerBatVisual == null)
+            {
+                GameObject foundBat = GameObject.FindGameObjectWithTag("PlayerWeaponBat");
+                if (foundBat != null)
+                {
+                    playerBatVisual = foundBat;
+                    _currentBatInstance = foundBat; // Update the main reference too
+                }
+            }
+
+            // If we found it and it was just inactive, reactivate it.
+            if (playerBatVisual != null && !playerBatVisual.activeSelf)
+            {
+                playerBatVisual.SetActive(true);
+                Debug.Log("Restored player's bat by reactivating it.");
+            }
+            // THE ULTIMATE BACKUP: If the bat was truly destroyed and can't be found...
+            else if (playerBatVisual == null && bat2Prefab != null)
+            {
+                Debug.LogError("Player's main bat was DESTROYED. Creating a backup from bat2Prefab.");
+                // We create a new bat from the pickup prefab as a last resort.
+                // We place it exactly where it should be, parented to the player's arm/shoulder.
+                playerBatVisual = Instantiate(bat2Prefab, batParent.position, batParent.rotation, batParent);
+                playerBatVisual.name = "PlayerBat_BACKUP"; // Give it a clear name
+
+                // Re-assign all our critical references to this new backup bat.
+                _currentBatInstance = playerBatVisual;
+                playerBatSpriteRenderer = playerBatVisual.GetComponent<SpriteRenderer>();
+            }
+        }
+    }
     IEnumerator GhostEffectRoutine()
     {
         float timer = 0f;
