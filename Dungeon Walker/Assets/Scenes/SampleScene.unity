@@ -112790,6 +112790,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 186111592}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: shootSoundVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enableMobileInput
       value: 1
       objectReference: {fileID: 0}
@@ -112798,6 +112802,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1529997591}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: enemyImpactSoundVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: chargeSliderFollowTarget
       value: 
       objectReference: {fileID: 765391049}
@@ -112805,6 +112813,10 @@ PrefabInstance:
       propertyPath: joystick
       value: 
       objectReference: {fileID: 1758160189727153294}
+    - target: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: landVolume
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5333788681294591354, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -112905,6 +112917,10 @@ PrefabInstance:
       propertyPath: batPointerRectTransform
       value: 
       objectReference: {fileID: 1741421468}
+    - target: {fileID: 6624817853990017203, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_Volume
+      value: 0.32
+      objectReference: {fileID: 0}
     - target: {fileID: 6770761258023850325, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_TagString
       value: CP
@@ -112925,6 +112941,10 @@ PrefabInstance:
       propertyPath: heartWithWings
       value: 
       objectReference: {fileID: 80940859}
+    - target: {fileID: 8991776130530580151, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: dashVolume
+      value: 0.8
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -113390,6 +113410,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1046322663724281428, guid: 4c5115598e35d114380622ffe6c83242, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 4346091125168160682, guid: 938e536df46c9d74bae3265eef412d66, type: 3}
     - target: {fileID: 1318480637558834094, guid: 4c5115598e35d114380622ffe6c83242, type: 3}
       propertyPath: m_Name
       value: Systems
