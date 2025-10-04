@@ -112683,8 +112683,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: shootSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 36267c8f0a93a4640a33e0f46fe37d6e, type: 3}
     - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: aimJoystick
       value: 
@@ -112747,8 +112751,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: shootSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 897b8eb2c0684cd4fa0d717979e4227d, type: 3}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: MobileInput
       value: 1
@@ -112760,6 +112768,10 @@ PrefabInstance:
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: bulletDamage
       value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: overheatAudioClip
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enemyLayers.m_Bits
@@ -112881,6 +112893,14 @@ PrefabInstance:
       propertyPath: landVolume
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: doubleJumpVolume
+      value: 0.81
+      objectReference: {fileID: 0}
+    - target: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: doubleJumpSoundClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 10dd0f3896486e94181b7558d0297f0f, type: 3}
     - target: {fileID: 5333788681294591354, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -113341,7 +113361,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 868622344847029109, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6248997903676969009, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_LocalPosition.x
