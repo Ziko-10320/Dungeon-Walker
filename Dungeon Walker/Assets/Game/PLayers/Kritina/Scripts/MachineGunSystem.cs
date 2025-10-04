@@ -117,6 +117,10 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
     private PhotonView view;
     private PlayerSyncManager syncManager;
     private bool isOnlineMode = false;
+
+    [Header("Object Pooling Settings")]
+    [SerializeField] private int bulletPoolSize = 50; // More bullets for a machine gun
+    [SerializeField] private int effectPoolSize = 30;
     void Awake()
     {
         view = GetComponentInParent<PhotonView>();
@@ -145,7 +149,24 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
             originalGunColor = gunSpriteRenderers[0].color; // Store the original color of the first renderer
         }
     }
-
+    private void OnEnable()
+    {
+        if (ObjectPoolManager.Instance != null)
+        {
+            if (bulletPrefab != null)
+            {
+                ObjectPoolManager.Instance.CreatePool(bulletPrefab, bulletPoolSize);
+            }
+            if (destructionEffectPrefab != null)
+            {
+                ObjectPoolManager.Instance.CreatePool(destructionEffectPrefab.gameObject, effectPoolSize);
+            }
+        }
+        else
+        {
+            Debug.LogError("ObjectPoolManager instance not found in the scene!");
+        }
+    }
     void Update()
     {
         if (isOnlineMode && !view.IsMine)
@@ -379,10 +400,10 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
     // --- THE MODE-AWARE LOGIC ---
     if (isOnlineMode)
     {
-        // --- ONLINE ---
-        // 1. The shooter creates their own "real" bullet locally.
-        GameObject myBullet = Instantiate(bulletPrefab, spawnPosition, shootRotation);
-        InitializeBullet(myBullet, shootDirection, true); // true = isReal
+            // --- ONLINE ---
+            // 1. The shooter creates their own "real" bullet locally.
+            GameObject myBullet = ObjectPoolManager.Instance.SpawnFromPool(bulletPrefab, spawnPosition, shootRotation);
+            InitializeBullet(myBullet, shootDirection, true); // true = isReal
 
         // 2. The shooter tells everyone else to create a "visual" bullet via an RPC.
         // This RPC must be on your PlayerSyncManager.
@@ -393,16 +414,16 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
     }
     else
     {
-        // --- OFFLINE ---
-        GameObject myBullet = Instantiate(bulletPrefab, spawnPosition, shootRotation);
-        InitializeBullet(myBullet, shootDirection, true); // true = isReal
+            // --- OFFLINE ---
+            GameObject myBullet = ObjectPoolManager.Instance.SpawnFromPool(bulletPrefab, spawnPosition, shootRotation);
+            InitializeBullet(myBullet, shootDirection, true); // true = isReal
     }
 }
     [PunRPC]
     public void RPC_SpawnVisualBullet(Vector3 position, Quaternion rotation, Vector2 direction)
     {
         // This runs on all other clients.
-        GameObject visualBullet = Instantiate(bulletPrefab, position, rotation);
+        GameObject visualBullet = ObjectPoolManager.Instance.SpawnFromPool(bulletPrefab, position, rotation);
         InitializeBullet(visualBullet, direction, false); // false = isReal
     }
     private void InitializeBullet(GameObject bullet, Vector2 direction, bool isReal)
@@ -410,6 +431,7 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
         BulletComponent bulletComponent = bullet.AddComponent<BulletComponent>();
         bulletComponent.machineGunSystem = this; // Give it a reference back to this script
         bulletComponent.isReal = isReal;
+        bulletComponent.ResetHitFlag();
         bulletComponent.Initialize(direction, bulletSpeed, bulletLifetime, bulletDamage, damageableLayers, collisionLayers, enemyLayers, destructionEffectPrefab, bulletCollisionSound, bulletCollisionSoundVolume);
     }
     public void TriggerNetworkedDestruction(Vector3 position)
@@ -534,28 +556,10 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
     }
     public void TriggerDestructionEffect(Vector3 position)
     {
-        // If the destruction effect prefab isn't assigned, do nothing.
-        if (destructionEffectPrefab == null) return;
-
-        // --- This is the proven logic from your BowSystems script ---
-
-        // 1. Instantiate the effect from the prefab at the impact position.
-        GameObject effectInstance = Instantiate(destructionEffectPrefab.gameObject, position, Quaternion.identity);
-
-        // 2. Get the ParticleSystem component from the new instance.
-        ParticleSystem ps = effectInstance.GetComponent<ParticleSystem>();
-        if (ps != null)
+        if (destructionEffectPrefab != null && ObjectPoolManager.Instance != null)
         {
-            // 3. Tell it to play.
-            ps.Play();
-
-            // 4. IMPORTANT: Schedule the effect's GameObject to be destroyed only after it has finished playing.
-            Destroy(effectInstance, ps.main.duration);
-        }
-        else
-        {
-            // Fallback: If for some reason there's no particle system, destroy it after 2 seconds.
-            Destroy(effectInstance, 2f);
+            // Get an effect from the pool. The PoolableParticle script will handle the rest.
+            ObjectPoolManager.Instance.SpawnFromPool(destructionEffectPrefab.gameObject, position, Quaternion.identity);
         }
 
         // Play the collision sound at the impact point
@@ -651,7 +655,8 @@ public class BulletComponent : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        Destroy(gameObject, life);
+        StartCoroutine(DeactivateAfterTime(life));
+
     }
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -668,7 +673,10 @@ public class BulletComponent : MonoBehaviour
         if (rb != null) rb.velocity = direction * speed;
     }
 
-
+    public void ResetHitFlag()
+    {
+        this.hasHit = false;
+    }
     private void HandleCollision(GameObject collidedObject)
     {
         // If this bullet has already processed a hit, do nothing.
@@ -760,17 +768,28 @@ public class BulletComponent : MonoBehaviour
 
                 machineGunSystem.TriggerDestructionEffect(transform.position);
 
-                // 3. The "real" bullet destroys itself.
-                Destroy(gameObject);
-            }
-            else
+            // 3. The "real" bullet destroys itself.
+            gameObject.SetActive(false);
+
+        }
+        else
             {
-                // --- LOGIC FOR THE "VISUAL" BULLET ---
-                // Visual copies just destroy themselves silently. They don't deal damage or create effects.
-                Destroy(gameObject);
-            }
+            // --- LOGIC FOR THE "VISUAL" BULLET ---
+            // Visual copies just destroy themselves silently. They don't deal damage or create effects.
+            gameObject.SetActive(false);
+
         }
     }
+    private System.Collections.IEnumerator DeactivateAfterTime(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        // This check prevents errors if the bullet was already disabled by a collision.
+        if (gameObject.activeInHierarchy)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+}
 
     // Interface for damageable objects
     public interface IDamageable

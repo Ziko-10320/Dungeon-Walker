@@ -675,22 +675,45 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
 
     // --- ADD THIS NEW HELPER FUNCTION ---
     // This function adds the necessary components and initializes a ball.
+    // --- REPLACE your InitializeBall method with this FINAL version ---
     private void InitializeBall(GameObject ball, Vector2 direction, float force, bool isRealBall)
     {
-        // Add the lifecycle controller
-        ProjectileLifecycleController lifecycle = ball.AddComponent<ProjectileLifecycleController>();
+        // --- HYBRID "GET OR ADD" LOGIC ---
+        // Try to get the component. If it doesn't exist, add it.
+        ProjectileLifecycleController lifecycle = ball.GetComponent<ProjectileLifecycleController>();
+        if (lifecycle == null)
+        {
+            lifecycle = ball.AddComponent<ProjectileLifecycleController>();
+        }
+
+        BallCollisionHandler collisionHandler = ball.GetComponent<BallCollisionHandler>();
+        if (collisionHandler == null)
+        {
+            collisionHandler = ball.AddComponent<BallCollisionHandler>();
+        }
+        // --- END OF HYBRID LOGIC ---
+
+        // --- THE CRITICAL RESET LOGIC ---
+        // Now that we are GUARANTEED to have a 'lifecycle' component, we can safely set its state.
         lifecycle.launcherSystem = this;
         lifecycle.spawnTime = Time.time;
-        lifecycle.isReal = isRealBall; // <-- IMPORTANT: We tell the ball if it's real or not.
+        lifecycle.isReal = isRealBall;
+        lifecycle.hasBeenDestroyed = false; // THIS IS THE FIX FOR THE SECOND SHOT.
 
-        // Add the collision handler
-        BallCollisionHandler collisionHandler = ball.AddComponent<BallCollisionHandler>();
+        // Set the collision handler's owner.
         collisionHandler.launcherSystem = this;
 
-        // Apply the force
+        // --- PHYSICS RESET LOGIC ---
+        // Apply the force and reset physics state.
         Rigidbody2D projectileRb = ball.GetComponent<Rigidbody2D>();
         if (projectileRb != null)
         {
+            // Wake up the Rigidbody.
+            projectileRb.simulated = true;
+            // Clear old forces.
+            projectileRb.velocity = Vector2.zero;
+            projectileRb.angularVelocity = 0f;
+            // Apply new force.
             projectileRb.AddForce(direction * force, ForceMode2D.Impulse);
         }
     }
