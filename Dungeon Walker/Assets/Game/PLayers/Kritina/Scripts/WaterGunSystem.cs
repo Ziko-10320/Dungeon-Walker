@@ -77,6 +77,8 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable
     private PhotonView view;
     private bool isOnlineMode = false;
 
+    [SerializeField] private int bulletPoolSize = 20;
+    [SerializeField] private int effectPoolSize = 20;
     void Awake()
     {
         view = GetComponentInParent<PhotonView>();
@@ -90,8 +92,22 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
+      
     }
-
+    private void OnEnable()
+    {
+        // Only create the pools if the gun becomes active.
+        if (ObjectPoolManager.Instance != null)
+        {
+            ObjectPoolManager.Instance.CreatePool(bulletPrefab, bulletPoolSize);
+            ObjectPoolManager.Instance.CreatePool(destructionEffectPrefab.gameObject, effectPoolSize);
+        }
+        else
+        {
+            // Use a more descriptive error for debugging.
+            Debug.LogError("ObjectPoolManager not found! Cannot create pools for WaterGunSystem.");
+        }
+    }
     void Update()
     {
         if (isOnlineMode && !view.IsMine)
@@ -233,24 +249,21 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable
         if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
 
         // 3. Create the "real" bullet that deals damage.
-        GameObject myBullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, shootRotation);
+        GameObject myBullet = ObjectPoolManager.Instance.SpawnFromPool(bulletPrefab, bulletSpawnPoint.position, shootRotation);
+        if (myBullet == null) return; // Safety check
+
+        // 2. Get the correct script component: BulletBehavior.
         BulletBehavior myBulletScript = myBullet.GetComponent<BulletBehavior>();
         if (myBulletScript != null)
         {
-            // --- CORRECTION ICI ---
-            // On assigne les valeurs directement au lieu d'appeler une fonction.
+            // Set stats
             myBulletScript.bulletSpeed = this.bulletSpeed;
             myBulletScript.bulletDamage = this.bulletDamage;
             myBulletScript.collisionLayers = this.collisionLayers;
             myBulletScript.waterExplosionPrefab = this.destructionEffectPrefab.gameObject;
 
-            // On donne la direction à la balle pour qu'elle se déplace.
-            // C'est la seule chose qui doit être faite après avoir réglé les stats.
-            Rigidbody2D rb = myBullet.GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.velocity = shootDirection * myBulletScript.bulletSpeed;
-            }
+            // Call the new Fire method
+            myBulletScript.Fire(shootDirection);
         }
 
         // 4. If we are online, we send a message to everyone else.
@@ -259,7 +272,7 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable
             view.RPC("RPC_SpawnVisualBullet", RpcTarget.Others, bulletSpawnPoint.position, shootDirection);
         }
     }
-  
+
 
 
     // --- AJOUT : LA FONCTION DE SYNCHRONISATION POUR LA ROTATION DE L'ARME ---
@@ -321,20 +334,34 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable
 public class WaterBullet : MonoBehaviour
 {
     private Vector2 direction;
-    private float speed;
     private float lifetime;
-    private int damage;
-    private LayerMask damageableLayers;
-    private LayerMask collisionLayers;
-    private ParticleSystem destructionEffectPrefab;
+    public float speed;
+    public int damage;
+    public LayerMask damageableLayers;
+    public LayerMask collisionLayers;
+    public ParticleSystem destructionEffectPrefab;
+    public AudioClip collisionSound;
+    public float collisionSoundVolume;
     private Rigidbody2D rb;
     private bool hasHit = false;
 
-    [Header("AUDIO")]
-    [SerializeField] private AudioClip collisionSound;
-    [SerializeField, Range(0f, 1f)] private float collisionSoundVolume = 1f; // Volume for collision sound
-    private AudioSource audioSource;
+    private Coroutine deactivateCoroutine;
 
+    [Header("AUDIO")]
+    private AudioSource audioSource;
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+    }
+    void OnEnable()
+    {
+        hasHit = false;
+    }
     public void Initialize(Vector2 dir, float spd, float life, int dmg, LayerMask dmgLayers, LayerMask colLayers, ParticleSystem destructionFx, AudioClip colSound, float colSoundVolume)
     {
         direction = dir.normalized;
@@ -365,13 +392,13 @@ public class WaterBullet : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        Destroy(gameObject, lifetime);
+        if (deactivateCoroutine != null)
+        {
+            StopCoroutine(deactivateCoroutine);
+        }
+        deactivateCoroutine = StartCoroutine(DeactivateAfterTime(lifetime));
     }
 
-    void FixedUpdate()
-    {
-        if (rb != null) rb.velocity = direction * speed;
-    }
 
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -445,9 +472,48 @@ public class WaterBullet : MonoBehaviour
     {
         if (destructionEffectPrefab != null)
         {
-            Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
+            // Instantiate the effect...
+            ParticleSystem effectInstance = Instantiate(destructionEffectPrefab, transform.position, Quaternion.identity);
+          
         }
-        Destroy(gameObject,2f);
+
+        // Stop the lifetime timer if it's running.
+        if (deactivateCoroutine != null)
+        {
+            StopCoroutine(deactivateCoroutine);
+        }
+        // Deactivate the bullet so it can be reused.
+        gameObject.SetActive(false);
     }
+
+    private IEnumerator DeactivateAfterTime(float time)
+    {
+        yield return new WaitForSeconds(time);
+        gameObject.SetActive(false);
+    }
+    public void Fire(Vector2 direction, float life)
+    {
+        // Make sure the Rigidbody is simulated
+        rb.simulated = true;
+        // Apply velocity directly
+        rb.velocity = direction * speed;
+        // Start the deactivation timer
+        StartCoroutine(DeactivateAfterTime(life));
+    }
+
+    // --- ADD THIS SECOND METHOD ---
+    void OnDisable()
+    {
+        // Stop all timers when the bullet is returned to the pool
+        StopAllCoroutines();
+        // Stop all movement and turn off physics until it's needed again
+        if (rb != null)
+        {
+            rb.velocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            rb.simulated = false;
+        }
+    }
+
 }
 

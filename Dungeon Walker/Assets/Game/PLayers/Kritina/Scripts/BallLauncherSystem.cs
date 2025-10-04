@@ -245,6 +245,12 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
 
     public ShakeData CameraShakeExplosion;
 
+    // --- ADD THESE LINES near your other Header variables ---
+    [Header("Object Pooling Settings")]
+    [Tooltip("How many of each ball type to create at the start.")]
+    [SerializeField] private int ballPoolSize = 10;
+  
+
     void Start()
     {
         view = GetComponentInParent<PhotonView>();
@@ -279,6 +285,15 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
     {
         // Start listening for the broadcast from the joystick
         JoystickBroadcaster.OnJoystickTouchStateChanged += HandleJoystickTouchState;
+
+        if (ObjectPoolManager.Instance != null)
+        {
+            // Create pools for all ball types
+            if (orangeBallPrefab != null) ObjectPoolManager.Instance.CreatePool(orangeBallPrefab, ballPoolSize);
+            if (blueBallPrefab != null) ObjectPoolManager.Instance.CreatePool(blueBallPrefab, ballPoolSize);
+            if (greenBallPrefab != null) ObjectPoolManager.Instance.CreatePool(greenBallPrefab, ballPoolSize);
+
+        }
     }
 
     // This function is called when your script is disabled
@@ -434,7 +449,8 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
         Rigidbody2D previewRb = currentPreviewBall.GetComponent<Rigidbody2D>();
         if (previewRb != null)
         {
-            DestroyImmediate(previewRb);
+            Destroy(currentPreviewBall);
+
         }
 
         // Disable colliders on preview ball
@@ -632,7 +648,8 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
         {
             // --- ONLINE ---
             // 1. The shooter creates their own "real" ball locally. This is the authority.
-            GameObject myBall = Instantiate(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
+            GameObject myBall = ObjectPoolManager.Instance.SpawnFromPool(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
+
             InitializeBall(myBall, launchDirection, forceToUse, true); // true = isReal
 
             // 2. The shooter tells everyone else to create a "visual" ball.
@@ -642,7 +659,8 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
         {
             // --- OFFLINE ---
             // Just create a normal, real ball.
-            GameObject myBall = Instantiate(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
+            GameObject myBall = ObjectPoolManager.Instance.SpawnFromPool(selectedBallPrefab, projectileSpawnPoint.position, Quaternion.identity);
+
             InitializeBall(myBall, launchDirection, forceToUse, true); // true = isReal
         }
 
@@ -676,34 +694,6 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             projectileRb.AddForce(direction * force, ForceMode2D.Impulse);
         }
     }
-
-    // --- ADD THIS NEW RPC FUNCTION ---
-    [PunRPC]
-    private void RPC_SpawnVisualBall(string prefabName, Vector3 position, Vector2 direction, float force)
-    {
-        // This runs on all other clients.
-        GameObject ballPrefab = GetBallPrefabByName(prefabName);
-        if (ballPrefab != null)
-        {
-            GameObject visualBall = Instantiate(ballPrefab, position, Quaternion.identity);
-            // Initialize the visual ball, but mark it as NOT real.
-            InitializeBall(visualBall, direction, force, false); // false = isReal
-        }
-    }
-
-    // --- ADD THIS HELPER TO FIND THE PREFAB FROM ITS NAME ---
-    private GameObject GetBallPrefabByName(string name)
-    {
-        foreach (GameObject prefab in ballPrefabs)
-        {
-            if (prefab.name == name)
-            {
-                return prefab;
-            }
-        }
-        return null;
-    }
-
 
 
     private void PrepareNextBall()
@@ -1134,7 +1124,8 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
         if (enableSoundEffects) PlayExplosionSounds(explosionPosition);
 
         activeProjectiles.Remove(projectileToDestroy);
-        Destroy(projectileToDestroy);
+        projectileToDestroy.SetActive(false);
+
     }
 
     // --- ADD OR REPLACE THIS HELPER FUNCTION ---
@@ -1191,91 +1182,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
         return "GenericBall";
     }
 
-    private void CreateExplosionEffects(Vector2 explosionPosition, string ballType)
-    {
-        if (!enableExplosionEffects) return;
-
-        GameObject mainExplosionPrefab = null;
-        GameObject additionalExplosionPrefab1 = null;
-        GameObject additionalExplosionPrefab2 = null;
-        GameObject additionalExplosionPrefab3 = null;
-
-        switch (ballType)
-        {
-            case "OrangeBall":
-                mainExplosionPrefab = orangeExplosionPrefab;
-                additionalExplosionPrefab1 = orangeExplosionPrefab2;
-                additionalExplosionPrefab2 = orangeExplosionPrefab3;
-                additionalExplosionPrefab3 = orangeExplosionPrefab4;
-                break;
-            case "BlueBall":
-                mainExplosionPrefab = blueExplosionPrefab;
-                additionalExplosionPrefab1 = blueExplosionPrefab2;
-                additionalExplosionPrefab2 = blueExplosionPrefab3;
-                additionalExplosionPrefab3 = blueExplosionPrefab4;
-                break;
-            case "GreenBall":
-                mainExplosionPrefab = greenExplosionPrefab;
-                additionalExplosionPrefab1 = greenExplosionPrefab2;
-                additionalExplosionPrefab2 = greenExplosionPrefab3;
-                additionalExplosionPrefab3 = greenExplosionPrefab4;
-                break;
-            default:
-                if (showExplosionDebug)
-                {
-                    Debug.LogWarning($"Unknown ball type: {ballType}. No specific explosion prefabs found.");
-                }
-                break;
-        }
-
-        // Create main explosion
-        if (mainExplosionPrefab != null)
-        {
-            if (showExplosionDebug) Debug.Log($"Attempting to create main explosion from prefab: {mainExplosionPrefab.name}");
-            CreateSingleExplosion(mainExplosionPrefab, explosionPosition, explosionScale, 0f);
-        }
-        else if (showExplosionDebug)
-        {
-            Debug.LogWarning($"Main explosion prefab is null for {ballType}");
-        }
-
-        // Create additional explosions with delays
-        if (additionalExplosionPrefab1 != null)
-        {
-            if (showExplosionDebug) Debug.Log($"Attempting to create additional explosion 1 from prefab: {additionalExplosionPrefab1.name}");
-            StartCoroutine(CreateDelayedExplosion(additionalExplosionPrefab1, explosionPosition, additionalExplosionsScale, explosionDelay));
-        }
-        else if (showExplosionDebug)
-        {
-            Debug.LogWarning($"Additional explosion prefab 1 is null for {ballType}");
-        }
-
-        if (additionalExplosionPrefab2 != null)
-        {
-            if (showExplosionDebug) Debug.Log($"Attempting to create additional explosion 2 from prefab: {additionalExplosionPrefab2.name}");
-            StartCoroutine(CreateDelayedExplosion(additionalExplosionPrefab2, explosionPosition, additionalExplosionsScale, explosionDelay * 2f));
-        }
-        else if (showExplosionDebug)
-        {
-            Debug.LogWarning($"Additional explosion prefab 2 is null for {ballType}");
-        }
-
-        if (additionalExplosionPrefab3 != null)
-        {
-            if (showExplosionDebug) Debug.Log($"Attempting to create additional explosion 3 from prefab: {additionalExplosionPrefab3.name}");
-            StartCoroutine(CreateDelayedExplosion(additionalExplosionPrefab3, explosionPosition, additionalExplosionsScale, explosionDelay * 3f));
-        }
-        else if (showExplosionDebug)
-        {
-            Debug.LogWarning($"Additional explosion prefab 3 is null for {ballType}");
-        }
-
-        if (showExplosionDebug)
-        {
-            Debug.Log($"Created explosion effects at {explosionPosition} for {ballType}");
-        }
-    }
-
+   
     private void CreateSingleExplosion(GameObject explosionPrefab, Vector2 position, float scale, float delay)
     {
         if (explosionPrefab == null)
@@ -1408,7 +1315,8 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             else
             {
                 // If it's just a visual ball, destroy it quietly.
-                Destroy(projectileGameObject);
+                projectileGameObject.SetActive(false);
+
             }
         }
     }
@@ -1438,7 +1346,8 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
             }
             else
             {
-                Destroy(projectileGameObject);
+                projectileGameObject.SetActive(false);
+
             }
         }
     }
