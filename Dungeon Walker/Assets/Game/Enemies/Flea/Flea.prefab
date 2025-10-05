@@ -5870,11 +5870,11 @@ PrefabInstance:
     - target: {fileID: 6015976353237451935, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 8736c882bf658d549b667aa9478609b2, type: 2}
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 6478971349022032010, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 8736c882bf658d549b667aa9478609b2, type: 2}
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 6725575266271996171, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -5890,7 +5890,7 @@ PrefabInstance:
     - target: {fileID: 8606694299350720583, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 8736c882bf658d549b667aa9478609b2, type: 2}
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 9202286772897935925, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -5987,10 +5987,10 @@ PrefabInstance:
       addedObject: {fileID: 3683856643845939974}
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2815927349619341962}
+      addedObject: {fileID: 7493887589134708729}
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7493887589134708729}
+      addedObject: {fileID: -8629119309797380700}
   m_SourcePrefab: {fileID: 4843985084834002234, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
 --- !u!4 &481970195025675269 stripped
 Transform:
@@ -6283,7 +6283,27 @@ MonoBehaviour:
   flyHealth: {fileID: 0}
   inChain: 0
   chain: {fileID: 0}
---- !u!212 &2815927349619341962
+--- !u!114 &7493887589134708729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1619136985213934694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f89f5731f1d308f41b44d3c09694b06a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stunDuration: 2
+  enemyAnimator: {fileID: 5518558782334354305}
+  rb: {fileID: 8602618842035117712}
+  scriptsToDisable:
+  - {fileID: 1720233607332291632}
+  - {fileID: 4000390345464616173}
+  stunEffectPrefab: {fileID: 1032346235029450486, guid: da9903449e7a5ac43890ea76cfbe0772, type: 3}
+  stunEffectSpawnPoint: {fileID: 4943337719773091088}
+--- !u!212 &-8629119309797380700
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6303,7 +6323,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6335,26 +6355,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &7493887589134708729
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1619136985213934694}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f89f5731f1d308f41b44d3c09694b06a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  stunDuration: 2
-  enemyAnimator: {fileID: 5518558782334354305}
-  rb: {fileID: 8602618842035117712}
-  scriptsToDisable:
-  - {fileID: 1720233607332291632}
-  - {fileID: 4000390345464616173}
-  stunEffectPrefab: {fileID: 1032346235029450486, guid: da9903449e7a5ac43890ea76cfbe0772, type: 3}
-  stunEffectSpawnPoint: {fileID: 4943337719773091088}
 --- !u!212 &4819574818533767492 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 6015976353237451935, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}

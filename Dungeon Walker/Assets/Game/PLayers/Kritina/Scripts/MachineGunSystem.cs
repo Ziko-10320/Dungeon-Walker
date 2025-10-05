@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting.Antlr3.Runtime.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
-public class MachineGunSystem : MonoBehaviour, IPunObservable
+public class MachineGunSystem : MonoBehaviour, IPunObservable, IPoolable
 {
     [Header("COMPONENT REFERENCES")]
     [SerializeField] private GameObject Gun;
@@ -149,22 +149,12 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable
             originalGunColor = gunSpriteRenderers[0].color; // Store the original color of the first renderer
         }
     }
-    private void OnEnable()
+    public void CreatePools()
     {
         if (ObjectPoolManager.Instance != null)
         {
-            if (bulletPrefab != null)
-            {
-                ObjectPoolManager.Instance.CreatePool(bulletPrefab, bulletPoolSize);
-            }
-            if (destructionEffectPrefab != null)
-            {
-                ObjectPoolManager.Instance.CreatePool(destructionEffectPrefab.gameObject, effectPoolSize);
-            }
-        }
-        else
-        {
-            Debug.LogError("ObjectPoolManager instance not found in the scene!");
+            if (bulletPrefab != null) ObjectPoolManager.Instance.CreatePool(bulletPrefab, bulletPoolSize);
+            if (destructionEffectPrefab != null) ObjectPoolManager.Instance.CreatePool(destructionEffectPrefab.gameObject, effectPoolSize);
         }
     }
     void Update()

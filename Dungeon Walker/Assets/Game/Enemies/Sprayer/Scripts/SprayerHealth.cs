@@ -32,7 +32,7 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
 
     // Array of SpriteRenderers for the parts of the mushroom
     public SpriteRenderer[] spriteRenderers;
-
+    private Material[] originalMaterials;
     // Damage Sound Variables
     public AudioClip damageSound; // Audio clip to play when taking damage
     [Range(0f, 1f)] public float damageSoundVolume = 0.7f; // Volume slider added here
@@ -61,7 +61,37 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
         audioSource.playOnAwake = false; // Ensure it doesn't play automatically
         audioSource.volume = damageSoundVolume; // Set initial volume
     }
+    void OnEnable()
+    {
+        // This is the guaranteed reset for pooled enemies.
+        currentHealth = maxHealth;
+        isKnockedBack = false;
+        isFlashing = false;
+        isStunned = false; // Assuming you have this variable
 
+        // If the enemy has a movement script, re-enable it.
+        var SprayerFollow = GetComponent<SprayerFollow>();
+        if (SprayerFollow != null)
+        {
+            SprayerFollow.enabled = true;
+        }
+        var SprayerAttack = GetComponent<SprayerAttack>();
+        if (SprayerAttack != null)
+        {
+            SprayerAttack.enabled = true;
+        }
+        if (spriteRenderers != null && originalMaterials != null && spriteRenderers.Length == originalMaterials.Length)
+        {
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] != null && originalMaterials[i] != null)
+                {
+                    // --- CHANGE THIS LINE ---
+                    spriteRenderers[i].sharedMaterial = originalMaterials[i];
+                }
+            }
+        }
+    }
     void Start()
     {
         view = GetComponent<PhotonView>();
@@ -75,6 +105,17 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
         }
         // Initialize health
         currentHealth = maxHealth;
+        if (spriteRenderers != null && spriteRenderers.Length > 0)
+        {
+            originalMaterials = new Material[spriteRenderers.Length];
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] != null)
+                {
+                    originalMaterials[i] = spriteRenderers[i].sharedMaterial;
+                }
+            }
+        }
     }
 
     // Method to take damage
@@ -256,7 +297,7 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
             else
             {
                 // In offline mode, just destroy it locally.
-                Destroy(gameObject);
+                gameObject.SetActive(false);
             }
         }
        
@@ -331,73 +372,28 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
     {
         isFlashing = true;
 
-        if (flashMaterial == null || spriteRenderers.Length == 0)
-        {
-            Debug.LogError("Flash material or SpriteRenderers are not assigned.");
-            isFlashing = false;
-            yield break;
-        }
-
-        Material[] originalMaterials = new Material[spriteRenderers.Length];
-        Material[] flashMaterialInstances = new Material[spriteRenderers.Length];
-
+        // 1. Swap to the Flash Material (using .sharedMaterial)
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
             if (spriteRenderers[i] != null)
             {
-                originalMaterials[i] = spriteRenderers[i].material;
-                flashMaterialInstances[i] = new Material(flashMaterial);
-                spriteRenderers[i].material = flashMaterialInstances[i];
+                spriteRenderers[i].sharedMaterial = flashMaterial;
             }
         }
 
-        float elapsed = 0f;
-        while (elapsed < flashDuration / 2)
-        {
-            float flashAmount = Mathf.Lerp(0, 1, elapsed / (flashDuration / 2));
-            foreach (var material in flashMaterialInstances)
-            {
-                if (material != null)
-                {
-                    material.SetFloat(flashAmountProperty, flashAmount);
-                }
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
+        yield return new WaitForSeconds(flashDuration);
 
-        elapsed = 0f;
-        while (elapsed < flashDuration / 2)
-        {
-            float flashAmount = Mathf.Lerp(1, 0, elapsed / (flashDuration / 2));
-            foreach (var material in flashMaterialInstances)
-            {
-                if (material != null)
-                {
-                    material.SetFloat(flashAmountProperty, flashAmount);
-                }
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        foreach (var material in flashMaterialInstances)
-        {
-            if (material != null)
-            {
-                material.SetFloat(flashAmountProperty, 0);
-            }
-        }
-
+        // 3. Swap back to the Original Materials (using .sharedMaterial)
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
-            if (spriteRenderers[i] != null)
+            if (spriteRenderers[i] != null && originalMaterials[i] != null)
             {
-                spriteRenderers[i].material = originalMaterials[i];
-                Destroy(flashMaterialInstances[i]);
+                spriteRenderers[i].sharedMaterial = originalMaterials[i];
             }
         }
 
         isFlashing = false;
     }
+
+
 }

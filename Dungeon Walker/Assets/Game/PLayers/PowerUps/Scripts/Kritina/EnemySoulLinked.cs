@@ -46,7 +46,7 @@ public class SoulLinkEnemy : MonoBehaviour
             originalMaterials = new Material[spriteRenderers.Length];
             for (int i = 0; i < spriteRenderers.Length; i++)
                 if (spriteRenderers[i] != null)
-                    originalMaterials[i] = spriteRenderers[i].material;
+                    originalMaterials[i] = spriteRenderers[i].sharedMaterial;
         }
     }
 
@@ -121,27 +121,24 @@ public class SoulLinkEnemy : MonoBehaviour
     {
         if (spriteRenderers == null || mat == null) return;
 
-        // Assign a unique instance of the outline material to each renderer so later
-        // flash/material changes won't accidentally revert or share states.
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
             var sr = spriteRenderers[i];
             if (sr == null) continue;
 
-            // Ensure originalMaterials array is filled (in case Awake missed something)
+            // Your original safety check is preserved
             if (originalMaterials == null || originalMaterials.Length != spriteRenderers.Length)
             {
                 originalMaterials = new Material[spriteRenderers.Length];
                 for (int j = 0; j < spriteRenderers.Length; j++)
-                    if (spriteRenderers[j] != null) originalMaterials[j] = spriteRenderers[j].material;
+                    if (spriteRenderers[j] != null) originalMaterials[j] = spriteRenderers[j].sharedMaterial; // Use .sharedMaterial here too
             }
 
-            // Set a fresh instance of the outline material to avoid shared material side-effects
-            Material inst = new Material(mat);
-            sr.material = inst;
+            // --- THE FIX ---
+            // Set the shared material directly instead of creating a new instance.
+            sr.sharedMaterial = mat;
         }
     }
-
 
     /// <summary>
     /// Restore original sprite materials.
@@ -151,6 +148,6 @@ public class SoulLinkEnemy : MonoBehaviour
         if (spriteRenderers == null || originalMaterials == null) return;
         for (int i = 0; i < spriteRenderers.Length && i < originalMaterials.Length; i++)
             if (spriteRenderers[i] != null && originalMaterials[i] != null)
-                spriteRenderers[i].material = originalMaterials[i];
+                spriteRenderers[i].sharedMaterial = originalMaterials[i];
     }
 }

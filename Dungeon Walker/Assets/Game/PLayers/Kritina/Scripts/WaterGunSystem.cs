@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 using Photon.Pun;
 using Photon.Realtime;
 
-public class WaterGunSystem : MonoBehaviour, IPunObservable
+public class WaterGunSystem : MonoBehaviour, IPunObservable, IPoolable
 {
     [Header("COMPONENT REFERENCES")]
     [SerializeField] private GameObject Gun;
@@ -94,18 +94,12 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable
         }
       
     }
-    private void OnEnable()
+    public void CreatePools()
     {
-        // Only create the pools if the gun becomes active.
         if (ObjectPoolManager.Instance != null)
         {
-            ObjectPoolManager.Instance.CreatePool(bulletPrefab, bulletPoolSize);
-            ObjectPoolManager.Instance.CreatePool(destructionEffectPrefab.gameObject, effectPoolSize);
-        }
-        else
-        {
-            // Use a more descriptive error for debugging.
-            Debug.LogError("ObjectPoolManager not found! Cannot create pools for WaterGunSystem.");
+            if (bulletPrefab != null) ObjectPoolManager.Instance.CreatePool(bulletPrefab, bulletPoolSize);
+            if (destructionEffectPrefab != null) ObjectPoolManager.Instance.CreatePool(destructionEffectPrefab.gameObject, effectPoolSize);
         }
     }
     void Update()

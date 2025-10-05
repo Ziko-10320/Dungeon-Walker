@@ -1431,6 +1431,10 @@ PrefabInstance:
       propertyPath: m_FlipX
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -9111832567887109796, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: -8995140420820349065, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.0037250519
@@ -1543,6 +1547,10 @@ PrefabInstance:
       propertyPath: m_SortingOrder
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -2899259724117269334, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: -2089153015778345546, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -1575,6 +1583,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -181.736
       objectReference: {fileID: 0}
+    - target: {fileID: -85033099096556099, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 386791141387813222, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -1611,6 +1623,10 @@ PrefabInstance:
       propertyPath: m_FlipX
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3213437288513731543, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 3297364353584691495, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -1635,6 +1651,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 1.5111866
       objectReference: {fileID: 0}
+    - target: {fileID: 5359103177601667974, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 6833651568018936746, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -1730,10 +1750,10 @@ PrefabInstance:
       addedObject: {fileID: 3473339203522432833}
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8644003064316928950}
+      addedObject: {fileID: 2493172402540829681}
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2493172402540829681}
+      addedObject: {fileID: 4998209832240502983}
   m_SourcePrefab: {fileID: 4843985084834002234, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
 --- !u!212 &1116636856298167895 stripped
 SpriteRenderer:
@@ -2054,7 +2074,26 @@ MonoBehaviour:
   flyHealth: {fileID: 0}
   inChain: 0
   chain: {fileID: 0}
---- !u!212 &8644003064316928950
+--- !u!114 &2493172402540829681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6871114477328718656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f89f5731f1d308f41b44d3c09694b06a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stunDuration: 2
+  enemyAnimator: {fileID: 6622398012560137658}
+  rb: {fileID: 177311769247025339}
+  scriptsToDisable:
+  - {fileID: 7403541494615263103}
+  stunEffectPrefab: {fileID: 1032346235029450486, guid: da9903449e7a5ac43890ea76cfbe0772, type: 3}
+  stunEffectSpawnPoint: {fileID: 3558282070363824776}
+--- !u!212 &4998209832240502983
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2074,7 +2113,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2106,25 +2145,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &2493172402540829681
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6871114477328718656}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f89f5731f1d308f41b44d3c09694b06a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  stunDuration: 2
-  enemyAnimator: {fileID: 6622398012560137658}
-  rb: {fileID: 177311769247025339}
-  scriptsToDisable:
-  - {fileID: 7403541494615263103}
-  stunEffectPrefab: {fileID: 1032346235029450486, guid: da9903449e7a5ac43890ea76cfbe0772, type: 3}
-  stunEffectSpawnPoint: {fileID: 3558282070363824776}
 --- !u!212 &8369018351694676266 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 3213437288513731543, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}

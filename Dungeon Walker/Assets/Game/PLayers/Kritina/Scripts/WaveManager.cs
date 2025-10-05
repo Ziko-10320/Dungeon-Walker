@@ -200,7 +200,7 @@ public class WaveManager : MonoBehaviour
                 }
                 else
                 {
-                    Destroy(enemy);
+                    enemy.SetActive(false);
                 }
             }
         }
@@ -231,11 +231,13 @@ public class WaveManager : MonoBehaviour
             GameObject spawnedBoss;
             if (isOnlineMode)
             {
-                spawnedBoss = PhotonNetwork.Instantiate(config.bossPrefab.name, spawnPosition, spawnPoint.rotation);
+                spawnedBoss = ObjectPoolManager.Instance.SpawnFromPool(config.bossPrefab, spawnPosition, spawnPoint.rotation);
+
             }
             else
             {
-                spawnedBoss = Instantiate(config.bossPrefab, spawnPosition, spawnPoint.rotation);
+                spawnedBoss = ObjectPoolManager.Instance.SpawnFromPool(config.bossPrefab, spawnPosition, spawnPoint.rotation);
+
             }
 
             // Your logic for finding the effect spawn point.
@@ -292,7 +294,8 @@ public class WaveManager : MonoBehaviour
             }
             else
             {
-                spawnedEnemy = Instantiate(enemyPrefab, spawnPosition, spawnPoint.rotation);
+                spawnedEnemy = ObjectPoolManager.Instance.SpawnFromPool(enemyPrefab, spawnPosition, spawnPoint.rotation);
+
             }
 
             Vector3 effectPosition = spawnedEnemy.transform.position;

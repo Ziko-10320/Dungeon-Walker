@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections;
 using FirstGearGames.SmoothCameraShaker;
 using Photon.Pun;
-public class RobustLauncherSystem : MonoBehaviour, IPunObservable
+public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable 
 {
     [Header("Component References")]
     [SerializeField] private GameObject Gun;
@@ -281,20 +281,23 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable
         UpdateMinDistancePointPosition();
         UpdateTrajectoryVisualPoint();
     }
-    void OnEnable()
+    public void CreatePools()
     {
-        // Start listening for the broadcast from the joystick
-        JoystickBroadcaster.OnJoystickTouchStateChanged += HandleJoystickTouchState;
-
         if (ObjectPoolManager.Instance != null)
         {
             // Create pools for all ball types
             if (orangeBallPrefab != null) ObjectPoolManager.Instance.CreatePool(orangeBallPrefab, ballPoolSize);
             if (blueBallPrefab != null) ObjectPoolManager.Instance.CreatePool(blueBallPrefab, ballPoolSize);
             if (greenBallPrefab != null) ObjectPoolManager.Instance.CreatePool(greenBallPrefab, ballPoolSize);
-
+            // Note: We are NOT pooling the explosions here, as you requested.
         }
     }
+    void OnEnable()
+    {
+        // Start listening for the broadcast from the joystick
+        JoystickBroadcaster.OnJoystickTouchStateChanged += HandleJoystickTouchState;
+    }
+
 
     // This function is called when your script is disabled
     void OnDisable()

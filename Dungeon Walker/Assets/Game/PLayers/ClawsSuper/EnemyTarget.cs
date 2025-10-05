@@ -62,7 +62,7 @@ public class EnemySuperTarget : MonoBehaviour
             {
                 if (renderersToFlash[i] != null)
                 {
-                    originalMaterials[i] = renderersToFlash[i].material;
+                    originalMaterials[i] = renderersToFlash[i].sharedMaterial;
                     originalSortingLayerNames[i] = renderersToFlash[i].sortingLayerName; // <-- ADD THIS
                     originalSortingOrders[i] = renderersToFlash[i].sortingOrder;         // <-- ADD THIS
                 }
@@ -141,18 +141,18 @@ public class EnemySuperTarget : MonoBehaviour
             {
                 if (renderersToFlash[i] != null)
                 {
-                    renderersToFlash[i].material = flashMaterial;
+                    renderersToFlash[i].sharedMaterial = flashMaterial;
                     renderersToFlash[i].sortingLayerName = "SuperMoveTop"; // <-- CHANGE THIS
                     renderersToFlash[i].sortingOrder = 100; // A high number to be safe
                 }
             }
             // Animate flash amount to 1
-            if (flashMaterial != null) flashMaterial.SetFloat(FlashAmountProperty, 1f);
+           
         }
         else
         {
             // Animate flash amount to 0
-            if (flashMaterial != null) flashMaterial.SetFloat(FlashAmountProperty, 0f);
+           
             yield return new WaitForSeconds(0.1f);
             // --- RE-ENABLE COMPONENTS ---
             // 1. Re-enable AI scripts
@@ -202,7 +202,7 @@ public class EnemySuperTarget : MonoBehaviour
             {
                 if (renderersToFlash[i] != null && originalMaterials[i] != null)
                 {
-                    renderersToFlash[i].material = originalMaterials[i];
+                    renderersToFlash[i].sharedMaterial = originalMaterials[i];
                     renderersToFlash[i].sortingLayerName = originalSortingLayerNames[i]; // <-- CHANGE THIS
                     renderersToFlash[i].sortingOrder = originalSortingOrders[i];         // <-- CHANGE THIS
                 }

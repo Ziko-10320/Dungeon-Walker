@@ -32,7 +32,7 @@ public class InkHealth : MonoBehaviour
 
     // Array of SpriteRenderers for the parts of the ink enemy
     public SpriteRenderer[] spriteRenderers;
-
+    private Material[] originalMaterials;
     // Damage Sound Variables
     public AudioClip damageSoundClip; // Audio clip to play when taking damage
     [Range(0f, 1f)]
@@ -195,7 +195,22 @@ public class InkHealth : MonoBehaviour
             wasRigidbodyKinematic = inkRigidbody.isKinematic;
         }
     }
+    void OnEnable()
+    {
+        // This is the guaranteed reset for pooled enemies.
+        currentHealth = maxHealth;
+        isKnockedBack = false;
+        isFlashing = false;
+        isStunned = false; // Assuming you have this variable
 
+        // If the enemy has a movement script, re-enable it.
+        
+        var InkAttack = GetComponent<InkAttack>();
+        if (InkAttack != null)
+        {
+            InkAttack.enabled = true;
+        }
+    }
     void Start()
     {
 
@@ -214,6 +229,17 @@ public class InkHealth : MonoBehaviour
         if (enableInvincibilitySystem)
         {
             InitializeInvincibilitySystem();
+        }
+        if (spriteRenderers != null && spriteRenderers.Length > 0)
+        {
+            originalMaterials = new Material[spriteRenderers.Length];
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] != null)
+                {
+                    originalMaterials[i] = spriteRenderers[i].sharedMaterial;
+                }
+            }
         }
     }
 
@@ -660,8 +686,7 @@ public class InkHealth : MonoBehaviour
             soul.NotifyDied();
         }
         // Destroy the ink enemy
-        Destroy(gameObject);
-       
+        gameObject.SetActive(false);
     }
 
     // Helper method to instantiate and play a particle system
@@ -679,86 +704,30 @@ public class InkHealth : MonoBehaviour
     {
         isFlashing = true;
 
-        if (flashMaterial == null || spriteRenderers.Length == 0)
-        {
-            Debug.LogError("Flash material or SpriteRenderers are not assigned.");
-            isFlashing = false;
-            yield break;
-        }
-
-        // Create instances of the flash material for each sprite renderer
-        Material[] originalMaterials = new Material[spriteRenderers.Length];
-        Material[] flashMaterialInstances = new Material[spriteRenderers.Length];
-
+        // --- MATERIAL SWAPPING LOGIC ---
+        // 1. Swap to the Flash Material
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
             if (spriteRenderers[i] != null)
             {
-                // Store the original material
-                originalMaterials[i] = spriteRenderers[i].material;
-
-                // Create an instance of the flash material
-                flashMaterialInstances[i] = new Material(flashMaterial);
-                spriteRenderers[i].material = flashMaterialInstances[i];
+                spriteRenderers[i].material = flashMaterial;
             }
         }
 
-        // Gradually increase the flash amount to 1
-        float elapsed = 0f;
-        while (elapsed < flashDuration / 2)
-        {
-            float flashAmount = Mathf.Lerp(0, 1, elapsed / (flashDuration / 2));
+        // 2. Wait for the flash duration.
+        // We wait for the full duration now, as we are not animating a shader property.
+        yield return new WaitForSeconds(flashDuration);
 
-            // Update the flash amount for all material instances
-            foreach (var material in flashMaterialInstances)
-            {
-                if (material != null)
-                {
-                    material.SetFloat(flashAmountProperty, flashAmount);
-                }
-            }
-
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        // Gradually decrease the flash amount back to 0
-        elapsed = 0f;
-        while (elapsed < flashDuration / 2)
-        {
-            float flashAmount = Mathf.Lerp(1, 0, elapsed / (flashDuration / 2));
-
-            // Update the flash amount for all material instances
-            foreach (var material in flashMaterialInstances)
-            {
-                if (material != null)
-                {
-                    material.SetFloat(flashAmountProperty, flashAmount);
-                }
-            }
-
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        // Reset the flash amount to 0 explicitly
-        foreach (var material in flashMaterialInstances)
-        {
-            if (material != null)
-            {
-                material.SetFloat(flashAmountProperty, 0);
-            }
-        }
-
-        // Restore the original materials and destroy the flash material instances
+        // 3. Swap back to the Original Materials
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
-            if (spriteRenderers[i] != null)
+            if (spriteRenderers[i] != null && originalMaterials[i] != null)
             {
                 spriteRenderers[i].material = originalMaterials[i];
-                Destroy(flashMaterialInstances[i]);
             }
         }
+        // --- END OF SWAPPING LOGIC ---
+
         isFlashing = false;
     }
 }

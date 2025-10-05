@@ -31,7 +31,7 @@ public class FlyHealth : MonoBehaviour
 
     // Array of SpriteRenderers for the parts of the mushroom
     public SpriteRenderer[] spriteRenderers;
-
+    private Material[] originalMaterials;
     // Damage Sound Variables
     public AudioClip damageSoundClip; // Audio clip to play when taking damage
     [Range(0f, 1f)] public float damageSoundVolume = 0.7f; // Volume slider added here
@@ -59,7 +59,26 @@ public class FlyHealth : MonoBehaviour
         audioSource.playOnAwake = false; // Ensure it doesn't play automatically
         audioSource.volume = damageSoundVolume; // Set initial volume
     }
+    void OnEnable()
+    {
+        // This is the guaranteed reset for pooled enemies.
+        currentHealth = maxHealth;
+        isKnockedBack = false;
+        isFlashing = false;
+        isStunned = false; // Assuming you have this variable
 
+        // If the enemy has a movement script, re-enable it.
+        var FlyFollow = GetComponent<FlyFollow>();
+        if (FlyFollow != null)
+        {
+            FlyFollow.enabled = true;
+        }
+        var FlyAttack = GetComponent<FlyAttack>();
+        if (FlyAttack != null)
+        {
+            FlyAttack.enabled = true;
+        }
+    }
     void Start()
     {
         if (weaponSwitchManager == null)
@@ -73,6 +92,17 @@ public class FlyHealth : MonoBehaviour
 
         // Initialize health
         currentHealth = maxHealth;
+        if (spriteRenderers != null && spriteRenderers.Length > 0)
+        {
+            originalMaterials = new Material[spriteRenderers.Length];
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] != null)
+                {
+                    originalMaterials[i] = spriteRenderers[i].sharedMaterial;
+                }
+            }
+        }
     }
 
     // Method to take damage
@@ -188,8 +218,8 @@ public class FlyHealth : MonoBehaviour
             soul.NotifyDied();
         }
         // Destroy the mushroom
-        Destroy(gameObject);
-        
+        gameObject.SetActive(false);
+
     }
 
     // Helper method to instantiate and play a particle system
@@ -204,72 +234,29 @@ public class FlyHealth : MonoBehaviour
     {
         isFlashing = true;
 
-        if (flashMaterial == null || spriteRenderers.Length == 0)
-        {
-            Debug.LogError("Flash material or SpriteRenderers are not assigned.");
-            isFlashing = false;
-            yield break;
-        }
-
-        Material[] originalMaterials = new Material[spriteRenderers.Length];
-        Material[] flashMaterialInstances = new Material[spriteRenderers.Length];
-
+        // --- MATERIAL SWAPPING LOGIC ---
+        // 1. Swap to the Flash Material
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
             if (spriteRenderers[i] != null)
             {
-                originalMaterials[i] = spriteRenderers[i].material;
-                flashMaterialInstances[i] = new Material(flashMaterial);
-                spriteRenderers[i].material = flashMaterialInstances[i];
+                spriteRenderers[i].material = flashMaterial;
             }
         }
 
-        float elapsed = 0f;
-        while (elapsed < flashDuration / 2)
-        {
-            float flashAmount = Mathf.Lerp(0, 1, elapsed / (flashDuration / 2));
-            foreach (var material in flashMaterialInstances)
-            {
-                if (material != null)
-                {
-                    material.SetFloat(flashAmountProperty, flashAmount);
-                }
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
+        // 2. Wait for the flash duration.
+        // We wait for the full duration now, as we are not animating a shader property.
+        yield return new WaitForSeconds(flashDuration);
 
-        elapsed = 0f;
-        while (elapsed < flashDuration / 2)
-        {
-            float flashAmount = Mathf.Lerp(1, 0, elapsed / (flashDuration / 2));
-            foreach (var material in flashMaterialInstances)
-            {
-                if (material != null)
-                {
-                    material.SetFloat(flashAmountProperty, flashAmount);
-                }
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        foreach (var material in flashMaterialInstances)
-        {
-            if (material != null)
-            {
-                material.SetFloat(flashAmountProperty, 0);
-            }
-        }
-
+        // 3. Swap back to the Original Materials
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
-            if (spriteRenderers[i] != null)
+            if (spriteRenderers[i] != null && originalMaterials[i] != null)
             {
                 spriteRenderers[i].material = originalMaterials[i];
-                Destroy(flashMaterialInstances[i]);
             }
         }
+        // --- END OF SWAPPING LOGIC ---
 
         isFlashing = false;
     }

@@ -5,7 +5,7 @@ using System.Collections;
 using FirstGearGames.SmoothCameraShaker;
 using UnityEngine.UI;
 using Photon.Pun;
-public class BowSystems : MonoBehaviour, IPunObservable
+public class BowSystems : MonoBehaviour, IPunObservable, IPoolable
 {
     [Header("Component References")]
     [SerializeField] private GameObject BowGameObject;
@@ -210,6 +210,9 @@ public class BowSystems : MonoBehaviour, IPunObservable
         // Start listening for the broadcast from the joystick
         JoystickBroadcaster.OnJoystickTouchStateChanged += HandleJoystickTouchState;
 
+    }
+    public void CreatePools()
+    {
         if (ObjectPoolManager.Instance != null && arrowPrefab != null)
         {
             ObjectPoolManager.Instance.CreatePool(arrowPrefab, arrowPoolSize);

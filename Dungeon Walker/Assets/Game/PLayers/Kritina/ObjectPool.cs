@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ObjectPoolManager : MonoBehaviour
@@ -6,12 +7,22 @@ public class ObjectPoolManager : MonoBehaviour
     // Singleton instance to make it easily accessible from other scripts.
     public static ObjectPoolManager Instance;
 
+    [Header("Enemy Prefabs to Pre-Pool")]
+    public GameObject fleaPrefab;
+    public GameObject sprayerPrefab; // Example for your other enemy
+    public GameObject flyPrefab;     // Example for your other enemy
+    public GameObject inkPrefab;     // Example for your other enemy
+    public GameObject bossPrefab;    // This is your Rat King Boss
+
+    [Header("Enemy Pool Sizes")]
+    public int normalEnemyPoolSize = 60; // 60 of each of the 4 types = 240
+    public int bossPoolSize = 10;        // 10 for the boss
+
     // A dictionary to hold different pools. The key is the prefab of the object to pool.
     private Dictionary<GameObject, Queue<GameObject>> poolDictionary;
 
     void Awake()
     {
-        // Singleton pattern setup
         if (Instance == null)
         {
             Instance = this;
@@ -23,6 +34,29 @@ public class ObjectPoolManager : MonoBehaviour
         }
 
         poolDictionary = new Dictionary<GameObject, Queue<GameObject>>();
+
+        // --- THIS IS THE NEW, SMART LOGIC ---
+        // 1. Find ALL MonoBehaviours in the entire scene, including inactive ones.
+        MonoBehaviour[] allScripts = FindObjectsOfType<MonoBehaviour>(true);
+        Debug.Log("--- Pre-warming all ENEMY object pools... ---");
+        if (fleaPrefab != null) CreatePool(fleaPrefab, normalEnemyPoolSize);
+        if (sprayerPrefab != null) CreatePool(sprayerPrefab, normalEnemyPoolSize);
+        if (flyPrefab != null) CreatePool(flyPrefab, normalEnemyPoolSize);
+        if (inkPrefab != null) CreatePool(inkPrefab, normalEnemyPoolSize);
+        if (bossPrefab != null) CreatePool(bossPrefab, bossPoolSize);
+        Debug.Log("--- Enemy object pools ready. ---");
+
+
+        foreach (MonoBehaviour script in allScripts)
+        {
+            // Check if the script we found has "signed the contract" of our IPoolable interface.
+            if (script is IPoolable)
+            {
+                // If it has, we can safely cast it and call the method.
+                IPoolable poolable = (IPoolable)script;
+                poolable.CreatePools();
+            }
+        }
     }
 
     /// <summary>
@@ -98,4 +132,8 @@ public class ObjectPoolManager : MonoBehaviour
     }
 
    
+}
+public interface IPoolable
+{
+    void CreatePools();
 }
