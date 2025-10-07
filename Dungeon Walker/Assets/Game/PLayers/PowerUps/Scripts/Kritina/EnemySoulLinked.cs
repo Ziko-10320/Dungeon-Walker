@@ -110,7 +110,7 @@ public class SoulLinkEnemy : MonoBehaviour
         if (flyHealth != null) { flyHealth.Die(); return; }
 
         // Fallback: destroy object if no health component found
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 
 

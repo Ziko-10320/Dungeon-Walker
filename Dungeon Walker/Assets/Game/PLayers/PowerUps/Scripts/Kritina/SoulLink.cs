@@ -430,8 +430,8 @@ public class SoulLinkChain : MonoBehaviour
             members[toIndex] = null;
             victim.ForceDieFromChain();
 
-            // wait until destroyed
-            yield return new WaitUntil(() => victim == null);
+            
+            yield return new WaitUntil(() => victim == null || !victim.gameObject.activeInHierarchy);
         }
         else
         {
