@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class FlyAttack : MonoBehaviour
 {
@@ -43,6 +44,10 @@ public class FlyAttack : MonoBehaviour
     private float nextAttackTime;
     private Vector2 lastKnownPlayerPosition;
 
+    public int projectilePoolSize = 5; // How many projectiles this fly keeps ready
+    private Queue<GameObject> projectilePool;
+    private GameObject projectilePoolParent;
+    private List<GameObject> activeProjectiles = new List<GameObject>();
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -56,6 +61,18 @@ public class FlyAttack : MonoBehaviour
 
     void Start()
     {
+        projectilePool = new Queue<GameObject>();
+        // Create a clean parent object for this fly's projectiles
+        projectilePoolParent = new GameObject(gameObject.name + " Projectile Pool");
+        projectilePoolParent.transform.SetParent(this.transform); // Parent it to the fly itself
+
+        for (int i = 0; i < projectilePoolSize; i++)
+        {
+            GameObject projectile = Instantiate(dustProjectilePrefab);
+            projectile.transform.SetParent(projectilePoolParent.transform);
+            projectile.SetActive(false);
+            projectilePool.Enqueue(projectile);
+        }
         animator = GetComponent<Animator>();
         if (animator == null)
         {
@@ -111,6 +128,62 @@ public class FlyAttack : MonoBehaviour
             SetNextAttackTime();
         }
 
+        for (int i = activeProjectiles.Count - 1; i >= 0; i--)
+        {
+            GameObject projectile = activeProjectiles[i];
+
+            // If the projectile was somehow disabled, remove it from the list and skip.
+            if (projectile == null || !projectile.activeInHierarchy)
+            {
+                activeProjectiles.RemoveAt(i);
+                continue;
+            }
+
+            // Check for collision with the player
+            Collider2D playerHit = Physics2D.OverlapCircle(projectile.transform.position, 0.2f, playerLayer);
+            if (playerHit != null)
+            {
+                // We hit the player!
+                PlayerHealth playerHealth = playerHit.GetComponent<PlayerHealth>();
+                if (playerHealth != null) playerHealth.TakeDamage(projectileDamage, playerKnockbackForce, playerKnockbackDirection);
+
+                L3antixHealth l3antixHealth = playerHit.GetComponent<L3antixHealth>();
+                if (l3antixHealth != null) l3antixHealth.TakeDamage(projectileDamage, playerKnockbackForce, playerKnockbackDirection);
+
+                // Disable projectile and remove it from the active list.
+                projectile.SetActive(false);
+                activeProjectiles.RemoveAt(i);
+                continue; // Go to the next projectile
+            }
+
+            // Check for collision with the ground
+            Collider2D groundHit = Physics2D.OverlapCircle(projectile.transform.position, 0.2f, groundLayer);
+            if (groundHit != null)
+            {
+                // We hit the ground!
+                // Spawn explosion effect
+                if (dustExplosionEffect != null)
+                {
+                    ObjectPoolManager.Instance.SpawnFromPool(dustExplosionEffect, projectile.transform.position, Quaternion.identity);
+                }
+
+                // Damage player in radius
+                Collider2D[] playersInExplosion = Physics2D.OverlapCircleAll(projectile.transform.position, explosionRadius, playerLayer);
+                foreach (var player in playersInExplosion)
+                {
+                    PlayerHealth pHealth = player.GetComponent<PlayerHealth>();
+                    if (pHealth != null) pHealth.TakeDamage(explosionDamage, playerKnockbackForce, playerKnockbackDirection);
+
+                    L3antixHealth lHealth = player.GetComponent<L3antixHealth>();
+                    if (lHealth != null) lHealth.TakeDamage(explosionDamage, playerKnockbackForce, playerKnockbackDirection);
+                }
+
+                // Disable projectile and remove it from the active list.
+                projectile.SetActive(false);
+                activeProjectiles.RemoveAt(i);
+            }
+        }
+
     }
 
     public void ThrowDust()
@@ -148,53 +221,46 @@ public class FlyAttack : MonoBehaviour
         }
     }
 
+
     private void InstantiateAndInitializeProjectile(Vector2 targetPlayerPosition)
     {
+        GameObject dust = projectilePool.Dequeue();
+        projectilePool.Enqueue(dust);
+
+        dust.transform.position = projectileSpawnPoint.position;
+        dust.SetActive(true);
+
+        // Add to our list of active projectiles to manage
+        activeProjectiles.Add(dust);
+
         Vector2 predictedPlayerPosition = targetPlayerPosition;
-        Rigidbody2D playerRb = playerTransform.GetComponent<Rigidbody2D>();
-        if (playerRb != null)
-        {
-            float distanceToPlayer = Vector2.Distance(projectileSpawnPoint.position, targetPlayerPosition);
-            float timeToReachPlayer = distanceToPlayer / projectileSpeed;
-            predictedPlayerPosition += playerRb.velocity * timeToReachPlayer;
-        }
+        // ... (your player prediction code can stay here)
 
-        GameObject dust = Instantiate(dustProjectilePrefab, projectileSpawnPoint.position, Quaternion.identity);
         Rigidbody2D dustRb = dust.GetComponent<Rigidbody2D>();
-        if (dustRb == null)
+        if (dustRb != null)
         {
-            dustRb = dust.AddComponent<Rigidbody2D>();
-            dustRb.gravityScale = 0;
-            dustRb.isKinematic = true;
+            Vector2 direction = (predictedPlayerPosition - (Vector2)dust.transform.position).normalized;
+            dustRb.velocity = direction * projectileSpeed;
         }
 
-        Collider2D dustCollider = dust.GetComponent<Collider2D>();
-        if (dustCollider == null)
-        {
-            CapsuleCollider2D capsule = dust.AddComponent<CapsuleCollider2D>();
-            capsule.isTrigger = true;
-        }
-        else
-        {
-            dustCollider.isTrigger = true;
-        }
-
-        ProjectileController projectileController = dust.AddComponent<ProjectileController>();
-        projectileController.InitializeProjectile(
-            predictedPlayerPosition,
-            projectileSpeed,
-            projectileDamage,
-            projectileLifetime,
-            groundLayer,
-            playerLayer,
-            dustExplosionEffect,
-            playerKnockbackForce,
-            playerKnockbackDirection,
-            explosionRadius,
-            explosionDamage
-        );
+        // Start a coroutine to handle the lifetime
+        StartCoroutine(LifetimeCountdown(dust));
     }
 
+    private IEnumerator LifetimeCountdown(GameObject projectile)
+    {
+        yield return new WaitForSeconds(projectileLifetime);
+
+        if (projectile != null && projectile.activeInHierarchy)
+        {
+            // If time runs out, treat it like it hit the ground (create an explosion)
+            if (dustExplosionEffect != null)
+            {
+                ObjectPoolManager.Instance.SpawnFromPool(dustExplosionEffect, projectile.transform.position, Quaternion.identity);
+            }
+            projectile.SetActive(false);
+        }
+    }
     void SetNextAttackTime()
     {
         nextAttackTime = Time.time + Random.Range(attackIntervalMin, attackIntervalMax);
@@ -216,7 +282,7 @@ public class FlyAttack : MonoBehaviour
         private Vector2 targetPosition;
         private Rigidbody2D rb;
         private bool hasBeenDestroyed = false;
-
+        public Queue<GameObject> ownerPool;
         public void InitializeProjectile(
             Vector2 targetPos,
             float projSpeed,
@@ -230,6 +296,8 @@ public class FlyAttack : MonoBehaviour
             float expRadius,
             int expDamage)
         {
+            hasBeenDestroyed = false;
+            StopAllCoroutines();
             targetPosition = targetPos;
             speed = projSpeed;
             damage = projDamage;
@@ -257,22 +325,30 @@ public class FlyAttack : MonoBehaviour
         private IEnumerator LifetimeCountdown()
         {
             yield return new WaitForSeconds(lifetime);
-            if (!hasBeenDestroyed)
+
+            // If the projectile is still active after its lifetime has expired...
+            if (gameObject.activeInHierarchy && !hasBeenDestroyed)
             {
+                // ...call the master method and tell it to trigger a full explosion.
                 DestroyProjectile(transform.position, true);
             }
         }
 
         void OnTriggerEnter2D(Collider2D other)
         {
+            // If already handled, ignore.
             if (hasBeenDestroyed) return;
 
+            // --- IF WE HIT THE GROUND ---
             if (((1 << other.gameObject.layer) & groundLayer) != 0)
             {
+                // Call the master method and tell it to trigger a full explosion.
                 DestroyProjectile(transform.position, true);
             }
+            // --- IF WE HIT THE PLAYER ---
             else if (((1 << other.gameObject.layer) & playerLayer) != 0)
             {
+                // First, apply the direct hit damage.
                 PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
                 if (playerHealth != null)
                 {
@@ -283,22 +359,24 @@ public class FlyAttack : MonoBehaviour
                 {
                     l3antixHealth.TakeDamage(damage, knockbackForce, knockbackDirection);
                 }
-                else
-                {
-                    Debug.LogWarning("PlayerHealth not found on player object.");
-                }
+
+                // Now, call the master method and tell it NOT to trigger the area explosion.
+                // This will just disable the projectile.
                 DestroyProjectile(transform.position, false);
             }
-            
         }
+
 
         public void DestroyProjectile(Vector2 explosionPosition, bool triggerExplosion)
         {
+            // If this projectile has already been handled in this frame, do nothing.
             if (hasBeenDestroyed) return;
-            hasBeenDestroyed = true;
+            hasBeenDestroyed = true; // Mark it as "used" immediately.
 
+            // --- LOGIC FOR EXPLOSION DAMAGE ---
             if (triggerExplosion)
             {
+                // Find all players within the explosion radius.
                 Collider2D[] hitColliders = Physics2D.OverlapCircleAll(explosionPosition, explosionRadius, playerLayer);
                 foreach (Collider2D hitCollider in hitColliders)
                 {
@@ -307,26 +385,28 @@ public class FlyAttack : MonoBehaviour
                     {
                         playerHealth.TakeDamage(explosionDamage, knockbackForce, knockbackDirection);
                     }
+                    L3antixHealth l3antixHealth = hitCollider.GetComponent<L3antixHealth>();
+                    if (l3antixHealth != null)
+                    {
+                        l3antixHealth.TakeDamage(explosionDamage, knockbackForce, knockbackDirection);
+                    }
                 }
             }
+            // --- END OF EXPLOSION LOGIC ---
 
-            if (explosionEffect != null)
+            // --- LOGIC FOR SPAWNING THE VISUAL EFFECT ---
+            // Only spawn the effect if it's assigned AND an explosion was triggered.
+            if (triggerExplosion && explosionEffect != null)
             {
-                GameObject explosionInstance = Instantiate(explosionEffect, explosionPosition, Quaternion.identity);
-                ParticleSystem ps = explosionInstance.GetComponent<ParticleSystem>();
-                if (ps != null)
-                {
-                    ps.Play();
-                    Destroy(explosionInstance, ps.main.duration + ps.main.startLifetime.constantMax + 0.1f);
-                }
-                else
-                {
-                    Destroy(explosionInstance, 3f);
-                }
+                ObjectPoolManager.Instance.SpawnFromPool(explosionEffect, explosionPosition, Quaternion.identity);
             }
+            // --- END OF VISUAL EFFECT LOGIC ---
 
-            Destroy(gameObject);
+            // --- FINAL ACTION: RETURN TO POOL ---
+            // No matter what happened, disable the projectile to return it to the pool.
+            gameObject.SetActive(false);
         }
+
 
         void OnDestroy()
         {

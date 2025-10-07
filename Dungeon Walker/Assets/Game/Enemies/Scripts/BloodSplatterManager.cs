@@ -9,7 +9,7 @@ public enum SplatterType
 }
 
 [System.Serializable]
-public class SplatterSettings
+public class SplatterSettings 
 {
     public List<GameObject> prefabs; // Now a list to assign multiple splatters
     public float initialDisplayDuration = 0f; // For hit splatters, how long it stays fully visible
@@ -30,7 +30,7 @@ public class EnemySplatterConfig
     public SplatterSettings deathSplatterSettings; // Specific setting for death splatter
 }
 
-public class BloodSplatterManager : MonoBehaviour
+public class BloodSplatterManager : MonoBehaviour, IPoolable
 {
     public static BloodSplatterManager Instance { get; private set; }
 
@@ -45,7 +45,7 @@ public class BloodSplatterManager : MonoBehaviour
     public List<EnemySplatterConfig> enemySplatterConfigs;
 
     private Dictionary<string, List<GameObject>> activeSpecificDeathSplatterPools = new Dictionary<string, List<GameObject>>();
-
+    public int splatterPoolSize = 20;
     private void Awake()
     {
         if (Instance == null)
@@ -99,7 +99,7 @@ public class BloodSplatterManager : MonoBehaviour
                     if (splatterPool.Count >= currentSettings.specificDeathSplatterLimit)
                     {
                         // Destroy the oldest specific death splatter to make room for a new one
-                        if (splatterPool[0] != null) Destroy(splatterPool[0]);
+                        if (splatterPool[0] != null) splatterPool[0].SetActive(false);
                         splatterPool.RemoveAt(0);
                     }
                 }
@@ -112,12 +112,20 @@ public class BloodSplatterManager : MonoBehaviour
 
         if (selectedPrefab != null && currentSettings != null)
         {
-            GameObject splatterGO = Instantiate(selectedPrefab, position, rotation);
+            GameObject splatterGO = ObjectPoolManager.Instance.SpawnFromPool(selectedPrefab, position, rotation);
             SpriteRenderer sr = splatterGO.GetComponent<SpriteRenderer>();
-
+            if (sr != null)
+            {
+                Color originalColor = sr.color;
+                originalColor.a = 1f; // Set alpha to 1 (fully opaque)
+                sr.color = originalColor;
+            }
             if (sr != null)
             {
                 sr.sortingOrder = Random.Range(minOrderInLayer, maxOrderInLayer + 1);
+
+                sr.flipX = false;
+                sr.flipY = false;
 
                 if (randomFlipX && Random.value < 0.5f)
                 {
@@ -189,7 +197,7 @@ public class BloodSplatterManager : MonoBehaviour
             yield return new WaitForSeconds(remainingLifetime);
         }
 
-        if (splatterGO != null) Destroy(splatterGO);
+        if (splatterGO != null) splatterGO.SetActive(false);
     }
 
     private EnemySplatterConfig GetEnemySplatterConfig(string enemyTag)
@@ -202,6 +210,44 @@ public class BloodSplatterManager : MonoBehaviour
             }
         }
         return null; // Or return a default config
+    }
+    public void CreatePools()
+    {
+        Debug.Log("--- Pre-warming all BLOOD SPLATTER object pools... ---");
+        if (ObjectPoolManager.Instance == null) return;
+
+        // Use a HashSet to avoid creating duplicate pools for the same prefab
+        HashSet<GameObject> allSplatterPrefabs = new HashSet<GameObject>();
+
+        // Go through all enemy configs and collect every unique splatter prefab
+        foreach (var config in enemySplatterConfigs)
+        {
+            if (config.hitSplatterSettings?.prefabs != null)
+            {
+                foreach (var prefab in config.hitSplatterSettings.prefabs)
+                {
+                    if (prefab != null) allSplatterPrefabs.Add(prefab);
+                }
+            }
+            if (config.deathSplatterSettings?.prefabs != null)
+            {
+                foreach (var prefab in config.deathSplatterSettings.prefabs)
+                {
+                    if (prefab != null) allSplatterPrefabs.Add(prefab);
+                }
+            }
+            if (config.deathSplatterSettings?.specificDeathSplatterPrefab != null)
+            {
+                allSplatterPrefabs.Add(config.deathSplatterSettings.specificDeathSplatterPrefab);
+            }
+        }
+
+        // Now create a pool for each unique prefab we found
+        foreach (var prefab in allSplatterPrefabs)
+        {
+            ObjectPoolManager.Instance.CreatePool(prefab, splatterPoolSize);
+        }
+        Debug.Log("--- Blood Splatter object pools ready. ---");
     }
 }
 

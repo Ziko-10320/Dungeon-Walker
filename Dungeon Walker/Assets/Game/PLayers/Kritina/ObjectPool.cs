@@ -18,6 +18,12 @@ public class ObjectPoolManager : MonoBehaviour
     public int normalEnemyPoolSize = 60; // 60 of each of the 4 types = 240
     public int bossPoolSize = 10;        // 10 for the boss
 
+    [Header("Effect Prefabs to Pre-Pool")]
+    public GameObject dustExplosionEffectPrefab;
+
+    // ADD THIS under your other pool sizes
+    [Header("Effect Pool Sizes")]
+    public int effectPoolSize = 50;
     // A dictionary to hold different pools. The key is the prefab of the object to pool.
     private Dictionary<GameObject, Queue<GameObject>> poolDictionary;
 
@@ -44,6 +50,7 @@ public class ObjectPoolManager : MonoBehaviour
         if (flyPrefab != null) CreatePool(flyPrefab, normalEnemyPoolSize);
         if (inkPrefab != null) CreatePool(inkPrefab, normalEnemyPoolSize);
         if (bossPrefab != null) CreatePool(bossPrefab, bossPoolSize);
+        if (dustExplosionEffectPrefab != null) CreatePool(dustExplosionEffectPrefab, effectPoolSize);
         Debug.Log("--- Enemy object pools ready. ---");
 
 

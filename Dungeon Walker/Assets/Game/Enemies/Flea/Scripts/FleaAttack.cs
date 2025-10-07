@@ -43,7 +43,10 @@ public class FleaChargeAttack : MonoBehaviour
 
     private int isAnticipatingHash;
     private int isChargingHash;
+    private float checkTimer = 0f;
+    private const float CHECK_INTERVAL = 0.3f;
 
+    private Collider2D[] hitResults = new Collider2D[1];
     void Awake()
     {
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
@@ -106,8 +109,9 @@ public class FleaChargeAttack : MonoBehaviour
         if (invis3antix != null && invis3antix.IsInvisible()) return;
         if (playerTransform == null || isAttacking || !canAttack) return;
 
-        float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
-        playerInRange = distanceToPlayer <= attackRange;
+
+        float sqrDistanceToPlayer = (playerTransform.position - transform.position).sqrMagnitude;
+        playerInRange = sqrDistanceToPlayer <= (attackRange * attackRange);
 
         if (playerInRange)
         {
