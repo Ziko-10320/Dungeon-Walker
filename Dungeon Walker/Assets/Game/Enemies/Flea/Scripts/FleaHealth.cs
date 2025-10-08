@@ -54,6 +54,8 @@ public class FleaHealth : MonoBehaviour, IPunObservable
     public ShakeData CameraShakeDeath;
     public bool isStunned = false;
     private PhotonView view;
+    public GameObject deathSplatterEffectPrefab;
+    public Transform splatterSpawnPoint;
     void OnEnable()
     {
         // This is the guaranteed reset for pooled enemies.
@@ -310,6 +312,13 @@ public class FleaHealth : MonoBehaviour, IPunObservable
             }
             else
             {
+                if (deathSplatterEffectPrefab != null && ObjectPoolManager.Instance != null)
+                {
+                    Vector3 spawnPosition = (splatterSpawnPoint != null) ? splatterSpawnPoint.position : transform.position;
+
+                    // Tell the pool manager to spawn the effect at that position
+                    ObjectPoolManager.Instance.SpawnFromPool(deathSplatterEffectPrefab, spawnPosition, Quaternion.identity);
+                }
                 // In offline mode, just destroy it locally.
                 gameObject.SetActive(false);
             }

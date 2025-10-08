@@ -793,7 +793,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 641154356668034815, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_SortingOrder
-      value: 8
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 641154356668034815, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -861,7 +861,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2938270285230883288, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_SortingOrder
-      value: 1
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 2938270285230883288, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -898,6 +898,10 @@ PrefabInstance:
     - target: {fileID: 4509183948020417044, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_TagString
       value: Ink
+      objectReference: {fileID: 0}
+    - target: {fileID: 4621548541187013460, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_SortingOrder
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 4621548541187013460, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -942,6 +946,10 @@ PrefabInstance:
     - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: CollisionModule.multiplyColliderForceByParticleSpeed
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5179100873277422717, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_SortingOrder
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 5852059347395478908, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: looping
@@ -1142,6 +1150,10 @@ PrefabInstance:
     - target: {fileID: 7772050555358281063, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_TagString
       value: Ink
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588814125443815226, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_SortingOrder
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 8970738348927089689, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalScale.x
@@ -1481,11 +1493,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -61.418854
+      value: -72.15
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.9224578
+      value: -2.27
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1979,6 +1991,8 @@ MonoBehaviour:
   currentHealth: 0
   CameraShakeDeath: {fileID: 11400000, guid: 5de216865eb2173459f490db41b47444, type: 2}
   isStunned: 0
+  deathSplatterEffectPrefab: {fileID: 4559407249175245342, guid: 52685d678bee71b4fa752185dee03258, type: 3}
+  splatterSpawnPoint: {fileID: 7229075169359459992}
 --- !u!114 &8652883054127700324
 MonoBehaviour:
   m_ObjectHideFlags: 0

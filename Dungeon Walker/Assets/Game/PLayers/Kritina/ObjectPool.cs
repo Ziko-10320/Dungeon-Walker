@@ -14,6 +14,15 @@ public class ObjectPoolManager : MonoBehaviour
     public GameObject inkPrefab;     // Example for your other enemy
     public GameObject bossPrefab;    // This is your Rat King Boss
 
+    [Header("Splatter Effect Prefabs to Pre-Pool")]
+    public GameObject splatterFleaPrefab;
+    public GameObject splatterSprayerPrefab;
+    public GameObject splatterFlyPrefab;
+    public GameObject splatterInkPrefab;
+    public GameObject splatterBossPrefab;
+
+    public int splatterPoolSize = 50;
+
     [Header("Enemy Pool Sizes")]
     public int normalEnemyPoolSize = 60; // 60 of each of the 4 types = 240
     public int bossPoolSize = 10;        // 10 for the boss
@@ -53,6 +62,11 @@ public class ObjectPoolManager : MonoBehaviour
         if (dustExplosionEffectPrefab != null) CreatePool(dustExplosionEffectPrefab, effectPoolSize);
         Debug.Log("--- Enemy object pools ready. ---");
 
+        if (splatterFleaPrefab != null) CreatePool(splatterFleaPrefab, splatterPoolSize);
+        if (splatterSprayerPrefab != null) CreatePool(splatterSprayerPrefab, splatterPoolSize);
+        if (splatterFlyPrefab != null) CreatePool(splatterFlyPrefab, splatterPoolSize);
+        if (splatterInkPrefab != null) CreatePool(splatterInkPrefab, splatterPoolSize);
+        if (splatterBossPrefab != null) CreatePool(splatterBossPrefab, splatterPoolSize);
 
         foreach (MonoBehaviour script in allScripts)
         {

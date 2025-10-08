@@ -45,6 +45,8 @@ public class RatKingHealth : MonoBehaviour
     //CameraShake
     public ShakeData CameraShakeDeath;
     public bool isStunned = false;
+    public GameObject deathSplatterEffectPrefab;
+    public Transform splatterSpawnPoint;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -171,7 +173,13 @@ public class RatKingHealth : MonoBehaviour
             weaponSwitchManager.OnEnemyKilled();
             Debug.Log("Enemy died, notifying WeaponSwitchManager.");
         }
+        if (deathSplatterEffectPrefab != null && ObjectPoolManager.Instance != null)
+        {
+            Vector3 spawnPosition = (splatterSpawnPoint != null) ? splatterSpawnPoint.position : transform.position;
 
+            // Tell the pool manager to spawn the effect at that position
+            ObjectPoolManager.Instance.SpawnFromPool(deathSplatterEffectPrefab, spawnPosition, Quaternion.identity);
+        }
         // Destroy the Rat King
         gameObject.SetActive(false);
     }

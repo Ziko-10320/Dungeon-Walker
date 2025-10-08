@@ -10072,7 +10072,7 @@ ParticleSystemRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 12
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -10314,11 +10314,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -73.22025
+      value: -78.98808
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.0438085
+      value: -2.097002
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 11a163ea991a99f4189db914265efbd5, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10854,6 +10854,8 @@ MonoBehaviour:
   currentHealth: 0
   CameraShakeDeath: {fileID: 11400000, guid: 5de216865eb2173459f490db41b47444, type: 2}
   isStunned: 0
+  deathSplatterEffectPrefab: {fileID: 7744118527560474626, guid: 12ab4ee6a9deb0240af4a47d1b47119d, type: 3}
+  splatterSpawnPoint: {fileID: 6887314040794923926}
 --- !u!114 &4969289257960167119
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11020,7 +11022,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 641154356668034815, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_SortingOrder
-      value: 8
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 641154356668034815, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -11084,7 +11086,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2938270285230883288, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_SortingOrder
-      value: 1
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 2938270285230883288, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -11102,6 +11104,10 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Sprayer
       objectReference: {fileID: 0}
+    - target: {fileID: 4621548541187013460, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_SortingOrder
+      value: 11
+      objectReference: {fileID: 0}
     - target: {fileID: 4809421703279907128, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_TagString
       value: Sprayer
@@ -11109,6 +11115,10 @@ PrefabInstance:
     - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: looping
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5179100873277422717, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_SortingOrder
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 5852059347395478908, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: looping
@@ -11213,6 +11223,10 @@ PrefabInstance:
     - target: {fileID: 7772050555358281063, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_TagString
       value: Sprayer
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588814125443815226, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: m_SortingOrder
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 8970738348927089689, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalPosition.x

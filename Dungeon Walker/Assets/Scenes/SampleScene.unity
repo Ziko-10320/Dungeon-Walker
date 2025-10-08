@@ -3528,6 +3528,30 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterPoolSize
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterFlyPrefab
+      value: 
+      objectReference: {fileID: 7464382647960571032, guid: ab3a9f1136287af45aaeeda158f8287f, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterInkPrefab
+      value: 
+      objectReference: {fileID: 4559407249175245342, guid: 52685d678bee71b4fa752185dee03258, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterBossPrefab
+      value: 
+      objectReference: {fileID: 2426752246179592511, guid: 9398fe330c75dc341baf52ce61f8d603, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterFleaPrefab
+      value: 
+      objectReference: {fileID: 1266603064206159665, guid: 83134c1ee46f09f4eab9d8e3d42b48fc, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterSprayerPrefab
+      value: 
+      objectReference: {fileID: 7744118527560474626, guid: 12ab4ee6a9deb0240af4a47d1b47119d, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: dustExplosionEffectPrefab
       value: 
       objectReference: {fileID: 4696925322321457287, guid: 40c48c1cf3f6c504f8abf2b219d6c04b, type: 3}
@@ -6270,7 +6294,7 @@ MonoBehaviour:
   m_Intensity: 2
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636
+  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636adae63f4
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -16499,7 +16523,7 @@ MonoBehaviour:
   m_Intensity: 3.01
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636
+  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636adae63f4
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -29780,7 +29804,7 @@ MonoBehaviour:
   m_Intensity: 2
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636
+  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636adae63f4
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -43314,7 +43338,7 @@ MonoBehaviour:
   m_Intensity: 2
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636
+  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636adae63f4
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -45552,7 +45576,7 @@ MonoBehaviour:
   m_Intensity: 2
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636
+  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636adae63f4
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -58085,7 +58109,7 @@ MonoBehaviour:
   m_Intensity: 0.37
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636
+  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636adae63f4
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -60946,7 +60970,7 @@ MonoBehaviour:
   m_Intensity: 2
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636
+  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636adae63f4
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -73139,7 +73163,7 @@ MonoBehaviour:
   m_Intensity: 3
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636
+  m_ApplyToSortingLayers: 000000000b18c024e9fbc6a659aa0fe9a33bb636adae63f4
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -92141,91 +92165,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1219393797482476753, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
   m_PrefabInstance: {fileID: 4617959566137443153}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &2815243765057419953
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 3715496865021253064, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_Name
-      value: SplatterManager
-      objectReference: {fileID: 0}
-    - target: {fileID: 3715496865021253064, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4222640860329313389, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -85.26107
-      objectReference: {fileID: 0}
-    - target: {fileID: 4222640860329313389, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 30.013271
-      objectReference: {fileID: 0}
-    - target: {fileID: 4222640860329313389, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -1.9017634
-      objectReference: {fileID: 0}
-    - target: {fileID: 4222640860329313389, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4222640860329313389, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4222640860329313389, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4222640860329313389, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4222640860329313389, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4222640860329313389, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4222640860329313389, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6781423558834814930, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: splatterPoolSize
-      value: 200
-      objectReference: {fileID: 0}
-    - target: {fileID: 6781423558834814930, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: enemySplatterConfigs.Array.data[0].deathSplatterSettings.lifetime
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6781423558834814930, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: enemySplatterConfigs.Array.data[1].deathSplatterSettings.lifetime
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6781423558834814930, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: enemySplatterConfigs.Array.data[2].deathSplatterSettings.lifetime
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6781423558834814930, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: enemySplatterConfigs.Array.data[3].deathSplatterSettings.lifetime
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6781423558834814930, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
-      propertyPath: enemySplatterConfigs.Array.data[4].deathSplatterSettings.lifetime
-      value: 3.5
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 8352b8ae1f1999340bb434a99b817fc3, type: 3}
 --- !u!1001 &2817712760083654385
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -92437,7 +92376,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7313885458256365899, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -23
+      value: -23.000015
       objectReference: {fileID: 0}
     - target: {fileID: 7753398750275947403, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_Camera
@@ -94093,7 +94032,6 @@ SceneRoots:
   - {fileID: 8381444365293226867}
   - {fileID: 3511443043920724447}
   - {fileID: 4617959566137443153}
-  - {fileID: 2815243765057419953}
   - {fileID: 9154620416485456172}
   - {fileID: 8356537759707823358}
   - {fileID: 6710104876470070291}

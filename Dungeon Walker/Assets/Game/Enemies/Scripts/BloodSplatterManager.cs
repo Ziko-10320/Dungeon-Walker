@@ -1,6 +1,7 @@
-using UnityEngine;
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering;
 
 public enum SplatterType
 {
@@ -46,6 +47,7 @@ public class BloodSplatterManager : MonoBehaviour, IPoolable
 
     private Dictionary<string, List<GameObject>> activeSpecificDeathSplatterPools = new Dictionary<string, List<GameObject>>();
     public int splatterPoolSize = 20;
+    private Transform splatterParent;
     private void Awake()
     {
         if (Instance == null)
@@ -56,6 +58,7 @@ public class BloodSplatterManager : MonoBehaviour, IPoolable
         {
             Destroy(gameObject);
         }
+       
     }
 
     public void CreateSplatter(Vector2 position, Quaternion rotation, SplatterType type, string enemyTag = "Default")
@@ -113,45 +116,28 @@ public class BloodSplatterManager : MonoBehaviour, IPoolable
         if (selectedPrefab != null && currentSettings != null)
         {
             GameObject splatterGO = ObjectPoolManager.Instance.SpawnFromPool(selectedPrefab, position, rotation);
+            Vector3 pos = position;
+            pos.z = Time.frameCount * 0.001f + Random.Range(0.0001f, 0.001f);
+            splatterGO.transform.position = pos;
             SpriteRenderer sr = splatterGO.GetComponent<SpriteRenderer>();
+            sr.maskInteraction = SpriteMaskInteraction.None;
+
             if (sr != null)
             {
-                Color originalColor = sr.color;
-                originalColor.a = 1f; // Set alpha to 1 (fully opaque)
-                sr.color = originalColor;
+                // Set color based on your enemy type logic (if you have it)
+                // For now, we'll just ensure it's not transparent.
+                Color c = sr.color;
+                c.a = 1f;
+                sr.color = c;
+
+                if (randomFlipX && Random.value < 0.5f) sr.flipX = true;
+                if (randomFlipY && Random.value < 0.5f) sr.flipY = true;
             }
-            if (sr != null)
-            {
-                sr.sortingOrder = Random.Range(minOrderInLayer, maxOrderInLayer + 1);
-
-                sr.flipX = false;
-                sr.flipY = false;
-
-                if (randomFlipX && Random.value < 0.5f)
-                {
-                    sr.flipX = true;
-                }
-                if (randomFlipY && Random.value < 0.5f)
-                {
-                    sr.flipY = true;
-                }
-            }
-
-            if (randomRotation)
-            {
-                splatterGO.transform.rotation = Quaternion.Euler(0, 0, Random.Range(0, 360));
-            }
-
+            if (randomRotation) splatterGO.transform.rotation = Quaternion.Euler(0, 0, Random.Range(0, 360));
             float randomSize = currentSettings.overrideSize ? Random.Range(currentSettings.minSize, currentSettings.maxSize) : 1f;
             splatterGO.transform.localScale = new Vector3(randomSize, randomSize, 1f);
 
-            // Start the fading coroutine directly from the manager
-            StartCoroutine(FadeOutAndDestroy(splatterGO, sr, currentSettings.initialDisplayDuration, currentSettings.fadeDuration, currentSettings.lifetime));
-
-            if (type == SplatterType.Death && currentSettings.specificDeathSplatterPrefab != null)
-            {
-                activeSpecificDeathSplatterPools[enemyTag].Add(splatterGO);
-            }
+            StartCoroutine(FadeOutAndDestroy(splatterGO, sr, currentSettings.fadeDuration, currentSettings.lifetime));
         }
         else
         {
@@ -159,24 +145,17 @@ public class BloodSplatterManager : MonoBehaviour, IPoolable
         }
     }
 
-    private IEnumerator FadeOutAndDestroy(GameObject splatterGO, SpriteRenderer sr, float initialDisplayDuration, float fadeDuration, float totalLifetime)
+   
+    private IEnumerator FadeOutAndDestroy(GameObject splatterGO, SpriteRenderer sr, float fadeDuration, float totalLifetime)
     {
-        // Ensure the GameObject and SpriteRenderer still exist before proceeding
-        if (splatterGO == null || sr == null)
+        // Wait for the lifetime, minus the time it takes to fade.
+        float timeToWait = totalLifetime - fadeDuration;
+        if (timeToWait > 0)
         {
-            yield break;
+            yield return new WaitForSeconds(timeToWait);
         }
 
-        // Wait for initial display duration
-        yield return new WaitForSeconds(initialDisplayDuration);
-
-        // Ensure the GameObject and SpriteRenderer still exist before fading
-        if (splatterGO == null || sr == null)
-        {
-            yield break;
-        }
-
-        // Start fading
+        // Now, fade it out.
         float timer = 0f;
         Color startColor = sr.color;
         Color endColor = new Color(startColor.r, startColor.g, startColor.b, 0f);
@@ -184,20 +163,16 @@ public class BloodSplatterManager : MonoBehaviour, IPoolable
         while (timer < fadeDuration)
         {
             timer += Time.deltaTime;
-            if (splatterGO == null || sr == null) yield break; // Check again inside loop
+            if (splatterGO == null || sr == null) yield break;
             sr.color = Color.Lerp(startColor, endColor, timer / fadeDuration);
             yield return null;
         }
-        if (splatterGO != null && sr != null) sr.color = endColor; // Ensure it\"s fully transparent
 
-        // Destroy after total lifetime (or immediately if fadeDuration + initialDisplayDuration >= totalLifetime)
-        float remainingLifetime = totalLifetime - (initialDisplayDuration + fadeDuration);
-        if (remainingLifetime > 0)
+        // After fading, disable the object.
+        if (splatterGO != null)
         {
-            yield return new WaitForSeconds(remainingLifetime);
+            splatterGO.SetActive(false);
         }
-
-        if (splatterGO != null) splatterGO.SetActive(false);
     }
 
     private EnemySplatterConfig GetEnemySplatterConfig(string enemyTag)

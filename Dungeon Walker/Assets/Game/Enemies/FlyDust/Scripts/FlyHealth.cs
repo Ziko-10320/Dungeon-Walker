@@ -48,6 +48,8 @@ public class FlyHealth : MonoBehaviour
     //CameraShake
     public ShakeData CameraShakeDeath;
     public bool isStunned = false;
+    public GameObject deathSplatterEffectPrefab;
+    public Transform splatterSpawnPoint;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -216,6 +218,13 @@ public class FlyHealth : MonoBehaviour
         if (soul != null && soul.inChain)
         {
             soul.NotifyDied();
+        }
+        if (deathSplatterEffectPrefab != null && ObjectPoolManager.Instance != null)
+        {
+            Vector3 spawnPosition = (splatterSpawnPoint != null) ? splatterSpawnPoint.position : transform.position;
+
+            // Tell the pool manager to spawn the effect at that position
+            ObjectPoolManager.Instance.SpawnFromPool(deathSplatterEffectPrefab, spawnPosition, Quaternion.identity);
         }
         // Destroy the mushroom
         gameObject.SetActive(false);
