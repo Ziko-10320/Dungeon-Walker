@@ -10862,11 +10862,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -61.69854
+      value: -64.28
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.1874247
+      value: -4.38
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.z
@@ -11295,7 +11295,7 @@ MonoBehaviour:
   cheeseImpactParticlesPrefab2: {fileID: 813475499377475710, guid: f219d6e1e2751fb4b8683b45ae2f1490, type: 3}
   cheeseImpactParticlesPrefab3: {fileID: 5989248871805962395, guid: 42fc002353319184a9f45737980de158, type: 3}
   throwCooldown: 1.8
-  throwProbability: 0.53
+  throwProbability: 0.92
   cheeseDamageAmount: 30
   cheeseExplosionRadius: 2
   cheeseKnockbackForce: 10
@@ -11319,8 +11319,8 @@ MonoBehaviour:
   wanderSpeed: 4
   chaseSpeed: 7
   stoppingDistance: 5
-  detectionRadius: 10.38
-  lostSightRadius: 16.3
+  detectionRadius: 15.3
+  lostSightRadius: 19.5
   wanderTimeRange: {x: 14.07, y: 18.8}
   wallCheck: {fileID: 6244576270574274305}
   groundCheck: {fileID: 3896541145735939658}

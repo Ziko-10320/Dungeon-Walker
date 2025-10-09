@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &566348276385136167
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7323705339132282683}
+  - component: {fileID: 7868306092270758708}
+  m_Layer: 0
+  m_Name: 'ObjectPoolingManager '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7323705339132282683
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 566348276385136167}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -69.41369, y: 6.256324, z: 0.015039327}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7868306092270758708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 566348276385136167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de039f8fb7eaa304d9fab58d28b8c3aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fleaPrefab: {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
+  sprayerPrefab: {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+  flyPrefab: {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
+  inkPrefab: {fileID: 6871114477328718656, guid: def788d9280bf0241b6807fd4864a96c, type: 3}
+  bossPrefab: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
+  splatterFleaPrefab: {fileID: 1266603064206159665, guid: 83134c1ee46f09f4eab9d8e3d42b48fc, type: 3}
+  splatterSprayerPrefab: {fileID: 7744118527560474626, guid: 12ab4ee6a9deb0240af4a47d1b47119d, type: 3}
+  splatterFlyPrefab: {fileID: 7464382647960571032, guid: ab3a9f1136287af45aaeeda158f8287f, type: 3}
+  splatterInkPrefab: {fileID: 4559407249175245342, guid: 52685d678bee71b4fa752185dee03258, type: 3}
+  splatterBossPrefab: {fileID: 2426752246179592511, guid: 9398fe330c75dc341baf52ce61f8d603, type: 3}
+  spawnEffectPrefab: {fileID: 6931139375341048568, guid: 167cfba23a69cb04c9d4e5465254483f, type: 3}
+  fartEffectPrefab: {fileID: 7832334667084426812, guid: dbeadf9f25d19c74abdc58506a67edaf, type: 3}
+  fartEffectPoolSize: 3
+  splatterPoolSize: 6
+  spawnEffectPoolSize: 200
+  normalEnemyPoolSize: 60
+  bossPoolSize: 10
+  dustExplosionEffectPrefab: {fileID: 4696925322321457287, guid: 40c48c1cf3f6c504f8abf2b219d6c04b, type: 3}
+  effectPoolSize: 50

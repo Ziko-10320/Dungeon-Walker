@@ -5303,7 +5303,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.49497297, y: 0.5049769, z: -0.50497705, w: 0.49497297}
   m_LocalPosition: {x: 0.16899967, y: 1.9189997, z: 0.59}
-  m_LocalScale: {x: 3.6442437, y: 1, z: 1}
+  m_LocalScale: {x: 3.6442437, y: 1, z: 1.3185}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 578209667700630728}
@@ -5879,7 +5879,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 1000
+    maxNumParticles: 600
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -6145,7 +6145,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 400
+      scalar: 200
       minScalar: 10
       maxCurve:
         serializedVersion: 2

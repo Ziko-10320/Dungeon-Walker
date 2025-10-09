@@ -149,15 +149,23 @@ public class InkHealth : MonoBehaviour
     private Coroutine invincibilityCoroutine;
     private Coroutine invincibilityTimerCoroutine;
     private float nextInvincibilityCheckTime;
-    private bool wasRigidbodyKinematic; // Store original kinematic state
     private Color[] originalSpriteColors; // Store original sprite colors
 
     //CameraShake
     public ShakeData CameraShakeDeath;
     public bool isStunned = false;
 
+    [Header("Ground Check Settings")]
+    [Tooltip("The transform representing the point to check for ground from.")]
+    public Transform groundCheck;
+    [Tooltip("The radius of the circle used to check for ground.")]
+    public float groundCheckRadius = 0.2f;
+    [Tooltip("Which layers should be considered 'ground'.")]
+    public LayerMask groundLayer;
+
     public GameObject deathSplatterEffectPrefab;
     public Transform splatterSpawnPoint;
+    private bool hasLanded = false;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -192,11 +200,7 @@ public class InkHealth : MonoBehaviour
             }
         }
 
-        // Store original rigidbody kinematic state
-        if (inkRigidbody != null)
-        {
-            wasRigidbodyKinematic = inkRigidbody.isKinematic;
-        }
+       
     }
     void OnEnable()
     {
@@ -205,9 +209,12 @@ public class InkHealth : MonoBehaviour
         isKnockedBack = false;
         isFlashing = false;
         isStunned = false; // Assuming you have this variable
-
+        hasLanded = false;
         // If the enemy has a movement script, re-enable it.
-        
+        if (inkRigidbody != null)
+        {
+            inkRigidbody.bodyType = RigidbodyType2D.Dynamic;
+        }
         var InkAttack = GetComponent<InkAttack>();
         if (InkAttack != null)
         {
@@ -248,6 +255,21 @@ public class InkHealth : MonoBehaviour
 
     void Update()
     {
+        if (!hasLanded && inkRigidbody != null && inkRigidbody.bodyType == RigidbodyType2D.Dynamic)
+        {
+            // ...check if it is now grounded.
+            if (IsGrounded())
+            {
+                // It has landed!
+                hasLanded = true; // Set the flag so this code doesn't run again.
+                inkRigidbody.bodyType = RigidbodyType2D.Static; // Switch to Static.
+
+                if (showInvincibilityDebug)
+                {
+                    Debug.Log(gameObject.name + " has landed and switched to Static Rigidbody.");
+                }
+            }
+        }
         // Update invincibility debug info
         if (showInvincibilityDebug)
         {
@@ -338,7 +360,19 @@ public class InkHealth : MonoBehaviour
         }
 
         isInInvincibilityTransition = true;
+        // Before doing anything else, check if the Rigidbody is dynamic AND if the enemy is in the air.
+        if (inkRigidbody != null && inkRigidbody.bodyType == RigidbodyType2D.Dynamic && !IsGrounded())
+        {
+            if (showInvincibilityDebug)
+            {
+                Debug.Log("InkHealth: Aborting invincibility attempt because the enemy is airborne.");
+            }
 
+            // Abort the invincibility sequence.
+            isInInvincibilityTransition = false; // Reset the flag
+            ScheduleNextInvincibilityCheck();    // Immediately schedule the next attempt
+            yield break;                         // Exit the coroutine
+        }
         if (showInvincibilityDebug)
         {
             Debug.Log("InkHealth: Starting invincibility sequence");
@@ -379,12 +413,7 @@ public class InkHealth : MonoBehaviour
             }
         }
 
-        // Make rigidbody kinematic
-        if (inkRigidbody != null)
-        {
-            wasRigidbodyKinematic = inkRigidbody.isKinematic;
-            inkRigidbody.isKinematic = true;
-        }
+      
 
         // Hide sprites if enabled
         if (hideSpritesDuringInvincibility && spriteRenderers != null)
@@ -492,12 +521,7 @@ public class InkHealth : MonoBehaviour
             }
         }
 
-        // Restore rigidbody kinematic state
-        if (inkRigidbody != null)
-        {
-            inkRigidbody.isKinematic = wasRigidbodyKinematic;
-        }
-
+      
         if (showInvincibilityDebug)
         {
             Debug.Log("InkHealth: Invincibility deactivated, enemy is now vulnerable");
@@ -739,6 +763,19 @@ public class InkHealth : MonoBehaviour
         // --- END OF SWAPPING LOGIC ---
 
         isFlashing = false;
+    }
+    private bool IsGrounded()
+    {
+        // Failsafe: If the groundCheck transform isn't assigned, assume it's not grounded to be safe.
+        if (groundCheck == null)
+        {
+            Debug.LogWarning("Ground Check transform is not assigned on " + gameObject.name);
+            return false;
+        }
+
+        // Draw a small circle at the groundCheck position. If that circle overlaps with anything
+        // on the 'groundLayer', the method returns true.
+        return Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
     }
 }
 

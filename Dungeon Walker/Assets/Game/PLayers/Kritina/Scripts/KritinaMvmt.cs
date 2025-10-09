@@ -34,6 +34,9 @@ public class KritinaMovement : MonoBehaviour
     public ParticleSystem dust;
     public ParticleSystem dustLand;
 
+    public GameObject fartEffectPrefab; // The prefab for the fart effect
+    public Transform fartEffectSpawnPoint;
+
     [Header("Arm and Gun Flip")]
     public Transform[] playerArms;
     public Transform[] playerGuns;
@@ -204,6 +207,13 @@ public class KritinaMovement : MonoBehaviour
         if (isDoubleJump)
         {
             if (doubleJumpSoundClip != null) AudioSource.PlayClipAtPoint(doubleJumpSoundClip, transform.position, doubleJumpVolume);
+
+          
+            if (fartEffectPrefab != null && fartEffectSpawnPoint != null && ObjectPoolManager.Instance != null)
+            {
+                // Tell the pool manager to spawn the fart effect at our specific spawn point
+                ObjectPoolManager.Instance.SpawnFromPool(fartEffectPrefab, fartEffectSpawnPoint.position, fartEffectSpawnPoint.rotation);
+            }
         }
         else
         {

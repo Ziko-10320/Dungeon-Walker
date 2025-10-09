@@ -99,7 +99,25 @@ public class GalaxyImapctSystem : MonoBehaviour
             if (superReadyIndicator != null) superReadyIndicator.SetActive(false);
         });
     }
+    private void OnEnable()
+    {
+        // Check if the slider exists to prevent errors.
+        if (superBarSlider != null)
+        {
+            // Enable the entire GameObject that the slider is on.
+            superBarSlider.gameObject.SetActive(true);
+        }
+    }
 
+    private void OnDisable()
+    {
+        // Check if the slider exists to prevent errors.
+        if (superBarSlider != null)
+        {
+            // Disable the entire GameObject that the slider is on.
+            superBarSlider.gameObject.SetActive(false);
+        }
+    }
     void Update()
     {
         bool canPerformSuper = !isPerformingSuperMove &&

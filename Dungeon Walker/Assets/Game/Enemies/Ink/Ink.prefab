@@ -254,6 +254,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5733931022801928995}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4631092450355316774
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4913748458299209800}
+  m_Layer: 7
+  m_Name: GroundCheck
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4913748458299209800
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4631092450355316774}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.14, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5733931022801928995}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5080959930836322160
 GameObject:
   m_ObjectHideFlags: 0
@@ -1719,6 +1750,9 @@ PrefabInstance:
       addedObject: {fileID: 4715227671083996487}
     - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 4913748458299209800}
+    - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 6165009945439312054}
     - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
@@ -1991,6 +2025,11 @@ MonoBehaviour:
   currentHealth: 0
   CameraShakeDeath: {fileID: 11400000, guid: 5de216865eb2173459f490db41b47444, type: 2}
   isStunned: 0
+  groundCheck: {fileID: 4913748458299209800}
+  groundCheckRadius: 0.2
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
   deathSplatterEffectPrefab: {fileID: 4559407249175245342, guid: 52685d678bee71b4fa752185dee03258, type: 3}
   splatterSpawnPoint: {fileID: 7229075169359459992}
 --- !u!114 &8652883054127700324

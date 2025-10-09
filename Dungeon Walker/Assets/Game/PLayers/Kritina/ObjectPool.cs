@@ -21,8 +21,11 @@ public class ObjectPoolManager : MonoBehaviour
     public GameObject splatterInkPrefab;
     public GameObject splatterBossPrefab;
 
+    public GameObject spawnEffectPrefab;
+    public GameObject fartEffectPrefab;
+    public int fartEffectPoolSize = 10;
     public int splatterPoolSize = 50;
-
+    public int spawnEffectPoolSize = 20;
     [Header("Enemy Pool Sizes")]
     public int normalEnemyPoolSize = 60; // 60 of each of the 4 types = 240
     public int bossPoolSize = 10;        // 10 for the boss
@@ -68,6 +71,9 @@ public class ObjectPoolManager : MonoBehaviour
         if (splatterInkPrefab != null) CreatePool(splatterInkPrefab, splatterPoolSize);
         if (splatterBossPrefab != null) CreatePool(splatterBossPrefab, splatterPoolSize);
 
+        if (spawnEffectPrefab != null) CreatePool(spawnEffectPrefab, spawnEffectPoolSize);
+
+        if (fartEffectPrefab != null) CreatePool(fartEffectPrefab, fartEffectPoolSize);
         foreach (MonoBehaviour script in allScripts)
         {
             // Check if the script we found has "signed the contract" of our IPoolable interface.

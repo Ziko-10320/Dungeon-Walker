@@ -64251,6 +64251,7 @@ Transform:
   - {fileID: 6163936903288431681}
   - {fileID: 5655835730392218243}
   - {fileID: 2850881730107690329}
+  - {fileID: 5729966507736632345}
   m_Father: {fileID: 5689588596020951161}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2326110396199874986
@@ -152876,7 +152877,7 @@ SpriteRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4790877911239449537}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -183452,6 +183453,37 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!1 &6367210886240641025
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5729966507736632345}
+  m_Layer: 8
+  m_Name: FartPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5729966507736632345
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6367210886240641025}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.03, y: -0.31, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5384984792622734752}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6472830882490012912
 GameObject:
   m_ObjectHideFlags: 0
@@ -188745,6 +188777,8 @@ MonoBehaviour:
   groundCheckRadius: 0.17
   dust: {fileID: 5315392440918078358}
   dustLand: {fileID: 2329299419304940613}
+  fartEffectPrefab: {fileID: 7832334667084426812, guid: dbeadf9f25d19c74abdc58506a67edaf, type: 3}
+  fartEffectSpawnPoint: {fileID: 5729966507736632345}
   playerArms:
   - {fileID: 7403888332547260754}
   - {fileID: 1611143346747572473}
@@ -188755,10 +188789,10 @@ MonoBehaviour:
   - {fileID: 7857072426400135443}
   jumpSoundClip: {fileID: 8300000, guid: 6c20c1b1e22fea749820fc8669b7cd18, type: 3}
   jumpVolume: 1
-  doubleJumpSoundClip: {fileID: 8300000, guid: 601139f8ba08a4945ab8b88b53ff958f, type: 3}
-  doubleJumpVolume: 0.6
+  doubleJumpSoundClip: {fileID: 8300000, guid: 10dd0f3896486e94181b7558d0297f0f, type: 3}
+  doubleJumpVolume: 0.81
   landSoundClip: {fileID: 8300000, guid: 669b3786784ee4846a20810776913691, type: 3}
-  landVolume: 0.632
+  landVolume: 1
   rb: {fileID: 3638036865984811249}
   isFacingRight: 1
 --- !u!114 &6486646314645600925
@@ -188885,7 +188919,7 @@ MonoBehaviour:
   muzzleFlashEffect: {fileID: 5374799189625228237, guid: b0531f4b0ae47334db61dbef9cc7d06a, type: 3}
   bulletSpeed: 70
   bulletLifetime: 0.35
-  bulletDamage: 6
+  bulletDamage: 5
   damageableLayers:
     serializedVersion: 2
     m_Bits: 640
@@ -188894,14 +188928,14 @@ MonoBehaviour:
     m_Bits: 200
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 640
+    m_Bits: 704
   maxUpwardAngle: 180
   maxDownwardAngle: 180
   minDistanceToAim: 0.8
   rotationSpeed: 25
   useInstantRotation: 1
-  PcInput: 0
-  MobileInput: 1
+  PcInput: 1
+  MobileInput: 0
   launcherRotationOffsetRight: 0
   launcherRotationOffsetLeft: 180
   trajectoryRotationOffsetRight: 0
@@ -188922,10 +188956,12 @@ MonoBehaviour:
   overheatAudioClip: {fileID: 0}
   overheatAudioVolume: 1
   cameraShakeOver: {fileID: 11400000, guid: 91161cc12ac12444280a59edf89a180b, type: 2}
-  shootSound: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: 897b8eb2c0684cd4fa0d717979e4227d, type: 3}
   shootSoundVolume: 1
   bulletCollisionSound: {fileID: 0}
   bulletCollisionSoundVolume: 1
+  bulletPoolSize: 50
+  effectPoolSize: 30
 --- !u!114 &4880712677658907754
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188945,6 +188981,7 @@ MonoBehaviour:
   minDistancePoint: {fileID: 8336744432297507756}
   trajectoryVisualPoint: {fileID: 4713187553049496802}
   aimJoystick: {fileID: 0}
+  isJoystickHeldDown: 0
   arrowPrefab: {fileID: 1498485409916217560, guid: bbcd8d335a3a92b46bcdaafaeccdd246, type: 3}
   nextArrowPreviewPoint: {fileID: 656350286821608332}
   previewArrowScale: 1
@@ -188974,11 +189011,11 @@ MonoBehaviour:
   maxGravityScale: 0.1
   enableSoundEffects: 1
   shootSound: {fileID: 8300000, guid: db0d52d46e598524c8bf5ed81118429a, type: 3}
-  shootSoundVolume: 0.724
+  shootSoundVolume: 1
   wallImpactSound: {fileID: 8300000, guid: 5db3d1167d7ee86448ee1c1f5661be2b, type: 3}
   wallImpactSoundVolume: 1
   enemyImpactSound: {fileID: 8300000, guid: 9bbd88d9f1096f44ba918dabe6073eb3, type: 3}
-  enemyImpactSoundVolume: 0.592
+  enemyImpactSoundVolume: 1
   gravityForce: -9.81
   shootCooldown: 0.3
   randomSpread: 0
@@ -189009,6 +189046,7 @@ MonoBehaviour:
   CameraShakeImpact: {fileID: 0}
   enablePcInput: 0
   enableMobileInput: 1
+  arrowPoolSize: 3
 --- !u!114 &2837465749836920815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189112,6 +189150,7 @@ MonoBehaviour:
   autoCalibrate: 1
   showCalibrationDebug: 1
   CameraShakeExplosion: {fileID: 11400000, guid: e6107c79dc59e694082721368c332589, type: 2}
+  ballPoolSize: 1
 --- !u!114 &838453109639267503
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189132,9 +189171,9 @@ MonoBehaviour:
   minDistancePoint: {fileID: 2234259091620207429}
   aimJoystick: {fileID: 0}
   bulletPrefab: {fileID: 4834404838286360832, guid: 9fb3d00f02457c348ac143efdfecd06f, type: 3}
-  destructionEffectPrefab: {fileID: 9211147252592248156, guid: 63b748846c04c804c92beef43944470d, type: 3}
+  destructionEffectPrefab: {fileID: 6619945100955572787, guid: e5b9d31208f75c348a2b64794e1dfd02, type: 3}
   muzzleFlashEffect: {fileID: 7747676623657136492}
-  bulletSpeed: 20
+  bulletSpeed: 35
   bulletLifetime: 1
   bulletDamage: 20
   damageableLayers:
@@ -189155,10 +189194,12 @@ MonoBehaviour:
   fireRate: 0.15
   maxAmmo: 12
   reloadTime: 1.5
-  shootSound: {fileID: 8300000, guid: e30dc5a02c3d0774aaec25404e0cd17e, type: 3}
+  shootSound: {fileID: 8300000, guid: 36267c8f0a93a4640a33e0f46fe37d6e, type: 3}
   shootSoundVolume: 1
   bulletCollisionSound: {fileID: 8300000, guid: 0a9e41efd2406c84ea5ea5dff4c22a9c, type: 3}
   bulletCollisionSoundVolume: 1
+  bulletPoolSize: 15
+  effectPoolSize: 15
 --- !u!114 &3674480518580276143
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189174,6 +189215,15 @@ MonoBehaviour:
   ghostSpawnInterval: 0.01
   ghostLifetime: 0.35
   ghostColor: {r: 0.10933607, g: 0.491883, b: 0.8584906, a: 0.5803922}
+  ghostTargetRenderers:
+  - {fileID: 6947184254319397887}
+  - {fileID: 5939638440623841445}
+  - {fileID: 7949244602667867961}
+  - {fileID: 1406802415121437217}
+  - {fileID: 3362977777422246368}
+  - {fileID: 767765035806786872}
+  - {fileID: 1015964144232326413}
+  - {fileID: 5397227893056444109}
 --- !u!114 &8991776130530580151
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189193,7 +189243,7 @@ MonoBehaviour:
   dashDuration: 0.18
   dashCooldown: 1
   dashSoundClip: {fileID: 8300000, guid: 18e93df17df665741be350e1d1383b89, type: 3}
-  dashVolume: 0.283
+  dashVolume: 0.8
 --- !u!70 &4372666188120850418
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -189241,7 +189291,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: b02fc2b5ddbcb9448a43dc7e2250e061, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.227
+  m_Volume: 0.32
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -189363,6 +189413,12 @@ MonoBehaviour:
   superBarText: {fileID: 0}
   superReadyIndicator: {fileID: 0}
   superButton: {fileID: 0}
+  shockwaveMaterial: {fileID: 2100000, guid: c366b6622ffea90438845abfb0ba4a28, type: 2}
+  ScreenShockwave: {fileID: 9184360313073627478}
+  shaderParam: _WaveDistanceFromCenter
+  startValue: -0.1
+  endValue: 1
+  shaderDuration: 0.7
 --- !u!114 &556636709978226019
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189712,7 +189768,7 @@ MonoBehaviour:
     - {fileID: 838453109639267503}
     armGameObject: {fileID: 4790877911239449537}
     armSpriteRenderer: {fileID: 2632647565020050176}
-    weaponUIIcon: {fileID: 21300000, guid: 461992939535a4a4cb6d45f4310e5b18, type: 3}
+    weaponUIIcon: {fileID: 21300000, guid: 01244a28271240c4a8300a356767e150, type: 3}
     dropChance: 0.25
   - weaponName: Launcher
     weaponGameObjects:
@@ -189721,7 +189777,7 @@ MonoBehaviour:
     - {fileID: 2837465749836920815}
     armGameObject: {fileID: 4790877911239449537}
     armSpriteRenderer: {fileID: 2632647565020050176}
-    weaponUIIcon: {fileID: 1879289918211271614, guid: ecd666b5ad06fd34192eb8aa22768aac, type: 3}
+    weaponUIIcon: {fileID: 21300000, guid: d2ad5fc1ed84a86479de334a5ce28a12, type: 3}
     dropChance: 0.25
   - weaponName: Bow
     weaponGameObjects:
@@ -189730,7 +189786,7 @@ MonoBehaviour:
     - {fileID: 4880712677658907754}
     armGameObject: {fileID: 4790877911239449537}
     armSpriteRenderer: {fileID: 2632647565020050176}
-    weaponUIIcon: {fileID: 21300000, guid: d7456eb42a127c643acf8d412171c4f2, type: 3}
+    weaponUIIcon: {fileID: 21300000, guid: f923651b4cdcd584f944c44bfd18773d, type: 3}
     dropChance: 0.25
   - weaponName: Bat
     weaponGameObjects:
@@ -189739,7 +189795,7 @@ MonoBehaviour:
     - {fileID: 6486646314645600925}
     armGameObject: {fileID: 4857737905155596846}
     armSpriteRenderer: {fileID: 2813424294025378842}
-    weaponUIIcon: {fileID: 21300000, guid: 2ad816b99b8c8264c9b00085aa3f32bc, type: 3}
+    weaponUIIcon: {fileID: 21300000, guid: 82143afdaa6986149bbda9f5c9bb22e7, type: 3}
     dropChance: 0.25
   - weaponName: MachineGun
     weaponGameObjects:
@@ -189748,7 +189804,7 @@ MonoBehaviour:
     - {fileID: 2502294520060319531}
     armGameObject: {fileID: 2861714502128440196}
     armSpriteRenderer: {fileID: 6947184254319397887}
-    weaponUIIcon: {fileID: -2465897257406450425, guid: 692295fe2d1118c4187a5756e3eb992a, type: 3}
+    weaponUIIcon: {fileID: 21300000, guid: 75078900b0e489d45932b21ee3f84bf5, type: 3}
     dropChance: 0.112
   killsToSwitch: 5
   switchDelay: 0.2

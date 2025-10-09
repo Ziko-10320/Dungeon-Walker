@@ -56,6 +56,15 @@ public class SuperMoveController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI superBarText;
     [SerializeField] private GameObject superReadyIndicator;
     [SerializeField] private Button superButton;
+
+    [Header("Shockwave Shader Settings")]
+    [SerializeField] private Material shockwaveMaterial;
+    [SerializeField] private GameObject ScreenShockwave;
+    [SerializeField] private string shaderParam = "_WaveDistanceFromCenter";
+    [SerializeField] private float startValue = -0.1f;
+    [SerializeField] private float endValue = 1f;
+    [SerializeField] private float shaderDuration = 1f;
+    private int shaderID;
     private void Awake()
     {
         if (playerHealth == null)
@@ -125,8 +134,37 @@ public class SuperMoveController : MonoBehaviour
         originalPlayerColors = new List<Color>();
         foreach (var renderer in playerRenderers) originalPlayerColors.Add(renderer.color);
 
+        if (shockwaveMaterial != null)
+        {
+            // Get the integer ID for the shader property for performance.
+            shaderID = Shader.PropertyToID(shaderParam);
+        }
+        if (ScreenShockwave != null)
+        {
+            // Ensure the shockwave object is off by default.
+            ScreenShockwave.SetActive(false);
+        }
+
+    }
+    private void OnEnable()
+    {
+        // Check if the slider exists to prevent errors.
+        if (superBarSlider != null)
+        {
+            // Enable the entire GameObject that the slider is on.
+            superBarSlider.gameObject.SetActive(true);
+        }
     }
 
+    private void OnDisable()
+    {
+        // Check if the slider exists to prevent errors.
+        if (superBarSlider != null)
+        {
+            // Disable the entire GameObject that the slider is on.
+            superBarSlider.gameObject.SetActive(false);
+        }
+    }
     void Update()
     {
         if (Input.GetKeyDown(activationKey))
@@ -172,6 +210,7 @@ public class SuperMoveController : MonoBehaviour
         try
         {
             CameraShakerHandler.Shake(clawImpactShake);
+            StartCoroutine(TriggerShockwave());
             if (startSuperMoveEffectPrefab != null)
             {
                 Vector3 spawnPosition = (particleSpawnPoint != null) ? particleSpawnPoint.position : transform.position;
@@ -361,5 +400,33 @@ public class SuperMoveController : MonoBehaviour
         screenFadeImage.color = new Color(0, 0, 0, targetAlpha);
         if (!fadeIn)
             screenFadeImage.gameObject.SetActive(false);
+    }
+    private IEnumerator TriggerShockwave()
+    {
+        // Failsafe checks
+        if (shockwaveMaterial == null || ScreenShockwave == null)
+        {
+            yield break; // Exit if anything is missing
+        }
+
+        // 1. Activate the shockwave object and reset the shader value
+        ScreenShockwave.SetActive(true);
+        shockwaveMaterial.SetFloat(shaderID, startValue);
+
+        // 2. Animate the value over the specified duration
+        float timer = 0f;
+        while (timer < shaderDuration)
+        {
+            timer += Time.deltaTime;
+            float progress = timer / shaderDuration;
+            float currentValue = Mathf.Lerp(startValue, endValue, progress);
+            shockwaveMaterial.SetFloat(shaderID, currentValue);
+            yield return null; // Wait for the next frame
+        }
+
+        // 3. Ensure the final value is set and then deactivate the object
+        shockwaveMaterial.SetFloat(shaderID, endValue);
+        yield return new WaitForSeconds(0.1f); // Small delay to let the effect finish
+        ScreenShockwave.SetActive(false);
     }
 }

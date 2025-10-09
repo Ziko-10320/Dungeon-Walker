@@ -248,21 +248,18 @@ public class RatKingAttack : MonoBehaviour
         if (cheese1Instance != null) Destroy(cheese1Instance);
         if (cheese2Instance != null) Destroy(cheese2Instance);
 
-        // Randomly decide which cheese will be real (1 or 2)
-        bool isCheese1Real = Random.value < 0.5f;
         cheese1Instance = Instantiate(cheesePrefab, cheeseSpawnPoint1.position, Quaternion.identity);
-        cheese1Instance.AddComponent<CheeseProjectile>().Initialize(isCheese1Real, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround, cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3, cheeseExplosionRadius, cheeseKnockbackForce);
-        Debug.Log($"Cheese1 spawned - IsReal: {isCheese1Real}");
+        cheese1Instance.AddComponent<CheeseProjectile>().Initialize(true, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround, cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3, cheeseExplosionRadius, cheeseKnockbackForce);
+        Debug.Log("Cheese1 spawned - IsReal: true");
     }
 
     public void SpawnCheese2()
     {
         Debug.Log("SpawnCheese2 called!");
         // Ensure the other cheese has the opposite real/fake status
-        bool isReal = (cheese1Instance != null && cheese1Instance.GetComponent<CheeseProjectile>() != null) ? !cheese1Instance.GetComponent<CheeseProjectile>().IsRealCheese : (Random.value < 0.5f);
         cheese2Instance = Instantiate(cheesePrefab, cheeseSpawnPoint2.position, Quaternion.identity);
-        cheese2Instance.AddComponent<CheeseProjectile>().Initialize(isReal, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround, cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3, cheeseExplosionRadius, cheeseKnockbackForce);
-        Debug.Log($"Cheese2 spawned - IsReal: {isReal}");
+        cheese2Instance.AddComponent<CheeseProjectile>().Initialize(true, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround, cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3, cheeseExplosionRadius, cheeseKnockbackForce);
+        Debug.Log("Cheese2 spawned - IsReal: true");
     }
 
     public void ThrowCheese1()
@@ -449,22 +446,11 @@ public class CheeseProjectile : MonoBehaviour
 
         Debug.Log($"Cheese collision detected - IsReal: {IsRealCheese}, CollidedWithPlayer: {collidedWithPlayer}, CollidedWithGround: {collidedWithGround}");
 
-        if (IsRealCheese)
+        if (collidedWithPlayer || collidedWithGround)
         {
-            if (collidedWithPlayer || collidedWithGround)
-            {
-                ApplyExplosionDamageAndKnockback();
-                DestroyCheese();
-            }
-        }
-        else // Fake Cheese
-        {
-            // Fake cheese only fades out on collision with player or ground, and does no damage
-            if (collidedWithPlayer || collidedWithGround)
-            {
-                Debug.Log("Fake cheese hit - starting fade out");
-                StartCoroutine(FadeOutAndDestroy());
-            }
+            // Always apply damage and explode.
+            ApplyExplosionDamageAndKnockback();
+            DestroyCheese();
         }
     }
 

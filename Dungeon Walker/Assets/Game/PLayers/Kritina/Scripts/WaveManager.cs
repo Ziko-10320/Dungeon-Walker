@@ -164,50 +164,52 @@ public class WaveManager : MonoBehaviour
     {
         if (isOnlineMode && !PhotonNetwork.IsMasterClient) return;
 
-        Debug.Log($"Nettoyage des {activeEnemies.Count} ennemis restants de la vague précédente.");
+        Debug.Log($"Clearing {activeEnemies.Count} remaining active enemies.");
 
-        // Iterate backwards through the list. This is the safest way to remove items while looping.
+        // We still loop backwards, which is the safest way.
         for (int i = activeEnemies.Count - 1; i >= 0; i--)
         {
             GameObject enemy = activeEnemies[i];
-
-            if (enemy != null)
+            if (enemy == null || !enemy.activeInHierarchy)
             {
-                // --- THE GUARANTEE: Check if the enemy is the Rat King Boss ---
-                if (enemy.GetComponent<RatKingHealth>() != null)
-                {
-                    // If it's the boss, simply skip it. Do nothing to it.
-                    Debug.Log($"Skipping cleanup for Rat King Boss: {enemy.name}");
-                    continue; // Move to the next enemy in the list.
-                }
-                // ---
+                continue; // Go to the next item in the list.
+            }
+            // This check is crucial. If the enemy is somehow null, skip it.
+            if (enemy == null) continue;
 
-                // If it's a normal enemy, proceed with despawning.
-                if (spawnEffectPrefab != null)
-                {
-                    Instantiate(spawnEffectPrefab, enemy.transform.position, Quaternion.identity);
-                }
+            // Your boss protection logic is still good.
+            if (enemy.GetComponent<RatKingHealth>() != null)
+            {
+                Debug.Log($"Skipping cleanup for active Boss: {enemy.name}");
+                continue;
+            }
 
-                // Unsubscribe from events to prevent memory leaks
-                var healthScript = enemy.GetComponent<FleaHealth>();
-                if (healthScript != null) healthScript.OnDeath.RemoveListener(OnEnemyDied);
-                // (Add your other enemy health scripts here too)
+            // --- THE VISIBILITY CHECK ---
+            // We only play the effect if the enemy is currently visible on screen.
+            if (spawnEffectPrefab != null && IsObjectVisible(enemy))
+            {
+                ObjectPoolManager.Instance.SpawnFromPool(spawnEffectPrefab, enemy.transform.position, Quaternion.identity);
+            }
+            // ---
 
-                // Destroy the enemy GameObject
-                if (isOnlineMode)
-                {
-                    PhotonNetwork.Destroy(enemy);
-                }
-                else
-                {
-                    enemy.SetActive(false);
-                }
+            // Unsubscribe from events to prevent memory leaks.
+            var healthScript = enemy.GetComponent<FleaHealth>();
+            if (healthScript != null) healthScript.OnDeath.RemoveListener(OnEnemyDied);
+            // (Add your other enemy health scripts here too)
+
+            // Disable the enemy to return it to the pool.
+            if (isOnlineMode)
+            {
+                PhotonNetwork.Destroy(enemy);
+            }
+            else
+            {
+                enemy.SetActive(false);
             }
         }
 
-        // After the loop, remove all null or destroyed entries from the list.
-        // This will clean up the list while leaving any surviving bosses.
-        activeEnemies.RemoveAll(item => item == null);
+        // After the loop, clear the list completely. It's now safe to do so.
+        activeEnemies.Clear();
     }
 
 
@@ -260,7 +262,9 @@ public class WaveManager : MonoBehaviour
                 }
                 else if (!isOnlineMode)
                 {
-                    Instantiate(spawnEffectPrefab, bossEffectPosition, Quaternion.identity);
+                    
+                    ObjectPoolManager.Instance.SpawnFromPool(spawnEffectPrefab, bossEffectPosition, Quaternion.identity);
+
                 }
             }
 
@@ -316,7 +320,9 @@ public class WaveManager : MonoBehaviour
                 }
                 else
                 {
-                    Instantiate(spawnEffectPrefab, effectPosition, Quaternion.identity);
+                   
+                    ObjectPoolManager.Instance.SpawnFromPool(spawnEffectPrefab, effectPosition, Quaternion.identity);
+
                 }
             }
 
@@ -351,18 +357,7 @@ public class WaveManager : MonoBehaviour
 
         currentWaveCoroutine = null;
     }
-    // --- END OF THE FINAL, COMPLETE SPAWNWAVE METHOD ---
-
-    [PunRPC]
-    private void RPC_PlaySpawnEffect(Vector3 position)
-    {
-        // This code runs on every client's machine.
-        // It creates the spawn effect locally.
-        if (spawnEffectPrefab != null)
-        {
-            Instantiate(spawnEffectPrefab, position, Quaternion.identity);
-        }
-    }
+   
     private void InitializeEnemy(GameObject enemy)
     {
         // Assigner le joueur au script de suivi (FlyFollow)
@@ -431,23 +426,29 @@ public class WaveManager : MonoBehaviour
 
     }
 
+    // REPLACE your old OnEnemyDied method with this one:
     public void OnEnemyDied(GameObject deadEnemy)
     {
+        // --- THE FIX: This is the most important part ---
+        // No matter if online or offline, if this enemy is in our list, remove it.
+        // This prevents "ghosts" from staying in the list.
+        if (activeEnemies.Contains(deadEnemy))
+        {
+            activeEnemies.Remove(deadEnemy);
+        }
+        // --- END OF FIX ---
+
+        // Your existing online logic can stay, but we no longer need the offline part
+        // because the code above handles it for both modes.
         if (isOnlineMode)
         {
-            // In online mode, we report the death to the Master Client.
             if (view != null && deadEnemy.GetComponent<PhotonView>() != null)
             {
                 view.RPC("RPC_ReportEnemyDeath", RpcTarget.MasterClient, deadEnemy.GetComponent<PhotonView>().ViewID);
             }
         }
-        else
+        else // Offline mode
         {
-            // In offline mode, we just update our local list directly.
-            if (activeEnemies.Contains(deadEnemy))
-            {
-                activeEnemies.Remove(deadEnemy);
-            }
             if (activeEnemies.Count == 0 && waveIsActive)
             {
                 waveIsActive = false;
@@ -456,7 +457,7 @@ public class WaveManager : MonoBehaviour
         }
     }
 
-   
+
     // Trouve la configuration de vague appropriée pour le score actuel
     private WaveConfig GetWaveConfigForScore(int score)
     {
@@ -500,5 +501,24 @@ public class WaveManager : MonoBehaviour
         {
             checkpointManager.OnScoreChanged.RemoveListener(OnScoreUpdated);
         }
+    }
+
+    private bool IsObjectVisible(GameObject obj)
+    {
+        if (obj == null) return false;
+
+        // Get the main camera
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null) return false; // Failsafe if camera is missing
+
+        // Create a plane for each of the camera's view boundaries
+        Plane[] planes = GeometryUtility.CalculateFrustumPlanes(mainCamera);
+
+        // Get the collider of the object to check its bounds
+        Collider2D objectCollider = obj.GetComponent<Collider2D>();
+        if (objectCollider == null) return false; // Failsafe if no collider
+
+        // Check if the collider's bounds intersect with the camera's view frustum
+        return GeometryUtility.TestPlanesAABB(planes, objectCollider.bounds);
     }
 }

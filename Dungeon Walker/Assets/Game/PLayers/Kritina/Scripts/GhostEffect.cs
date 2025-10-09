@@ -13,13 +13,9 @@ public class GhostEffect : MonoBehaviour
     private float timer;
 
     // We get all sprite renderers from the player's children at the start
-    private SpriteRenderer[] playerSpriteRenderers;
+    [SerializeField] private SpriteRenderer[] ghostTargetRenderers;
 
-    void Awake()
-    {
-        // Find all SpriteRenderer components in this GameObject and its children
-        playerSpriteRenderers = GetComponentsInChildren<SpriteRenderer>();
-    }
+    
 
     void Update()
     {
@@ -57,7 +53,7 @@ public class GhostEffect : MonoBehaviour
         ghostParent.transform.localScale = transform.localScale;
 
         // Iterate through each of the player's sprite renderers
-        foreach (SpriteRenderer playerPartSprite in playerSpriteRenderers)
+        foreach (SpriteRenderer playerPartSprite in ghostTargetRenderers)
         {
             // Skip any disabled parts
             if (!playerPartSprite.enabled) continue;
