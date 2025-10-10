@@ -217,7 +217,7 @@ Transform:
   m_GameObject: {fileID: 4123222504280639358}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.18, y: -1.05, z: 0}
+  m_LocalPosition: {x: 0.27, y: -0.46, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -759,11 +759,6 @@ PrefabInstance:
 --- !u!4 &4715227671083996487 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6035629202539577591, guid: 40c48c1cf3f6c504f8abf2b219d6c04b, type: 3}
-  m_PrefabInstance: {fileID: 1345738863231194544}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &6017885439406679351 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4696925322321457287, guid: 40c48c1cf3f6c504f8abf2b219d6c04b, type: 3}
   m_PrefabInstance: {fileID: 1345738863231194544}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2064593986957181292
@@ -1362,10 +1357,113 @@ ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
   m_PrefabInstance: {fileID: 2064593986957181292}
   m_PrefabAsset: {fileID: 0}
---- !u!198 &6995370100276608754 stripped
+--- !u!1001 &3565682481529440933
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5733931022801928995}
+    m_Modifications:
+    - target: {fileID: 1415757422238141210, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_Name
+      value: ' BloodExplooosion Ink'
+      objectReference: {fileID: 0}
+    - target: {fileID: 1951817151058832100, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: df4563fb738f14241a37d83ffd0124e9, type: 2}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2.9733877
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 4.1582956
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2.9733908
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.3673935
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.5414393
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 44.7229
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6763184577055232112, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: looping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6763184577055232112, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: simulationSpeed
+      value: 1.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6763184577055232112, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6763184577055232112, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6763184577055232112, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.r
+      value: 0.15294123
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+--- !u!1 &2512479232484295103 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1415757422238141210, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+  m_PrefabInstance: {fileID: 3565682481529440933}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &7827381329269512917 stripped
 ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 9057413134043430814, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
-  m_PrefabInstance: {fileID: 2064593986957181292}
+  m_CorrespondingSourceObject: {fileID: 6763184577055232112, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+  m_PrefabInstance: {fileID: 3565682481529440933}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &9175594525871590096 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5633329993833316469, guid: ffc780bb94a097245b7531d8aaa1e58c, type: 3}
+  m_PrefabInstance: {fileID: 3565682481529440933}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5908635877075627188
 PrefabInstance:
@@ -1524,11 +1622,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -72.15
+      value: -73.57783
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.27
+      value: 1.5748099
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1749,6 +1847,9 @@ PrefabInstance:
       insertIndex: 13
       addedObject: {fileID: 4715227671083996487}
     - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
+      insertIndex: 14
+      addedObject: {fileID: 9175594525871590096}
+    - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4913748458299209800}
     - targetCorrespondingSourceObject: {fileID: -7552582706839291426, guid: a5a3c385f3352424e8bd992003d5501b, type: 3}
@@ -1963,7 +2064,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  deathEffect: {fileID: 6017885439406679351}
+  deathEffect: {fileID: 2512479232484295103}
   knockbackDistance: 0
   knockbackDuration: 0
   bloodSpawnPoint: {fileID: 7229075169359459992}
@@ -1971,7 +2072,7 @@ MonoBehaviour:
   DeathInkParticules: {fileID: 6443629522294838275}
   DeathInkParticules2: {fileID: 5682116713182286306}
   DeathInkParticules3: {fileID: 5705849261976897997}
-  DeathInkParticules4: {fileID: 6995370100276608754}
+  DeathInkParticules4: {fileID: 7827381329269512917}
   DeathInkParticules5: {fileID: 5589065760015025168}
   DeathInkSpawn: {fileID: 8752585340353524990}
   DeathInkSpawn2: {fileID: 8580621640873541683}
