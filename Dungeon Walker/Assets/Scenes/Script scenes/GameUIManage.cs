@@ -138,20 +138,34 @@ public class GameUIManager : MonoBehaviour
     {
         if (deathPanel != null)
         {
-            deathPanel.SetActive(true); // Show the panel first
+            // --- THIS IS THE CORRECTED LOGIC ---
+            // 1. Find the currently ACTIVE CheckpointManager in the scene.
+            CheckpointManager activeCheckpointManager = FindObjectOfType<CheckpointManager>();
 
-            // --- REPLACE THE OLD LOGIC WITH THIS ---
+            // 2. Set the final score and check for new records using the one we just found.
+            if (PlayerStatsManager.Instance != null && activeCheckpointManager != null)
+            {
+                PlayerStatsManager.Instance.SetFinalScore(activeCheckpointManager.TotalScore);
+                PlayerStatsManager.Instance.CheckAndSaveHighScores();
+            }
+            else
+            {
+                // This warning helps if something goes wrong.
+                Debug.LogWarning("Could not find an active CheckpointManager or PlayerStatsManager!");
+            }
+
+            // 3. Show the panel
+            deathPanel.SetActive(true);
+
+            // 4. Start the animation (this part is unchanged)
             if (PlayerStatsManager.Instance != null && statAnimation != null)
             {
-                // Get the final stats
-                int finalScore = PlayerStatsManager.Instance.finalScore;
-                int finalKills = PlayerStatsManager.Instance.enemiesKilled;
-                int finalCoins = PlayerStatsManager.Instance.coinsGathered;
-
-                // Start the animation sequence!
-                statAnimation.StartAnimation(finalScore, finalKills, finalCoins);
+                statAnimation.StartAnimation(
+                    PlayerStatsManager.Instance.finalScore,
+                    PlayerStatsManager.Instance.enemiesKilled,
+                    PlayerStatsManager.Instance.coinsGathered
+                );
             }
-            // --- END OF REPLACEMENT ---
         }
         Time.timeScale = 0f;
         isGamePaused = true;

@@ -8,7 +8,9 @@ public class StatCounterAnimation : MonoBehaviour
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI killsText;
     [SerializeField] private TextMeshProUGUI coinsText;
-
+    [Header("High Score UI")]
+    [SerializeField] private TextMeshProUGUI highScoreText;
+    [SerializeField] private TextMeshProUGUI mostKillsText;
     [Header("Animation Settings")]
     [Tooltip("The total duration for each number to count up, in seconds.")]
     [SerializeField] private float countDuration = 0.75f;
@@ -54,28 +56,50 @@ public class StatCounterAnimation : MonoBehaviour
     {
         isAnimating = true;
 
-        // --- 1. Animate Score ---
-        // Set initial text and make it visible
+        // --- 1. Handle Score Display ---
         scoreText.gameObject.SetActive(true);
-        scoreText.text = "Final Score: 0";
-        yield return StartCoroutine(CountUp(scoreText, "Final Score: ", finalScore));
-        PlayFinishSound();
-        yield return new WaitForSeconds(delayBetweenStats); // Wait before starting the next one
-
-        // --- 2. Animate Kills ---
-        killsText.gameObject.SetActive(true);
-        killsText.text = "Enemies Killed: 0";
-        yield return StartCoroutine(CountUp(killsText, "Enemies Killed: ", finalKills));
-        PlayFinishSound();
+        highScoreText.gameObject.SetActive(true);
+        // Check if it's a new high score
+        if (PlayerStatsManager.Instance.newHighScoreAchieved)
+        {
+            highScoreText.text = "New Record!";
+            // Animate the score because it's a new record
+            yield return StartCoroutine(CountUp(scoreText, "Score: ", finalScore));
+            PlayFinishSound();
+        }
+        else
+        {
+            // Not a new record, so just display the numbers instantly
+            scoreText.text = "Score: " + finalScore;
+            highScoreText.text = "Best: " + PlayerPrefs.GetInt("HighScore", 0);
+        }
         yield return new WaitForSeconds(delayBetweenStats);
 
-        // --- 3. Animate Coins ---
+        // --- 2. Handle Kills Display ---
+        killsText.gameObject.SetActive(true);
+        mostKillsText.gameObject.SetActive(true);
+        // Check if it's a new most kills record
+        if (PlayerStatsManager.Instance.newMostKillsAchieved)
+        {
+            mostKillsText.text = "New Record!";
+            // Animate the kills because it's a new record
+            yield return StartCoroutine(CountUp(killsText, "Kills: ", finalKills));
+            PlayFinishSound();
+        }
+        else
+        {
+            // Not a new record, so just display the numbers instantly
+            killsText.text = "Kills: " + finalKills;
+            mostKillsText.text = "Best: " + PlayerPrefs.GetInt("MostKills", 0);
+        }
+        yield return new WaitForSeconds(delayBetweenStats);
+
+        // --- 3. Animate Coins (always animates) ---
         coinsText.gameObject.SetActive(true);
         coinsText.text = "Coins Gathered: 0";
         yield return StartCoroutine(CountUp(coinsText, "Coins Gathered: ", finalCoins));
         PlayFinishSound();
 
-        // Animation is complete
         isAnimating = false;
         animationCoroutine = null;
     }
@@ -145,6 +169,10 @@ public class StatCounterAnimation : MonoBehaviour
         scoreText.gameObject.SetActive(false);
         killsText.gameObject.SetActive(false);
         coinsText.gameObject.SetActive(false);
+        // --- ADD THIS ---
+        if (highScoreText != null) highScoreText.gameObject.SetActive(false);
+        if (mostKillsText != null) mostKillsText.gameObject.SetActive(false);
+        // --- END ADDITION ---
     }
 
     private void PlayFinishSound()
