@@ -1,0 +1,198 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5e6fedc2472449cead18ef23b5cb30d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Library:
+  - m_Name: RightArm
+    m_Hash: 733214503
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: -80955731986925226, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -80955731986925226, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: 70865617209255556, guid: 84c0b171270d53f49a66311a124e1d53, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 70865617209255556, guid: 84c0b171270d53f49a66311a124e1d53, type: 3}
+    - m_Name: Mexican
+      m_Hash: 863511913
+      m_Sprite: {fileID: 8765977754211721229, guid: 7437a02b5557a7846b4544dc3029adeb, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 8765977754211721229, guid: 7437a02b5557a7846b4544dc3029adeb, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: -6505337840194394205, guid: cc980c1b97633934c87a9e9790cbcbfe, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -6505337840194394205, guid: cc980c1b97633934c87a9e9790cbcbfe, type: 3}
+    - m_Name: MilkMan
+      m_Hash: 151025457
+      m_Sprite: {fileID: 8905904445925920588, guid: dbec88ca153aa44468f59a99a0efc800, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 8905904445925920588, guid: dbec88ca153aa44468f59a99a0efc800, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: -2774561476378658653, guid: 54929dec77eb87d4991bd712f5c7e45c, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -2774561476378658653, guid: 54929dec77eb87d4991bd712f5c7e45c, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: Body
+    m_Hash: 999990412
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: -8519652133184681485, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -8519652133184681485, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: -5027662348891758300, guid: 84c0b171270d53f49a66311a124e1d53, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -5027662348891758300, guid: 84c0b171270d53f49a66311a124e1d53, type: 3}
+    - m_Name: Mexican
+      m_Hash: 863511913
+      m_Sprite: {fileID: 8684868248521368592, guid: 7437a02b5557a7846b4544dc3029adeb, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 8684868248521368592, guid: 7437a02b5557a7846b4544dc3029adeb, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: 172742997831734616, guid: cc980c1b97633934c87a9e9790cbcbfe, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 172742997831734616, guid: cc980c1b97633934c87a9e9790cbcbfe, type: 3}
+    - m_Name: MilkMan
+      m_Hash: 151025457
+      m_Sprite: {fileID: 2880506687991486967, guid: dbec88ca153aa44468f59a99a0efc800, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 2880506687991486967, guid: dbec88ca153aa44468f59a99a0efc800, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: 6730906473908965267, guid: 54929dec77eb87d4991bd712f5c7e45c, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 6730906473908965267, guid: 54929dec77eb87d4991bd712f5c7e45c, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: RightLeg
+    m_Hash: 104663548
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: -371982411094739790, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -371982411094739790, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: 6977466169339688481, guid: 84c0b171270d53f49a66311a124e1d53, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 6977466169339688481, guid: 84c0b171270d53f49a66311a124e1d53, type: 3}
+    - m_Name: Mexican
+      m_Hash: 863511913
+      m_Sprite: {fileID: -8331285695470076683, guid: 7437a02b5557a7846b4544dc3029adeb, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -8331285695470076683, guid: 7437a02b5557a7846b4544dc3029adeb, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: 7420842704671441278, guid: cc980c1b97633934c87a9e9790cbcbfe, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 7420842704671441278, guid: cc980c1b97633934c87a9e9790cbcbfe, type: 3}
+    - m_Name: MilkMan
+      m_Hash: 151025457
+      m_Sprite: {fileID: 2127049359013312388, guid: dbec88ca153aa44468f59a99a0efc800, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 2127049359013312388, guid: dbec88ca153aa44468f59a99a0efc800, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: 8857799217707333697, guid: 54929dec77eb87d4991bd712f5c7e45c, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 8857799217707333697, guid: 54929dec77eb87d4991bd712f5c7e45c, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: LeftLeg
+    m_Hash: 101577729
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: 7809954843436352739, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 7809954843436352739, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: 7274982066121724531, guid: 84c0b171270d53f49a66311a124e1d53, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 7274982066121724531, guid: 84c0b171270d53f49a66311a124e1d53, type: 3}
+    - m_Name: Mexican
+      m_Hash: 863511913
+      m_Sprite: {fileID: 8542063788824549914, guid: 7437a02b5557a7846b4544dc3029adeb, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 8542063788824549914, guid: 7437a02b5557a7846b4544dc3029adeb, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: 7220518068293352258, guid: cc980c1b97633934c87a9e9790cbcbfe, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 7220518068293352258, guid: cc980c1b97633934c87a9e9790cbcbfe, type: 3}
+    - m_Name: MilkMan
+      m_Hash: 151025457
+      m_Sprite: {fileID: 8386294113312339219, guid: dbec88ca153aa44468f59a99a0efc800, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 8386294113312339219, guid: dbec88ca153aa44468f59a99a0efc800, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: 8857799217707333697, guid: 54929dec77eb87d4991bd712f5c7e45c, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 8857799217707333697, guid: 54929dec77eb87d4991bd712f5c7e45c, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: Tale
+    m_Hash: 414078850
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: -5533509452432866515, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -5533509452432866515, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: 160424900437350985, guid: 84c0b171270d53f49a66311a124e1d53, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 160424900437350985, guid: 84c0b171270d53f49a66311a124e1d53, type: 3}
+    - m_Name: Mexican
+      m_Hash: 863511913
+      m_Sprite: {fileID: 754043494240301334, guid: 7437a02b5557a7846b4544dc3029adeb, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 754043494240301334, guid: 7437a02b5557a7846b4544dc3029adeb, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: -2406262077153263967, guid: cc980c1b97633934c87a9e9790cbcbfe, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -2406262077153263967, guid: cc980c1b97633934c87a9e9790cbcbfe, type: 3}
+    - m_Name: MilkMan
+      m_Hash: 151025457
+      m_Sprite: {fileID: -2648486804214473735, guid: dbec88ca153aa44468f59a99a0efc800, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -2648486804214473735, guid: dbec88ca153aa44468f59a99a0efc800, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: 1617981829012319569, guid: 54929dec77eb87d4991bd712f5c7e45c, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 1617981829012319569, guid: 54929dec77eb87d4991bd712f5c7e45c, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  m_PrimaryLibraryGUID: 
+  m_ModificationHash: 638959760123449541
+  m_Version: 1

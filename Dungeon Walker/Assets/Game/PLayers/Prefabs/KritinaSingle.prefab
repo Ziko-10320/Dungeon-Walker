@@ -188599,8 +188599,8 @@ GameObject:
   - component: {fileID: 704909933309968761}
   - component: {fileID: 5159600053955234360}
   - component: {fileID: 6486646314645600925}
-  - component: {fileID: 2502294520060319531}
   - component: {fileID: 4880712677658907754}
+  - component: {fileID: 2502294520060319531}
   - component: {fileID: 2837465749836920815}
   - component: {fileID: 838453109639267503}
   - component: {fileID: 3674480518580276143}
@@ -188890,78 +188890,6 @@ MonoBehaviour:
   attackButtonUI: {fileID: 0}
   joystickUI: {fileID: 0}
   attackButtonImage: {fileID: 0}
---- !u!114 &2502294520060319531
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6790693189779611674}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04faaee4006df8a439798229d890261c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Gun: {fileID: 5333788681294591354}
-  Arm: {fileID: 2861714502128440196}
-  playerTransform: {fileID: 5689588596020951161}
-  bulletSpawnPoint: {fileID: 4069786194957147122}
-  launcherAimPoint: {fileID: 6886381084270380575}
-  minDistancePoint: {fileID: 3617739173250082299}
-  pivotPoint: {fileID: 2637117828949085545}
-  emptyBulletSpawnPoint: {fileID: 6380218273316990047}
-  gunSpriteRenderers:
-  - {fileID: 7769331749921986084}
-  - {fileID: 7769331749921986084}
-  aimJoystick: {fileID: 0}
-  bulletPrefab: {fileID: 4727414575758128179, guid: 1fc69eb5c2f04cc408d7a01a8c9bf64b, type: 3}
-  destructionEffectPrefab: {fileID: 5942340802453867067, guid: 7614b3fd6178d77409f8e41cc81000b5, type: 3}
-  muzzleFlashEffect: {fileID: 5374799189625228237, guid: b0531f4b0ae47334db61dbef9cc7d06a, type: 3}
-  bulletSpeed: 70
-  bulletLifetime: 0.35
-  bulletDamage: 5
-  damageableLayers:
-    serializedVersion: 2
-    m_Bits: 640
-  collisionLayers:
-    serializedVersion: 2
-    m_Bits: 200
-  enemyLayers:
-    serializedVersion: 2
-    m_Bits: 704
-  maxUpwardAngle: 180
-  maxDownwardAngle: 180
-  minDistanceToAim: 0.8
-  rotationSpeed: 25
-  useInstantRotation: 1
-  PcInput: 1
-  MobileInput: 0
-  launcherRotationOffsetRight: 0
-  launcherRotationOffsetLeft: 180
-  trajectoryRotationOffsetRight: 0
-  trajectoryRotationOffsetLeft: 0
-  enableAimStabilization: 1
-  independentLauncherRotation: 1
-  fireRate: 0.01
-  maxSpreadAngle: 10
-  spawnAreaRadius: 0.22
-  emptyBulletPrefab: {fileID: 526135842993915639, guid: df50b9c6d277d0e43bdca60b7e20edf7, type: 3}
-  emptyBulletForce: 2
-  emptyBulletLifetime: 0.25
-  emptyBulletSpawnAreaRadius: 0.22
-  maxOverheatTime: 6
-  overheatCoolDownTime: 6
-  overheatColorThreshold: 0.6
-  smokeParticleSystem: {fileID: 4628419092784040698}
-  overheatAudioClip: {fileID: 0}
-  overheatAudioVolume: 1
-  cameraShakeOver: {fileID: 11400000, guid: 91161cc12ac12444280a59edf89a180b, type: 2}
-  shootSound: {fileID: 8300000, guid: 897b8eb2c0684cd4fa0d717979e4227d, type: 3}
-  shootSoundVolume: 1
-  bulletCollisionSound: {fileID: 0}
-  bulletCollisionSoundVolume: 1
-  bulletPoolSize: 50
-  effectPoolSize: 30
 --- !u!114 &4880712677658907754
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189047,6 +188975,78 @@ MonoBehaviour:
   enablePcInput: 0
   enableMobileInput: 1
   arrowPoolSize: 3
+--- !u!114 &2502294520060319531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6790693189779611674}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04faaee4006df8a439798229d890261c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Gun: {fileID: 5333788681294591354}
+  Arm: {fileID: 2861714502128440196}
+  playerTransform: {fileID: 5689588596020951161}
+  bulletSpawnPoint: {fileID: 4069786194957147122}
+  launcherAimPoint: {fileID: 6886381084270380575}
+  minDistancePoint: {fileID: 3617739173250082299}
+  pivotPoint: {fileID: 2637117828949085545}
+  emptyBulletSpawnPoint: {fileID: 6380218273316990047}
+  gunSpriteRenderers:
+  - {fileID: 7769331749921986084}
+  - {fileID: 7769331749921986084}
+  aimJoystick: {fileID: 0}
+  bulletPrefab: {fileID: 4727414575758128179, guid: 1fc69eb5c2f04cc408d7a01a8c9bf64b, type: 3}
+  destructionEffectPrefab: {fileID: 5942340802453867067, guid: 7614b3fd6178d77409f8e41cc81000b5, type: 3}
+  muzzleFlashEffect: {fileID: 5374799189625228237, guid: b0531f4b0ae47334db61dbef9cc7d06a, type: 3}
+  bulletSpeed: 70
+  bulletLifetime: 0.35
+  bulletDamage: 5
+  damageableLayers:
+    serializedVersion: 2
+    m_Bits: 640
+  collisionLayers:
+    serializedVersion: 2
+    m_Bits: 200
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 704
+  maxUpwardAngle: 180
+  maxDownwardAngle: 180
+  minDistanceToAim: 0.8
+  rotationSpeed: 25
+  useInstantRotation: 1
+  PcInput: 1
+  MobileInput: 0
+  launcherRotationOffsetRight: 0
+  launcherRotationOffsetLeft: 180
+  trajectoryRotationOffsetRight: 0
+  trajectoryRotationOffsetLeft: 0
+  enableAimStabilization: 1
+  independentLauncherRotation: 1
+  fireRate: 0.01
+  maxSpreadAngle: 10
+  spawnAreaRadius: 0.22
+  emptyBulletPrefab: {fileID: 526135842993915639, guid: df50b9c6d277d0e43bdca60b7e20edf7, type: 3}
+  emptyBulletForce: 2
+  emptyBulletLifetime: 0.25
+  emptyBulletSpawnAreaRadius: 0.22
+  maxOverheatTime: 6
+  overheatCoolDownTime: 6
+  overheatColorThreshold: 0.6
+  smokeParticleSystem: {fileID: 4628419092784040698}
+  overheatAudioClip: {fileID: 0}
+  overheatAudioVolume: 1
+  cameraShakeOver: {fileID: 11400000, guid: 91161cc12ac12444280a59edf89a180b, type: 2}
+  shootSound: {fileID: 8300000, guid: 897b8eb2c0684cd4fa0d717979e4227d, type: 3}
+  shootSoundVolume: 1
+  bulletCollisionSound: {fileID: 0}
+  bulletCollisionSoundVolume: 1
+  bulletPoolSize: 50
+  effectPoolSize: 30
 --- !u!114 &2837465749836920815
 MonoBehaviour:
   m_ObjectHideFlags: 0

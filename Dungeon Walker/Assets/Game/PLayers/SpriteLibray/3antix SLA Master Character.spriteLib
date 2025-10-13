@@ -1,0 +1,306 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5e6fedc2472449cead18ef23b5cb30d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Library:
+  - m_Name: Head
+    m_Hash: 130111906
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: 8525662799163005823, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 8525662799163005823, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: -8536868101186754139, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -8536868101186754139, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+    - m_Name: Rock
+      m_Hash: 393942172
+      m_Sprite: {fileID: 9129873145258531062, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 9129873145258531062, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: -6712989477519271463, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -6712989477519271463, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+    - m_Name: Suit
+      m_Hash: 160542752
+      m_Sprite: {fileID: 4619729887601321003, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 4619729887601321003, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: -658151832742375990, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -658151832742375990, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: RightArm
+    m_Hash: 733214503
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: 2145933531364742689, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 2145933531364742689, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: 9074728482642786404, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 9074728482642786404, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+    - m_Name: Rock
+      m_Hash: 393942172
+      m_Sprite: {fileID: 8542158588208472966, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 8542158588208472966, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: 234350069637507369, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 234350069637507369, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+    - m_Name: Suit
+      m_Hash: 160542752
+      m_Sprite: {fileID: -8557077292524486973, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -8557077292524486973, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: 908991465253670493, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 908991465253670493, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: Body
+    m_Hash: 999990412
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: -3396498679176194502, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -3396498679176194502, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: -1121008531456232118, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -1121008531456232118, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+    - m_Name: Rock
+      m_Hash: 393942172
+      m_Sprite: {fileID: 6461007056894684612, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 6461007056894684612, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: -8804713210146603644, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -8804713210146603644, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+    - m_Name: Suit
+      m_Hash: 160542752
+      m_Sprite: {fileID: -6204819878893078149, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -6204819878893078149, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: -400788781977020687, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -400788781977020687, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: RightLeg
+    m_Hash: 104663548
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: 4279021725900012882, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 4279021725900012882, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: -8335002972055753073, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -8335002972055753073, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+    - m_Name: Rock
+      m_Hash: 393942172
+      m_Sprite: {fileID: -4365090538254934245, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -4365090538254934245, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: 3395821948739642068, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 3395821948739642068, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+    - m_Name: Suit
+      m_Hash: 160542752
+      m_Sprite: {fileID: 794464283258064712, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 794464283258064712, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: -5177685700301491424, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -5177685700301491424, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: LeftLeg
+    m_Hash: 101577729
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: -907122424531463829, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -907122424531463829, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: 5196388677809706214, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 5196388677809706214, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+    - m_Name: Rock
+      m_Hash: 393942172
+      m_Sprite: {fileID: -115209998358909721, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -115209998358909721, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: -5598032991873989177, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -5598032991873989177, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+    - m_Name: Suit
+      m_Hash: 160542752
+      m_Sprite: {fileID: 3515897470781884759, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 3515897470781884759, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: -2861907572372463989, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -2861907572372463989, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: Waist
+    m_Hash: 469179167
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: -8034660203315213492, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -8034660203315213492, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: 2303784396850947745, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 2303784396850947745, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+    - m_Name: Rock
+      m_Hash: 393942172
+      m_Sprite: {fileID: -1021880270366099424, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -1021880270366099424, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: -7626916539509629400, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -7626916539509629400, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+    - m_Name: Suit
+      m_Hash: 160542752
+      m_Sprite: {fileID: -4822059899463654872, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -4822059899463654872, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: 1936379369934485641, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 1936379369934485641, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: LeftArm
+    m_Hash: 730008282
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: 3767920880801178852, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 3767920880801178852, guid: 41801fae98f35dc43b0f75434e2232f4, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: -2701114521737985018, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: -2701114521737985018, guid: 9ef9e152f7a6ebc4aa3068587d230cea, type: 3}
+    - m_Name: Rock
+      m_Hash: 393942172
+      m_Sprite: {fileID: 8917932349721219935, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 8917932349721219935, guid: c91113dbcb9b8554482bfa65953f6f9e, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: 6174133781129327559, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 6174133781129327559, guid: 8564ea982384dd44896a610762a8f621, type: 3}
+    - m_Name: Suit
+      m_Hash: 160542752
+      m_Sprite: {fileID: 442272722041610928, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 442272722041610928, guid: 154fdcbff3cf9bb43b31c505ec719865, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: 3859191947704816254, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 3859191947704816254, guid: c1867a02ceafafb4281d6ed6a1919441, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  - m_Name: AimArm
+    m_Hash: 939172846
+    m_CategoryList: []
+    m_OverrideEntries:
+    - m_Name: Default
+      m_Hash: 753088835
+      m_Sprite: {fileID: 21300000, guid: f066ffe361d4bb8469f7aff71127ea19, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 21300000, guid: f066ffe361d4bb8469f7aff71127ea19, type: 3}
+    - m_Name: Bee
+      m_Hash: 688753289
+      m_Sprite: {fileID: 21300000, guid: ac37a273fdee0e74bb4243e0597ef758, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 21300000, guid: ac37a273fdee0e74bb4243e0597ef758, type: 3}
+    - m_Name: Rock
+      m_Hash: 393942172
+      m_Sprite: {fileID: 21300000, guid: a7ac2656e49714440b70d81aa92a0535, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 21300000, guid: a7ac2656e49714440b70d81aa92a0535, type: 3}
+    - m_Name: Beezy
+      m_Hash: 452766250
+      m_Sprite: {fileID: 21300000, guid: 98c8e2e0cb11db54f9c1a6bc027b3eb5, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 21300000, guid: 98c8e2e0cb11db54f9c1a6bc027b3eb5, type: 3}
+    - m_Name: Suit
+      m_Hash: 160542752
+      m_Sprite: {fileID: 21300000, guid: 4dd6041668cda584586f9e303b0d0d46, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 21300000, guid: 4dd6041668cda584586f9e303b0d0d46, type: 3}
+    - m_Name: Monkey
+      m_Hash: 927902214
+      m_Sprite: {fileID: 21300000, guid: 3144711a9de79e34487d6512c12ee63a, type: 3}
+      m_FromMain: 0
+      m_SpriteOverride: {fileID: 21300000, guid: 3144711a9de79e34487d6512c12ee63a, type: 3}
+    m_FromMain: 0
+    m_EntryOverrideCount: 6
+  m_PrimaryLibraryGUID: 
+  m_ModificationHash: 638959908119961517
+  m_Version: 1

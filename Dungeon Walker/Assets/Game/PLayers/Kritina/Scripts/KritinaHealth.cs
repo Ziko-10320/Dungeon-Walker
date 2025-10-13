@@ -52,7 +52,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Slider shieldSlider;
 
     [HideInInspector] public bool isSuperActive = false;
-  
+  private static MaterialPropertyBlock propertyBlock;
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -63,7 +63,7 @@ public class PlayerHealth : MonoBehaviour
         {
             if (spriteRenderers[i] != null)
             {
-                originalMaterials[i] = spriteRenderers[i].material;
+                originalMaterials[i] = spriteRenderers[i].sharedMaterial;
             }
         }
     }

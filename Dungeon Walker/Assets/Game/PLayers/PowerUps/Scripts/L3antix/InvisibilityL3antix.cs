@@ -26,7 +26,7 @@ public class PlayerInvisibility3antix : MonoBehaviour
         {
             if (playerChildren[i] == null) continue;
             Renderer r = playerChildren[i].GetComponent<Renderer>();
-            if (r != null) originalMaterials[i] = r.material;
+            if (r != null) originalMaterials[i] = r.sharedMaterial;
         }
     }
 
@@ -43,9 +43,9 @@ public class PlayerInvisibility3antix : MonoBehaviour
             if (r == null) continue;
 
             // If a child lost its invisibility material, force invisible again
-            if (r.material != invisibleMaterial)
+            if (r.sharedMaterial != invisibleMaterial)
             {
-                r.material = invisibleMaterial;
+                r.sharedMaterial = invisibleMaterial;
             }
         }
     }
@@ -71,14 +71,23 @@ public class PlayerInvisibility3antix : MonoBehaviour
     {
         isInvisible = state;
 
-        for (int i = 0; i < playerChildren.Length; i++)
+        // The new alpha value: 0 for invisible, 1 for visible.
+        float targetAlpha = state ? 0f : 1f;
+
+        // Loop through all the renderers and just change their alpha.
+        foreach (GameObject child in playerChildren)
         {
-            if (playerChildren[i] == null) continue;
-            Renderer r = playerChildren[i].GetComponent<Renderer>();
+            if (child == null) continue;
+            SpriteRenderer r = child.GetComponent<SpriteRenderer>();
             if (r == null) continue;
-            r.material = state ? invisibleMaterial : originalMaterials[i];
+
+            // Get the current color, change only the alpha, and set it back.
+            Color currentColor = r.color;
+            currentColor.a = targetAlpha;
+            r.color = currentColor;
         }
 
+        // Your event call is still correct.
         OnInvisibilityChanged?.Invoke(state);
     }
 

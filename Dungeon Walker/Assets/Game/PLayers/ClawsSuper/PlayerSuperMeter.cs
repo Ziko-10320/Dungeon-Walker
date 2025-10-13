@@ -5,7 +5,7 @@ public class PlayerSuperMeter : MonoBehaviour
 {
     [Header("Super Settings")]
     [Tooltip("Damage needed to earn 1 super charge")]
-    public int superDamageThreshold = 1000; // editable in Inspector
+    public int superDamageThreshold = 1; // editable in Inspector
 
     [Header("Events")]
     public UnityEvent onSuperReady;

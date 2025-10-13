@@ -47,7 +47,7 @@ public class L3antixHealth : MonoBehaviour
 
     private bool usingUpgradedShield = false;
     public bool HasShield => shieldCurrentHealth > 0;
-
+    private static MaterialPropertyBlock propertyBlock;
     [Header("UI References")]
     [SerializeField] private UnityEngine.UI.Slider shieldSlider;
 
@@ -63,7 +63,7 @@ public class L3antixHealth : MonoBehaviour
         {
             if (spriteRenderers[i] != null)
             {
-                originalMaterials[i] = spriteRenderers[i].material;
+                originalMaterials[i] = spriteRenderers[i].sharedMaterial;
             }
         }
     }
