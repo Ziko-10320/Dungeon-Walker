@@ -4434,10 +4434,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed8b1ae4e4e52b34ea557c1c11e076fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_CategoryHash: 1.2787314e-12
-  m_labelHash: 6.4580854e-12
+  m_CategoryHash: 0.000029878658
+  m_labelHash: 1.5463483e-33
   m_SpriteKey: 0
-  m_SpriteHash: 947753121
+  m_SpriteHash: 581594700
 --- !u!1 &112158522
 GameObject:
   m_ObjectHideFlags: 0
@@ -19444,10 +19444,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed8b1ae4e4e52b34ea557c1c11e076fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_CategoryHash: 1.2787314e-12
+  m_CategoryHash: 0.000029878658
   m_labelHash: 6.4580854e-12
   m_SpriteKey: 0
-  m_SpriteHash: 947753121
+  m_SpriteHash: 122232894
 --- !u!1 &544495768
 GameObject:
   m_ObjectHideFlags: 0
@@ -79135,6 +79135,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 300922667349424404, guid: 0427f5f575ce9fc47bbc2a79914e03eb, type: 3}
+      propertyPath: orthographic size
+      value: 9.62
+      objectReference: {fileID: 0}
     - target: {fileID: 1463700990788346601, guid: 0427f5f575ce9fc47bbc2a79914e03eb, type: 3}
       propertyPath: m_Name
       value: Main Camera
@@ -79316,6 +79320,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 67490141514213469, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 112199245851198493, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: canvas
       value: 
@@ -79360,6 +79368,10 @@ PrefabInstance:
       propertyPath: spriteRenderers.Array.data[7]
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 747300777720662801, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 767765035806786872, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -79388,6 +79400,10 @@ PrefabInstance:
       propertyPath: destructionEffectPrefab
       value: 
       objectReference: {fileID: 6619945100955572787, guid: e5b9d31208f75c348a2b64794e1dfd02, type: 3}
+    - target: {fileID: 1020205725326330951, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1406802415121437217, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Size.y
       value: 1.8
@@ -79463,7 +79479,7 @@ PrefabInstance:
     - target: {fileID: 2632647565020050176, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -80955731986925226, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 95486dfa72e2aa244bff9e8676e49ac5, type: 3}
     - target: {fileID: 2632647565020050176, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -79759,7 +79775,11 @@ PrefabInstance:
     - target: {fileID: 6947184254319397887, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -80955731986925226, guid: 317736dda1fd2184fa84852ccadf6f9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 281f6289bc50f2646b5fae5baf464a2c, type: 3}
+    - target: {fileID: 6947184254319397887, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7403888332547260754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.37
@@ -80341,7 +80361,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 396469393917204521, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: superDamageThreshold
-      value: 100
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 424992741881069786, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: m_Sprite
@@ -81753,7 +81773,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2619712197199232808, guid: d667ab40a4b33504e9936314d9f9a0e1, type: 3}
       propertyPath: superDamageThreshold
-      value: 0
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 3106083995498378425, guid: d667ab40a4b33504e9936314d9f9a0e1, type: 3}
       propertyPath: m_LocalPosition.x

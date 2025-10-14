@@ -103,6 +103,10 @@ public class FleaChargeAttack : MonoBehaviour
 
     void Update()
     {
+        if (playerTransform == null)
+        {
+            return;
+        }
         PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
         PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
         if (invis != null && invis.IsInvisible()) return;

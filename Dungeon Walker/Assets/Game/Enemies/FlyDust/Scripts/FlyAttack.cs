@@ -48,6 +48,9 @@ public class FlyAttack : MonoBehaviour
     private Queue<GameObject> projectilePool;
     private GameObject projectilePoolParent;
     private List<GameObject> activeProjectiles = new List<GameObject>();
+
+    private WaitForSeconds delayBetweenProjectilesWait;
+    private WaitForSeconds projectileLifetimeWait;
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -57,6 +60,8 @@ public class FlyAttack : MonoBehaviour
         }
         audioSource.playOnAwake = false;
         audioSource.volume = attackSoundVolume; // Set initial volume
+        delayBetweenProjectilesWait = new WaitForSeconds(delayBetweenProjectiles);
+        projectileLifetimeWait = new WaitForSeconds(projectileLifetime);
     }
 
     void Start()
@@ -76,18 +81,18 @@ public class FlyAttack : MonoBehaviour
         animator = GetComponent<Animator>();
         if (animator == null)
         {
-            Debug.LogError("FlyAttack: Animator not found on this GameObject. Please add one.");
+            
             enabled = false;
         }
       
         if (dustProjectilePrefab == null)
         {
-            Debug.LogError("FlyAttack: Dust Projectile Prefab not assigned. Please assign the DustProjectile prefab in the Inspector.");
+            
             enabled = false;
         }
         if (projectileSpawnPoint == null)
         {
-            Debug.LogError("FlyAttack: Projectile Spawn Point not assigned. Please create an empty GameObject as a child and assign it.");
+            
             enabled = false;
         }
         if (dustExplosionEffect == null)
@@ -194,10 +199,10 @@ public class FlyAttack : MonoBehaviour
         PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
         if (invis != null && invis.IsInvisible()) return;
         if (invis3antix != null && invis3antix.IsInvisible()) return;
-        Debug.Log("ThrowDust method called.");
+      
         if (dustProjectilePrefab == null || projectileSpawnPoint == null || playerTransform == null)
         {
-            Debug.LogError("FlyAttack: Missing references for ThrowDust.");
+           
             return;
         }
 
@@ -216,7 +221,7 @@ public class FlyAttack : MonoBehaviour
         InstantiateAndInitializeProjectile(lastKnownPlayerPosition);
         if (Random.value < doubleAttackChance)
         {
-            yield return new WaitForSeconds(delayBetweenProjectiles);
+            yield return delayBetweenProjectilesWait;
             InstantiateAndInitializeProjectile(lastKnownPlayerPosition + secondProjectileOffset);
         }
     }
@@ -249,7 +254,7 @@ public class FlyAttack : MonoBehaviour
 
     private IEnumerator LifetimeCountdown(GameObject projectile)
     {
-        yield return new WaitForSeconds(projectileLifetime);
+        yield return projectileLifetimeWait;
 
         if (projectile != null && projectile.activeInHierarchy)
         {
