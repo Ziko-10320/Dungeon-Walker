@@ -204,23 +204,78 @@ public class InkHealth : MonoBehaviour
     }
     void OnEnable()
     {
-        // This is the guaranteed reset for pooled enemies.
-        currentHealth = maxHealth;
-        isKnockedBack = false;
-        isFlashing = false;
-        isStunned = false; // Assuming you have this variable
-        hasLanded = false;
-        // If the enemy has a movement script, re-enable it.
-        if (inkRigidbody != null)
-        {
-            inkRigidbody.bodyType = RigidbodyType2D.Dynamic;
-        }
+        ResetEnemyState();
         var InkAttack = GetComponent<InkAttack>();
         if (InkAttack != null)
         {
             InkAttack.enabled = true;
         }
     }
+    public void ResetEnemyState()
+    {
+        // --- HEALTH & STATE RESET ---
+        currentHealth = maxHealth;
+        isKnockedBack = false;
+        isFlashing = false;
+        isStunned = false;
+        hasLanded = false;
+        isInvincible = false;
+        isInInvincibilityTransition = false;
+
+        // --- RIGIDBODY & COLLIDER RESET ---
+        if (inkRigidbody != null)
+        {
+            inkRigidbody.bodyType = RigidbodyType2D.Dynamic; // Always reset to Dynamic
+            inkRigidbody.velocity = Vector2.zero; // Stop any leftover movement
+        }
+        if (collidersToDisable != null)
+        {
+            foreach (Collider2D col in collidersToDisable)
+            {
+                if (col != null) col.enabled = true; // Always re-enable all colliders
+            }
+        }
+
+        // --- MATERIAL & VISUALS RESET ---
+        if (spriteRenderers != null && originalMaterials != null)
+        {
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] != null && originalMaterials[i] != null)
+                {
+                    // This is the critical fix for the flash material bug
+                    spriteRenderers[i].material = originalMaterials[i];
+                }
+            }
+        }
+        if (spriteRenderers != null && originalSpriteColors != null)
+        {
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] != null && i < originalSpriteColors.Length)
+                {
+                    spriteRenderers[i].color = originalSpriteColors[i]; // Reset alpha/color
+                }
+            }
+        }
+
+        // --- INVINCIBILITY & AI RESET ---
+        StopAllCoroutines(); // Stop any leftover flash, knockback, or invincibility routines
+        if (enableInvincibilitySystem)
+        {
+            // Re-initialize the invincibility timer from scratch
+            InitializeInvincibilitySystem();
+        }
+
+        // --- ANIMATOR RESET ---
+        if (inkAnimator != null)
+        {
+            // This ensures the enemy doesn't get stuck in a "Hide" state
+            inkAnimator.ResetTrigger(hideAnimationTrigger);
+            inkAnimator.SetTrigger(showAnimationTrigger); // Force it to play the show animation
+        }
+    }
+
     void Start()
     {
 
@@ -255,21 +310,24 @@ public class InkHealth : MonoBehaviour
 
     void Update()
     {
-        if (!hasLanded && inkRigidbody != null && inkRigidbody.bodyType == RigidbodyType2D.Dynamic)
+        // If the enemy has already landed, there's nothing more to do here.
+        if (hasLanded)
         {
-            // ...check if it is now grounded.
+            return;
+        }
+
+        // This block only runs if the enemy has NOT landed yet.
+        if (inkRigidbody != null && inkRigidbody.bodyType == RigidbodyType2D.Dynamic)
+        {
+            // Check if it's touching the ground.
             if (IsGrounded())
             {
                 // It has landed!
-                hasLanded = true; // Set the flag so this code doesn't run again.
-                inkRigidbody.bodyType = RigidbodyType2D.Static; // Switch to Static.
-
-                if (showInvincibilityDebug)
-                {
-                    Debug.Log(gameObject.name + " has landed and switched to Static Rigidbody.");
-                }
+                hasLanded = true; // Set the flag so this code stops running.
+                inkRigidbody.bodyType = RigidbodyType2D.Static; // Lock it in place.
             }
         }
+    
         // Update invincibility debug info
         if (showInvincibilityDebug)
         {

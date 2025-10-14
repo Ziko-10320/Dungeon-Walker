@@ -45,6 +45,10 @@ public class InkAttack : MonoBehaviour
     private InkHealth inkHealthComponent; // Reference to InkHealth component
     private Vector3[] originalUnflippableSpriteScales; // Store original scales of unflippable sprites
 
+    private void OnEnable()
+    {
+        ResetAttackState();
+    }
     void Start()
     {
         // Find the player in the scene. Make sure your player GameObject has the tag "Player"
@@ -150,7 +154,21 @@ public class InkAttack : MonoBehaviour
             }
         }
     }
+    public void ResetAttackState()
+    {
+        canAttack = true;
+        playerInDetectionRange = false; // Reset detection state
 
+        // If the enemy was flipped, reset it to the default facing direction
+        if (!facingRight)
+        {
+            Flip();
+        }
+
+        // Stop any attack coroutines and restart the main attack loop
+        StopAllCoroutines();
+        StartCoroutine(AttackRoutine());
+    }
     IEnumerator AttackRoutine()
     {
 

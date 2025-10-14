@@ -2029,7 +2029,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inkBallPrefab: {fileID: 6200637045303369031, guid: 26d1c70b616ac8d439f67b6642009107, type: 3}
   attackCooldown: 2
-  inkBallDamage: 10
+  inkBallDamage: 20
   inkBallKnockbackForce: 5
   inkBallLifetime: 3
   attackSound: {fileID: 0}
@@ -2039,7 +2039,7 @@ MonoBehaviour:
   aimPointHigh: {fileID: 2887797699475530947}
   aimOffsetLow: {x: 0, y: 0}
   aimOffsetHigh: {x: 0, y: 0}
-  projectileSpeed: 12
+  projectileSpeed: 20
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
