@@ -1,30 +1,36 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Button))]
-[RequireComponent(typeof(Image))]
 public class InventoryItemButton : MonoBehaviour
 {
-    private PowerUpData powerUpData; // Keep a reference to the data
+    private object itemData; // Can now hold either a PowerUpData or a SkinData
 
+    // Setup for Power-ups
     public void Setup(PowerUpData data)
     {
-        powerUpData = data; // Store the data
-
-        // Set the icon
+        this.itemData = data;
         GetComponent<Image>().sprite = data.icon;
-
-        // --- THIS IS THE LINE I WRONGLY REMOVED. THIS MAKES THE BUTTON WORK AGAIN. ---
         GetComponent<Button>().onClick.AddListener(OnButtonClick);
     }
 
-    // This function tells the InventoryUI to equip the item.
+    // Setup for Skins
+    public void Setup(SkinData data)
+    {
+        this.itemData = data;
+        GetComponent<Image>().sprite = data.icon;
+        GetComponent<Button>().onClick.AddListener(OnButtonClick);
+    }
+
     private void OnButtonClick()
     {
-        // Safety check
-        if (powerUpData != null)
+        // Tell the InventoryUI what was clicked
+        if (itemData is PowerUpData powerUp)
         {
-            InventoryUI.Instance.OnItemClicked(powerUpData);
+            InventoryUI.Instance.OnItemClicked(powerUp);
+        }
+        else if (itemData is SkinData skin)
+        {
+            InventoryUI.Instance.OnItemClicked(skin);
         }
     }
 }

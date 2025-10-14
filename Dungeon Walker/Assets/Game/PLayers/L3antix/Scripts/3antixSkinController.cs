@@ -16,13 +16,23 @@ public class L3antixSkinController : MonoBehaviour
 
     void Awake()
     {
-        // Find all SpriteResolver components in this object AND all its children, and add them to our list.
-        // The 'true' means it will include inactive objects.
+        // Find all SpriteResolver components (this part is the same)
         this.GetComponentsInChildren<SpriteResolver>(true, spriteResolvers);
 
-        // Load the last selected skin name from PlayerPrefs. If none is saved, use the first name in our list.
-        string savedSkinName = PlayerPrefs.GetString("SelectedSkinName", skinNames[0]);
-        ApplySkin(savedSkinName);
+        // --- THIS IS THE NEW, SMARTER LOGIC ---
+
+        // 1. We know this script is for the Man, so we can hardcode the character type.
+        string characterType = "Man";
+
+        // 2. Construct the correct key to look for in PlayerPrefs.
+        string equippedSkinKey = "EquippedSkin_" + characterType; // This will become "EquippedSkin_Man"
+
+        // 3. Load the equipped skin label from PlayerPrefs. Default to "Default".
+        string savedSkinLabel = PlayerPrefs.GetString(equippedSkinKey, "Default");
+
+        // 4. Apply the skin!
+        Debug.Log("Applying skin '" + savedSkinLabel + "' to " + characterType);
+        ApplySkin(savedSkinLabel);
     }
 
     // --- THE SKIN APPLYING LOGIC ---

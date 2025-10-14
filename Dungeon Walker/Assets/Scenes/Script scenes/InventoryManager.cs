@@ -8,10 +8,10 @@ public class InventoryManager : MonoBehaviour
 
     public List<PowerUpData> ownedPowerUps = new List<PowerUpData>();
     public PowerUpData[] equippedPowerUps = new PowerUpData[2];
-
+    public List<string> ownedSkins = new List<string>();
     private const string OwnedSaveKey = "PlayerInventory_Owned";
     private const string EquippedSaveKey = "PlayerInventory_Equipped";
-
+    private const string OwnedSkinsSaveKey = "PlayerInventory_OwnedSkins";
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -24,7 +24,42 @@ public class InventoryManager : MonoBehaviour
 
         LoadInventory();
     }
+    public void AddOwnedSkin(string uniqueID)
+    {
+        if (!ownedSkins.Contains(uniqueID))
+        {
+            ownedSkins.Add(uniqueID);
+            SaveInventory();
+        }
+    }
+    public bool IsSkinOwned(string uniqueID)
+    {
+        return ownedSkins.Contains(uniqueID);
+    }
 
+    // This function equips a skin for a specific character
+    public void EquipSkin(SkinData skin)
+    {
+        if (skin == null) return;
+        // Check for ownership using the NEW unique ID
+        if (!IsSkinOwned(skin.GetUniqueID())) return;
+
+        // The key is still specific to the character
+        string equippedSkinKey = "EquippedSkin_" + skin.character.ToString();
+        // We still save the LABEL, because that's what the SpriteResolver needs
+        PlayerPrefs.SetString(equippedSkinKey, skin.spriteLibraryLabel);
+
+        Debug.Log("Equipped " + skin.skinName + " for " + skin.character.ToString());
+        PlayerPrefs.Save();
+    }
+    public void UnequipSkin(CharacterType character)
+    {
+        string equippedSkinKey = "EquippedSkin_" + character.ToString();
+        PlayerPrefs.SetString(equippedSkinKey, "Default"); // Revert to the default skin
+
+        Debug.Log("Unequipped skin for " + character.ToString() + ". Reverting to Default.");
+        PlayerPrefs.Save();
+    }
     public void AddOwnedPowerUp(PowerUpData powerUp)
     {
         if (!ownedPowerUps.Contains(powerUp))
@@ -68,32 +103,37 @@ public class InventoryManager : MonoBehaviour
 
     private void SaveInventory()
     {
-        // --- Save Owned Items ---
-        List<string> ownedNames = ownedPowerUps.Select(p => p.name).ToList();
-        string ownedSaveData = string.Join(",", ownedNames);
-        PlayerPrefs.SetString(OwnedSaveKey, ownedSaveData);
+        // --- Save Owned Power-Ups (This part is unchanged) ---
+        List<string> ownedPowerUpNames = ownedPowerUps.Select(p => p.name).ToList();
+        string ownedPowerUpsSaveData = string.Join(",", ownedPowerUpNames);
+        PlayerPrefs.SetString(OwnedSaveKey, ownedPowerUpsSaveData);
 
-        // --- Save Equipped Items ---
-        string[] equippedNames = new string[equippedPowerUps.Length];
+        // --- Save Equipped Power-Ups (This part is unchanged) ---
+        string[] equippedPowerUpNames = new string[equippedPowerUps.Length];
         for (int i = 0; i < equippedPowerUps.Length; i++)
         {
-            equippedNames[i] = (equippedPowerUps[i] != null) ? equippedPowerUps[i].name : "null";
+            equippedPowerUpNames[i] = (equippedPowerUps[i] != null) ? equippedPowerUps[i].name : "null";
         }
-        string equippedSaveData = string.Join(",", equippedNames);
-        PlayerPrefs.SetString(EquippedSaveKey, equippedSaveData);
+        string equippedPowerUpsSaveData = string.Join(",", equippedPowerUpNames);
+        PlayerPrefs.SetString(EquippedSaveKey, equippedPowerUpsSaveData);
+
+        // --- NEW: Save Owned Skins ---
+        string ownedSkinsSaveData = string.Join(",", ownedSkins);
+        PlayerPrefs.SetString(OwnedSkinsSaveKey, ownedSkinsSaveData);
+        // -----------------------------
 
         PlayerPrefs.Save();
-        Debug.Log("Inventory Saved.");
+        Debug.Log("Inventory Saved (Power-ups and Skins).");
     }
 
     private void LoadInventory()
     {
-        // --- Load Owned Items ---
-        string ownedSaveData = PlayerPrefs.GetString(OwnedSaveKey, "");
-        if (!string.IsNullOrEmpty(ownedSaveData))
+        // --- Load Owned Power-Ups (This part is unchanged) ---
+        string ownedPowerUpsSaveData = PlayerPrefs.GetString(OwnedSaveKey, "");
+        if (!string.IsNullOrEmpty(ownedPowerUpsSaveData))
         {
             ownedPowerUps.Clear();
-            string[] ownedNames = ownedSaveData.Split(',');
+            string[] ownedNames = ownedPowerUpsSaveData.Split(',');
             foreach (string name in ownedNames)
             {
                 PowerUpData powerUp = Resources.Load<PowerUpData>("PowerUps/" + name);
@@ -101,11 +141,11 @@ public class InventoryManager : MonoBehaviour
             }
         }
 
-        // --- Load Equipped Items ---
-        string equippedSaveData = PlayerPrefs.GetString(EquippedSaveKey, "");
-        if (!string.IsNullOrEmpty(equippedSaveData))
+        // --- Load Equipped Power-Ups (This part is unchanged) ---
+        string equippedPowerUpsSaveData = PlayerPrefs.GetString(EquippedSaveKey, "");
+        if (!string.IsNullOrEmpty(equippedPowerUpsSaveData))
         {
-            string[] equippedNames = equippedSaveData.Split(',');
+            string[] equippedNames = equippedPowerUpsSaveData.Split(',');
             for (int i = 0; i < equippedPowerUps.Length; i++)
             {
                 if (equippedNames[i] != "null")
@@ -119,6 +159,15 @@ public class InventoryManager : MonoBehaviour
                 }
             }
         }
-        Debug.Log("Inventory Loaded.");
+
+        // --- NEW: Load Owned Skins ---
+        string ownedSkinsSaveData = PlayerPrefs.GetString(OwnedSkinsSaveKey, "");
+        if (!string.IsNullOrEmpty(ownedSkinsSaveData))
+        {
+            ownedSkins = ownedSkinsSaveData.Split(',').ToList();
+        }
+        // -----------------------------
+
+        Debug.Log("Inventory Loaded (Power-ups and Skins).");
     }
 }
