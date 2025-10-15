@@ -8,7 +8,7 @@ public class ScoreDisplay : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public string scorePrefix = "Score: "; // Custom prefix for score text
     public Image scoreImageUI; // Optional: Image UI for score
-
+    private TutorialGameManager tutorialGameManager;
     [Header("Timer Display Settings")]
     public TextMeshProUGUI timerText;
     public string timerPrefix = "Quest Timer: "; // Custom prefix for timer text
@@ -28,6 +28,8 @@ public class ScoreDisplay : MonoBehaviour
 
     void Start()
     {
+        tutorialGameManager = FindObjectOfType<TutorialGameManager>();
+
         if (scoreText == null)
         {
             Debug.LogError("ScoreDisplay: scoreText (TextMeshProUGUI) is not assigned.");
@@ -187,6 +189,10 @@ public class ScoreDisplay : MonoBehaviour
     void OnLoopComplete(int currentScore)
     {
         Debug.Log($"Loop completed! Current score: {currentScore}");
+        if (tutorialGameManager != null)
+        {
+            tutorialGameManager.OnScoreUpdated(currentScore);
+        }
     }
 
     void OnDestroy()
