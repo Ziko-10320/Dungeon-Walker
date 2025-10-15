@@ -34,7 +34,7 @@ public class SprayerAttack : MonoBehaviour
     private float lastAttackTime;
     private bool isAttacking = false;
     private float attackDirection; // Stores the direction (1 or -1) when attack starts
-
+    private Transform playerTransform;
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -62,6 +62,22 @@ public class SprayerAttack : MonoBehaviour
             Debug.LogWarning("SprayerAttack: visualDirectionReference is not assigned. Damage zone flipping might not be reliable for bone-based enemies. Please assign a child bone/GameObject that points forward.", this);
         }
     }
+    public void InitializeAndReset(Transform player)
+    {
+        // 1. Forcefully get the player reference.
+        playerTransform = player;
+
+        // 2. Reset the ACTUAL state variables from your script.
+        isAttacking = false; // THIS IS THE KEY FIX. It allows the Update loop to run again.
+        lastAttackTime = -attackCooldown; // This resets the attack cooldown timer.
+
+        // 3. Stop any old attack coroutines that might be stuck.
+        StopAllCoroutines();
+
+        // 4. Ensure the script is enabled and ready to go.
+        this.enabled = true;
+    }
+
 
     void Update()
     {

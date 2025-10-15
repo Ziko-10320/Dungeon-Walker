@@ -56,6 +56,36 @@ public class RatKingBoss : MonoBehaviour
         ChangeState(AIState.Wandering);
     }
 
+    public void Initialize(Transform player)
+    {
+        // Get player reference reliably
+        playerTransform = player;
+
+        // Reset core AI state
+        CanMove = true;
+        zonesDeactivated = false;
+        timeSinceLastFlip = 0f;
+
+        // --- NEW, MORE ROBUST FLIP RESET ---
+        // 1. Force the internal move direction to default (1 for right).
+        moveDirection = 1f;
+
+        // 2. Force the visual scale to its default, non-flipped state.
+        // This is more reliable than using rotation for 2D sprites.
+        Vector3 localScale = transform.localScale;
+        localScale.x = Mathf.Abs(localScale.x); // Ensures the X scale is always positive
+        transform.localScale = localScale;
+        // --- END OF THE NEW FIX ---
+
+        // Stop all previous AI coroutines and start fresh
+        if (wanderCoroutine != null)
+        {
+            StopCoroutine(wanderCoroutine);
+        }
+        StopAllCoroutines(); // A failsafe to stop any other routines
+        ChangeState(AIState.Wandering); // Always start in the Wandering state
+    }
+
     void Update()
     {
         if (health != null && health.isStunned)

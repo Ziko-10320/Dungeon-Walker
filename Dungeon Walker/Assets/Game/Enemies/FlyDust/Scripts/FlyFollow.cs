@@ -53,27 +53,32 @@ public class FlyFollow : MonoBehaviour
     private Vector2 randomTargetPosition;
     private FlyHealth health;
 
-    void Start()
+    public void Initialize(Transform player)
     {
+        playerTransform = player;
+
+        // --- FAILSAFE FIX ---
+        // If the player reference is STILL null, try to get it from the WaveManager directly.
+        if (playerTransform == null && FindObjectOfType<WaveManager>() != null)
+        {
+            playerTransform = FindObjectOfType<WaveManager>().playerTransform;
+        }
+        // --- END OF FIX ---
+
         rb = GetComponent<Rigidbody2D>();
         health = GetComponent<FlyHealth>();
         rb.gravityScale = 0f;
+        rb.velocity = Vector2.zero;
 
-        if (rb == null)
-        {
-            Debug.LogError("FlyFollow: Rigidbody2D missing.");
-            enabled = false;
-            return;
-        }
+        if (randomizeOnStart) ApplyRandomRanges();
 
-        if (randomizeOnStart)
-            ApplyRandomRanges();
+        playerDetected = false;
+        if (!facingRight) Flip();
 
-        // Stagger idle timers so all flies don’t move in sync
         randomMoveTimer = Random.Range(0f, randomMoveInterval);
-
         GenerateRandomTarget();
     }
+
 
     private void ApplyRandomRanges()
     {

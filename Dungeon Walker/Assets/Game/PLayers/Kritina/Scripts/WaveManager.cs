@@ -43,13 +43,25 @@ public class WaveManager : MonoBehaviour
     private bool waveIsActive = false;
    
     private Coroutine currentWaveCoroutine;
- 
-    private Transform playerTransform;
+
+    public Transform playerTransform { get; private set; }
+
 
     private PhotonView view;
     private bool isOnlineMode = false;
     void Start()
     {
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject != null)
+        {
+            playerTransform = playerObject.transform;
+        }
+        else
+        {
+            Debug.LogError("WaveManager: Impossible de trouver l'objet du joueur. Assure-toi que ton joueur a le tag 'Player' !");
+            enabled = false;
+            return;
+        }
         view = GetComponent<PhotonView>();
         if (PhotonNetwork.IsConnected)
         {
@@ -103,17 +115,7 @@ public class WaveManager : MonoBehaviour
         // Déclenche la première vague en fonction du score initial (qui est probablement 0)
         OnScoreUpdated(checkpointManager.TotalScore);
 
-        GameObject playerObject =  GameObject.FindGameObjectWithTag("Player");
-        if (playerObject != null)
-        {
-            playerTransform = playerObject.transform;
-        }
-        else
-        {
-            Debug.LogError("WaveManager: Impossible de trouver l'objet du joueur. Assure-toi que ton joueur a le tag 'Player' !");
-            enabled = false;
-            return;
-        }
+     
        
     }
 
@@ -364,16 +366,14 @@ public class WaveManager : MonoBehaviour
         var followScript = enemy.GetComponent<FlyFollow>();
         if (followScript != null)
         {
-            followScript.playerTransform = this.playerTransform;
-            followScript.enabled = true; // Forcer l'activation
+            // This now calls the new robust Initialize method
+            followScript.Initialize(this.playerTransform);
         }
-
-        // Assigner le joueur au script d'attaque (FlyAttack)
         var attackScript = enemy.GetComponent<FlyAttack>();
         if (attackScript != null)
         {
-            attackScript.playerTransform = this.playerTransform;
-            attackScript.enabled = true; // Forcer l'activation
+            // This now calls the new robust Initialize method
+            attackScript.Initialize(this.playerTransform);
         }
         var RatfollowScript = enemy.GetComponent<RatKingBoss>();
         if (RatfollowScript != null)

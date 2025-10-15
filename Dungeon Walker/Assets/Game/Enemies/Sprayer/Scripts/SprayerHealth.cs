@@ -1,8 +1,9 @@
 ﻿using FirstGearGames.SmoothCameraShaker;
+using Photon.Pun;
+using Photon.Realtime;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
-using Photon.Pun;
 public class SprayerHealth : MonoBehaviour, IPunObservable
 {
     // Public variables for health and effects
@@ -71,16 +72,25 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
         isFlashing = false;
         isStunned = false; // Assuming you have this variable
 
-        // If the enemy has a movement script, re-enable it.
-        var SprayerFollow = GetComponent<SprayerFollow>();
-        if (SprayerFollow != null)
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject == null)
         {
-            SprayerFollow.enabled = true;
+            gameObject.SetActive(false); // Disable if no player exists.
+            return;
+        }
+        Transform player = playerObject.transform;
+
+        // Get the follow script and call our new master reset method.
+        var sprayerFollow = GetComponent<SprayerFollow>();
+        if (sprayerFollow != null)
+        {
+            sprayerFollow.InitializeAndReset(player);
         }
         var SprayerAttack = GetComponent<SprayerAttack>();
         if (SprayerAttack != null)
         {
             SprayerAttack.enabled = true;
+            SprayerAttack.InitializeAndReset(player);
         }
         if (spriteRenderers != null && originalMaterials != null && spriteRenderers.Length == originalMaterials.Length)
         {

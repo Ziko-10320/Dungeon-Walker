@@ -54,19 +54,46 @@ public class FleaChargeAttack : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         originalDrag = rb.drag;
 
-       
+        // It's good practice to initialize these hashes here.
         isAnticipatingHash = Animator.StringToHash("IsAnticipating");
         isChargingHash = Animator.StringToHash("IsCharging");
 
-        // Get or add the AudioSource component
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
-        audioSource.playOnAwake = false; // Ensure it doesn't play automatically
-        audioSource.volume = attackSoundVolume; // Set initial volume
+        audioSource.playOnAwake = false;
     }
+
+    public void InitializeAndReset(Transform player)
+    {
+        // 1. Forcefully get the player reference.
+        playerTransform = player;
+
+        // 2. Reset all critical state variables.
+        canAttack = true;
+        isAttacking = false;
+        ResetDecisionTimer(); // Reset the attack timer.
+
+        // 3. --- THIS IS THE CRITICAL ANIMATION FIX ---
+        // Ensure the animator reference is not null.
+        if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
+        if (fleaAnimator != null)
+        {
+            // Force all animation booleans back to their default (false) state.
+            fleaAnimator.SetBool(isAnticipatingHash, false);
+            fleaAnimator.SetBool(isChargingHash, false);
+        }
+        // ---------------------------------------------
+
+        // 4. Stop any old attack coroutines that might be stuck mid-charge.
+        StopAllCoroutines();
+
+        // 5. Ensure the script is enabled and ready to go.
+        this.enabled = true;
+    }
+
     void OnEnable()
     {
         PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;

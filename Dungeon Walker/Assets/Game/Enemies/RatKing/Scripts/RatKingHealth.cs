@@ -61,22 +61,27 @@ public class RatKingHealth : MonoBehaviour
     void OnEnable()
     {
         // This is the guaranteed reset for pooled enemies.
-        currentHealth = maxHealth;
-        isFlashing = false;
-        isStunned = false; // Assuming you have this variable
+        ResetState();
 
-        // If the enemy has a movement script, re-enable it.
-        var RatKingBoss = GetComponent<RatKingBoss>();
-        if (RatKingBoss != null)
+        // Find the player reference ONCE and pass it to the other scripts.
+        Transform player = GameObject.FindGameObjectWithTag("Player").transform;
+
+        // Reset and re-enable the other scripts
+        var ratKingBoss = GetComponent<RatKingBoss>();
+        if (ratKingBoss != null)
         {
-            RatKingBoss.enabled = true;
+            ratKingBoss.enabled = true;
+            ratKingBoss.Initialize(player); // We will add this method
         }
-        var RatKingAttack = GetComponent<RatKingAttack>();
-        if (RatKingAttack != null)
+
+        var ratKingAttack = GetComponent<RatKingAttack>();
+        if (ratKingAttack != null)
         {
-            RatKingAttack.enabled = true;
+            ratKingAttack.enabled = true;
+            ratKingAttack.Initialize(player); // We will add this method
         }
     }
+
     void Start()
     {
 
@@ -101,6 +106,29 @@ public class RatKingHealth : MonoBehaviour
                 }
             }
         }
+    }
+    public void ResetState()
+    {
+        // --- HEALTH & STATE RESET ---
+        currentHealth = maxHealth;
+        isFlashing = false;
+        isStunned = false;
+
+        // --- MATERIAL & VISUALS RESET ---
+        if (spriteRenderers != null && originalMaterials != null)
+        {
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] != null && originalMaterials[i] != null)
+                {
+                    // This is the critical fix for the flash material bug
+                    spriteRenderers[i].material = originalMaterials[i];
+                }
+            }
+        }
+
+        // --- STOP LEFTOVER COROUTINES ---
+        StopAllCoroutines();
     }
 
     // Method to take damage

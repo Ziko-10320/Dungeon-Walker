@@ -100,6 +100,23 @@ public class RatKingAttack : MonoBehaviour
         lastJumpTime = -jumpCooldown;
         lastThrowTime = -throwCooldown;
     }
+    public void Initialize(Transform player)
+    {
+        // Get player reference reliably
+        playerTransform = player;
+
+        // Reset attack cooldowns
+        lastJumpTime = -jumpCooldown;
+        lastThrowTime = -throwCooldown;
+
+        // Reset attack states
+        isJumping = false;
+        isFalling = false;
+        canPerformConsecutiveJump = false;
+
+        // Stop any leftover attack coroutines from the previous life
+        StopAllCoroutines();
+    }
 
     public bool CanPerformJumpAttack()
     {

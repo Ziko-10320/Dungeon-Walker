@@ -63,12 +63,7 @@ public class FlyHealth : MonoBehaviour
     }
     void OnEnable()
     {
-        // This is the guaranteed reset for pooled enemies.
-        currentHealth = maxHealth;
-        isKnockedBack = false;
-        isFlashing = false;
-        isStunned = false; // Assuming you have this variable
-
+        ResetState();
         // If the enemy has a movement script, re-enable it.
         var FlyFollow = GetComponent<FlyFollow>();
         if (FlyFollow != null)
@@ -105,6 +100,30 @@ public class FlyHealth : MonoBehaviour
                 }
             }
         }
+    }
+    public void ResetState()
+    {
+        // --- HEALTH & STATE RESET ---
+        currentHealth = maxHealth;
+        isKnockedBack = false;
+        isFlashing = false;
+        isStunned = false;
+
+        // --- MATERIAL & VISUALS RESET ---
+        if (spriteRenderers != null && originalMaterials != null)
+        {
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] != null && originalMaterials[i] != null)
+                {
+                    // This is the critical fix for the flash material bug
+                    spriteRenderers[i].material = originalMaterials[i];
+                }
+            }
+        }
+
+        // --- STOP LEFTOVER COROUTINES ---
+        StopAllCoroutines();
     }
 
     // Method to take damage

@@ -1,8 +1,9 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
- 
+using UnityEngine.U2D.Animation;
 public class L3antixHealth : MonoBehaviour
 {
     [Header("Health Settings")]
@@ -25,6 +26,7 @@ public class L3antixHealth : MonoBehaviour
     [Header("Flash Damage Effect")]
     [SerializeField] private Material flashMaterial;
     [SerializeField] private string flashAmountProperty = "_FlashAmount";
+    [SerializeField] private string mainTextureProperty = "_MainTex";
     [SerializeField] private float flashDuration = 0.2f;
     [SerializeField] private SpriteRenderer[] spriteRenderers;
 
@@ -52,7 +54,7 @@ public class L3antixHealth : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Slider shieldSlider;
 
     [HideInInspector] public bool isSuperActive = false;
-
+   
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -307,51 +309,80 @@ public class L3antixHealth : MonoBehaviour
 
     private IEnumerator FlashDamageEffect()
     {
+        // Failsafe checks
         if (flashMaterial == null || spriteRenderers.Length == 0)
         {
-            Debug.LogError("Flash material or SpriteRenderers are not assigned on PlayerHealth.");
             yield break;
         }
-        Material[] flashMaterialInstances = new Material[spriteRenderers.Length];
+
+        // --- THIS IS THE NEW, GUARANTEED LOGIC ---
+
+        // 1. Get the SpriteLibrary component from the player's root.
+        SpriteLibrary spriteLibrary = GetComponent<SpriteLibrary>();
+        if (spriteLibrary == null || spriteLibrary.spriteLibraryAsset == null)
+        {
+            Debug.LogError("FlashEffect Error: SpriteLibrary or its asset is missing!", this);
+            yield break;
+        }
+
+        // 2. Get the Skin Controller to find the current skin's NAME.
+        L3antixSkinController skinController = GetComponent<L3antixSkinController>();
+        string currentSkinName = (skinController != null) ? skinController.GetCurrentSkinName() : "Default";
+
+        // 3. Get the ACTUAL SPRITE for the current skin from the Sprite Library Asset.
+        // We just need one sprite (e.g., the "Head") to find the correct texture atlas.
+        Sprite skinSprite = spriteLibrary.spriteLibraryAsset.GetSprite("Head", currentSkinName);
+
+        // 4. If we couldn't find the sprite, something is wrong with the names. Abort.
+        if (skinSprite == null)
+        {
+            Debug.LogError($"FlashEffect Error: Could not find a sprite in the library with Category 'Head' and Label '{currentSkinName}'. Check your Sprite Library Asset!", this);
+            yield break;
+        }
+
+        // 5. Get the TEXTURE from that sprite. This is the correct texture atlas for the current skin.
+        Texture2D skinTexture = skinSprite.texture;
+
+        // 6. Create ONE dynamic instance of the flash material.
+        Material flashInstance = new Material(flashMaterial);
+
+        // 7. Set the texture we found on our new material instance.
+        flashInstance.SetTexture(mainTextureProperty, skinTexture);
+
+        // 8. Assign this ONE material instance to ALL renderers to preserve batching.
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
             if (spriteRenderers[i] != null)
             {
-                flashMaterialInstances[i] = new Material(flashMaterial);
-                spriteRenderers[i].material = flashMaterialInstances[i];
+                spriteRenderers[i].material = flashInstance;
             }
         }
+
+        // 9. Animate the flash amount.
         float elapsed = 0f;
-        while (elapsed < flashDuration / 2)
+        while (elapsed < flashDuration)
         {
-            float flashAmount = Mathf.Lerp(0, 1, elapsed / (flashDuration / 2));
-            foreach (var material in flashMaterialInstances)
-            {
-                if (material != null) material.SetFloat(flashAmountProperty, flashAmount);
-            }
+            float flashAmount = Mathf.Lerp(1.0f, 0.0f, elapsed / flashDuration);
+            flashInstance.SetFloat(flashAmountProperty, flashAmount);
             elapsed += Time.deltaTime;
             yield return null;
         }
-        elapsed = 0f;
-        while (elapsed < flashDuration / 2)
-        {
-            float flashAmount = Mathf.Lerp(1, 0, elapsed / (flashDuration / 2));
-            foreach (var material in flashMaterialInstances)
-            {
-                if (material != null) material.SetFloat(flashAmountProperty, flashAmount);
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
+
+        // 10. Restore the original materials.
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
-            if (spriteRenderers[i] != null)
+            if (spriteRenderers[i] != null && originalMaterials[i] != null)
             {
                 spriteRenderers[i].material = originalMaterials[i];
-                Destroy(flashMaterialInstances[i]);
             }
         }
+
+        // 11. Clean up the instance.
+        Destroy(flashInstance);
     }
+
+
+
     public void FullHeal()
     {
         currentHealth = maxHealth;

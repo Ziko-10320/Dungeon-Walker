@@ -1,8 +1,9 @@
 ﻿using FirstGearGames.SmoothCameraShaker;
+using Photon.Pun;
+using Photon.Realtime;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
-using Photon.Pun;
 public class FleaHealth : MonoBehaviour, IPunObservable
 {
     // Public variables for health and effects
@@ -64,19 +65,28 @@ public class FleaHealth : MonoBehaviour, IPunObservable
         isFlashing = false;
         isStunned = false; // Assuming you have this variable
 
-        // Reset any visual effects, like the flash.
       
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject == null)
+        {
+            gameObject.SetActive(false); // Disable if no player exists.
+            return;
+        }
+        Transform player = playerObject.transform;
+
 
         // If the enemy has a movement script, re-enable it.
         var followScript = GetComponent<FleaFollow>();
         if (followScript != null)
         {
             followScript.enabled = true;
+            followScript.InitializeAndReset(player);
         }
         var attackScript = GetComponent<FleaChargeAttack>();
         if (attackScript != null)
         {
             attackScript.enabled = true;
+            attackScript.InitializeAndReset(player);
         }
         if (spriteRenderers != null && originalMaterials != null && spriteRenderers.Length == originalMaterials.Length)
         {

@@ -11,7 +11,7 @@ public class L3antixSkinController : MonoBehaviour
 
     // A list to hold all the SpriteResolver components of the character's body parts.
     private List<SpriteResolver> spriteResolvers = new List<SpriteResolver>();
-
+    private string currentSkinName = "Default";
     // --- CORE UNITY FUNCTIONS ---
 
     void Awake()
@@ -34,12 +34,15 @@ public class L3antixSkinController : MonoBehaviour
         Debug.Log("Applying skin '" + savedSkinLabel + "' to " + characterType);
         ApplySkin(savedSkinLabel);
     }
-
-    // --- THE SKIN APPLYING LOGIC ---
+    public string GetCurrentSkinName()
+    {
+        return currentSkinName;
+    }
 
     // This is the main function that does all the work.
     public void ApplySkin(string skinName)
     {
+        currentSkinName = skinName;
         // Safety check: if the list of resolvers is empty, something is wrong.
         if (spriteResolvers.Count == 0)
         {

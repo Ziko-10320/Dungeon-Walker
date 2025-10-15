@@ -11,9 +11,12 @@ public class PlayerSkinController : MonoBehaviour
 
     // A list to hold all the SpriteResolver components of the character's body parts.
     private List<SpriteResolver> spriteResolvers = new List<SpriteResolver>();
-
+    private string currentSkinName = "Default";
     // --- CORE UNITY FUNCTIONS ---
-
+    public string GetCurrentSkinName()
+    {
+        return currentSkinName;
+    }
     void Awake()
     {
         // Find all SpriteResolver components (this part is the same)
@@ -40,6 +43,7 @@ public class PlayerSkinController : MonoBehaviour
     // This is the main function that does all the work.
     public void ApplySkin(string skinName)
     {
+        currentSkinName = skinName;
         // Safety check: if the list of resolvers is empty, something is wrong.
         if (spriteResolvers.Count == 0)
         {

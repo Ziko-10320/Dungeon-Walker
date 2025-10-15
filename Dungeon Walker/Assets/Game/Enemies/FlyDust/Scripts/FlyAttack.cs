@@ -63,6 +63,23 @@ public class FlyAttack : MonoBehaviour
         delayBetweenProjectilesWait = new WaitForSeconds(delayBetweenProjectiles);
         projectileLifetimeWait = new WaitForSeconds(projectileLifetime);
     }
+    public void Initialize(Transform player)
+    {
+        playerTransform = player;
+
+        // --- FAILSAFE FIX ---
+        // If the player reference is STILL null, try to get it from the WaveManager directly.
+        if (playerTransform == null && FindObjectOfType<WaveManager>() != null)
+        {
+            playerTransform = FindObjectOfType<WaveManager>().playerTransform;
+        }
+        // --- END OF FIX ---
+
+        animator = GetComponent<Animator>();
+        SetNextAttackTime();
+        activeProjectiles.Clear();
+        StopAllCoroutines();
+    }
 
     void Start()
     {
@@ -95,11 +112,7 @@ public class FlyAttack : MonoBehaviour
             
             enabled = false;
         }
-        if (dustExplosionEffect == null)
-        {
-            Debug.LogWarning("FlyAttack: Dust Explosion Effect not assigned. No explosion effect will play on projectile destruction.");
-        }
-        SetNextAttackTime();
+     
     }
 
     void Update()

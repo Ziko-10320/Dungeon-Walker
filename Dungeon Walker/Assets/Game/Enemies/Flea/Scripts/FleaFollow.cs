@@ -42,6 +42,7 @@ public class FleaFollow : MonoBehaviour
 
     void Awake()
     {
+        // Awake should ONLY get references to its own components.
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
         health = GetComponent<FleaHealth>();
@@ -119,8 +120,39 @@ private void HandleInvisibility(bool invisible)
         FindPlayerAgain();
     }
 }
+    public void InitializeAndReset(Transform player)
+    {
+        // 1. Forcefully get the player reference.
+        playerTransform = player;
 
-private void FindPlayerAgain()
+        // 2. Apply randomization to this instance's stats.
+        patrolSpeed = Random.Range(patrolSpeedRange.x, patrolSpeedRange.y);
+        chaseSpeed = Random.Range(chaseSpeedRange.x, chaseSpeedRange.y);
+        randomDetectionRadius = Random.Range(detectionRadiusRange.x, detectionRadiusRange.y);
+        randomStopDistance = Random.Range(stopDistanceRange.x, stopDistanceRange.y);
+        // Ensure stop distance is always less than detection radius to prevent bugs.
+        randomStopDistance = Mathf.Clamp(randomStopDistance, 0.5f, randomDetectionRadius - 0.5f);
+
+        // 3. Reset all critical state variables.
+        initialYPosition = transform.position.y;
+        timeSinceLastFlip = 0f;
+
+        // 4. Forcefully reset the flip and physics state.
+        currentMoveDirection = 1f;
+        FaceCurrentDirection(); // This visually resets the flip.
+        if (rb == null) rb = GetComponent<Rigidbody2D>();
+        rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+
+        // 5. Stop any old AI logic and start fresh.
+        StopAllCoroutines();
+        ChangeState(AIState.Patrolling); // Start by patrolling.
+
+        // 6. Ensure the script is enabled.
+        this.enabled = true;
+    }
+
+    private void FindPlayerAgain()
 {
     GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
     GameObject closest = null;
@@ -236,24 +268,38 @@ private void FindPlayerAgain()
 
     private void HandleChasing()
     {
-        float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
-
-        if (IsBlocked())
+        if (playerTransform == null)
         {
-            StopMoving();
+            ChangeState(AIState.Patrolling);
             return;
         }
 
+        float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
+
+        // --- THIS IS THE KEY FIX ---
+        // If we are WITHIN the stopping distance...
         if (distanceToPlayer <= randomStopDistance)
         {
+            // ...we STOP moving and just face the player.
             StopMoving();
             FaceTarget(playerTransform.position);
+            // By returning here, we prevent any other movement logic from running this frame.
+            return;
         }
-        else
+        // --- END OF FIX ---
+
+        // If we are outside the stopping distance, we check for obstacles.
+        if (IsBlocked())
         {
-            MoveTowards(playerTransform.position, chaseSpeed);
+            StopMoving();
+            // Optional: You could make it jump here if it's blocked while chasing.
+            return;
         }
+
+        // If we are clear to move, then we move towards the player.
+        MoveTowards(playerTransform.position, chaseSpeed);
     }
+
 
     private void HandleFallen()
     {

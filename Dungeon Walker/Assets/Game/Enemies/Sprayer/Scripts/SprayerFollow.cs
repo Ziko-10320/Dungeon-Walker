@@ -23,7 +23,13 @@ public class SprayerFollow : MonoBehaviour
     [SerializeField] private float stoppingDistance = 1.5f;
     [SerializeField] private float detectionRadius = 7f;
     [SerializeField] private float lostSightRadius = 10f;
-
+    [Header("Randomization Settings")]
+    public bool randomizeOnStart = true;
+    public Vector2 wanderSpeedRange = new Vector2(1.5f, 2.5f);
+    public Vector2 chaseSpeedRange = new Vector2(3.5f, 4.5f);
+    public Vector2 stoppingDistanceRange = new Vector2(1.0f, 2.0f);
+    public Vector2 detectionRadiusRange = new Vector2(6f, 8f);
+    public Vector2 lostSightRadiusRange = new Vector2(9f, 11f);
     [Header("Paramètres d'Errance")]
     [SerializeField] private Vector2 wanderTimeRange = new Vector2(2f, 5f);
     private Coroutine wanderCoroutine;
@@ -49,48 +55,50 @@ public class SprayerFollow : MonoBehaviour
 
     void Awake()
     {
-        if (playerTransform != null)
-        {
-            Debug.Log("FleaFollow: Player was assigned manually. Using that target.");
-        }
-        else
-        {
-            // 2. If not, we search for any and all players in the scene.
-           
-            GameObject[] offlinePlayers = GameObject.FindGameObjectsWithTag("Player");
-
-            // 3. We combine these into one single list of potential targets.
-            List<GameObject> allPlayers = new List<GameObject>();
-            
-            allPlayers.AddRange(offlinePlayers);
-
-            // 4. We find the player that is closest to this specific flea.
-            GameObject closestPlayer = null;
-            float minDistance = float.MaxValue;
-
-            foreach (GameObject player in allPlayers)
-            {
-                float distance = Vector3.Distance(transform.position, player.transform.position);
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    closestPlayer = player;
-                }
-            }
-
-            // 5. If we found a closest player, we assign its transform as our target.
-            if (closestPlayer != null)
-            {
-                playerTransform = closestPlayer.transform;
-                Debug.Log("FleaFollow: Found closest player to target: " + closestPlayer.name);
-            }
-        }
+        
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (sprayerAnimator == null) sprayerAnimator = GetComponent<Animator>();
-        health = GetComponent<SprayerHealth>();      
+        health = GetComponent<SprayerHealth>();
 
     }
+    public void InitializeAndReset(Transform player)
+    {
+        // 1. Forcefully get the player reference.
+        playerTransform = player;
+        if (randomizeOnStart)
+        {
+            ApplyRandomRanges();
+        }
+        // 2. Reset all critical state variables to their defaults.
+        CanMove = true;
+        isAnticipatingJump = false;
+        timeSinceLastFlip = 0f;
+        lastJumpTime = -jumpCooldown; // Reset jump cooldown.
 
+        // 3. Forcefully reset the flip and physics state.
+        moveDirection = 1f; // Force internal direction to 'right'.
+        transform.rotation = Quaternion.identity; // Force visual rotation to default (0,0,0).
+        if (rb == null) rb = GetComponent<Rigidbody2D>(); // Failsafe
+        rb.velocity = Vector2.zero; // Stop any leftover movement.
+        rb.angularVelocity = 0f;
+
+        // 4. Stop any old AI logic that might be stuck running.
+        StopAllCoroutines();
+
+        // 5. Kick-start the AI by changing to the default state.
+        ChangeState(AIState.Wandering);
+
+        // 6. Ensure the script is enabled and ready to go.
+        this.enabled = true;
+    }
+    private void ApplyRandomRanges()
+    {
+        wanderSpeed = Random.Range(wanderSpeedRange.x, wanderSpeedRange.y);
+        chaseSpeed = Random.Range(chaseSpeedRange.x, chaseSpeedRange.y);
+        stoppingDistance = Random.Range(stoppingDistanceRange.x, stoppingDistanceRange.y);
+        detectionRadius = Random.Range(detectionRadiusRange.x, detectionRadiusRange.y);
+        lostSightRadius = Random.Range(lostSightRadiusRange.x, lostSightRadiusRange.y);
+    }
     void Start()
     {
 
