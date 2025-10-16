@@ -63,6 +63,7 @@ public class AcidTrailDamage : MonoBehaviour
         foreach (var enemy in enemies)
         {
             if (enemy.TryGetComponent(out FleaHealth flea)) flea.TakeDamage(damage, Vector2.zero);
+            if (enemy.TryGetComponent(out FleaHealthV2 fleaV2)) fleaV2.TakeDamage(damage, Vector2.zero);
             if (enemy.TryGetComponent(out FlyHealth fly)) fly.TakeDamage(damage, Vector2.zero);
             if (enemy.TryGetComponent(out SprayerHealth sprayer)) sprayer.TakeDamage(damage, Vector2.zero);
             if (enemy.TryGetComponent(out InkHealth ink)) ink.TakeDamage(damage, Vector2.zero);

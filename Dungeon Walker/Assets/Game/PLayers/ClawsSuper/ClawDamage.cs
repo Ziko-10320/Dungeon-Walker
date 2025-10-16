@@ -51,6 +51,12 @@ public class DelayedDamageClaw : MonoBehaviour
                 // We can pass a zero vector for knockback since this is a special attack
                 healthComponent.TakeDamage(damageAmount, Vector2.zero, 0f);
             }
+            FleaHealthV2 healthComponentV2 = enemy.GetComponent<FleaHealthV2>();
+            if (healthComponentV2 != null)
+            {
+                // We can pass a zero vector for knockback since this is a special attack
+                healthComponentV2.TakeDamage(damageAmount, Vector2.zero, 0f);
+            }
             FlyHealth flyhealthComponent = enemy.GetComponent<FlyHealth>();
             if (flyhealthComponent != null)
             {

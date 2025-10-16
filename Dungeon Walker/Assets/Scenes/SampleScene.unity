@@ -3226,7 +3226,7 @@ PrefabInstance:
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: fleaV2Prefab
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: sprayerPrefab
       value: 
@@ -79105,6 +79105,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8455070525341567712}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: maxHealth
+      value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: shieldSlider
       value: 
       objectReference: {fileID: 7053378291981091934}
@@ -79221,6 +79225,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: fireRate
+      value: 0.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
@@ -79238,7 +79246,7 @@ PrefabInstance:
       objectReference: {fileID: 490707551240320423}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: bulletDamage
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enemyLayers.m_Bits
@@ -80077,7 +80085,7 @@ PrefabInstance:
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[0].enemyPrefabs.Array.data[0]
       value: 
-      objectReference: {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
+      objectReference: {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[0].enemyPrefabs.Array.data[1]
       value: 
@@ -80085,7 +80093,7 @@ PrefabInstance:
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[1].enemyPrefabs.Array.data[0]
       value: 
-      objectReference: {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
+      objectReference: {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[1].enemyPrefabs.Array.data[1]
       value: 
@@ -80097,7 +80105,7 @@ PrefabInstance:
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[2].enemyPrefabs.Array.data[0]
       value: 
-      objectReference: {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
+      objectReference: {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[2].enemyPrefabs.Array.data[1]
       value: 
@@ -80657,7 +80665,7 @@ PrefabInstance:
       objectReference: {fileID: 490707551240320423}
     - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: bulletDamage
-      value: 4
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: enemyLayers.m_Bits
@@ -81235,6 +81243,10 @@ PrefabInstance:
     - target: {fileID: 8659613907413237748, guid: 6c1bb819b04484f4fb56171c9f5858a6, type: 3}
       propertyPath: m_Name
       value: GameUIManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 8659613907413237748, guid: 6c1bb819b04484f4fb56171c9f5858a6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

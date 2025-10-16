@@ -25,6 +25,7 @@ public class EnemySuperTarget : MonoBehaviour
     private string[] originalSortingLayerNames;
     private int[] originalSortingOrders;
     private FleaHealth healthComponent;
+    private FleaHealthV2 healthComponentV2;
     private FlyHealth flyHealth ;
     private InkHealth inkHealth ;
     private SprayerHealth sprayerHealth;
@@ -40,6 +41,7 @@ public class EnemySuperTarget : MonoBehaviour
             originalGravityScale = rb.gravityScale;
         }
         healthComponent = GetComponent<FleaHealth>();
+        healthComponentV2 = GetComponent<FleaHealthV2>();
         flyHealth = GetComponent<FlyHealth>();
         inkHealth = GetComponent<InkHealth>();
         sprayerHealth = GetComponent<SprayerHealth>();
@@ -120,6 +122,10 @@ public class EnemySuperTarget : MonoBehaviour
             {
                 healthComponent.isStunned = true; // <-- STUN THE ENEMY
             }
+            if (healthComponentV2 != null)
+            {
+                healthComponentV2.isStunned = true; // <-- STUN THE ENEMY
+            }
             if (flyHealth != null)
             {
                 flyHealth.isStunned = true; // <-- STUN THE ENEMY
@@ -181,6 +187,10 @@ public class EnemySuperTarget : MonoBehaviour
             {
                 healthComponent.isStunned = false; // <-- UN-STUN THE ENEMY
             }
+            if (healthComponentV2 != null)
+            {
+                healthComponentV2.isStunned = false; // <-- UN-STUN THE ENEMY
+            }
             if (flyHealth != null)
             {
                 flyHealth.isStunned = false; // <-- UN-STUN THE ENEMY
@@ -215,6 +225,7 @@ public class EnemySuperTarget : MonoBehaviour
     {
         // Stun all health components
         if (healthComponent != null) healthComponent.isStunned = value;
+        if (healthComponentV2 != null) healthComponentV2.isStunned = value;
         if (flyHealth != null) flyHealth.isStunned = value;
         if (inkHealth != null) inkHealth.isStunned = value;
         if (sprayerHealth != null) sprayerHealth.isStunned = value;

@@ -5609,7 +5609,7 @@ Transform:
   m_GameObject: {fileID: 5922857070961778877}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.3, y: 0.63, z: 0}
+  m_LocalPosition: {x: -0.3, y: 0.041, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5647,7 +5647,7 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.15, y: -0.81}
+  m_Offset: {x: 0, y: -0.23}
   serializedVersion: 2
   m_Radius: 0.19
 --- !u!1 &6049998291985437462
@@ -6203,11 +6203,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -72.91
+      value: -73.03297
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.85
+      value: -1.6806526
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6548,12 +6548,12 @@ MonoBehaviour:
   rb: {fileID: 5736553300166472320}
   fleaAnimator: {fileID: 1171926864193948551}
   playerTransform: {fileID: 0}
-  patrolSpeedRange: {x: 7, y: 9}
-  chaseSpeedRange: {x: 15, y: 20}
-  detectionRadiusRange: {x: 13.4, y: 19.6}
-  stopDistanceRange: {x: 3, y: 5}
-  wanderTimeRange: {x: 1.17, y: 3.22}
-  wanderWaitTime: 1
+  patrolSpeedRange: {x: 7, y: 10}
+  chaseSpeedRange: {x: 2, y: 10}
+  detectionRadiusRange: {x: 14, y: 16.8}
+  stopDistanceRange: {x: 2, y: 4}
+  wanderTimeRange: {x: 2.74, y: 6.41}
+  wanderWaitTime: 1.5
   groundCheck: {fileID: 8104046359129128042}
   wallCheck: {fileID: 6856286451760990353}
   checkDistance: 0.74
@@ -6634,7 +6634,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   currentHealth: 0
-  CameraShakeDeath: {fileID: 11400000, guid: 5de216865eb2173459f490db41b47444, type: 2}
+  CameraShakeDeath: {fileID: 11400000, guid: c09a47171b56bb94b910790a6bd8c684, type: 2}
   isStunned: 0
   deathSplatterEffectPrefab: {fileID: 1266603064206159665, guid: e8997dd2c61a5e64897ed0308ebb45b6, type: 3}
   splatterSpawnPoint: {fileID: 3986929835973374505}
@@ -6674,12 +6674,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 619882bba3066864582df5032d77324f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flashMaterial: {fileID: 2100000, guid: 8736c882bf658d549b667aa9478609b2, type: 2}
+  flashMaterial: {fileID: 2100000, guid: 58be4ad718d676e448b928e71f7e309a, type: 2}
   clawSpawnPoint: {fileID: 8165603726419997075}
   renderersToFlash:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 3912207305861933409}
+  - {fileID: 9171052792931517999}
+  - {fileID: 6518416374984347207}
   scriptsToDisable:
   - {fileID: 3932573549224213230}
   - {fileID: 2521720910106922149}
@@ -6726,14 +6726,15 @@ MonoBehaviour:
   lineSpeed: 60
   deathDelay: 0.25
   linePrefab: {fileID: 4943147264204026684, guid: 0ef561181d9b49349877ecdd30bdca09, type: 3}
-  outlineMaterial: {fileID: 2100000, guid: 9cdada1cc4a5b59428e247cd5d8d9f53, type: 2}
+  outlineMaterial: {fileID: 2100000, guid: 6d3e1f7b8af0c744396e8a79cb9887f8, type: 2}
   linePoint: {fileID: 8540286110508570705}
   spriteRenderers:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 3912207305861933409}
+  - {fileID: 9171052792931517999}
+  - {fileID: 6518416374984347207}
   inkHealth: {fileID: 0}
   fleaHealth: {fileID: 0}
+  fleaHealthV2: {fileID: 7698766321757829591}
   sprayerHealth: {fileID: 0}
   flyHealth: {fileID: 0}
   inChain: 0
@@ -7264,15 +7265,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3227857253686018997, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalScale.x
-      value: 3.5677392
+      value: 4.181905
       objectReference: {fileID: 0}
     - target: {fileID: 3227857253686018997, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.8876927
+      value: 2.2126482
       objectReference: {fileID: 0}
     - target: {fileID: 3227857253686018997, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.3596158
+      value: 2.76581
       objectReference: {fileID: 0}
     - target: {fileID: 3227857253686018997, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: m_LocalPosition.x
@@ -7308,7 +7309,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: simulationSpeed
-      value: 1.55
+      value: 1.63
       objectReference: {fileID: 0}
     - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: UVModule.enabled
@@ -7341,6 +7342,18 @@ PrefabInstance:
     - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.startRotation.scalar
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.r
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5029033848804414831, guid: 431de6694f6de34438fc4626ad5979df, type: 3}
       propertyPath: InitialModule.gravityModifier.scalar

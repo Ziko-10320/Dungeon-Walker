@@ -26,6 +26,7 @@ public class SoulLinkEnemy : MonoBehaviour
     [Header("Optional health references (used by ForceDieFromChain)")]
     public InkHealth inkHealth;
     public FleaHealth fleaHealth;
+    public FleaHealthV2 fleaHealthV2;
     public SprayerHealth sprayerHealth;
     public FlyHealth flyHealth;
 
@@ -106,6 +107,7 @@ public class SoulLinkEnemy : MonoBehaviour
         // Prefer explicit health components in order (call their Die() which will destroy object).
         if (inkHealth != null) { inkHealth.Die(); return; }
         if (fleaHealth != null) { fleaHealth.Die(); return; }
+        if (fleaHealthV2 != null) { fleaHealthV2.Die(); return; }
         if (sprayerHealth != null) { sprayerHealth.Die(); return; }
         if (flyHealth != null) { flyHealth.Die(); return; }
 

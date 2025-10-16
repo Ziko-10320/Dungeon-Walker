@@ -205,7 +205,13 @@ public class GalaxyImapctSystem : MonoBehaviour
                 Vector2 directionToEnemy = (enemy.transform.position - transform.position).normalized;
                 enemyHealth.TakeDamage(damagePerTick, directionToEnemy, 0f);
             }
-           FlyHealth flyHealth = enemy.GetComponent<FlyHealth>();
+            FleaHealthV2 enemyHealthV2 = enemy.GetComponent<FleaHealthV2>();
+            if (enemyHealthV2 != null)
+            {
+                Vector2 directionToEnemy = (enemy.transform.position - transform.position).normalized;
+                enemyHealthV2.TakeDamage(damagePerTick, directionToEnemy, 0f);
+            }
+            FlyHealth flyHealth = enemy.GetComponent<FlyHealth>();
             if (flyHealth != null)
             {
                 Vector2 directionToEnemy = (enemy.transform.position - transform.position).normalized;
