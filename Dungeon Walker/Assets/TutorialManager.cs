@@ -77,23 +77,30 @@ public class TutorialGameManager : MonoBehaviour
     // ----> THIS IS THE NEW FADE-OUT COROUTINE <----
     private IEnumerator FadeAndLoadLobby()
     {
-        // 1. Unpause the game so the fade works correctly if using scaled time,
-        //    but we will use unscaled time to be safe.
+        // 1. Unpause the game.
         Time.timeScale = 1f;
 
-        // 2. Fade Out Logic (just like in your StartMenuController)
+        // Make sure the panel we are about to fade is visible.
+        // This is important if your fade object is different from the panel itself.
+        if (panelCanvasGroup != null)
+        {
+            panelCanvasGroup.gameObject.SetActive(true);
+        }
+
+        // 2. Fade In Logic (from 0 to 1)
         float timer = 0f;
         while (timer < fadeDuration)
         {
-            // Use unscaledDeltaTime because it's good practice for UI fades.
             timer += Time.unscaledDeltaTime;
-            panelCanvasGroup.alpha = 1 - (timer / fadeDuration); // Fade from 1 to 0
+            // THE FIX IS HERE: We just use (timer / fadeDuration) to go from 0 to 1.
+            panelCanvasGroup.alpha = timer / fadeDuration;
             yield return null;
         }
-        panelCanvasGroup.alpha = 0;
+        // Ensure it's fully opaque at the end.
+        panelCanvasGroup.alpha = 1;
 
         // 3. Load the Lobby Scene using its index.
         Debug.Log("Fade complete. Loading Lobby Scene (Index 0).");
-        SceneManager.LoadScene(0); // Use index 0 for the lobby.
+        SceneManager.LoadScene(0);
     }
 }
