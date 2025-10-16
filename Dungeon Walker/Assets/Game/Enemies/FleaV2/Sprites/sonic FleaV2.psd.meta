@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 10b18b34b6f66b44db91f9cccfbb392b
+guid: daafcb9bff0739242914421014141fd6
 importerOverride:
   nativeImporterType: 2089858483
   scriptedImporterType:
@@ -99,28 +99,7 @@ ScriptedImporter:
     spritePosition: {x: 0, y: 0}
   mosaicSpriteImportData: []
   rigSpriteImportData:
-  - name: Layer 12
-    originalName: 
-    pivot: {x: 0.5, y: 0.5}
-    alignment: 0
-    border: {x: 0, y: 0, z: 0, w: 0}
-    rect:
-      serializedVersion: 2
-      x: 157
-      y: 300
-      width: 85
-      height: 159
-    spriteID: 542e2d8322b657c4a8975fae928ba51b
-    spriteBone: []
-    spriteOutline: []
-    vertices: []
-    spritePhysicsOutline: []
-    indices: 
-    edges: []
-    tessellationDetail: 0
-    uvTransform: {x: 157, y: 300}
-    spritePosition: {x: 32, y: 66}
-  - name: Layer 11
+  - name: Sonic 3 copy
     originalName: 
     pivot: {x: 0.5, y: 0.5}
     alignment: 0
@@ -129,9 +108,9 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 250
-      height: 288
-    spriteID: 8ae455a045ade5446930100671ab2977
+      width: 178
+      height: 168
+    spriteID: 9463810d07361024db53e853d427686c
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -140,28 +119,7 @@ ScriptedImporter:
     edges: []
     tessellationDetail: 0
     uvTransform: {x: 4, y: 4}
-    spritePosition: {x: 62, y: 43}
-  - name: Layer 10
-    originalName: 
-    pivot: {x: 0.5, y: 0.5}
-    alignment: 0
-    border: {x: 0, y: 0, z: 0, w: 0}
-    rect:
-      serializedVersion: 2
-      x: 4
-      y: 300
-      width: 145
-      height: 130
-    spriteID: 661d4d7c5e4cbe14eba1776341d63a3e
-    spriteBone: []
-    spriteOutline: []
-    vertices: []
-    spritePhysicsOutline: []
-    indices: 
-    edges: []
-    tessellationDetail: 0
-    uvTransform: {x: 4, y: 300}
-    spritePosition: {x: 166, y: 145}
+    spritePosition: {x: 9, y: 9}
   characterData:
     bones: []
     parts: []
@@ -215,11 +173,11 @@ ScriptedImporter:
     allowsAlphaSplitting: 0
     androidETC2FallbackOverride: 0
   - name: Android
-    overridden: 0
+    overridden: 1
     ignorePlatformSupport: 0
-    maxTextureSize: 2048
+    maxTextureSize: 512
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 50
     textureCompression: 1
     compressionQuality: 50
     forceMaximumCompressionQuality_BC6H_BC7: 0
@@ -258,50 +216,30 @@ ScriptedImporter:
   resliceFromLayer: 0
   mosaicPSDLayers: []
   rigPSDLayers:
-  - name: Sprayer
+  - name: Sonic 1 copy
     spriteName: 
-    isGroup: 1
+    isGroup: 0
     parentIndex: -1
-    spriteID: 819a6cba9ad6b634f8d186a69cdce2d7
-    layerID: 5
+    spriteID: ee3f7cf58e1fc304e990f9f6461ab91b
+    layerID: 2
     mosaicPosition: {x: 0, y: 0}
     flatten: 0
     isImported: 0
-    isVisible: 1
-  - name: Layer 12
-    spriteName: Layer 12
+    isVisible: 0
+  - name: Sonic 3 copy
+    spriteName: Sonic 3 copy
     isGroup: 0
-    parentIndex: 0
-    spriteID: 542e2d8322b657c4a8975fae928ba51b
-    layerID: 2
-    mosaicPosition: {x: 157, y: 300}
-    flatten: 0
-    isImported: 1
-    isVisible: 1
-  - name: Layer 11
-    spriteName: Layer 11
-    isGroup: 0
-    parentIndex: 0
-    spriteID: 8ae455a045ade5446930100671ab2977
+    parentIndex: -1
+    spriteID: 9463810d07361024db53e853d427686c
     layerID: 3
     mosaicPosition: {x: 4, y: 4}
-    flatten: 0
-    isImported: 1
-    isVisible: 1
-  - name: Layer 10
-    spriteName: Layer 10
-    isGroup: 0
-    parentIndex: 0
-    spriteID: 661d4d7c5e4cbe14eba1776341d63a3e
-    layerID: 4
-    mosaicPosition: {x: 4, y: 300}
     flatten: 0
     isImported: 1
     isVisible: 1
   sharedRigPSDLayers: []
   pSDLayerImportSetting: []
   importFileNodeState: 1
-  platformSettingsDirtyTick: 0
+  platformSettingsDirtyTick: 638962237962635712
   spriteSizeExpandChanged: 0
   generateGOHierarchy: 0
   textureAssetName: 

@@ -11,7 +11,7 @@ public class SprayerFollowV2 : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator sprayerAnimator;
     [SerializeField] public Transform playerTransform;
-    private SprayerHealthV2 health;
+    private FleaHealthV2 health;
     [Header("Systèmes de Particules")]
     [SerializeField] private ParticleSystem groundDustImpactParticles;
     [SerializeField] private ParticleSystem otherParticles;
@@ -58,7 +58,7 @@ public class SprayerFollowV2 : MonoBehaviour
         
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (sprayerAnimator == null) sprayerAnimator = GetComponent<Animator>();
-        health = GetComponent<SprayerHealthV2>();
+       
 
     }
     public void InitializeAndReset(Transform player)

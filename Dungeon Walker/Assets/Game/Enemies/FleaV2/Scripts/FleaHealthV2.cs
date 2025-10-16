@@ -4,7 +4,7 @@ using Photon.Realtime;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
-public class SprayerHealthV2 : MonoBehaviour, IPunObservable
+public class FleaHealthV2 : MonoBehaviour, IPunObservable
 {
     // Public variables for health and effects
     public int maxHealth = 100; // Maximum health of the mushroom
@@ -53,25 +53,47 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
     private PhotonView view;
     public GameObject deathSplatterEffectPrefab;
     public Transform splatterSpawnPoint;
-    void Awake()
-    {
-        // Get or add the AudioSource component
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-        audioSource.playOnAwake = false; // Ensure it doesn't play automatically
-        audioSource.volume = damageSoundVolume; // Set initial volume
-    }
+
+    [Header("V2 Death Explosion")]
+    [Tooltip("The material used to signal the upcoming explosion.")]
+    public Material flashSignalMaterial;
+    [Tooltip("The duration of the pre-explosion warning signal.")]
+    public float signalDuration = 1f;
+    [Tooltip("How fast the signal flashes. Higher is faster.")]
+    public float blinkInterval = 0.1f;
+    [Tooltip("The radius of the explosion damage area.")]
+    public float explosionRadius = 2.5f;
+    [Tooltip("The damage dealt by the explosion.")]
+    public int explosionDamage = 50;
+    [Tooltip("The layer the player is on, for explosion detection.")]
+    public LayerMask playerLayer;
+    private static MaterialPropertyBlock propertyBlock;
     void OnEnable()
     {
         // This is the guaranteed reset for pooled enemies.
         currentHealth = maxHealth;
         isKnockedBack = false;
         isFlashing = false;
-        isStunned = false; // Assuming you have this variable
+        isStunned = false;
+        if (spriteRenderers != null && originalMaterials != null)
+        {
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] != null && i < originalMaterials.Length && originalMaterials[i] != null)
+                {
+                    spriteRenderers[i].sharedMaterial = originalMaterials[i];
+                }
+            }
+        }
+        // --- END OF FIX ---
 
+        // Re-enable colliders
+        foreach (var col in GetComponents<Collider2D>())
+        {
+            col.enabled = true;
+        }
+
+        // Your existing logic for finding the player and initializing other scripts is good.
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject == null)
         {
@@ -80,43 +102,30 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
         }
         Transform player = playerObject.transform;
 
-        // Get the follow script and call our new master reset method.
-        var sprayerFollow = GetComponent<SprayerFollowV2>();
-        if (sprayerFollow != null)
+        // Assuming you have V2 versions of these scripts
+        var followScript = GetComponent<FleaFollow>();
+        if (followScript != null)
         {
-            sprayerFollow.InitializeAndReset(player);
+            followScript.InitializeAndReset(player);
         }
-        var SprayerAttack = GetComponent<SprayerAttackV2>();
-        if (SprayerAttack != null)
+        var attackScript = GetComponent<FleaChargeAttack>();
+        if (attackScript != null)
         {
-            SprayerAttack.enabled = true;
-            SprayerAttack.InitializeAndReset(player);
+            attackScript.InitializeAndReset(player);
         }
-        if (spriteRenderers != null && originalMaterials != null && spriteRenderers.Length == originalMaterials.Length)
-        {
-            for (int i = 0; i < spriteRenderers.Length; i++)
-            {
-                if (spriteRenderers[i] != null && originalMaterials[i] != null)
-                {
-                    // --- CHANGE THIS LINE ---
-                    spriteRenderers[i].sharedMaterial = originalMaterials[i];
-                }
-            }
-        }
+    
+
     }
-    void Start()
+    void Awake()
     {
-        view = GetComponent<PhotonView>();
-        if (weaponSwitchManager == null)
+        // Get or add the AudioSource component
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
         {
-            weaponSwitchManager = FindObjectOfType<WeaponSwitchManager>();
-            if (weaponSwitchManager == null)
-            {
-                Debug.LogError("WeaponSwitchManager not found in the scene. Please assign it or ensure it exists.");
-            }
+            audioSource = gameObject.AddComponent<AudioSource>();
         }
-        // Initialize health
-        currentHealth = maxHealth;
+        audioSource.playOnAwake = false;
+        audioSource.volume = damageSoundVolume;
         if (spriteRenderers != null && spriteRenderers.Length > 0)
         {
             originalMaterials = new Material[spriteRenderers.Length];
@@ -129,6 +138,19 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
             }
         }
     }
+
+    void Start()
+    {
+        // Start can now be much simpler.
+        view = GetComponent<PhotonView>();
+        if (weaponSwitchManager == null)
+        {
+            weaponSwitchManager = FindObjectOfType<WeaponSwitchManager>();
+        }
+        // Initialize health
+        currentHealth = maxHealth;
+    }
+
 
     // Method to take damage
     public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 1f, GameObject attacker = null)
@@ -164,6 +186,7 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
     // This function contains your original TakeDamage logic.
     private void ApplyDamageAndEffects(int damage, Vector2 attackDirection, float knockbackForce)
     {
+        if (currentHealth <= 0) return;
         if (view != null && PhotonNetwork.IsConnected)
         {
             // ONLINE: Send an RPC to EVERYONE to trigger the visual effects.
@@ -177,7 +200,19 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
 
         // Reduce health
         currentHealth -= damage;
-
+        if (currentHealth <= 0)
+        {
+            // If it has, immediately start the death sequence.
+            Die(null);
+        }
+        else
+        {
+            // If the enemy is STILL ALIVE, then it's safe to play the normal damage flash.
+            if (!isFlashing)
+            {
+                StartCoroutine(FlashDamage());
+            }
+        }
         // Play damage sound if assigned
         if (damageSound != null && audioSource != null)
         {
@@ -197,18 +232,8 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
             InstantiateAndPlayParticleSystem(bloodParticle, bloodSpawnPoint.position);
         }
 
-        // Trigger flash damage effect
-        if (!isFlashing)
-        {
-            StartCoroutine(FlashDamage());
-        }
-
-        // Check if the mushroom is dead
-        if (currentHealth <= 0)
-        {
-            // The Master Client or offline player handles the death.
-            Die(null); // We pass null because the attacker info is less critical here.
-        }
+       
+     
     }
     [PunRPC]
     private void RPC_PlayDamageEffects(Vector2 attackDirection, float knockbackForce)
@@ -221,6 +246,7 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
     // This function contains your original visual effect logic.
     private void PlayDamageEffects(Vector2 attackDirection, float knockbackForce)
     {
+        if (currentHealth <= 0) return;
         // Play damage sound if assigned
         if (damageSound != null && audioSource != null)
         {
@@ -271,37 +297,107 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
     // Method to handle death
     public void Die(GameObject attacker = null)
     {
+        // If health is already <= 0, the death sequence has already started.
+        // This check prevents the Die() method from being called multiple times.
+        if (currentHealth > 0) return;
+
+        // The only job of Die() now is to start the death sequence coroutine.
+        StartCoroutine(DeathSequenceRoutine());
+    }
+    private IEnumerator DeathSequenceRoutine()
+    {
+        // --- 1. PRE-DEATH SETUP (Disable AI and Colliders) ---
+        // Stop all other logic (like movement and attacks).
+        var followScript = GetComponent<FleaFollow>(); // Assuming V2 script
+        if (followScript != null) followScript.enabled = false;
+
+        var attackScript = GetComponent<FleaChargeAttack>(); // Assuming V2 script
+        if (attackScript != null) attackScript.enabled = false;
+
+        // Disable colliders so it can't be hit or block things anymore.
+        foreach (var col in GetComponents<Collider2D>())
+        {
+            col.enabled = false;
+        }
+
+        float timer = 0f;
+        while (timer < signalDuration)
+        {
+            // --- SWAP TO SIGNAL MATERIAL ---
+            if (flashSignalMaterial != null)
+            {
+                for (int i = 0; i < spriteRenderers.Length; i++)
+                {
+                    if (spriteRenderers[i] != null)
+                    {
+                        spriteRenderers[i].sharedMaterial = flashSignalMaterial;
+                    }
+                }
+            }
+            yield return new WaitForSeconds(blinkInterval / 2); // Wait for half the interval
+
+            // --- SWAP BACK TO ORIGINAL MATERIAL ---
+            if (originalMaterials != null)
+            {
+                for (int i = 0; i < spriteRenderers.Length; i++)
+                {
+                    if (spriteRenderers[i] != null && i < originalMaterials.Length && originalMaterials[i] != null)
+                    {
+                        spriteRenderers[i].sharedMaterial = originalMaterials[i];
+                    }
+                }
+            }
+            yield return new WaitForSeconds(blinkInterval / 2); // Wait for the other half
+
+            timer += blinkInterval; // Advance the main timer by one full blink cycle
+        }
+
+        // --- 3. THE NEW EXPLOSION ---
+        Collider2D[] playersToDamage = Physics2D.OverlapCircleAll(bloodSpawnPoint.position, explosionRadius, playerLayer);
+        foreach (var playerCollider in playersToDamage)
+        {
+           PlayerHealth playerHealth = playerCollider.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                Vector2 knockbackDirection = (playerCollider.transform.position - bloodSpawnPoint.position).normalized;
+                playerHealth.TakeDamage(explosionDamage, 15f, knockbackDirection);
+            }
+            L3antixHealth L3antixHealth = playerCollider.GetComponent<L3antixHealth>();
+            if (L3antixHealth != null)
+            {
+                Vector2 knockbackDirection = (playerCollider.transform.position - bloodSpawnPoint.position).normalized;
+                L3antixHealth.TakeDamage(explosionDamage, 15f, knockbackDirection);
+            }
+        }
+
+        // --- 4. YOUR ORIGINAL DEATH LOGIC (PRESERVED) ---
+        // This block is taken directly from your original Die() method.
         SoulLinkEnemy soul = GetComponent<SoulLinkEnemy>();
         if (soul != null && soul.inChain)
         {
-            // Notify the chain BEFORE we destroy the GameObject so the chain can capture position/linePoint.
             soul.NotifyDied();
         }
+
         if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
         {
             if (view != null && PhotonNetwork.IsConnected)
             {
-                // ONLINE: Send an RPC with the position where the effects should play.
                 view.RPC("RPC_PlayDeathEffects", RpcTarget.All, transform.position);
             }
             else
             {
-                // OFFLINE: Just play the effects locally.
                 PlayDeathEffects(transform.position);
             }
-           
 
-        // Trigger camera shake
-        CameraShakerHandler.Shake(CameraShakeDeath);
+            CameraShakerHandler.Shake(CameraShakeDeath);
+            OnDeath?.Invoke(gameObject);
 
-        OnDeath?.Invoke(gameObject);
+            if (weaponSwitchManager != null)
+            {
+                weaponSwitchManager.OnEnemyKilled();
+                Debug.Log("Enemy died, notifying WeaponSwitchManager.");
+            }
 
-        if (weaponSwitchManager != null)
-        {
-            weaponSwitchManager.OnEnemyKilled();
-            Debug.Log("Enemy died, notifying WeaponSwitchManager.");
-        }
-          
             if (PhotonNetwork.IsConnected)
             {
                 PhotonNetwork.Destroy(gameObject);
@@ -311,22 +407,13 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
                 if (deathSplatterEffectPrefab != null && ObjectPoolManager.Instance != null)
                 {
                     Vector3 spawnPosition = (splatterSpawnPoint != null) ? splatterSpawnPoint.position : transform.position;
-
-                    // Tell the pool manager to spawn the effect at that position
                     ObjectPoolManager.Instance.SpawnFromPool(deathSplatterEffectPrefab, spawnPosition, Quaternion.identity);
                 }
-                // In offline mode, just destroy it locally.
-                gameObject.SetActive(false);
+                gameObject.SetActive(false); // Return to pool
             }
         }
-       
     }
-    [PunRPC]
-    private void RPC_PlayDeathEffects(Vector3 deathPosition)
-    {
-        // This runs on EVERYONE'S machine.
-        PlayDeathEffects(deathPosition);
-    }
+
 
     // This function contains your original death effect logic.
     private void PlayDeathEffects(Vector3 deathPosition)
@@ -401,7 +488,11 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
         }
 
         yield return new WaitForSeconds(flashDuration);
-
+        if (currentHealth <= 0)
+        {
+            isFlashing = false; // Still reset the flag
+            yield break;        // Exit the coroutine RIGHT NOW. Do not execute any more code.
+        }
         // 3. Swap back to the Original Materials (using .sharedMaterial)
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
@@ -413,6 +504,14 @@ public class SprayerHealthV2 : MonoBehaviour, IPunObservable
 
         isFlashing = false;
     }
+    void OnDrawGizmosSelected()
+    {
+        // Set the color for the gizmo. Red is good for damage areas.
+        Gizmos.color = Color.red;
 
+        // Draw a wireframe sphere at the enemy's position with the explosionRadius.
+        // This will visually represent the area of effect for the death explosion.
+        Gizmos.DrawWireSphere(bloodSpawnPoint.position, explosionRadius);
+    }
 
 }

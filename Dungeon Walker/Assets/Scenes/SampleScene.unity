@@ -3224,6 +3224,10 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: fleaV2Prefab
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: sprayerPrefab
       value: 
       objectReference: {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
@@ -3267,6 +3271,10 @@ PrefabInstance:
       propertyPath: spawnEffectPoolSize
       value: 200
       objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterFleaV2Prefab
+      value: 
+      objectReference: {fileID: 1266603064206159665, guid: e8997dd2c61a5e64897ed0308ebb45b6, type: 3}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: splatterSprayerPrefab
       value: 
@@ -79214,7 +79222,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: shootSound
@@ -79694,6 +79702,10 @@ PrefabInstance:
     - target: {fileID: 1242731457711597805, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_Name
       value: mobileControls
+      objectReference: {fileID: 0}
+    - target: {fileID: 1242731457711597805, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5019633330544358317, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -81257,6 +81269,10 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 1641578987}
+    - target: {fileID: 2086388068757032567, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2683990956998345519, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

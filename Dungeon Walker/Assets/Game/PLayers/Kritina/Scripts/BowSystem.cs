@@ -1042,6 +1042,19 @@ public void HandleImpactDamage(Vector2 impactPosition)
                     return;
                 }
 
+                if (target.TryGetComponent<FleaHealthV2>(out var FleaHealthV2))
+                {
+                    FleaHealthV2.TakeDamage((int)damageToDeal, attackDirection);
+                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                        L3antixSuperMeter.Instance.AddDamage((int)damageToDeal);
+
+                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                        PlayerSuperMeter.Instance.AddDamage((int)damageToDeal);
+                    if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Sprayer {target.name} at {impactPoint}");
+                    if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    return;
+                }
+
                 if (target.TryGetComponent<FlyHealth>(out var flyHealth))
                 {
                     flyHealth.TakeDamage((int)damageToDeal, attackDirection);

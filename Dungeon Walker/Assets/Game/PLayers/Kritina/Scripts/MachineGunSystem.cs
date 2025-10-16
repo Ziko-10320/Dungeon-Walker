@@ -716,6 +716,17 @@ public class BulletComponent : MonoBehaviour
                         PlayerSuperMeter.Instance.AddDamage(damage);
                 }
 
+                FleaHealthV2 FleaHealthV2 = collidedObject.GetComponent<FleaHealthV2>();
+                if (FleaHealthV2 != null)
+                {
+                    FleaHealthV2.TakeDamage(damage, transform.right);
+                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                        L3antixSuperMeter.Instance.AddDamage(damage);
+
+                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                        PlayerSuperMeter.Instance.AddDamage(damage);
+                }
+
                 FlyHealth flyHealth = collidedObject.GetComponent<FlyHealth>();
                 if (flyHealth != null)
                 {

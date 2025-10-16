@@ -1399,11 +1399,11 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
                 return;
             }
 
-            SprayerHealth sprayerHealth = target.GetComponent<SprayerHealth>();
-            if (sprayerHealth != null)
+            FleaHealthV2 FleaHealthV2 = target.GetComponent<FleaHealthV2>();
+            if (FleaHealthV2 != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                sprayerHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                FleaHealthV2.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
                 if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                     L3antixSuperMeter.Instance.AddDamage(ballDamage);
 
@@ -1477,10 +1477,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
                 }
                 return;
             }
-            if (fleaHealth == null && sprayerHealth == null && flyHealth == null && inkHealth == null && showDamageDebug)
-            {
-                Debug.LogWarning($"Enemy {target.name} doesn\"t have FleaHealth, SprayerHealth, FlyHealth, or InkHealth component!");
-            }
+          
         }
     }
 
@@ -1510,6 +1507,22 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
                 sprayerHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
+                if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                    L3antixSuperMeter.Instance.AddDamage(ballDamage);
+
+                if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                    PlayerSuperMeter.Instance.AddDamage(ballDamage);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to Sprayer {target.name} at {impactPoint}");
+                }
+                return;
+            }
+            FleaHealthV2 FleaHealthV2 = target.GetComponent<FleaHealthV2>();
+            if (FleaHealthV2 != null)
+            {
+                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
+                FleaHealthV2.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO CONVERSION
                 if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                     L3antixSuperMeter.Instance.AddDamage(ballDamage);
 
@@ -1625,6 +1638,23 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
             {
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
                 sprayerHealth.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO MULTIPLIERS
+                if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                    L3antixSuperMeter.Instance.AddDamage(ballDamage);
+
+                if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                    PlayerSuperMeter.Instance.AddDamage(ballDamage);
+                if (showDamageDebug)
+                {
+                    Debug.Log($"Explosion dealt {ballDamage} damage to Sprayer {enemyCollider.name}");
+                }
+                continue;
+            }
+
+            FleaHealthV2 FleaHealthV2 = enemyCollider.GetComponent<FleaHealthV2>();
+            if (FleaHealthV2 != null)
+            {
+                Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
+                FleaHealthV2.TakeDamage(ballDamage, attackDirection); // EXACT DAMAGE - NO MULTIPLIERS
                 if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                     L3antixSuperMeter.Instance.AddDamage(ballDamage);
 

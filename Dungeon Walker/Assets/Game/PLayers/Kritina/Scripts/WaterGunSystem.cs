@@ -417,7 +417,13 @@ public class WaterBullet : MonoBehaviour
                 sprayerHealth.TakeDamage(damage, attackDirection);
                 FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
             }
-
+            var FleaHealthV2 = other.GetComponent<FleaHealthV2>();
+            if (FleaHealthV2 != null)
+            {
+                Vector2 attackDirection = (other.transform.position - transform.position).normalized;
+                FleaHealthV2.TakeDamage(damage, attackDirection);
+                FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
+            }
             var flyHealth = other.GetComponent<FlyHealth>();
             if (flyHealth != null)
             {

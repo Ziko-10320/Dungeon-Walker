@@ -9,17 +9,27 @@ public class ObjectPoolManager : MonoBehaviour
 
     [Header("Enemy Prefabs to Pre-Pool")]
     public GameObject fleaPrefab;
-    public GameObject sprayerPrefab; // Example for your other enemy
-    public GameObject flyPrefab;     // Example for your other enemy
-    public GameObject inkPrefab;     // Example for your other enemy
-    public GameObject bossPrefab;    // This is your Rat King Boss
+    public GameObject fleaV2Prefab; // <-- ADD THIS
+    public GameObject sprayerPrefab;
+    public GameObject sprayerV2Prefab; // <-- ADD THIS
+    public GameObject flyPrefab;
+    public GameObject flyV2Prefab; // <-- ADD THIS
+    public GameObject inkPrefab;
+    public GameObject inkV2Prefab; // <-- ADD THIS
+    public GameObject bossPrefab;
+    public GameObject bossV2Prefab; // <-- ADD THIS
 
     [Header("Splatter Effect Prefabs to Pre-Pool")]
     public GameObject splatterFleaPrefab;
+    public GameObject splatterFleaV2Prefab; // <-- ADD THIS
     public GameObject splatterSprayerPrefab;
+    public GameObject splatterSprayerV2Prefab; // <-- ADD THIS
     public GameObject splatterFlyPrefab;
+    public GameObject splatterFlyV2Prefab; // <-- ADD THIS
     public GameObject splatterInkPrefab;
+    public GameObject splatterInkV2Prefab; // <-- ADD THIS
     public GameObject splatterBossPrefab;
+    public GameObject splatterBossV2Prefab; // <-- ADD THIS
 
     public GameObject spawnEffectPrefab;
     public GameObject fartEffectPrefab;
@@ -56,20 +66,31 @@ public class ObjectPoolManager : MonoBehaviour
         // --- THIS IS THE NEW, SMART LOGIC ---
         // 1. Find ALL MonoBehaviours in the entire scene, including inactive ones.
         MonoBehaviour[] allScripts = FindObjectsOfType<MonoBehaviour>(true);
-        Debug.Log("--- Pre-warming all ENEMY object pools... ---");
         if (fleaPrefab != null) CreatePool(fleaPrefab, normalEnemyPoolSize);
+        if (fleaV2Prefab != null) CreatePool(fleaV2Prefab, normalEnemyPoolSize); // <-- ADD THIS
         if (sprayerPrefab != null) CreatePool(sprayerPrefab, normalEnemyPoolSize);
+        if (sprayerV2Prefab != null) CreatePool(sprayerV2Prefab, normalEnemyPoolSize); // <-- ADD THIS
         if (flyPrefab != null) CreatePool(flyPrefab, normalEnemyPoolSize);
+        if (flyV2Prefab != null) CreatePool(flyV2Prefab, normalEnemyPoolSize); // <-- ADD THIS
         if (inkPrefab != null) CreatePool(inkPrefab, normalEnemyPoolSize);
+        if (inkV2Prefab != null) CreatePool(inkV2Prefab, normalEnemyPoolSize); // <-- ADD THIS
         if (bossPrefab != null) CreatePool(bossPrefab, bossPoolSize);
-        if (dustExplosionEffectPrefab != null) CreatePool(dustExplosionEffectPrefab, effectPoolSize);
-        Debug.Log("--- Enemy object pools ready. ---");
+        if (bossV2Prefab != null) CreatePool(bossV2Prefab, bossPoolSize); // <-- ADD THIS
 
         if (splatterFleaPrefab != null) CreatePool(splatterFleaPrefab, splatterPoolSize);
+        if (splatterFleaV2Prefab != null) CreatePool(splatterFleaV2Prefab, splatterPoolSize); // V2
+
         if (splatterSprayerPrefab != null) CreatePool(splatterSprayerPrefab, splatterPoolSize);
+        if (splatterSprayerV2Prefab != null) CreatePool(splatterSprayerV2Prefab, splatterPoolSize); // V2
+
         if (splatterFlyPrefab != null) CreatePool(splatterFlyPrefab, splatterPoolSize);
+        if (splatterFlyV2Prefab != null) CreatePool(splatterFlyV2Prefab, splatterPoolSize); // V2
+
         if (splatterInkPrefab != null) CreatePool(splatterInkPrefab, splatterPoolSize);
+        if (splatterInkV2Prefab != null) CreatePool(splatterInkV2Prefab, splatterPoolSize); // V2
+
         if (splatterBossPrefab != null) CreatePool(splatterBossPrefab, splatterPoolSize);
+        if (splatterBossV2Prefab != null) CreatePool(splatterBossV2Prefab, splatterPoolSize);
 
         if (spawnEffectPrefab != null) CreatePool(spawnEffectPrefab, spawnEffectPoolSize);
 

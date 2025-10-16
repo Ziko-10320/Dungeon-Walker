@@ -700,6 +700,15 @@ public class BatAttackSystem : MonoBehaviour
                     if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                         PlayerSuperMeter.Instance.AddDamage(throwSlashDamage);
                 }
+                else if (enemyCollider.TryGetComponent<FleaHealthV2>(out var FleaHealthV2) && FleaHealthV2 != null)
+                {
+                    FleaHealthV2.TakeDamage(throwSlashDamage, knockbackDirection, sprayerKnockbackForce);
+                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                        L3antixSuperMeter.Instance.AddDamage(throwSlashDamage);
+
+                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                        PlayerSuperMeter.Instance.AddDamage(throwSlashDamage);
+                }
                 else if (enemyCollider.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
                 {
                     RatKingHealth.TakeDamage(throwSlashDamage);
@@ -1328,6 +1337,16 @@ public class BatAttackSystem : MonoBehaviour
             else if (enemy.TryGetComponent<SprayerHealth>(out var sprayerHealth) && sprayerHealth != null)
             {
                 sprayerHealth.TakeDamage(damage, knockbackDirection, sprayerKnockbackForce);
+                if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
+                    L3antixSuperMeter.Instance.AddDamage(damage);
+
+                if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
+                    PlayerSuperMeter.Instance.AddDamage(damage);
+
+            }
+            else if (enemy.TryGetComponent<FleaHealthV2>(out var FleaHealthV2) && FleaHealthV2 != null)
+            {
+                FleaHealthV2.TakeDamage(damage, knockbackDirection, sprayerKnockbackForce);
                 if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                     L3antixSuperMeter.Instance.AddDamage(damage);
 
