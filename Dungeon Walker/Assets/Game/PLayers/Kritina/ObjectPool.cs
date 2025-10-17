@@ -95,6 +95,8 @@ public class ObjectPoolManager : MonoBehaviour
         if (spawnEffectPrefab != null) CreatePool(spawnEffectPrefab, spawnEffectPoolSize);
 
         if (fartEffectPrefab != null) CreatePool(fartEffectPrefab, fartEffectPoolSize);
+        if (dustExplosionEffectPrefab != null) CreatePool(dustExplosionEffectPrefab, effectPoolSize);
+
         foreach (MonoBehaviour script in allScripts)
         {
             // Check if the script we found has "signed the contract" of our IPoolable interface.

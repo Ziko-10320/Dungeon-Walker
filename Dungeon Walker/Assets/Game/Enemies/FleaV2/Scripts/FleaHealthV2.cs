@@ -293,14 +293,34 @@ public class FleaHealthV2 : MonoBehaviour, IPunObservable
         transform.position = endPosition;
         isKnockedBack = false;
     }
+    public void ForceDieByChain()
+    {
+        // If the death sequence is already running, do nothing.
+        // This check is important to prevent multiple explosions.
+        if (currentHealth <= 0) return;
 
+        // --- THIS IS THE CRITICAL FIX ---
+        // Force health to 0 to mark it as "in the death process".
+        currentHealth = 0;
+
+        // Find the SoulLink component and notify it, just like the normal Die() method.
+        // This is for consistency, though the chain already knows.
+        SoulLinkEnemy soul = GetComponent<SoulLinkEnemy>();
+        if (soul != null && soul.inChain)
+        {
+            soul.NotifyDied();
+        }
+
+        // Immediately start the death sequence.
+        StartCoroutine(DeathSequenceRoutine());
+    }
     // Method to handle death
     public void Die(GameObject attacker = null)
     {
         // If health is already <= 0, the death sequence has already started.
         // This check prevents the Die() method from being called multiple times.
         if (currentHealth > 0) return;
-
+       
         // The only job of Die() now is to start the death sequence coroutine.
         StartCoroutine(DeathSequenceRoutine());
     }

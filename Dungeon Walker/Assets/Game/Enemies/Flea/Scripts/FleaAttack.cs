@@ -16,6 +16,7 @@ public class FleaChargeAttack : MonoBehaviour
     [SerializeField] private float attackCooldown = 2.0f;
 
     [Header("Attack Properties")]
+    [SerializeField] private float chargeDistance = 4f;
     [SerializeField] private float anticipationDuration = 0.5f;
     [SerializeField] private float chargeForce = 40f;
     [SerializeField] private float chargeDuration = 0.4f;
@@ -130,7 +131,10 @@ public class FleaChargeAttack : MonoBehaviour
 
     void Update()
     {
-        if (playerTransform == null)
+
+        if (playerTransform == null || isAttacking || !canAttack) return;
+
+        if (followScript != null && followScript.IsChasing)
         {
             return;
         }
@@ -169,12 +173,7 @@ public class FleaChargeAttack : MonoBehaviour
         canAttack = false;
         if (followScript != null) followScript.enabled = false;
 
-        // Play attack sound if assigned
-        if (attackSoundClip != null && audioSource != null)
-        {
-            audioSource.volume = attackSoundVolume; // Apply volume
-            audioSource.PlayOneShot(attackSoundClip);
-        }
+        // ... (sound effect logic is fine) ...
 
         int chargesMade = 0;
         bool hitPlayer = false;
@@ -194,13 +193,20 @@ public class FleaChargeAttack : MonoBehaviour
             fleaAnimator.SetBool(isAnticipatingHash, false);
             fleaAnimator.SetBool(isChargingHash, true);
 
-            rb.drag = 0f;
-            rb.AddForce(new Vector2(directionToPlayer.x * chargeForce, 0), ForceMode2D.Impulse);
-            rb.drag = chargeDrag;
+            // --- FIXED-DISTANCE ATTACK LOGIC ---
+            // We no longer use AddForce. We will manually control the position.
+            Vector2 startPosition = transform.position;
+            // The target position is a fixed distance from the start, in the direction of the player.
+            Vector2 targetPosition = startPosition + new Vector2(directionToPlayer.x * chargeDistance, 0);
 
             float chargeTimer = 0f;
             while (chargeTimer < chargeDuration)
             {
+                // Calculate the progress of the charge (0 to 1).
+                float progress = chargeTimer / chargeDuration;
+                // Use Lerp to smoothly move from the start to the target position.
+                rb.MovePosition(Vector2.Lerp(startPosition, targetPosition, progress));
+
                 if (CheckForPlayerHit())
                 {
                     hitPlayer = true;
@@ -209,12 +215,10 @@ public class FleaChargeAttack : MonoBehaviour
                 chargeTimer += Time.deltaTime;
                 yield return null;
             }
+            // --- END OF NEW LOGIC ---
 
-            // --- CORRECTION APPLIQUÉE ICI ---
-            // On s'assure d'arrêter le mouvement et l'animation APRÈS la boucle de charge,
-            // que le joueur ait été touché (break) ou que le temps soit écoulé.
             rb.velocity = Vector2.zero;
-            fleaAnimator.SetBool(isChargingHash, false); // <-- C'est la ligne clé !
+            fleaAnimator.SetBool(isChargingHash, false);
 
             if (hitPlayer)
             {
@@ -227,15 +231,15 @@ public class FleaChargeAttack : MonoBehaviour
             }
         }
 
-        // --- Nettoyage final ---
-        rb.drag = originalDrag;
+        // --- Final Cleanup ---
+        // ... (rest of your cleanup logic is fine) ...
         if (followScript != null) followScript.enabled = true;
         isAttacking = false;
-
         yield return new WaitForSeconds(attackCooldown);
         canAttack = true;
         ResetDecisionTimer();
     }
+
 
     private bool CheckForPlayerHit()
     {

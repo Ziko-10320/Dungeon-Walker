@@ -294,13 +294,59 @@ public class SoulLinkChain : MonoBehaviour
 
         // if kill sequence already in progress ignore starting another
         if (isKilling) return;
+        bool anyAlive = false;
+        foreach (var member in members)
+        {
+            if (member != null)
+            {
+                anyAlive = true;
+                break;
+            }
+        }
 
+        // If no members are left alive, just clean up. Don't start a kill sequence.
+        if (!anyAlive)
+        {
+            CleanupAndFinish();
+            return;
+        }
         // start outward sequential kill from the dead index
         isKilling = true;
         StartCoroutine(KillWholeChain(index));
     }
 
+    public void OnMemberVanished(SoulLinkEnemy vanished)
+    {
+        if (isKilling || members == null) return; // If we are already cleaning up, do nothing.
 
+        int index = members.IndexOf(vanished);
+        if (index < 0) return;
+
+        // Store its last position and null out the member slot.
+        if (vanished != null && vanished.linePoint != null)
+            lastKnownPositions[index] = vanished.linePoint.position;
+        else if (vanished != null)
+            lastKnownPositions[index] = vanished.transform.position;
+
+        members[index] = null;
+
+        // Check if this was the last enemy.
+        bool allMembersGone = true;
+        foreach (var member in members)
+        {
+            if (member != null)
+            {
+                allMembersGone = false;
+                break;
+            }
+        }
+
+        // If all members are now gone, trigger a full cleanup.
+        if (allMembersGone)
+        {
+            CleanupAndFinish();
+        }
+    }
     private IEnumerator KillWholeChain(int deadIndex)
     {
         if (members == null) yield break;
@@ -443,16 +489,13 @@ public class SoulLinkChain : MonoBehaviour
 
     private void CleanupAndFinish()
     {
-        // Destroy lines cleanly with a short fade
-        if (segments != null)
-        {
-            float fadeTime = 0.25f;
-            // fade coroutine
-            StartCoroutine(FadeAndDestroySegments(segments, fadeTime));
-            segments = null;
-        }
+        // --- THIS IS THE CRITICAL FIX ---
+        // First, immediately stop ALL coroutines on this chain manager.
+        // This prevents any other logic (like UpdateSegments) from interfering with the cleanup.
+        StopAllCoroutines();
+        // ---------------------------------
 
-        // restore materials and release inChain flag
+        // Restore materials and release inChain flag for any remaining members.
         if (members != null)
         {
             foreach (var m in members)
@@ -466,9 +509,24 @@ public class SoulLinkChain : MonoBehaviour
             members = null;
         }
 
-        // Destroy this chain object after a short delay (allow fade coroutine to complete)
-        Destroy(gameObject, 0.3f);
+        // Destroy all child line renderer segments immediately and reliably.
+        if (segments != null)
+        {
+            foreach (var seg in segments)
+            {
+                if (seg != null)
+                {
+                    Destroy(seg.gameObject);
+                }
+            }
+            segments.Clear();
+            segments = null;
+        }
+
+        // Finally, destroy this chain manager GameObject itself.
+        Destroy(gameObject);
     }
+
 
     private IEnumerator FadeAndDestroySegments(List<LineRenderer> segs, float fadeTime)
     {

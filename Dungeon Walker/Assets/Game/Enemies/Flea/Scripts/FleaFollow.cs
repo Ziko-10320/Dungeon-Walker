@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class FleaFollow : MonoBehaviour
 {
-    private enum AIState { Patrolling, Chasing, Fallen, Wandering }
+    private enum AIState { Patrolling, Chasing, Idle, Fallen, Wandering }
     private AIState currentState;
 
     [Header("Références Essentielles")]
@@ -39,7 +39,7 @@ public class FleaFollow : MonoBehaviour
     private float initialYPosition;
     private float timeSinceLastFlip = 0f;
     private const float FLIP_COOLDOWN = 0.5f;
-
+    public bool IsChasing => currentState == AIState.Chasing;
     void Awake()
     {
         // Awake should ONLY get references to its own components.
@@ -203,10 +203,21 @@ private void HandleInvisibility(bool invisible)
 
     private void UpdateAIState()
     {
-        if (playerTransform == null) return; // don't chase
+        if (playerTransform == null) return;
 
+        // --- THIS IS THE GUARANTEED FIX ---
+        // If the AI is currently in the Idle state (stopped and waiting),
+        // DO NOT let this method change its state. Let it stay Idle.
+        if (currentState == AIState.Idle)
+        {
+            // However, if the player runs away, we should start chasing again.
+            if (Vector2.Distance(transform.position, playerTransform.position) > randomStopDistance * 1.1f) // 1.1f gives a small buffer
+            {
+                ChangeState(AIState.Chasing);
+            }
+            return; // Exit the method.
+        }
 
-        // --- NEW: ignore invisible player ---
         PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
         PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
         if (invis != null && invis.IsInvisible())
@@ -219,29 +230,18 @@ private void HandleInvisibility(bool invisible)
             ChangeState(AIState.Patrolling);
             return;
         }
-        float distanceToPlayer = playerTransform != null
-            ? Vector2.Distance(transform.position, playerTransform.position)
-            : Mathf.Infinity;
+        float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
 
-        if (transform.position.y < initialYPosition - 2f)
-        {
-            if (distanceToPlayer < randomDetectionRadius) ChangeState(AIState.Fallen);
-            else if (currentState != AIState.Wandering) ChangeState(AIState.Wandering);
-            return;
-        }
-
-        // --- CHASE LOGIC WITH HYSTERESIS ---
+        // This logic will now only run if the state is NOT Idle.
         if (distanceToPlayer < randomDetectionRadius)
         {
-            if (transform.position.y > initialYPosition - 2f) ChangeState(AIState.Chasing);
-            else ChangeState(AIState.Fallen);
+            ChangeState(AIState.Chasing);
         }
         else if (distanceToPlayer > randomDetectionRadius * 1.2f)
         {
-            if (currentState == AIState.Chasing || currentState == AIState.Fallen)
+            if (currentState == AIState.Chasing)
             {
-                if (transform.position.y > initialYPosition - 2f) ChangeState(AIState.Patrolling);
-                else ChangeState(AIState.Wandering);
+                ChangeState(AIState.Patrolling);
             }
         }
     }
@@ -250,12 +250,28 @@ private void HandleInvisibility(bool invisible)
     {
         switch (currentState)
         {
-            case AIState.Patrolling: HandlePatrolling(); break;
-            case AIState.Chasing: HandleChasing(); break;
-            case AIState.Fallen: HandleFallen(); break;
-            case AIState.Wandering: break;
+            case AIState.Patrolling:
+                HandlePatrolling();
+                break;
+            case AIState.Chasing:
+                HandleChasing();
+                break;
+            case AIState.Idle:
+                // --- ADD THIS CASE ---
+                // When Idle, we do nothing but stop and face the player.
+                // This is the "stopped and waiting" state.
+                StopMoving();
+                FaceTarget(playerTransform.position);
+                break;
+            // --- END OF ADDITION ---
+            case AIState.Fallen:
+                HandleFallen();
+                break;
+            case AIState.Wandering:
+                break;
         }
     }
+
 
     private void HandlePatrolling()
     {
@@ -276,29 +292,23 @@ private void HandleInvisibility(bool invisible)
 
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
 
-        // --- THIS IS THE KEY FIX ---
         // If we are WITHIN the stopping distance...
         if (distanceToPlayer <= randomStopDistance)
         {
-            // ...we STOP moving and just face the player.
-            StopMoving();
-            FaceTarget(playerTransform.position);
-            // By returning here, we prevent any other movement logic from running this frame.
+            // ...we change our state to Idle and do nothing else.
+            ChangeState(AIState.Idle);
             return;
         }
-        // --- END OF FIX ---
 
-        // If we are outside the stopping distance, we check for obstacles.
         if (IsBlocked())
         {
             StopMoving();
-            // Optional: You could make it jump here if it's blocked while chasing.
             return;
         }
 
-        // If we are clear to move, then we move towards the player.
         MoveTowards(playerTransform.position, chaseSpeed);
     }
+
 
 
     private void HandleFallen()

@@ -50,7 +50,25 @@ public class SoulLinkEnemy : MonoBehaviour
                     originalMaterials[i] = spriteRenderers[i].sharedMaterial;
         }
     }
+    void OnEnable()
+    {
+        // This is the guaranteed reset for pooled enemies.
+        inChain = false;
+        chain = null;
+        RestoreOriginalMaterials(); // Force restore materials on spawn.
+    }
 
+    void OnDisable()
+    {
+        // If this enemy is disabled while still in a chain (e.g., wave cleared),
+        // we must tell the chain it's gone to prevent a broken link.
+        if (inChain && chain != null)
+        {
+            chain.OnMemberVanished(this);
+        }
+        inChain = false;
+        chain = null;
+    }
     /// <summary>
     /// Called (from TakeDamage) to attempt to start a chain.
     /// The actual chain creation + visuals run in SoulLinkChain.
@@ -100,20 +118,28 @@ public class SoulLinkEnemy : MonoBehaviour
     public void ForceDieFromChain()
     {
         // Prevent the health.Die() from re-notifying the chain.
-        // Clear chain flags immediately so Die() won't call NotifyDied() again.
         inChain = false;
         chain = null;
 
-        // Prefer explicit health components in order (call their Die() which will destroy object).
+        // --- THIS IS THE FINAL, CORRECT LOGIC ---
+        // For FleaV2, we call the new special method that bypasses the health check.
+        if (fleaHealthV2 != null)
+        {
+            fleaHealthV2.ForceDieByChain();
+            return;
+        }
+        // --- END OF FIX ---
+
+        // For all other enemies, we call their normal Die() method.
         if (inkHealth != null) { inkHealth.Die(); return; }
         if (fleaHealth != null) { fleaHealth.Die(); return; }
-        if (fleaHealthV2 != null) { fleaHealthV2.Die(); return; }
         if (sprayerHealth != null) { sprayerHealth.Die(); return; }
         if (flyHealth != null) { flyHealth.Die(); return; }
 
-        // Fallback: destroy object if no health component found
+        // Fallback: destroy object if no health component found.
         gameObject.SetActive(false);
     }
+
 
 
     /// <summary>

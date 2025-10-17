@@ -6419,10 +6419,10 @@ PrefabInstance:
       addedObject: {fileID: 1171926864193948551}
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3932573549224213230}
+      addedObject: {fileID: 2521720910106922149}
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2521720910106922149}
+      addedObject: {fileID: 3932573549224213230}
     - targetCorrespondingSourceObject: {fileID: -8653719598885068355, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7698766321757829591}
@@ -6533,33 +6533,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &3932573549224213230
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 473562806081651193}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4c01f854ab83d04fbe2932f18909132, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rb: {fileID: 5736553300166472320}
-  fleaAnimator: {fileID: 1171926864193948551}
-  playerTransform: {fileID: 0}
-  patrolSpeedRange: {x: 7, y: 10}
-  chaseSpeedRange: {x: 2, y: 10}
-  detectionRadiusRange: {x: 14, y: 16.8}
-  stopDistanceRange: {x: 2, y: 4}
-  wanderTimeRange: {x: 2.74, y: 6.41}
-  wanderWaitTime: 1.5
-  groundCheck: {fileID: 8104046359129128042}
-  wallCheck: {fileID: 6856286451760990353}
-  checkDistance: 0.74
-  platformLayer:
-    serializedVersion: 2
-    m_Bits: 64
 --- !u!114 &2521720910106922149
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6580,18 +6553,46 @@ MonoBehaviour:
   minTimeBeforeAttack: 0.2
   maxTimeBeforeAttack: 1.1
   attackCooldown: 1
-  anticipationDuration: 0.01
-  chargeForce: 48
-  chargeDuration: 0.2
-  chargeDrag: 7
+  chargeDistance: 10
+  anticipationDuration: 0.25
+  chargeForce: 45
+  chargeDuration: 0.25
+  chargeDrag: 6
   attackDamage: 25
-  knockbackForce: 19
+  knockbackForce: 22
   maxConsecutiveCharges: 3
   BurstDust: {fileID: 8875331062130788442}
   BurstDust2: {fileID: 1425175952517864155}
   attackSoundClip: {fileID: 0}
   attackSoundVolume: 0.7
   isAttacking: 0
+--- !u!114 &3932573549224213230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 473562806081651193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4c01f854ab83d04fbe2932f18909132, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rb: {fileID: 5736553300166472320}
+  fleaAnimator: {fileID: 1171926864193948551}
+  playerTransform: {fileID: 0}
+  patrolSpeedRange: {x: 7, y: 10}
+  chaseSpeedRange: {x: 12, y: 18}
+  detectionRadiusRange: {x: 14, y: 16.8}
+  stopDistanceRange: {x: 7, y: 12}
+  wanderTimeRange: {x: 2.74, y: 6.41}
+  wanderWaitTime: 1.5
+  groundCheck: {fileID: 8104046359129128042}
+  wallCheck: {fileID: 6856286451760990353}
+  checkDistance: 0.74
+  platformLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!114 &7698766321757829591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6724,7 +6725,7 @@ MonoBehaviour:
   minLinkEnemies: 1
   maxLinkEnemies: 4
   lineSpeed: 60
-  deathDelay: 0.25
+  deathDelay: 1.3
   linePrefab: {fileID: 4943147264204026684, guid: 0ef561181d9b49349877ecdd30bdca09, type: 3}
   outlineMaterial: {fileID: 2100000, guid: 6d3e1f7b8af0c744396e8a79cb9887f8, type: 2}
   linePoint: {fileID: 8540286110508570705}
