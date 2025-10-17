@@ -8,7 +8,22 @@ public class ExplosiveCoinsPowerUpL3antix : MonoBehaviour
     [Header("Spawn / Chance")]
     [Range(0f, 1f)] public float spawnChance = 0.2f;
     public Transform spawnPoint;
+    [Header("Audio")]
+    [SerializeField] private AudioClip coinSpawnSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float coinSpawnVolume = 1f;
 
+    [SerializeField] private AudioClip goldenExplosionSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float goldenExplosionVolume = 1f;
+
+    [SerializeField] private AudioClip silverExplosionSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float silverExplosionVolume = 1f;
+
+    [SerializeField] private AudioClip bronzeExplosionSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float bronzeExplosionVolume = 1f;
     [Header("Single launch force (controls diagonal launch)")]
     public float launchForce = 6f;
     public float splitForceMultiplier = 1.3f;
@@ -51,7 +66,12 @@ public class ExplosiveCoinsPowerUpL3antix : MonoBehaviour
 
     private void SpawnCoin(GameObject prefab, CoinType3antix type, Vector3 pos)
     {
+
         if (prefab == null) return;
+        if (coinSpawnSound != null)
+        {
+            AudioSource.PlayClipAtPoint(coinSpawnSound, pos, coinSpawnVolume);
+        }
         GameObject go = Instantiate(prefab, pos, Quaternion.identity);
         var cb = go.AddComponent<CoinBehaviour>();
         float initialForce = (type == CoinType3antix.Golden) ? launchForce * splitForceMultiplier : launchForce;
@@ -61,6 +81,10 @@ public class ExplosiveCoinsPowerUpL3antix : MonoBehaviour
     public void SpawnSplitCoins(GameObject prefab, CoinType3antix type, Vector3 pos)
     {
         if (prefab == null) return;
+        if (coinSpawnSound != null)
+        {
+            AudioSource.PlayClipAtPoint(coinSpawnSound, pos, coinSpawnVolume);
+        }
         for (int i = 0; i < 2; i++)
         {
             GameObject go = Instantiate(prefab, pos, Quaternion.identity);
@@ -200,11 +224,20 @@ public class ExplosiveCoinsPowerUpL3antix : MonoBehaviour
 
             ParticleSystem[] parts = null;
             float dmg = 0f;
+            AudioClip explosionSound = null;
+            float explosionVolume = 1f;
             switch (type)
             {
-                case CoinType3antix.Golden: parts = manager.goldenExplosionParticles; dmg = manager.goldenDamage; break;
-                case CoinType3antix.Silver: parts = manager.silverExplosionParticles; dmg = manager.silverDamage; break;
-                case CoinType3antix.Bronze: parts = manager.bronzeExplosionParticles; dmg = manager.bronzeDamage; break;
+                case CoinType3antix.Golden: parts = manager.goldenExplosionParticles; dmg = manager.goldenDamage; explosionSound = manager.goldenExplosionSound;
+                    explosionVolume = manager.goldenExplosionVolume; break;
+                case CoinType3antix.Silver: parts = manager.silverExplosionParticles; dmg = manager.silverDamage; explosionSound = manager.silverExplosionSound;
+                    explosionVolume = manager.silverExplosionVolume; break;
+                case CoinType3antix.Bronze: parts = manager.bronzeExplosionParticles; dmg = manager.bronzeDamage; explosionSound = manager.bronzeExplosionSound;
+                    explosionVolume = manager.bronzeExplosionVolume; break;
+            }
+            if (explosionSound != null)
+            {
+                AudioSource.PlayClipAtPoint(explosionSound, transform.position, explosionVolume);
             }
 
             if (parts != null)

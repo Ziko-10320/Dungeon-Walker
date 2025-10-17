@@ -378,7 +378,10 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable, IPoolable
             if (muzzleFlashEffect == null) Debug.LogWarning("MuzzleFlashEffect prefab is not assigned in the Inspector!");
             if (bulletSpawnPoint == null) Debug.LogWarning("BulletSpawnPoint is not assigned in the Inspector!");
         } 
-        if (audioSource != null && shootSound != null) audioSource.PlayOneShot(shootSound, shootSoundVolume);
+       if (shootSound != null)
+    {
+        AudioSource.PlayClipAtPoint(shootSound, bulletSpawnPoint.position, shootSoundVolume);
+    }
 
     // Calculate spawn parameters once.
     float spread = Random.Range(-maxSpreadAngle / 2f, maxSpreadAngle / 2f);

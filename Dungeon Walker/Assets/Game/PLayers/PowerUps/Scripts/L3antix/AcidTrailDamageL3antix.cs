@@ -11,15 +11,52 @@ public class AcidTrailDamageL3antix : MonoBehaviour
     public LayerMask enemyLayer;
     public int damage = 15;
     public float damageInterval = 1f;
-
+    [Header("Audio Settings")]
+    [SerializeField] private AudioClip trailSound; // The looping acid/sizzle sound.
+    [Range(0f, 1f)]
+    [SerializeField] private float trailVolume = 1f; // The volume slider.
+    private AudioSource trailAudioSource;
     [HideInInspector] public L3antixMovement player;
 
     private bool canDamage = true;
-
+    void Awake()
+    {
+        // Create and configure the dedicated AudioSource for the trail sound
+        trailAudioSource = gameObject.AddComponent<AudioSource>();
+        trailAudioSource.clip = trailSound;
+        trailAudioSource.volume = trailVolume;
+        trailAudioSource.loop = true;
+        trailAudioSource.playOnAwake = false;
+    }
     void Update()
     {
-        if (player == null) return;
+        if (player == null)
+        {
+            // Safety check: If there's no player, ensure the sound is stopped.
+            if (trailAudioSource != null && trailAudioSource.isPlaying)
+            {
+                trailAudioSource.Stop();
+            }
+            return;
+        }
+        bool isGamePaused = Time.timeScale == 0f;
 
+        // Condition 2: Is the player grounded and moving?
+        bool isGroundedAndMoving = player.IsGrounded() && Mathf.Abs(player.rb.velocity.x) > 0.1f;
+
+        // Condition 3: Should the sound be playing? (Power-up active AND game not paused)
+        bool shouldBePlaying = isGroundedAndMoving && !isGamePaused;
+
+        if (shouldBePlaying && !trailAudioSource.isPlaying)
+        {
+            // If it should be playing but isn't, play it.
+            trailAudioSource.Play();
+        }
+        else if (!shouldBePlaying && trailAudioSource.isPlaying)
+        {
+            // If it should NOT be playing but is, pause it.
+            trailAudioSource.Pause();
+        }
         PlayerDash dash = player.GetComponent<PlayerDash>();
 
         // --- Particle emission ---

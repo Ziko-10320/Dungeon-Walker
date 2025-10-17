@@ -18,7 +18,10 @@ public class ReviveSystem : MonoBehaviour
     public float revivePauseDuration = 1.5f;
     [Tooltip("Seconds of temporary invincibility after revive.")]
     public float postReviveInvincibility = 0.8f;
-
+    [Header("Audio")]
+    [SerializeField] private AudioClip reviveSound; // The sound to play once on revive.
+    [Range(0f, 1f)]
+    [SerializeField] private float reviveVolume = 1f;
     // internal refs
     private PlayerHealth playerHealth;
     private Rigidbody2D rb;
@@ -52,6 +55,10 @@ public class ReviveSystem : MonoBehaviour
 
     private IEnumerator ReviveSequence()
     {
+        if (reviveSound != null)
+        {
+            AudioSource.PlayClipAtPoint(reviveSound, transform.position, reviveVolume);
+        }
         // 1) Ensure heart animator and any flare animator run in UnscaledTime
         if (heartAnimator != null) heartAnimator.updateMode = AnimatorUpdateMode.UnscaledTime;
         if (heartWithWings != null)

@@ -37,6 +37,8 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Transform ownedItemsContainer;
     [SerializeField] private GameObject inventoryItemPrefab;
     [SerializeField] private Button unequipSkinButton;
+    [SerializeField] private Sprite defaultCatSprite;
+    [SerializeField] private Sprite defaultManSprite;
     private void Awake()
     {
         unequipSkinButton.onClick.AddListener(OnUnequipSkin);
@@ -217,8 +219,8 @@ public class InventoryUI : MonoBehaviour
 
         if (equippedSkinLabel != "Default")
         {
-            // Skin is equipped, show the unequip button
-            unequipSkinButton.gameObject.SetActive(true); // <-- ADD THIS
+            // A special skin is equipped
+            unequipSkinButton.gameObject.SetActive(true);
 
             SkinData skinData = FindSkinData(currentCharacterView, equippedSkinLabel);
             if (skinData != null)
@@ -229,11 +231,21 @@ public class InventoryUI : MonoBehaviour
         }
         else
         {
-            // Default skin is equipped, hide the unequip button
-            unequipSkinButton.gameObject.SetActive(false); // <-- ADD THIS
-
-            equippedSkinIcon.sprite = emptySlotSprite;
+            // The DEFAULT skin is equipped
+            unequipSkinButton.gameObject.SetActive(false);
             equippedSkinName.text = "Default";
+
+            // --- THIS IS THE NEW LOGIC ---
+            // Check which character we are viewing and set the correct default sprite
+            if (currentCharacterView == CharacterType.Cat)
+            {
+                equippedSkinIcon.sprite = defaultCatSprite;
+            }
+            else if (currentCharacterView == CharacterType.Man)
+            {
+                equippedSkinIcon.sprite = defaultManSprite;
+            }
+            // -----------------------------
         }
     }
     private SkinData FindSkinDataFromUniqueID(string uniqueID)

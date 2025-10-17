@@ -9,7 +9,14 @@ public class PlayerInvisibility3antix : MonoBehaviour
 
     [Header("Settings")]
     public float invisibilityDuration = 5f;
+    [Header("Audio")]
+    [SerializeField] private AudioClip becomeInvisibleSound; // Sound for turning invisible.
+    [Range(0f, 1f)]
+    [SerializeField] private float invisibleVolume = 1f;
 
+    [SerializeField] private AudioClip becomeVisibleSound;   // Sound for turning visible again.
+    [Range(0f, 1f)]
+    [SerializeField] private float visibleVolume = 1f;
     private Material[] originalMaterials;
     private Coroutine invisibilityCoroutine;
     private bool isInvisible = false;
@@ -69,6 +76,22 @@ public class PlayerInvisibility3antix : MonoBehaviour
 
     private void SetInvisible(bool state)
     {
+        if (state) // If we are BECOMING invisible...
+        {
+            // Play the "become invisible" sound.
+            if (becomeInvisibleSound != null)
+            {
+                AudioSource.PlayClipAtPoint(becomeInvisibleSound, transform.position, invisibleVolume);
+            }
+        }
+        else // If we are BECOMING visible...
+        {
+            // Play the "become visible" sound.
+            if (becomeVisibleSound != null)
+            {
+                AudioSource.PlayClipAtPoint(becomeVisibleSound, transform.position, visibleVolume);
+            }
+        }
         isInvisible = state;
 
         // The new alpha value: 0 for invisible, 1 for visible.

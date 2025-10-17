@@ -59,7 +59,10 @@ public class L3antixMovement : MonoBehaviour
     private Animator animator;
     private float moveDirection;
     #endregion
-    
+    public AudioClip runningSoundClip;
+    [Range(0f, 1f)]
+    public float runningVolume = 1f;
+    private AudioSource runningAudioSource;
     private PhotonView view;
     private PlayerSyncManager syncManager;
     void Awake()
@@ -68,7 +71,14 @@ public class L3antixMovement : MonoBehaviour
         animator = GetComponent<Animator>();
         L3antixDash = GetComponent<L3antixDash>();
         jumpsRemaining = maxJumps;
-
+        runningAudioSource = gameObject.AddComponent<AudioSource>();
+        if (runningSoundClip != null)
+        {
+            runningAudioSource.clip = runningSoundClip;
+        }
+        runningAudioSource.volume = runningVolume;
+        runningAudioSource.loop = true;
+        runningAudioSource.playOnAwake = false;
         // Try to get the PhotonView component.
         view = GetComponent<PhotonView>();
         syncManager = GetComponent<PlayerSyncManager>();
@@ -84,6 +94,7 @@ public class L3antixMovement : MonoBehaviour
         #region Original Update Code
         if (L3antixDash != null && L3antixDash.IsDashing)
         {
+            if (runningAudioSource.isPlaying) runningAudioSource.Stop();
             moveDirection = 0;
             return;
         }
@@ -96,7 +107,22 @@ public class L3antixMovement : MonoBehaviour
 
         bool isMoving = Mathf.Abs(moveDirection) > 0.1f;
         animator.SetBool("isRunning", isMoving);
-
+        if (isMoving && IsGrounded())
+        {
+            // ...and the sound is NOT already playing, then start it.
+            if (!runningAudioSource.isPlaying)
+            {
+                runningAudioSource.Play();
+            }
+        }
+        else // Otherwise (if player is stopped or in the air)...
+        {
+            // ...and the sound IS currently playing, then stop it.
+            if (runningAudioSource.isPlaying)
+            {
+                runningAudioSource.Stop();
+            }
+        }
         if ((moveDirection > 0 && !isFacingRight) || (moveDirection < 0 && isFacingRight))
         {
             Flip();

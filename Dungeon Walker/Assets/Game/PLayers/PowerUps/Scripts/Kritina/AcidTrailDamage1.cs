@@ -11,14 +11,55 @@ public class AcidTrailDamage : MonoBehaviour
     public LayerMask enemyLayer;
     public int damage = 15;
     public float damageInterval = 1f;
-
+    [Header("Audio Settings")]
+    [SerializeField] private AudioClip trailSound; // The looping acid sound.
+    [Range(0f, 1f)]
+    [SerializeField] private float trailVolume = 1f; // The volume slider.
+    private AudioSource trailAudioSource;
     [HideInInspector] public KritinaMovement player;
 
     private bool canDamage = true;
-
+    void Awake()
+    {
+        // Create and configure the dedicated AudioSource for the trail sound
+        trailAudioSource = gameObject.AddComponent<AudioSource>();
+        trailAudioSource.clip = trailSound;
+        trailAudioSource.volume = trailVolume;
+        trailAudioSource.loop = true;
+        trailAudioSource.playOnAwake = false;
+    }
     void Update()
     {
-        if (player == null) return;
+        if (player == null)
+        {
+            // Safety check: If there's no player, ensure the sound is stopped.
+            if (trailAudioSource != null && trailAudioSource.isPlaying)
+            {
+                trailAudioSource.Stop();
+            }
+            return;
+        }
+
+        // --- ADD THIS NEW AUDIO LOGIC BLOCK ---
+        // Check if the player is on the ground AND moving horizontally.
+        bool isGroundedAndMoving = player.IsGrounded() && Mathf.Abs(player.rb.velocity.x) > 0.1f;
+
+        if (isGroundedAndMoving)
+        {
+            // If the player is grounded and moving, and the sound isn't already playing, start it.
+            if (trailAudioSource != null && !trailAudioSource.isPlaying)
+            {
+                trailAudioSource.Play();
+            }
+        }
+        else // Otherwise (if the player is in the air OR standing still)...
+        {
+            // ...and the sound IS currently playing, then stop it.
+            if (trailAudioSource != null && trailAudioSource.isPlaying)
+            {
+                trailAudioSource.Stop();
+            }
+        }
 
         PlayerDash dash = player.GetComponent<PlayerDash>();
 

@@ -5,7 +5,11 @@ public class BeePowerUpL3antix : MonoBehaviour
 {
     [Header("Particles (Swarm)")]
     public ParticleSystem[] beeSwarms;
-
+    [Header("Audio")]
+    [SerializeField] private AudioClip beeSwarmSound; // The looping buzz sound.
+    [Range(0f, 1f)]
+    [SerializeField] private float beeSwarmVolume = 1f; // The volume slider.
+    private AudioSource swarmAudioSource;
     [Header("Damage Zone")]
     public Transform damagePoint;   // Center point of the swarm (usually player position)
     public float damageRadius = 2f;
@@ -20,14 +24,47 @@ public class BeePowerUpL3antix : MonoBehaviour
 
     private void Awake()
     {
+        // --- ADD THIS NEW AUDIO SETUP LOGIC ---
+        // Create and configure the dedicated AudioSource for the swarm sound
+        swarmAudioSource = gameObject.AddComponent<AudioSource>();
+        swarmAudioSource.clip = beeSwarmSound;
+        swarmAudioSource.volume = beeSwarmVolume;
+        swarmAudioSource.loop = true;
+        swarmAudioSource.playOnAwake = false;
+        // --- END OF NEW AUDIO LOGIC ---
+
         // Disabled by default
         SetBeeSwarm(false);
     }
+    void Update()
+    {
+        // If the audio source doesn't exist, do nothing.
+        if (swarmAudioSource == null) return;
 
+        // Condition 1: Is the game paused?
+        bool isGamePaused = Time.timeScale == 0f;
+
+        // Condition 2: Should the sound be playing? (Power-up is active AND game is not paused)
+        bool shouldBePlaying = isActive && !isGamePaused;
+
+        // Sync the audio source state with our desired state
+        if (shouldBePlaying && !swarmAudioSource.isPlaying)
+        {
+            // If it should be playing but isn't, play it (handles unpausing).
+            swarmAudioSource.Play();
+        }
+        else if (!shouldBePlaying && swarmAudioSource.isPlaying)
+        {
+            // If it should NOT be playing but is, pause it (handles pausing or deactivation).
+            swarmAudioSource.Pause();
+        }
+    }
     public void EnableBeePowerUp()
     {
         isActive = true;
         SetBeeSwarm(true);
+
+        // The Update() function now handles this, so no audio code is needed here.
 
         if (damageCoroutine == null)
             damageCoroutine = StartCoroutine(DamageLoop());
@@ -37,6 +74,8 @@ public class BeePowerUpL3antix : MonoBehaviour
     {
         isActive = false;
         SetBeeSwarm(false);
+
+        // The Update() function now handles this, so no audio code is needed here.
 
         if (damageCoroutine != null)
         {

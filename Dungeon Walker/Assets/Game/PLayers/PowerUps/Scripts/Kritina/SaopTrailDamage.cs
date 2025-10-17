@@ -11,7 +11,11 @@ public class SoapTrailDamage : MonoBehaviour
     public LayerMask enemyLayer;
     public int damage = 15;
     public float damageInterval = 1f;
-
+    [Header("Audio Settings")]
+    [SerializeField] private AudioClip trailSound; // The sound that will loop.
+    [Range(0f, 1f)]
+    [SerializeField] private float trailVolume = 1f; // The volume slider.
+    private AudioSource trailAudioSource;
     [Header("Stun Settings")]
     public int hitsBeforeStun = 3; // how many hits before stun
     public float stunDuration = 2f; // how long the stun lasts
@@ -21,11 +25,61 @@ public class SoapTrailDamage : MonoBehaviour
     private Dictionary<GameObject, int> hitCounter = new Dictionary<GameObject, int>();
 
     private bool canDamage = true;
-
+    void Awake()
+    {
+        // Create and configure the dedicated AudioSource for the trail sound
+        trailAudioSource = gameObject.AddComponent<AudioSource>();
+        trailAudioSource.clip = trailSound;
+        trailAudioSource.volume = trailVolume;
+        trailAudioSource.loop = true;         // It must loop
+        trailAudioSource.playOnAwake = false; // Do not play automatically
+    }
     void Update()
     {
-        if (player == null) return;
+        if (player == null)
+        {
+            // --- SAFETY CHECK: If there's no player, ensure the sound is stopped ---
+            if (trailAudioSource != null && trailAudioSource.isPlaying)
+            {
+                trailAudioSource.Stop();
+            }
+            return;
+        }
 
+        if (player.IsGrounded())
+        {
+            // ...and the sound is NOT already playing, then start it.
+            if (trailAudioSource != null && !trailAudioSource.isPlaying)
+            {
+                trailAudioSource.Play();
+            }
+        }
+        else // Otherwise (if the player is in the air)...
+        {
+            // ...and the sound IS currently playing, then stop it.
+            if (trailAudioSource != null && trailAudioSource.isPlaying)
+            {
+                trailAudioSource.Stop();
+            }
+        }
+        bool isGroundedAndMoving = player.IsGrounded() && Mathf.Abs(player.rb.velocity.x) > 0.1f;
+
+        if (isGroundedAndMoving)
+        {
+            // If the player is grounded and moving, and the sound isn't already playing, start it.
+            if (trailAudioSource != null && !trailAudioSource.isPlaying)
+            {
+                trailAudioSource.Play();
+            }
+        }
+        else // Otherwise (if the player is in the air OR standing still)...
+        {
+            // ...and the sound IS currently playing, then stop it.
+            if (trailAudioSource != null && trailAudioSource.isPlaying)
+            {
+                trailAudioSource.Stop();
+            }
+        }
         PlayerDash dash = player.GetComponent<PlayerDash>();
 
         // --- Particle emission ---

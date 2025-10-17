@@ -42,7 +42,10 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private GameObject bat2Prefab; // Prefab of the Bat2 to spawn on ground hit
     [SerializeField] public float aimVerticalOffsetRightCursor = 0f; // Vertical offset for aim when cursor is to the right of the player
     [SerializeField] public float aimVerticalOffsetLeftCursor = 0f; // Vertical offset for aim when cursor is to the left of the player
-
+    [Header("Throw Bat Loop Settings")]
+    [Range(0f, 1f)]
+    [SerializeField] private float throwBatVolume = 1f; // The volume slider you wanted
+    private AudioSource throwLoopAudioSource;
     [Header("Bat Pickup Settings")]
     [SerializeField] private float batPickupRange = 1.5f; // Range within which player can pick up the Bat2
 
@@ -160,7 +163,10 @@ public class BatAttackSystem : MonoBehaviour
     void OnDisable()
     {
         Debug.Log("BatAttackSystem OnDisable called - performing comprehensive cleanup");
-
+        if (throwLoopAudioSource != null && throwLoopAudioSource.isPlaying)
+        {
+            throwLoopAudioSource.Stop();
+        }
         // Clean up all active Bat2 objects
         CleanupAllBat2Objects();
 
@@ -218,10 +224,20 @@ public class BatAttackSystem : MonoBehaviour
 
     void Awake()
     {
+        throwLoopAudioSource = gameObject.AddComponent<AudioSource>();
+        throwLoopAudioSource.clip = throwBatSound;      // Assign the clip you already have
+        throwLoopAudioSource.volume = throwBatVolume;   // Use the new volume variable
+        throwLoopAudioSource.loop = true;               // It must loop
+        throwLoopAudioSource.playOnAwake = false;
         // Crée la batte dès le début pour s'assurer qu'elle existe.
         EnsureBatExists();
         playerView = GetComponentInParent<PhotonView>();
         superMeter = GetComponent<PlayerSuperMeter>();
+        if (audioSource != null)
+        {
+            audioSource.loop = false;        // Default to not looping for normal attacks
+            audioSource.playOnAwake = false; // Ensure it doesn't play at the start
+        }
     }
     void Start()
     {
@@ -752,7 +768,10 @@ public class BatAttackSystem : MonoBehaviour
     private void HandleThrowSlashHit(Vector3 hitPosition)
     {
         if (activeThrowSlash == null) return;
-
+        if (throwLoopAudioSource != null && throwLoopAudioSource.isPlaying)
+        {
+            throwLoopAudioSource.Stop();
+        }
         // Stop the ThrowSlash movement
         Rigidbody2D slashRb = activeThrowSlash.GetComponent<Rigidbody2D>();
         if (slashRb != null)
@@ -1007,7 +1026,16 @@ public class BatAttackSystem : MonoBehaviour
 
         // Step 4: Trigger animations and sound.
         if (playerAnimator != null) playerAnimator.SetTrigger(throwBatTriggerName);
-        if (audioSource != null && throwBatSound != null) audioSource.PlayOneShot(throwBatSound);
+        if (playerAnimator != null) playerAnimator.SetTrigger(throwBatTriggerName);
+
+        // 1. Check if the components and clip exist
+        if (playerAnimator != null) playerAnimator.SetTrigger(throwBatTriggerName);
+
+        // Use our new, dedicated audio source to play the looping sound
+        if (throwLoopAudioSource != null && !throwLoopAudioSource.isPlaying)
+        {
+            throwLoopAudioSource.Play();
+        }
 
         // Step 5: Hide the player's bat.
         if (playerBatVisual != null) playerBatVisual.SetActive(false);
@@ -1027,6 +1055,11 @@ public class BatAttackSystem : MonoBehaviour
 
     void PickUpBat2()
     {
+        if (audioSource != null && audioSource.isPlaying && audioSource.clip == throwBatSound)
+        {
+            audioSource.Stop();
+            audioSource.loop = false;
+        }
         if (spawnedBat2 != null)
         {
             // ... destroy spawnedBat2 ...

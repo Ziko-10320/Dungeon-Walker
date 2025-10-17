@@ -8,7 +8,22 @@ public class ExplosiveCoinsPowerUp : MonoBehaviour
     [Header("Spawn / Chance")]
     [Range(0f, 1f)] public float spawnChance = 0.2f;
     public Transform spawnPoint;
+    [Header("Audio")]
+    [SerializeField] private AudioClip coinSpawnSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float coinSpawnVolume = 1f;
 
+    [SerializeField] private AudioClip goldenExplosionSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float goldenExplosionVolume = 1f;
+
+    [SerializeField] private AudioClip silverExplosionSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float silverExplosionVolume = 1f;
+
+    [SerializeField] private AudioClip bronzeExplosionSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float bronzeExplosionVolume = 1f;
     [Header("Single launch force (controls diagonal launch)")]
     public float launchForce = 6f;
     public float splitForceMultiplier = 1.3f;
@@ -52,6 +67,10 @@ public class ExplosiveCoinsPowerUp : MonoBehaviour
     private void SpawnCoin(GameObject prefab, CoinType type, Vector3 pos)
     {
         if (prefab == null) return;
+        if (coinSpawnSound != null)
+        {
+            AudioSource.PlayClipAtPoint(coinSpawnSound, pos, coinSpawnVolume);
+        }
         GameObject go = Instantiate(prefab, pos, Quaternion.identity);
         var cb = go.AddComponent<CoinBehaviour>();
         float initialForce = (type == CoinType.Golden) ? launchForce * splitForceMultiplier : launchForce;
@@ -61,6 +80,10 @@ public class ExplosiveCoinsPowerUp : MonoBehaviour
     public void SpawnSplitCoins(GameObject prefab, CoinType type, Vector3 pos)
     {
         if (prefab == null) return;
+        if (coinSpawnSound != null)
+        {
+            AudioSource.PlayClipAtPoint(coinSpawnSound, pos, coinSpawnVolume);
+        }
         for (int i = 0; i < 2; i++)
         {
             GameObject go = Instantiate(prefab, pos, Quaternion.identity);
@@ -200,13 +223,21 @@ public class ExplosiveCoinsPowerUp : MonoBehaviour
 
             ParticleSystem[] parts = null;
             float dmg = 0f;
+            AudioClip explosionSound = null;
+            float explosionVolume = 1f;
             switch (type)
             {
-                case CoinType.Golden: parts = manager.goldenExplosionParticles; dmg = manager.goldenDamage; break;
-                case CoinType.Silver: parts = manager.silverExplosionParticles; dmg = manager.silverDamage; break;
-                case CoinType.Bronze: parts = manager.bronzeExplosionParticles; dmg = manager.bronzeDamage; break;
+                case CoinType.Golden: parts = manager.goldenExplosionParticles; dmg = manager.goldenDamage; explosionSound = manager.goldenExplosionSound;
+                    explosionVolume = manager.goldenExplosionVolume; break;
+                case CoinType.Silver: parts = manager.silverExplosionParticles; dmg = manager.silverDamage; explosionSound = manager.silverExplosionSound;
+                    explosionVolume = manager.silverExplosionVolume; break;
+                case CoinType.Bronze: parts = manager.bronzeExplosionParticles; explosionSound = manager.bronzeExplosionSound;
+                    explosionVolume = manager.bronzeExplosionVolume; dmg = manager.bronzeDamage; break;
             }
-
+            if (explosionSound != null)
+            {
+                AudioSource.PlayClipAtPoint(explosionSound, transform.position, explosionVolume);
+            }
             if (parts != null)
             {
                 foreach (var ps in parts)

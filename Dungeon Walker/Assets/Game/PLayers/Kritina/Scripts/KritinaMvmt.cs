@@ -58,7 +58,10 @@ public class KritinaMovement : MonoBehaviour
     private Animator animator;
     private float moveDirection;
     #endregion
-    
+    public AudioClip runningSoundClip; // The sound for running.
+    [Range(0f, 1f)]
+    public float runningVolume = 1f; // Volume for the running sound.
+    private AudioSource runningAudioSource; // The component that will play the looping sound.
     private PhotonView view;
     private PlayerSyncManager syncManager;
     void Awake()
@@ -71,6 +74,11 @@ public class KritinaMovement : MonoBehaviour
         // Try to get the PhotonView component.
         view = GetComponent<PhotonView>();
         syncManager = GetComponent<PlayerSyncManager>();
+        runningAudioSource = gameObject.AddComponent<AudioSource>();
+        runningAudioSource.clip = runningSoundClip;
+        runningAudioSource.volume = runningVolume;
+        runningAudioSource.loop = true; // We want the sound to loop automatically.
+        runningAudioSource.playOnAwake = false;
     }
 
     void Update()
@@ -83,6 +91,7 @@ public class KritinaMovement : MonoBehaviour
         #region Original Update Code
         if (playerDash != null && playerDash.IsDashing)
         {
+            if (runningAudioSource.isPlaying) runningAudioSource.Stop();
             moveDirection = 0;
             return;
         }
@@ -100,7 +109,23 @@ public class KritinaMovement : MonoBehaviour
         {
             Flip();
         }
-
+        if (isMoving && IsGrounded())
+        {
+            // ...and the sound is NOT already playing, then start it.
+            // This prevents the sound from restarting every frame.
+            if (!runningAudioSource.isPlaying)
+            {
+                runningAudioSource.Play();
+            }
+        }
+        else // Otherwise (if player is stopped or in the air)...
+        {
+            // ...and the sound IS currently playing, then stop it.
+            if (runningAudioSource.isPlaying)
+            {
+                runningAudioSource.Stop();
+            }
+        }
         if (Input.GetKeyDown(KeyCode.Space) || jumpButtonPressed)
         {
             animator.SetTrigger("Jump");

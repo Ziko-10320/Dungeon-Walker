@@ -6019,6 +6019,7 @@ GameObject:
   - component: {fileID: 1151032628}
   - component: {fileID: 1151032627}
   - component: {fileID: 1151032630}
+  - component: {fileID: 1151032631}
   m_Layer: 5
   m_Name: StartButton
   m_TagString: Untagged
@@ -6159,6 +6160,20 @@ MonoBehaviour:
   m_EffectColor: {r: 1, g: 0.9783717, b: 0, a: 1}
   m_EffectDistance: {x: 4, y: 4}
   m_UseGraphicAlpha: 1
+--- !u!114 &1151032631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151032625}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36034ff95819bed4ab462daf63d4cdfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pressedScale: 0.9
+  scaleSpeed: 15
 --- !u!1 &1152087829
 GameObject:
   m_ObjectHideFlags: 0
@@ -7241,6 +7256,7 @@ GameObject:
   - component: {fileID: 1364741759}
   - component: {fileID: 1364741758}
   - component: {fileID: 1364741757}
+  - component: {fileID: 1364741760}
   m_Layer: 5
   m_Name: BackButon
   m_TagString: Untagged
@@ -7361,6 +7377,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1364741755}
   m_CullTransparentMesh: 1
+--- !u!114 &1364741760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1364741755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36034ff95819bed4ab462daf63d4cdfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pressedScale: 0.9
+  scaleSpeed: 15
 --- !u!1 &1373094770
 GameObject:
   m_ObjectHideFlags: 0

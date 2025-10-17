@@ -5,7 +5,11 @@ public class BeePowerUp : MonoBehaviour
 {
     [Header("Particles (Swarm)")]
     public ParticleSystem[] beeSwarms;
-
+    [Header("Audio")]
+    [SerializeField] private AudioClip beeSwarmSound; // The looping buzz sound.
+    [Range(0f, 1f)]
+    [SerializeField] private float beeSwarmVolume = 1f; // The volume slider.
+    private AudioSource swarmAudioSource;
     [Header("Damage Zone")]
     public Transform damagePoint;   // Center point of the swarm (usually player position)
     public float damageRadius = 2f;
@@ -20,15 +24,44 @@ public class BeePowerUp : MonoBehaviour
 
     private void Awake()
     {
+        swarmAudioSource = gameObject.AddComponent<AudioSource>();
+        swarmAudioSource.clip = beeSwarmSound;
+        swarmAudioSource.volume = beeSwarmVolume;
+        swarmAudioSource.loop = true;
+        swarmAudioSource.playOnAwake = false;
         // Disabled by default
         SetBeeSwarm(false);
     }
+    void Update()
+    {
+        // If the swarm audio source doesn't exist, do nothing.
+        if (swarmAudioSource == null) return;
 
+        // Condition 1: Is the game paused?
+        bool isGamePaused = Time.timeScale == 0f;
+
+        // Condition 2: Is the power-up supposed to be active and playing sound?
+        bool shouldBePlaying = isActive && !isGamePaused;
+
+        // Now, we sync the audio source state with our desired state.
+        if (shouldBePlaying && !swarmAudioSource.isPlaying)
+        {
+            // If it SHOULD be playing but ISN'T, play it.
+            // This handles unpausing the game.
+            swarmAudioSource.Play();
+        }
+        else if (!shouldBePlaying && swarmAudioSource.isPlaying)
+        {
+            // If it SHOULD NOT be playing but IS, pause it.
+            // This handles pausing the game or the power-up ending.
+            swarmAudioSource.Pause(); // Using Pause() is better here than Stop()
+        }
+    }
     public void EnableBeePowerUp()
     {
         isActive = true;
         SetBeeSwarm(true);
-
+        
         if (damageCoroutine == null)
             damageCoroutine = StartCoroutine(DamageLoop());
     }
@@ -37,7 +70,7 @@ public class BeePowerUp : MonoBehaviour
     {
         isActive = false;
         SetBeeSwarm(false);
-
+       
         if (damageCoroutine != null)
         {
             StopCoroutine(damageCoroutine);

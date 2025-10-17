@@ -93,8 +93,6 @@ public class ShopUI : MonoBehaviour
         skinsContent.SetActive(false);
         descriptionPanel.SetActive(false);
 
-        AnimateTab(powerUpsTabButton, true);
-        AnimateTab(skinsTabButton, false);
     }
 
     public void ShowSkinsCategory()
@@ -104,8 +102,7 @@ public class ShopUI : MonoBehaviour
         skinsContent.SetActive(true);
         descriptionPanel.SetActive(false);
 
-        AnimateTab(powerUpsTabButton, false);
-        AnimateTab(skinsTabButton, true);
+       
 
         ViewCatSkins(); // Default to Cat view
     }
@@ -190,13 +187,7 @@ public class ShopUI : MonoBehaviour
     }
 
 
-    private void AnimateTab(Button tabButton, bool isActive)
-    {
-        tabButton.transform.localScale = isActive ? Vector3.one * 1.1f : Vector3.one;
-        // Example for color - requires a CanvasGroup or Image component on the button
-        // var cg = tabButton.GetComponent<CanvasGroup>();
-        // if(cg != null) cg.alpha = isActive ? 1.0f : 0.7f;
-    }
+   
 
     private void OnItemSelected(PowerUpData item)
     {

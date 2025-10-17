@@ -19,7 +19,10 @@ public class ReviveUpgradedSystemL3antix : MonoBehaviour
     [Header("Particles")]
     [SerializeField] private ParticleSystem[] healingParticles;   // play when heart appears
     [SerializeField] private ParticleSystem[] explosionParticles; // play when explosion happens
-
+    [Header("Audio")]
+    [SerializeField] private AudioClip reviveSound; // The sound to play once on revive.
+    [Range(0f, 1f)]
+    [SerializeField] private float reviveVolume = 1f;
     [Header("Explosion Settings")]
     [SerializeField] private Transform damagePoint;
     [SerializeField] private float damageRadius = 3f;
@@ -53,7 +56,10 @@ public class ReviveUpgradedSystemL3antix : MonoBehaviour
 
         hasUsedRevive = true;
         Debug.Log("❤️ Revive Upgraded Triggered!");
-
+        if (reviveSound != null)
+        {
+            AudioSource.PlayClipAtPoint(reviveSound, transform.position, reviveVolume);
+        }
         // Cancel death + heal
         L3antixHealth.CancelDeathState();
         L3antixHealth.FullHeal();

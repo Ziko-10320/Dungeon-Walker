@@ -1194,6 +1194,14 @@ public class ArrowLifecycleController : MonoBehaviour
             // If this is the "real" arrow, it's responsible for telling everyone to play the effect.
             if (isReal)
             {
+                // 1. PLAY THE WALL IMPACT SOUND
+                if (bowSystem.enableSoundEffects && bowSystem.wallImpactSound != null)
+                {
+                    // Use the helper function from the main BowSystems script
+                    bowSystem.PlaySoundAtPosition(bowSystem.wallImpactSound, transform.position, bowSystem.wallImpactSoundVolume);
+                }
+
+                // 2. TRIGGER THE VISUAL PARTICLE EFFECT
                 bowSystem.TriggerArrowDestruction(transform.position);
             }
 

@@ -8,7 +8,9 @@ public class BulletBehavior : MonoBehaviour
     public float bulletSpeed;
     public LayerMask collisionLayers;
     public GameObject waterExplosionPrefab;
-
+    public AudioClip collisionSound; // The sound to play on impact.
+    [Range(0f, 1f)]
+    public float collisionVolume = 1f;
     // --- INTERNAL COMPONENTS & STATE ---
     private Rigidbody2D rb;
     private bool canCollide;
@@ -56,8 +58,11 @@ public class BulletBehavior : MonoBehaviour
     {
         // 1. LOCK: Immediately prevent any other collision calls.
         canCollide = false;
-       
-               FleaHealth enemyHealth = hitObject.GetComponent<FleaHealth>();
+        if (collisionSound != null)
+        {
+            AudioSource.PlayClipAtPoint(collisionSound, impactPoint, collisionVolume);
+        }
+        FleaHealth enemyHealth = hitObject.GetComponent<FleaHealth>();
         if (enemyHealth != null)
         {
             enemyHealth.TakeDamage(bulletDamage, rb.velocity.normalized);
