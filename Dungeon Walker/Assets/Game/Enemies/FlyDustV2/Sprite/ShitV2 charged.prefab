@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7490686899733108218}
   - component: {fileID: 6066993521126137449}
   m_Layer: 10
-  m_Name: ShitV2
+  m_Name: ShitV2 charged
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.92, y: 6.15, z: 0}
-  m_LocalScale: {x: 0.9, y: 0.9, z: 0.51386}
+  m_LocalScale: {x: 5, y: 5, z: 7.844193}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8190763205488967157}
@@ -119,8 +119,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.0367991, y: 0.009550718}
-  m_Size: {x: 0.5356175, y: 0.9471152}
+  m_Offset: {x: 0.013378143, y: 0.0015934944}
+  m_Size: {x: 0.55807036, y: 0.9670172}
   m_Direction: 0
 --- !u!50 &6066993521126137449
 Rigidbody2D:
@@ -137,7 +137,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0.1
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -176,8 +176,8 @@ Transform:
   m_GameObject: {fileID: 7245585974335881327}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.023, y: 0.024, z: 0.039}
-  m_LocalScale: {x: 1.1407285, y: 0.9312069, z: 0.9312069}
+  m_LocalPosition: {x: -0.1, y: -0.09, z: 0.039}
+  m_LocalScale: {x: 4.6579447, y: 3.8024037, z: 3.8024037}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5360864510797644939}

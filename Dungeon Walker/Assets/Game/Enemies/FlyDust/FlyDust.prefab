@@ -11171,8 +11171,8 @@ MonoBehaviour:
   dustProjectilePrefab: {fileID: 5457631616143913318, guid: 46467305e36d7d24badf33a31efde1a7, type: 3}
   projectileSpawnPoint: {fileID: 7856634708292028990}
   dustExplosionEffect: {fileID: 4696925322321457287, guid: 40c48c1cf3f6c504f8abf2b219d6c04b, type: 3}
-  attackIntervalMin: 1
-  attackIntervalMax: 2
+  attackIntervalMin: 2
+  attackIntervalMax: 4
   playerTargetOffset: {x: -0.82, y: 0}
   projectileSpeed: 15
   projectileDamage: 10
@@ -11187,9 +11187,21 @@ MonoBehaviour:
   playerKnockbackDirection: {x: 2, y: 1}
   explosionRadius: 1.3
   explosionDamage: 10
-  doubleAttackChance: 0.799
+  doubleAttackChance: 0.374
   delayBetweenProjectiles: 0.69
   secondProjectileOffset: {x: -0.58, y: 1.82}
+  canPerformChargedAttack: 0
+  attacksBeforeCharge: 2
+  chargedProjectilePrefab: {fileID: 0}
+  chargedProjectileSpeed: 8
+  chargedProjectileDamage: 30
+  chargedProjectileLifetime: 4
+  chargedExplosionRadius: 3
+  chargedExplosionEffect: {fileID: 0}
+  anticipationDuration: 1
+  anticipationParticles: {fileID: 0}
+  chargeUpSound: {fileID: 0}
+  chargedAttackSound: {fileID: 0}
   attackSoundClip: {fileID: 0}
   attackSoundVolume: 0.079
   projectilePoolSize: 5
@@ -11343,6 +11355,7 @@ MonoBehaviour:
   - {fileID: 8492286751815596672}
   inkHealth: {fileID: 0}
   fleaHealth: {fileID: 0}
+  fleaHealthV2: {fileID: 0}
   sprayerHealth: {fileID: 0}
   flyHealth: {fileID: 4354244927766121664}
   inChain: 0

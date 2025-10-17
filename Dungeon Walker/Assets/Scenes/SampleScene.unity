@@ -3256,6 +3256,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 4559407249175245342, guid: 52685d678bee71b4fa752185dee03258, type: 3}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: ChargeDustPoolSize
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: fartEffectPoolSize
       value: 3
       objectReference: {fileID: 0}
@@ -3284,6 +3288,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 7744118527560474626, guid: 12ab4ee6a9deb0240af4a47d1b47119d, type: 3}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: chargedProjectilePrefab
+      value: 
+      objectReference: {fileID: 5457631616143913318, guid: 86b25f9a407f5364b825816a662a673d, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: splatterSprayerV2Prefab
       value: 
       objectReference: {fileID: 7464382647960571032, guid: 74dda3b76cc37504c8bdec5ce8802a63, type: 3}
@@ -3291,6 +3299,18 @@ PrefabInstance:
       propertyPath: dustExplosionEffectPrefab
       value: 
       objectReference: {fileID: 4696925322321457287, guid: 852882cfe38ff3344b2ca6159032625b, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: anticipationParticlesPrefab
+      value: 
+      objectReference: {fileID: 5752330882798738898, guid: 2a5322de8b6b26e4587e21223ce3fc1d, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: dustExplosionEffectPrefabV2
+      value: 
+      objectReference: {fileID: 4696925322321457287, guid: 40c48c1cf3f6c504f8abf2b219d6c04b, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: chargedExplosionEffectPrefab
+      value: 
+      objectReference: {fileID: 8778845786154321008, guid: 20cd725737ef78440af7e8abeacefe18, type: 3}
     - target: {fileID: 3078163700532373927, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: m_Name
       value: 'ObjectPoolingManager '

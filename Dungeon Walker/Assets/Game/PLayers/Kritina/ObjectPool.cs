@@ -42,7 +42,8 @@ public class ObjectPoolManager : MonoBehaviour
 
     [Header("Effect Prefabs to Pre-Pool")]
     public GameObject dustExplosionEffectPrefab;
-
+    public GameObject dustExplosionEffectPrefabV2;
+    public GameObject anticipationParticlesPrefab;
     // ADD THIS under your other pool sizes
     [Header("Effect Pool Sizes")]
     public int effectPoolSize = 50;
@@ -96,6 +97,7 @@ public class ObjectPoolManager : MonoBehaviour
 
         if (fartEffectPrefab != null) CreatePool(fartEffectPrefab, fartEffectPoolSize);
         if (dustExplosionEffectPrefab != null) CreatePool(dustExplosionEffectPrefab, effectPoolSize);
+        if (dustExplosionEffectPrefabV2 != null) CreatePool(dustExplosionEffectPrefabV2, effectPoolSize);
 
         foreach (MonoBehaviour script in allScripts)
         {
