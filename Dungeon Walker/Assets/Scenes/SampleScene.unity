@@ -3232,6 +3232,10 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: bossV2Prefab
+      value: 
+      objectReference: {fileID: 7789777947036455407, guid: c8c7606683e754847bea5d1fef0e7692, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: fleaV2Prefab
       value: 
       objectReference: {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
@@ -79322,7 +79326,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: maxHealth
-      value: 200
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: shieldSlider
@@ -79466,7 +79470,7 @@ PrefabInstance:
       objectReference: {fileID: 382831636}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: PcInput
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: fireRate
@@ -79482,7 +79486,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 897b8eb2c0684cd4fa0d717979e4227d, type: 3}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: MobileInput
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: aimJoystick
@@ -79542,11 +79546,11 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: PcInput
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: MobileInput
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: aimJoystick
@@ -79710,7 +79714,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enablePcInput
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: wallImpactSound
@@ -79726,7 +79730,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enableMobileInput
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enemyLayers.m_Bits
@@ -79850,7 +79854,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: PcInput
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: joystickUI
@@ -79858,7 +79862,7 @@ PrefabInstance:
       objectReference: {fileID: 2524879497095913324}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: MobileInput
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: cameraEffects
@@ -80081,11 +80085,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3402896012243026912, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3635457252882904665, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5019633330544358317, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -80173,11 +80177,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6831280387973075609, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7313885458256365899, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -23
+      value: -22.999985
       objectReference: {fileID: 0}
     - target: {fileID: 7753398750275947403, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_Camera
@@ -80185,7 +80189,7 @@ PrefabInstance:
       objectReference: {fileID: 1641578987}
     - target: {fileID: 8165624409114467516, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -80354,7 +80358,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 868622344847029109, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1219393797482476753, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_LocalPosition.y
@@ -80499,7 +80503,7 @@ PrefabInstance:
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[6].bossPrefab
       value: 
-      objectReference: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
+      objectReference: {fileID: 7789777947036455407, guid: c8c7606683e754847bea5d1fef0e7692, type: 3}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[6].enemyCount
       value: 240
