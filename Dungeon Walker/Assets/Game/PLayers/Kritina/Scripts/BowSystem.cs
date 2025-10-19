@@ -1093,7 +1093,14 @@ public void HandleImpactDamage(Vector2 impactPosition)
                     if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
                     return;
                 }
-
+              
+                if (target.TryGetComponent<CheeseProjectile>(out var CheeseProjectile))
+                {
+                    CheeseProjectile.TakeDamage(Mathf.RoundToInt(damageToDeal),Vector2.zero, 0f);
+                    
+                    return;
+                }
+              
                 if (target.TryGetComponent<BarrelExplosion>(out var barrelExplosion))
                 {
                     barrelExplosion.TakeDamage(Mathf.RoundToInt(damageToDeal));

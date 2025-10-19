@@ -163,9 +163,36 @@ public class InkHealth : MonoBehaviour
     [Tooltip("Which layers should be considered 'ground'.")]
     public LayerMask groundLayer;
 
+    [Header("V2 Puddle Attack")]
+    [Tooltip("If true, this Ink enemy will create a damage puddle when it lands.")]
+    public bool isV2PuddleAttack = false;
+
+    [Tooltip("The Animator that controls the ink dripping animation.")]
+    public Animator puddleAnimator; // Use a separate animator for the puddle effect
+    public GameObject puddlePrefab;
+    public Transform puddleSpawnPoint;
+    [Tooltip("The name of the animation state for the ink dripping.")]
+    public string inkDripAnimationName = "InkDrip";
+
+    [Tooltip("The GameObject holding the looping smoke particle effects.")]
+    public GameObject smokeParticles;
+
+    [Tooltip("The transform where the damage area will be centered.")]
+    public Transform damagePoint;
+    public LayerMask playerLayer;
+    [Tooltip("The size of the damage area (Width, Height).")]
+    public Vector2 damageAreaSize = new Vector2(2f, 0.5f);
+
+    [Tooltip("How much damage the puddle deals per tick.")]
+    public int damagePerTick = 5;
+
+    [Tooltip("How often the damage tick occurs (in seconds).")]
+    public float damageInterval = 0.5f;
+
     public GameObject deathSplatterEffectPrefab;
     public Transform splatterSpawnPoint;
     private bool hasLanded = false;
+    private GameObject activePuddleInstance = null;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -218,21 +245,43 @@ public class InkHealth : MonoBehaviour
         isKnockedBack = false;
         isFlashing = false;
         isStunned = false;
-        hasLanded = false;
+        hasLanded = false; // <-- CRITICAL: This must be reset to false.
         isInvincible = false;
         isInInvincibilityTransition = false;
+
+        // --- V2 PUDDLE ATTACK RESET ---
+        if (isV2PuddleAttack)
+        {
+            // Stop the damage coroutine.
+            StopAllCoroutines();
+
+            // Disable the smoke particles.
+            if (smokeParticles != null)
+            {
+                smokeParticles.SetActive(false);
+            }
+
+            // Reset the puddle animator.
+            if (puddleAnimator != null)
+            {
+                puddleAnimator.speed = 0; // Stop it from playing
+                puddleAnimator.Rebind(); // Rewind the animation to its default state
+                puddleAnimator.Update(0f);
+            }
+        }
+        // --- END OF V2 RESET ---
 
         // --- RIGIDBODY & COLLIDER RESET ---
         if (inkRigidbody != null)
         {
-            inkRigidbody.bodyType = RigidbodyType2D.Dynamic; // Always reset to Dynamic
-            inkRigidbody.velocity = Vector2.zero; // Stop any leftover movement
+            inkRigidbody.bodyType = RigidbodyType2D.Dynamic;
+            inkRigidbody.velocity = Vector2.zero;
         }
         if (collidersToDisable != null)
         {
             foreach (Collider2D col in collidersToDisable)
             {
-                if (col != null) col.enabled = true; // Always re-enable all colliders
+                if (col != null) col.enabled = true;
             }
         }
 
@@ -243,7 +292,6 @@ public class InkHealth : MonoBehaviour
             {
                 if (spriteRenderers[i] != null && originalMaterials[i] != null)
                 {
-                    // This is the critical fix for the flash material bug
                     spriteRenderers[i].material = originalMaterials[i];
                 }
             }
@@ -254,27 +302,26 @@ public class InkHealth : MonoBehaviour
             {
                 if (spriteRenderers[i] != null && i < originalSpriteColors.Length)
                 {
-                    spriteRenderers[i].color = originalSpriteColors[i]; // Reset alpha/color
+                    spriteRenderers[i].color = originalSpriteColors[i];
                 }
             }
         }
 
         // --- INVINCIBILITY & AI RESET ---
-        StopAllCoroutines(); // Stop any leftover flash, knockback, or invincibility routines
+        // We already stopped all coroutines, so now we just re-initialize the system.
         if (enableInvincibilitySystem)
         {
-            // Re-initialize the invincibility timer from scratch
             InitializeInvincibilitySystem();
         }
 
-        // --- ANIMATOR RESET ---
+        // --- MAIN ANIMATOR RESET ---
         if (inkAnimator != null)
         {
-            // This ensures the enemy doesn't get stuck in a "Hide" state
             inkAnimator.ResetTrigger(hideAnimationTrigger);
-            inkAnimator.SetTrigger(showAnimationTrigger); // Force it to play the show animation
+            inkAnimator.SetTrigger(showAnimationTrigger);
         }
     }
+
 
     void Start()
     {
@@ -310,7 +357,7 @@ public class InkHealth : MonoBehaviour
 
     void Update()
     {
-        // If the enemy has already landed, there's nothing more to do here.
+        // If the enemy has already landed, there is nothing for this method to do.
         if (hasLanded)
         {
             return;
@@ -323,18 +370,89 @@ public class InkHealth : MonoBehaviour
             if (IsGrounded())
             {
                 // It has landed!
-                hasLanded = true; // Set the flag so this code stops running.
-                inkRigidbody.bodyType = RigidbodyType2D.Static; // Lock it in place.
+                hasLanded = true;
+                inkRigidbody.bodyType = RigidbodyType2D.Static;
+
+                // --- THIS IS THE GUARANTEED FIX ---
+                // If this is a V2 enemy, start the puddle attack sequence,
+                // but do it in a coroutine that waits one frame.
+                if (isV2PuddleAttack)
+                {
+                    StartCoroutine(StartPuddleAttackAfterFrame());
+                }
+                // --- END OF FIX ---
             }
         }
-    
-        // Update invincibility debug info
+
+        // Your invincibility debug logic is fine here.
         if (showInvincibilityDebug)
         {
             isCurrentlyInvincible = isInvincible;
             timeUntilNextInvincibilityCheck = Mathf.Max(0f, nextInvincibilityCheckTime - Time.time);
         }
+    } 
+private IEnumerator StartPuddleAttackAfterFrame()
+{
+    yield return new WaitForEndOfFrame();
+
+    if (puddlePrefab != null && puddleSpawnPoint != null && ObjectPoolManager.Instance != null)
+    {
+        // --- THIS IS THE GUARANTEED FIX ---
+        // 1. Spawn the puddle from the pool.
+        GameObject spawnedPuddle = ObjectPoolManager.Instance.SpawnFromPool(puddlePrefab, puddleSpawnPoint.position, puddleSpawnPoint.rotation);
+
+        // 2. Store a reference to this specific puddle instance.
+        activePuddleInstance = spawnedPuddle;
+        // --- END OF FIX ---
+        if (smokeParticles != null)
+        {
+            smokeParticles.SetActive(true);
+        }
+        // Your existing animation logic is preserved.
+        if (spawnedPuddle != null)
+        {
+            Animator puddleAnimator = spawnedPuddle.GetComponent<Animator>();
+            if (puddleAnimator != null)
+            {
+                puddleAnimator.Play(inkDripAnimationName, 0, 0f);
+                puddleAnimator.speed = 1;
+            }
+        }
     }
+
+    StartCoroutine(DamageOverTimeRoutine());
+}
+
+
+private IEnumerator DamageOverTimeRoutine()
+    {
+        while (true)
+        {
+            if (damagePoint == null) yield break;
+
+            // --- THIS IS THE GUARANTEED FIX ---
+            // We are now using the correct 'playerLayer' variable to find the player.
+            Collider2D[] playersToDamage = Physics2D.OverlapBoxAll(damagePoint.position, damageAreaSize, 0f, playerLayer);
+            // --- END OF FIX ---
+
+            foreach (var playerCollider in playersToDamage)
+            {
+                PlayerHealth playerHealth = playerCollider.GetComponent<PlayerHealth>();
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(damagePerTick, 0f, Vector2.zero);
+                }
+                L3antixHealth l3antixHealth = playerCollider.GetComponent<L3antixHealth>();
+                if (l3antixHealth != null)
+                {
+                    l3antixHealth.TakeDamage(damagePerTick, 0f, Vector2.zero);
+                }
+            }
+
+            yield return new WaitForSeconds(damageInterval);
+        }
+    }
+
 
     // Initialize the invincibility system
     private void InitializeInvincibilitySystem()
@@ -719,7 +837,12 @@ public class InkHealth : MonoBehaviour
     // Method to handle death
     public void Die()
     {
-       
+        if (activePuddleInstance != null && activePuddleInstance.activeInHierarchy)
+        {
+            // If it does, disable it immediately. This returns it to the object pool.
+            activePuddleInstance.SetActive(false);
+            activePuddleInstance = null; // Clear the reference for the next life.
+        }
         // Stop invincibility system when dying
         if (invincibilityCoroutine != null)
         {
@@ -790,7 +913,15 @@ public class InkHealth : MonoBehaviour
         // Play the particle system
         instance.Play();
     }
-
+    public void ForceCleanup()
+    {
+        // This is the same cleanup logic from your Die() method.
+        if (activePuddleInstance != null && activePuddleInstance.activeInHierarchy)
+        {
+            activePuddleInstance.SetActive(false);
+            activePuddleInstance = null;
+        }
+    }
     // Coroutine to handle the flash damage effect
     private IEnumerator FlashDamage()
     {
@@ -835,6 +966,30 @@ public class InkHealth : MonoBehaviour
         // on the 'groundLayer', the method returns true.
         return Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
     }
+
+    void OnDrawGizmosSelected()
+    {
+        // Only draw the gizmo if this is a V2 enemy and the damage point is assigned.
+        if (isV2PuddleAttack && damagePoint != null)
+        {
+            Gizmos.color = Color.red;
+
+            // --- THIS IS THE GUARANTEED FIX ---
+            // We need to calculate the TRUE world position of the damage area.
+            // We start with the damagePoint's LOCAL position relative to the Ink enemy.
+            Vector3 localCenter = damagePoint.localPosition;
+
+            // Then, we use transform.TransformPoint() to convert that local position
+            // into the correct world space position. This works everywhere.
+            Vector3 worldCenter = transform.TransformPoint(localCenter);
+
+            // Now, we draw the cube at the correct world position.
+            Gizmos.DrawWireCube(worldCenter, damageAreaSize);
+            // --- END OF FIX ---
+        }
+    }
+
+
 }
 
 

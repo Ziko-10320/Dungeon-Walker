@@ -762,8 +762,14 @@ public class BulletComponent : MonoBehaviour
                         if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                             PlayerSuperMeter.Instance.AddDamage(damage);   
                 }
+                CheeseProjectile sporeMine = collidedObject.GetComponent<CheeseProjectile>();
+                if (sporeMine != null)
+                {
 
-                    BarrelExplosion barrelExplosion = collidedObject.GetComponent<BarrelExplosion>();
+                    sporeMine.TakeDamage(damage, Vector2.zero, 0f);
+
+                }
+                BarrelExplosion barrelExplosion = collidedObject.GetComponent<BarrelExplosion>();
                     if (barrelExplosion != null)
                     {
                         barrelExplosion.TakeDamage(damage);

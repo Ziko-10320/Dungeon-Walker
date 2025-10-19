@@ -127,6 +127,12 @@ public class BulletBehavior : MonoBehaviour
             if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                 PlayerSuperMeter.Instance.AddDamage(bulletDamage);
         }
+        CheeseProjectile CheeseProjectile = hitObject.GetComponent<CheeseProjectile>();
+        if (CheeseProjectile != null)
+        {
+            CheeseProjectile.TakeDamage(bulletDamage, rb.velocity.normalized);
+            
+        }
         // 3. SPAWN EFFECT: Ask the pool for a particle effect.
         if (waterExplosionPrefab != null && ObjectPoolManager.Instance != null)
         {

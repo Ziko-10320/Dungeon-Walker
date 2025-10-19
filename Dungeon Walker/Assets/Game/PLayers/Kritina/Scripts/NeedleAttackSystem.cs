@@ -734,6 +734,11 @@ public class BatAttackSystem : MonoBehaviour
                     if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                         PlayerSuperMeter.Instance.AddDamage(throwSlashDamage);
                 }
+                else if (enemyCollider.TryGetComponent<CheeseProjectile>(out var CheeseProjectile) && CheeseProjectile != null)
+                {
+                    CheeseProjectile.TakeDamage(throwSlashDamage,Vector2.zero, 0f);
+
+                }
                 else if (enemyCollider.TryGetComponent<BarrelExplosion>(out var barrelExplosion) && barrelExplosion != null)
                 {
                     barrelExplosion.TakeDamage(throwSlashDamage);
@@ -1396,6 +1401,11 @@ public class BatAttackSystem : MonoBehaviour
                 if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                     PlayerSuperMeter.Instance.AddDamage(damage);
 
+            }
+            else if (enemy.TryGetComponent<CheeseProjectile>(out var CheeseProjectile) && CheeseProjectile != null)
+            {
+                CheeseProjectile.TakeDamage(damage, Vector2.zero, 0f);
+               
             }
             else if (enemy.TryGetComponent<BarrelExplosion>(out var barrelExplosion) && barrelExplosion != null)
             {

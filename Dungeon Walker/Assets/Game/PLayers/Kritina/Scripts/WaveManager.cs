@@ -168,38 +168,41 @@ public class WaveManager : MonoBehaviour
 
         Debug.Log($"Clearing {activeEnemies.Count} remaining active enemies.");
 
-        // We still loop backwards, which is the safest way.
         for (int i = activeEnemies.Count - 1; i >= 0; i--)
         {
             GameObject enemy = activeEnemies[i];
             if (enemy == null || !enemy.activeInHierarchy)
             {
-                continue; // Go to the next item in the list.
+                continue;
             }
-            // This check is crucial. If the enemy is somehow null, skip it.
-            if (enemy == null) continue;
 
-            // Your boss protection logic is still good.
             if (enemy.GetComponent<RatKingHealth>() != null)
             {
                 Debug.Log($"Skipping cleanup for active Boss: {enemy.name}");
                 continue;
             }
 
-            // --- THE VISIBILITY CHECK ---
-            // We only play the effect if the enemy is currently visible on screen.
             if (spawnEffectPrefab != null && IsObjectVisible(enemy))
             {
                 ObjectPoolManager.Instance.SpawnFromPool(spawnEffectPrefab, enemy.transform.position, Quaternion.identity);
             }
-            // ---
 
-            // Unsubscribe from events to prevent memory leaks.
+            // --- THIS IS THE GUARANTEED FIX ---
+            // Before disabling the enemy, check if it's an Ink enemy that needs cleanup.
+            InkHealth inkHealth = enemy.GetComponent<InkHealth>();
+            if (inkHealth != null && inkHealth.isV2PuddleAttack)
+            {
+                // If it is, tell it to clean up its puddle.
+                inkHealth.ForceCleanup();
+            }
+            // --- END OF FIX ---
+
+            // Unsubscribe from events (your existing logic is good).
             var healthScript = enemy.GetComponent<FleaHealth>();
             if (healthScript != null) healthScript.OnDeath.RemoveListener(OnEnemyDied);
             // (Add your other enemy health scripts here too)
 
-            // Disable the enemy to return it to the pool.
+            // Now, it's safe to disable the enemy.
             if (isOnlineMode)
             {
                 PhotonNetwork.Destroy(enemy);
@@ -210,7 +213,6 @@ public class WaveManager : MonoBehaviour
             }
         }
 
-        // After the loop, clear the list completely. It's now safe to do so.
         activeEnemies.Clear();
     }
 

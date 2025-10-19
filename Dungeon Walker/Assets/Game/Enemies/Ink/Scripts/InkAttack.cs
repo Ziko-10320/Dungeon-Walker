@@ -10,7 +10,7 @@ public class InkAttack : MonoBehaviour
     [SerializeField] private int inkBallDamage = 10; // Damage dealt by InkBall
     [SerializeField] private float inkBallKnockbackForce = 5f; // Knockback force of InkBall
     [SerializeField] private float inkBallLifetime = 3f; // How long the ink ball lasts before destroying itself
-
+    [SerializeField] private bool isV2Attack = false;
     [Header("Audio Settings")]
     [SerializeField] private AudioClip attackSound; // Assign the attack sound clip here
     [SerializeField, Range(0f, 1f)] private float attackSoundVolume = 1f; // Volume slider for attack sound
@@ -142,7 +142,7 @@ public class InkAttack : MonoBehaviour
         scaler.x *= -1;
         transform.localScale = scaler;
 
-        // Keep unflippable sprites at their original scale
+        // Your existing logic for un-flippable sprites is all that's needed here.
         if (unflippableSprites != null && originalUnflippableSpriteScales != null)
         {
             for (int i = 0; i < unflippableSprites.Length && i < originalUnflippableSpriteScales.Length; i++)
@@ -154,6 +154,7 @@ public class InkAttack : MonoBehaviour
             }
         }
     }
+
     public void ResetAttackState()
     {
         canAttack = true;
@@ -195,79 +196,85 @@ public class InkAttack : MonoBehaviour
     }
     void Attack()
     {
-        if (IsPlayerInvisible()) return;
-        if (IsPlayerInvisible3antix()) return;
+        if (IsPlayerInvisible() || IsPlayerInvisible3antix()) return;
         canAttack = false;
 
-        // Play attack sound
         if (attackSound != null)
         {
             AudioSource.PlayClipAtPoint(attackSound, spawnPoint.position, attackSoundVolume);
         }
 
-        // Determine random aim (low or high) and apply offset
-        Vector3 targetAimPosition;
+        // --- THIS IS THE NEW, UPGRADED LOGIC ---
+
+        // Define a helper method to fire one projectile.
+        // This avoids duplicating code.
+        void FireOneProjectile(Vector3 targetAimPosition)
+        {
+            Vector2 direction = (targetAimPosition - spawnPoint.position).normalized;
+            GameObject inkBall = Instantiate(inkBallPrefab, spawnPoint.position, Quaternion.identity);
+
+            Rigidbody2D rb = inkBall.GetComponent<Rigidbody2D>();
+            if (rb == null) rb = inkBall.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0;
+            rb.velocity = direction * projectileSpeed;
+
+            Collider2D inkBallCollider = inkBall.GetComponent<Collider2D>();
+            if (inkBallCollider == null)
+            {
+                CircleCollider2D circle = inkBall.AddComponent<CircleCollider2D>();
+                circle.isTrigger = true;
+            }
+            else
+            {
+                inkBallCollider.isTrigger = true;
+            }
+
+            InkBallBehavior inkBallBehavior = inkBall.AddComponent<InkBallBehavior>();
+            inkBallBehavior.Initialize(
+                inkBallDamage,
+                inkBallKnockbackForce,
+                playerLayer,
+                explosionParticleSystemPrefab,
+                inkBallLifetime,
+                gameObject
+            );
+        }
+
+        // Get the correct aim positions based on facing direction.
         Vector2 currentAimOffsetLow = aimOffsetLow;
         Vector2 currentAimOffsetHigh = aimOffsetHigh;
-
-        // Adjust aim offsets based on facing direction
         if (!facingRight)
         {
             currentAimOffsetLow.x *= -1;
             currentAimOffsetHigh.x *= -1;
         }
+        Vector3 targetLow = aimPointLow.position + (Vector3)currentAimOffsetLow;
+        Vector3 targetHigh = aimPointHigh.position + (Vector3)currentAimOffsetHigh;
 
-        if (Random.Range(0, 2) == 0)
+        // The "Brain" Logic: Check if this is a V2 attack.
+        if (isV2Attack)
         {
-            targetAimPosition = aimPointLow.position + (Vector3)currentAimOffsetLow;
+            // V2 ATTACK: Fire both projectiles at the same time.
+            FireOneProjectile(targetLow);
+            FireOneProjectile(targetHigh);
         }
         else
         {
-            targetAimPosition = aimPointHigh.position + (Vector3)currentAimOffsetHigh;
+            // NORMAL ATTACK: Fire one projectile randomly, high or low.
+            if (Random.Range(0, 2) == 0)
+            {
+                FireOneProjectile(targetLow);
+            }
+            else
+            {
+                FireOneProjectile(targetHigh);
+            }
         }
-
-        // Calculate direction to target aim point
-        Vector2 direction = (targetAimPosition - spawnPoint.position).normalized;
-
-        // Instantiate InkBall
-        GameObject inkBall = Instantiate(inkBallPrefab, spawnPoint.position, Quaternion.identity);
-
-        // Get or add Rigidbody2D and Collider2D to the instantiated InkBall
-        Rigidbody2D rb = inkBall.GetComponent<Rigidbody2D>();
-        if (rb == null)
-        {
-            rb = inkBall.AddComponent<Rigidbody2D>();
-            Debug.LogWarning("InkAttack: Rigidbody2D not found on InkBall prefab. Added one as fallback.");
-        }
-        rb.gravityScale = 0;
-        rb.isKinematic = false;
-        rb.velocity = direction * projectileSpeed;
-
-        Collider2D inkBallCollider = inkBall.GetComponent<Collider2D>();
-        if (inkBallCollider == null)
-        {
-            CircleCollider2D circle = inkBall.AddComponent<CircleCollider2D>();
-            circle.isTrigger = true;
-            Debug.LogWarning("InkAttack: Collider2D not found on InkBall prefab. Added CircleCollider2D as fallback.");
-        }
-        else
-        {
-            inkBallCollider.isTrigger = true;
-        }
-
-        // Add and initialize the InkBallBehavior component
-        InkBallBehavior inkBallBehavior = inkBall.AddComponent<InkBallBehavior>();
-        inkBallBehavior.Initialize(
-            inkBallDamage,
-            inkBallKnockbackForce,
-            playerLayer,
-            explosionParticleSystemPrefab,
-            inkBallLifetime,
-            gameObject // Pass the spawner object for collision checks
-        );
+        // --- END OF NEW LOGIC ---
 
         StartCoroutine(ResetAttackCooldown());
     }
+
 
     IEnumerator ResetAttackCooldown()
     {

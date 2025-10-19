@@ -54,12 +54,12 @@ public class L3antixHealth : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Slider shieldSlider;
 
     [HideInInspector] public bool isSuperActive = false;
-   
+    [SerializeField] private PlayerInvisibility playerInvisibility;
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (L3antixMovement == null) L3antixMovement = GetComponent<L3antixMovement>();
-
+        if (playerInvisibility == null) playerInvisibility = GetComponent<PlayerInvisibility>();
         originalMaterials = new Material[spriteRenderers.Length];
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
@@ -309,47 +309,28 @@ public class L3antixHealth : MonoBehaviour
 
     private IEnumerator FlashDamageEffect()
     {
-        // Failsafe checks
+        // --- YOUR WORKING CODE (PRESERVED) ---
         if (flashMaterial == null || spriteRenderers.Length == 0)
         {
             yield break;
         }
-
-        // --- THIS IS THE NEW, GUARANTEED LOGIC ---
-
-        // 1. Get the SpriteLibrary component from the player's root.
         SpriteLibrary spriteLibrary = GetComponent<SpriteLibrary>();
         if (spriteLibrary == null || spriteLibrary.spriteLibraryAsset == null)
         {
             Debug.LogError("FlashEffect Error: SpriteLibrary or its asset is missing!", this);
             yield break;
         }
-
-        // 2. Get the Skin Controller to find the current skin's NAME.
         L3antixSkinController skinController = GetComponent<L3antixSkinController>();
         string currentSkinName = (skinController != null) ? skinController.GetCurrentSkinName() : "Default";
-
-        // 3. Get the ACTUAL SPRITE for the current skin from the Sprite Library Asset.
-        // We just need one sprite (e.g., the "Head") to find the correct texture atlas.
         Sprite skinSprite = spriteLibrary.spriteLibraryAsset.GetSprite("Head", currentSkinName);
-
-        // 4. If we couldn't find the sprite, something is wrong with the names. Abort.
         if (skinSprite == null)
         {
             Debug.LogError($"FlashEffect Error: Could not find a sprite in the library with Category 'Head' and Label '{currentSkinName}'. Check your Sprite Library Asset!", this);
             yield break;
         }
-
-        // 5. Get the TEXTURE from that sprite. This is the correct texture atlas for the current skin.
         Texture2D skinTexture = skinSprite.texture;
-
-        // 6. Create ONE dynamic instance of the flash material.
         Material flashInstance = new Material(flashMaterial);
-
-        // 7. Set the texture we found on our new material instance.
         flashInstance.SetTexture(mainTextureProperty, skinTexture);
-
-        // 8. Assign this ONE material instance to ALL renderers to preserve batching.
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
             if (spriteRenderers[i] != null)
@@ -357,8 +338,6 @@ public class L3antixHealth : MonoBehaviour
                 spriteRenderers[i].material = flashInstance;
             }
         }
-
-        // 9. Animate the flash amount.
         float elapsed = 0f;
         while (elapsed < flashDuration)
         {
@@ -367,17 +346,38 @@ public class L3antixHealth : MonoBehaviour
             elapsed += Time.deltaTime;
             yield return null;
         }
+        // --- END OF YOUR WORKING CODE ---
 
-        // 10. Restore the original materials.
-        for (int i = 0; i < spriteRenderers.Length; i++)
+
+        // --- THIS IS THE GUARANTEED FIX ---
+        // Before we restore materials, we ask the PlayerInvisibility script for its status.
+        bool shouldBeInvisible = playerInvisibility != null && playerInvisibility.IsInvisible();
+
+        if (shouldBeInvisible)
         {
-            if (spriteRenderers[i] != null && originalMaterials[i] != null)
+            // If the player IS supposed to be invisible, restore the INVISIBLE material.
+            for (int i = 0; i < spriteRenderers.Length; i++)
             {
-                spriteRenderers[i].material = originalMaterials[i];
+                if (spriteRenderers[i] != null)
+                {
+                    spriteRenderers[i].material = playerInvisibility.invisibleMaterial;
+                }
             }
         }
+        else
+        {
+            // If the player is NOT supposed to be invisible, restore the ORIGINAL materials.
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                if (spriteRenderers[i] != null && originalMaterials[i] != null)
+                {
+                    spriteRenderers[i].material = originalMaterials[i];
+                }
+            }
+        }
+        // --- END OF FIX ---
 
-        // 11. Clean up the instance.
+        // Clean up the instance.
         Destroy(flashInstance);
     }
 

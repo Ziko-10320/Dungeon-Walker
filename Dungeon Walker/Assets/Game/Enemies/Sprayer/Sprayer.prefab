@@ -15620,9 +15620,9 @@ MonoBehaviour:
   lostSightRadius: 13.8
   randomizeOnStart: 1
   wanderSpeedRange: {x: 1.5, y: 5}
-  chaseSpeedRange: {x: 5, y: 8}
+  chaseSpeedRange: {x: 7, y: 9}
   stoppingDistanceRange: {x: 1.5, y: 3.5}
-  detectionRadiusRange: {x: 8, y: 12}
+  detectionRadiusRange: {x: 9.12, y: 13.4}
   lostSightRadiusRange: {x: 11, y: 15}
   wanderTimeRange: {x: 2.87, y: 5}
   jumpForce: 54
@@ -15649,11 +15649,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 7.19
-  attackCooldown: 2
-  damagePerSecond: 15
+  attackCooldown: 1.55
+  damagePerSecond: 25
   damageDuration: 1
   damageDelay: 0
-  damageInterval: 0.4
+  damageInterval: 0.3
   sprayParticles: {fileID: 1540417556305576584}
   damageZoneSize: {x: 6.89, y: 2.29}
   damageZoneOffset: {x: 3.64, y: 1.82}
@@ -15759,6 +15759,7 @@ MonoBehaviour:
   - {fileID: 5254049360258234812}
   inkHealth: {fileID: 0}
   fleaHealth: {fileID: 0}
+  fleaHealthV2: {fileID: 0}
   sprayerHealth: {fileID: 561808408041264527}
   flyHealth: {fileID: 0}
   inChain: 0

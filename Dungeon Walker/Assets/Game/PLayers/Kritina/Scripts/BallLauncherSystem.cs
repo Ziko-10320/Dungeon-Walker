@@ -1466,6 +1466,13 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
                 }
                 return;
             }
+            CheeseProjectile sporeMine = target.GetComponent<CheeseProjectile>();
+            if (sporeMine != null)
+            {
+
+                sporeMine.TakeDamage(ballDamage, Vector2.zero, 0f);
+
+            }
             BarrelExplosion BarrelExplosion = target.GetComponent<BarrelExplosion>();
             if (BarrelExplosion != null)
             {
@@ -1585,7 +1592,13 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
                 }
                 return;
             }
+            CheeseProjectile sporeMine = target.GetComponent<CheeseProjectile>();
+            if (sporeMine != null)
+            {
 
+                sporeMine.TakeDamage(ballDamage, Vector2.zero, 0f);
+
+            }
             BarrelExplosion BarrelExplosion = target.GetComponent<BarrelExplosion>();
             if (BarrelExplosion != null)
             {
@@ -1717,7 +1730,13 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
                 }
                 continue;
             }
+            CheeseProjectile sporeMine = enemyCollider.GetComponent<CheeseProjectile>();
+            if (sporeMine != null)
+            {
+              
+                sporeMine.TakeDamage(ballDamage, Vector2.zero, 0f);
 
+            }
             if (fleaHealth == null && sprayerHealth == null && flyHealth == null && inkHealth == null && showDamageDebug)
             {
                 Debug.LogWarning($"Enemy {enemyCollider.name} doesn\"t have FleaHealth, SprayerHealth, FlyHealth, or InkHealth component!");

@@ -61,7 +61,19 @@ public class RatKingAttack : MonoBehaviour
     [SerializeField] private float cheeseExplosionRadius = 2f; // Radius for AoE damage
     [SerializeField] private float cheeseKnockbackForce = 10f; // Knockback force from cheese explosion
     private float lastThrowTime;
+    [Header("V2 Spore Mine Attack")]
+    [Tooltip("If true, the boss will throw splitting spores instead of normal cheese.")]
+    public bool isV2SporeAttack = false;
 
+    [Tooltip("How long after being thrown the spore will split (in seconds).")]
+    public float splitDelay = 0.4f;
+
+    [Tooltip("The scale multiplier for the smaller spores after splitting (e.g., 0.6 for 60%).")]
+    [Range(0.1f, 1.0f)]
+    public float splitScaleMultiplier = 0.6f;
+
+    [Tooltip("How much random force to apply to the smaller spores when they split.")]
+    public float splitForce = 5f;
     private GameObject cheese1Instance; // Store reference to the first spawned cheese
     private GameObject cheese2Instance; // Store reference to the second spawned cheese
     private Vector3 lastPlayerPosition; // Store the player's last known position
@@ -260,25 +272,35 @@ public class RatKingAttack : MonoBehaviour
 
     public void SpawnCheese1()
     {
-        Debug.Log("SpawnCheese1 called!");
-        // Clear any existing cheese instances
         if (cheese1Instance != null) Destroy(cheese1Instance);
         if (cheese2Instance != null) Destroy(cheese2Instance);
 
         cheese1Instance = Instantiate(cheesePrefab, cheeseSpawnPoint1.position, Quaternion.identity);
-        cheese1Instance.AddComponent<CheeseProjectile>().Initialize(true, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround, cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3, cheeseExplosionRadius, cheeseKnockbackForce);
-        Debug.Log("Cheese1 spawned - IsReal: true");
+
+        // --- THIS IS THE FINAL FIX ---
+        // We are now calling the corrected Initialize method with the correct parameters.
+        cheese1Instance.AddComponent<CheeseProjectile>().Initialize(
+            true, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround,
+            cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3,
+            cheeseExplosionRadius, cheeseKnockbackForce,
+            isV2SporeAttack, splitDelay, splitScaleMultiplier, splitForce, playerTransform
+        );
+        // --- END OF FIX ---
     }
 
     public void SpawnCheese2()
     {
-        Debug.Log("SpawnCheese2 called!");
-        // Ensure the other cheese has the opposite real/fake status
         cheese2Instance = Instantiate(cheesePrefab, cheeseSpawnPoint2.position, Quaternion.identity);
-        cheese2Instance.AddComponent<CheeseProjectile>().Initialize(true, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround, cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3, cheeseExplosionRadius, cheeseKnockbackForce);
-        Debug.Log("Cheese2 spawned - IsReal: true");
-    }
 
+        // --- THIS IS THE FINAL FIX (for the second cheese) ---
+        cheese2Instance.AddComponent<CheeseProjectile>().Initialize(
+            true, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround,
+            cheeseImpactParticlesPrefab1,cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3,
+            cheeseExplosionRadius, cheeseKnockbackForce,
+            isV2SporeAttack, splitDelay, splitScaleMultiplier, splitForce, playerTransform
+        );
+        // --- END OF FIX ---
+    }
     public void ThrowCheese1()
     {
         Debug.Log("ThrowCheese1 called!");
@@ -402,6 +424,12 @@ public class RatKingAttack : MonoBehaviour
             Gizmos.color = Color.magenta;
             Gizmos.DrawWireSphere(damageZoneOrigin.position, damageZoneRadius);
         }
+        // Draw damage zone
+        if (cheesePrefab != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(cheesePrefab.transform.position, cheeseExplosionRadius);
+        }
 
         // Draw cheese spawn points
         if (cheeseSpawnPoint1 != null)
@@ -432,45 +460,224 @@ public class CheeseProjectile : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private float cheeseExplosionRadius;
     private float cheeseKnockbackForce;
-
+    private bool hasBeenDestroyed = false;
+    private bool isV2Spore = false;
+    private float splitDelay;
+    private float splitScale;
+    private float splitForce;
+    private bool hasSplit = false;
+    private bool isMine = false;
+    private Rigidbody2D rb;
+    private Vector3 originalScale;
+    private Transform playerTransform;
     public bool IsRealCheese { get; private set; } // Public getter for isRealCheese
 
-    public void Initialize(bool isReal, int damage, LayerMask playerL, ParticleSystem explosionPrefab, LayerMask groundL, ParticleSystem impactPrefab1, ParticleSystem impactPrefab2, ParticleSystem impactPrefab3, float explosionRadius, float knockbackForce)
+    public void Initialize(
+     bool isReal, int damage, LayerMask playerL, ParticleSystem explosionPrefab, LayerMask groundL,
+     ParticleSystem impactPrefab1, ParticleSystem impactPrefab2, ParticleSystem impactPrefab3,
+     float explosionRadius, float knockbackForce,
+     // V2 PARAMETERS
+     bool isV2, float splitTime, float newScale, float newForce, Transform player,
+     // --- THIS IS THE FIX ---
+     bool isChildSpore = false) // Add this new parameter with a default value
     {
+        // Your existing initialization is preserved
         isRealCheese = isReal;
-        IsRealCheese = isReal; // Set the public property
         damageAmount = damage;
         playerLayer = playerL;
         explosionParticlesPrefab = explosionPrefab;
-        groundLayer = groundL;
         cheeseImpactParticlesPrefab1 = impactPrefab1;
         cheeseImpactParticlesPrefab2 = impactPrefab2;
-        cheeseImpactParticlesPrefab3 = impactPrefab3;
+        groundLayer = groundL;
         cheeseExplosionRadius = explosionRadius;
         cheeseKnockbackForce = knockbackForce;
         spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
-        {
-            Debug.LogError("SpriteRenderer not found on CheeseProjectile!", this);
-        }
-    }
 
+        // Store the V2 parameters AND the player reference
+        isV2Spore = isV2;
+        splitDelay = splitTime;
+        splitScale = newScale;
+        splitForce = newForce;
+        playerTransform = player;
+
+        // Reset state for object pooling
+        hasSplit = isChildSpore; // If it's a child, it has "already split"
+        isMine = false;
+
+        // Get components and save original scale
+        rb = GetComponent<Rigidbody2D>();
+        originalScale = transform.localScale;
+
+        if (rb != null)
+        {
+            rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.gravityScale = 1f;
+        }
+
+        // --- THIS IS THE GUARANTEED FIX ---
+        // Only start the split routine if this is the ORIGINAL V2 spore.
+        // Child spores will have 'isChildSpore' as true, so this block will be skipped for them.
+        if (isV2Spore && !isChildSpore)
+        {
+            StartCoroutine(SplitRoutine());
+        }
+        // --- END OF FIX ---
+    }
+    private IEnumerator SplitRoutine()
+    {
+        yield return new WaitForSeconds(splitDelay);
+
+        if (hasBeenDestroyed) yield break;
+
+        hasSplit = true;
+
+        // --- THIS IS THE GUARANTEED FIX ---
+        // Calculate the base direction to the player ONCE.
+        Vector2 directionToPlayer = Vector2.zero;
+        if (playerTransform != null)
+        {
+            directionToPlayer = ((Vector2)playerTransform.position - (Vector2)transform.position).normalized;
+        }
+
+        // This loop runs twice, once for each smaller spore.
+        for (int i = 0; i < 2; i++)
+        {
+            GameObject smallerSpore = Instantiate(gameObject, transform.position, Quaternion.identity);
+            smallerSpore.transform.localScale = originalScale * splitScale;
+
+            CheeseProjectile smallerSporeScript = smallerSpore.GetComponent<CheeseProjectile>();
+            if (smallerSporeScript != null)
+            {
+                // Initialize the smaller spore (this logic is correct).
+                smallerSporeScript.Initialize(
+                    true, damageAmount, playerLayer, explosionParticlesPrefab, groundLayer,
+                    cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3,
+                    cheeseExplosionRadius, cheeseKnockbackForce,
+                    true, splitDelay, splitScale, splitForce, playerTransform,
+                    true // Mark as a child spore
+                );
+            }
+
+            Rigidbody2D smallerRb = smallerSpore.GetComponent<Rigidbody2D>();
+            if (smallerRb != null)
+            {
+                // --- THE TRAP LOGIC ---
+                // The first spore (i=0) will go left and high.
+                // The second spore (i=1) will go right and high.
+                float horizontalOffset = (i == 0) ? -0.5f : 0.5f;
+                float verticalOffset = 0.5f; // Both spores get a high arc.
+
+                // Create a unique offset vector for this spore.
+                Vector2 spreadOffset = new Vector2(horizontalOffset, verticalOffset);
+
+                // Add the spread offset to the base direction to the player.
+                Vector2 finalDirection = (directionToPlayer + spreadOffset).normalized;
+
+                // Give it a targeted force in its new, unique direction.
+                smallerRb.AddForce(finalDirection * splitForce, ForceMode2D.Impulse);
+                // --- END OF TRAP LOGIC ---
+            }
+        }
+        // --- END OF FIX ---
+
+        // Destroy the original large spore.
+        Destroy(gameObject);
+    }
     void OnCollisionEnter2D(Collision2D collision)
     {
-        // Check if the collision is with the player or ground
-        bool collidedWithPlayer = ((1 << collision.gameObject.layer) & playerLayer) != 0;
-        bool collidedWithGround = ((1 << collision.gameObject.layer) & groundLayer) != 0;
+        // If already destroyed, do nothing.
+        if (hasBeenDestroyed) return;
 
-        Debug.Log($"Cheese collision detected - IsReal: {IsRealCheese}, CollidedWithPlayer: {collidedWithPlayer}, CollidedWithGround: {collidedWithGround}");
+        bool hitPlayer = ((1 << collision.gameObject.layer) & playerLayer) != 0;
+        bool hitGround = ((1 << collision.gameObject.layer) & groundLayer) != 0;
 
-        if (collidedWithPlayer || collidedWithGround)
+        // --- SCENARIO 1: IT'S A MINE AND IT HITS THE PLAYER ---
+        // This happens when the player walks into a mine that is already on the ground.
+        if (isMine && hitPlayer)
         {
-            // Always apply damage and explode.
+            Explode();
+            return;
+        }
+
+        // If it's already a mine, it shouldn't react to anything else.
+        if (isMine) return;
+
+        // --- SCENARIO 2: IT'S A PROJECTILE (NOT YET A MINE) ---
+
+        // If it hits the player mid-air, it explodes.
+        if (hitPlayer)
+        {
+            Explode();
+        }
+        // If it hits the ground...
+        else if (hitGround)
+        {
+            // ...and it's a NORMAL cheese, it explodes.
+            if (!isV2Spore)
+            {
+                Explode();
+            }
+            // ...and it's a V2 SPORE, it becomes a mine.
+            else
+            {
+                BecomeMine();
+            }
+        }
+    }
+    private void BecomeMine()
+    {
+        // Mark this spore as a mine.
+        isMine = true;
+
+        // --- THIS IS THE GUARANTEED FIX ---
+        // 1. We DO NOT set the collider to be a trigger.
+        // By keeping it as a solid collider, it can never pass through the ground.
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+        {
+            col.isTrigger = false; // Force it to be a solid collider.
+        }
+
+        // 2. We lock the Rigidbody in place by making it Static.
+        // A Static Rigidbody with a solid collider will NOT move, but other
+        // Dynamic rigidbodies (like the player) can still pass through it and
+        // trigger OnCollisionEnter2D events. This is the perfect "mine" behavior.
+        if (rb != null)
+        {
+            rb.bodyType = RigidbodyType2D.Static;
+        }
+        // --- END OF FIX ---
+
+        // Optional: You could play a "plant" sound or particle effect here.
+    }
+    private void Explode()
+    {
+        // If already destroyed, do nothing.
+        if (hasBeenDestroyed) return;
+        hasBeenDestroyed = true; // Mark as destroyed immediately.
+
+        // Apply the explosion damage and knockback.
+        ApplyExplosionDamageAndKnockback();
+
+        // Destroy the cheese/spore.
+        DestroyCheese();
+    }
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        // This method is primarily for the mines.
+        if (hasBeenDestroyed) return;
+
+        bool hitPlayer = ((1 << other.gameObject.layer) & playerLayer) != 0;
+
+        // If this is a mine AND it was touched by the player...
+        if (isMine && hitPlayer)
+        {
+            // ...it explodes.
             ApplyExplosionDamageAndKnockback();
             DestroyCheese();
         }
     }
-
+  
     private void ApplyExplosionDamageAndKnockback()
     {
         Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(transform.position, cheeseExplosionRadius, playerLayer);
@@ -489,6 +696,53 @@ public class CheeseProjectile : MonoBehaviour
                 Vector2 knockbackDirection = (player.transform.position - transform.position).normalized;
                 l3antixHealth.TakeDamage(damageAmount, cheeseKnockbackForce, knockbackDirection);
                 Debug.Log($"Player {player.name} took {damageAmount} damage from Cheese explosion and was knocked back!");
+            }
+        }
+
+        LayerMask enemyLayer = LayerMask.GetMask("Enemy"); // Assumes your enemies are on a layer named "Enemy"
+
+        // Now, we find all colliders on the "Enemy" layer within the explosion radius.
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(transform.position, cheeseExplosionRadius, enemyLayer);
+
+        // We loop through every enemy we found.
+        foreach (Collider2D enemyCollider in hitEnemies)
+        {
+            // This is the exact logic you provided, which is the correct way to do it.
+            // We check for every possible type of enemy health script.
+
+            FleaHealth fleaHealth = enemyCollider.GetComponent<FleaHealth>();
+            if (fleaHealth != null)
+            {
+                Vector2 directionToEnemy = (enemyCollider.transform.position - transform.position).normalized;
+                fleaHealth.TakeDamage(damageAmount, directionToEnemy, cheeseKnockbackForce);
+            }
+
+            FleaHealthV2 fleaHealthV2 = enemyCollider.GetComponent<FleaHealthV2>();
+            if (fleaHealthV2 != null)
+            {
+                Vector2 directionToEnemy = (enemyCollider.transform.position - transform.position).normalized;
+                fleaHealthV2.TakeDamage(damageAmount, directionToEnemy, cheeseKnockbackForce);
+            }
+
+            FlyHealth flyHealth = enemyCollider.GetComponent<FlyHealth>();
+            if (flyHealth != null)
+            {
+                Vector2 directionToEnemy = (enemyCollider.transform.position - transform.position).normalized;
+                flyHealth.TakeDamage(damageAmount, directionToEnemy, cheeseKnockbackForce);
+            }
+
+            SprayerHealth sprayerHealth = enemyCollider.GetComponent<SprayerHealth>();
+            if (sprayerHealth != null)
+            {
+                Vector2 directionToEnemy = (enemyCollider.transform.position - transform.position).normalized;
+                sprayerHealth.TakeDamage(damageAmount, directionToEnemy, cheeseKnockbackForce);
+            }
+
+            InkHealth inkHealth = enemyCollider.GetComponent<InkHealth>();
+            if (inkHealth != null)
+            {
+                Vector2 directionToEnemy = (enemyCollider.transform.position - transform.position).normalized;
+                inkHealth.TakeDamage(damageAmount, directionToEnemy, cheeseKnockbackForce);
             }
         }
     }
@@ -522,26 +776,9 @@ public class CheeseProjectile : MonoBehaviour
         Destroy(gameObject);
     }
 
-    IEnumerator FadeOutAndDestroy()
+    public void TakeDamage(int damageAmount, Vector2 attackDirection, float knockbackForce = 0f)
     {
-        if (spriteRenderer == null)
-        {
-            Destroy(gameObject);
-            yield break;
-        }
-
-        Color originalColor = spriteRenderer.color;
-        float fadeDuration = 0.5f; // Duration of the fade effect
-        float elapsed = 0f;
-
-        while (elapsed < fadeDuration)
-        {
-            elapsed += Time.deltaTime;
-            originalColor.a = Mathf.Lerp(1f, 0f, elapsed / fadeDuration);
-            spriteRenderer.color = originalColor;
-            yield return null;
-        }
-        Destroy(gameObject);
+        Explode();
     }
 }
 

@@ -47,6 +47,9 @@ public class ObjectPoolManager : MonoBehaviour
     // ADD THIS under your other pool sizes
     [Header("Effect Pool Sizes")]
     public int effectPoolSize = 50;
+
+    public GameObject inkPuddleV2Prefab;
+    public int inkPuddlePoolSize = 10;
     // A dictionary to hold different pools. The key is the prefab of the object to pool.
     private Dictionary<GameObject, Queue<GameObject>> poolDictionary;
 
@@ -98,7 +101,7 @@ public class ObjectPoolManager : MonoBehaviour
         if (fartEffectPrefab != null) CreatePool(fartEffectPrefab, fartEffectPoolSize);
         if (dustExplosionEffectPrefab != null) CreatePool(dustExplosionEffectPrefab, effectPoolSize);
         if (dustExplosionEffectPrefabV2 != null) CreatePool(dustExplosionEffectPrefabV2, effectPoolSize);
-
+        if (inkPuddleV2Prefab != null) CreatePool(inkPuddleV2Prefab, inkPuddlePoolSize);
         foreach (MonoBehaviour script in allScripts)
         {
             // Check if the script we found has "signed the contract" of our IPoolable interface.
