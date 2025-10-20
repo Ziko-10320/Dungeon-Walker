@@ -7,11 +7,15 @@ public class InventoryManager : MonoBehaviour
     public static InventoryManager Instance { get; private set; }
 
     public List<PowerUpData> ownedPowerUps = new List<PowerUpData>();
-    public PowerUpData[] equippedPowerUps = new PowerUpData[2];
+    public PowerUpData[] equippedPowerUps = new PowerUpData[3];
     public List<string> ownedSkins = new List<string>();
     private const string OwnedSaveKey = "PlayerInventory_Owned";
     private const string EquippedSaveKey = "PlayerInventory_Equipped";
     private const string OwnedSkinsSaveKey = "PlayerInventory_OwnedSkins";
+    public bool isThirdSlotUnlocked = false; // Tracks the state
+    private const string ThirdSlotSaveKey = "PlayerInventory_ThirdSlotUnlocked";
+    public bool isSecondSlotUnlocked = false;
+    private const string SecondSlotSaveKey = "PlayerInventory_SecondSlotUnlocked";
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -31,6 +35,18 @@ public class InventoryManager : MonoBehaviour
             ownedSkins.Add(uniqueID);
             SaveInventory();
         }
+    }
+    public void UnlockSecondSlot()
+    {
+        isSecondSlotUnlocked = true;
+        SaveInventory();
+        Debug.Log("Second power-up slot has been permanently unlocked!");
+    }
+    public void UnlockThirdSlot()
+    {
+        isThirdSlotUnlocked = true;
+        SaveInventory(); // Save the change immediately
+        Debug.Log("Third power-up slot has been permanently unlocked!");
     }
     public bool IsSkinOwned(string uniqueID)
     {
@@ -120,8 +136,9 @@ public class InventoryManager : MonoBehaviour
         // --- NEW: Save Owned Skins ---
         string ownedSkinsSaveData = string.Join(",", ownedSkins);
         PlayerPrefs.SetString(OwnedSkinsSaveKey, ownedSkinsSaveData);
+        PlayerPrefs.SetInt(SecondSlotSaveKey, isSecondSlotUnlocked ? 1 : 0);
         // -----------------------------
-
+        PlayerPrefs.SetInt(ThirdSlotSaveKey, isThirdSlotUnlocked ? 1 : 0);
         PlayerPrefs.Save();
         Debug.Log("Inventory Saved (Power-ups and Skins).");
     }
@@ -159,7 +176,7 @@ public class InventoryManager : MonoBehaviour
                 }
             }
         }
-
+        isSecondSlotUnlocked = PlayerPrefs.GetInt(SecondSlotSaveKey, 0) == 1;
         // --- NEW: Load Owned Skins ---
         string ownedSkinsSaveData = PlayerPrefs.GetString(OwnedSkinsSaveKey, "");
         if (!string.IsNullOrEmpty(ownedSkinsSaveData))
@@ -167,7 +184,7 @@ public class InventoryManager : MonoBehaviour
             ownedSkins = ownedSkinsSaveData.Split(',').ToList();
         }
         // -----------------------------
-
+        isThirdSlotUnlocked = PlayerPrefs.GetInt(ThirdSlotSaveKey, 0) == 1;
         Debug.Log("Inventory Loaded (Power-ups and Skins).");
     }
 }

@@ -33,6 +33,22 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button unequipButton_2;
     [SerializeField] private Sprite emptySlotSprite;
     [SerializeField] private Transform ownedSkinsContainer;
+    [Header("Third Slot Upgrade")]
+    [SerializeField] private GameObject slot3_LockedGroup; // A parent object for the "Locked" state UI
+    [SerializeField] private GameObject slot3_UnlockedGroup; // A parent object for the "Unlocked" state UI
+    [SerializeField] private Button unlockSlotButton;
+    [SerializeField] private TextMeshProUGUI unlockPriceText;
+    [SerializeField] private int thirdSlotPrice = 5000; // You can change this price in the Inspector!
+    [Header("Second Slot Upgrade")]
+    [SerializeField] private GameObject slot2_LockedGroup;
+    [SerializeField] private GameObject slot2_UnlockedGroup;
+    [SerializeField] private Button unlockSlot2Button;
+    [SerializeField] private TextMeshProUGUI unlockPrice2Text;
+    [SerializeField] private int secondSlotPrice = 1000;
+    // And the variables for the unlocked slot's display
+    [SerializeField] private Image equippedIcon_3;
+    [SerializeField] private TextMeshProUGUI equippedName_3;
+    [SerializeField] private Button unequipButton_3;
     [Header("Owned Items Display")]
     [SerializeField] private Transform ownedItemsContainer;
     [SerializeField] private GameObject inventoryItemPrefab;
@@ -66,8 +82,24 @@ public class InventoryUI : MonoBehaviour
         if (inventoryPanel != null) inventoryPanel.SetActive(false);
 
         // Hook up the unequip buttons
-        unequipButton_1.onClick.AddListener(() => InventoryManager.Instance.UnequipPowerUp(0));
-        unequipButton_2.onClick.AddListener(() => InventoryManager.Instance.UnequipPowerUp(1));
+        unequipButton_1.onClick.AddListener(() => {
+            InventoryManager.Instance.UnequipPowerUp(0);
+            RefreshAllDisplays(); // <-- ADD THIS LINE
+        });
+
+        unequipButton_2.onClick.AddListener(() => {
+            InventoryManager.Instance.UnequipPowerUp(1);
+            RefreshAllDisplays(); // <-- ADD THIS LINE
+        });
+
+        unequipButton_3.onClick.AddListener(() => {
+            InventoryManager.Instance.UnequipPowerUp(2);
+            RefreshAllDisplays(); // <-- ADD THIS LINE
+        });
+
+        // Hook up the unlock button
+        unlockSlot2Button.onClick.AddListener(OnUnlockSlot2Clicked);
+        unlockSlotButton.onClick.AddListener(OnUnlockSlotClicked);
     }
     public void ShowPowerUpsCategory()
     {
@@ -86,7 +118,34 @@ public class InventoryUI : MonoBehaviour
         // Now, refresh everything. RefreshEquippedDisplay will handle showing/hiding the correct equipped display.
         RefreshAllDisplays();
     }
-
+    private void OnUnlockSlot2Clicked()
+    {
+        if (WalletManager.Instance.SpendCoins(secondSlotPrice))
+        {
+            InventoryManager.Instance.UnlockSecondSlot();
+            RefreshAllDisplays();
+        }
+        else
+        {
+            Debug.Log("Not enough coins to unlock the second slot!");
+        }
+    }
+    private void OnUnlockSlotClicked()
+    {
+        // Try to spend the coins
+        if (WalletManager.Instance.SpendCoins(thirdSlotPrice))
+        {
+            // If successful, tell the InventoryManager to unlock the slot
+            InventoryManager.Instance.UnlockThirdSlot();
+            // Refresh the entire display to show the newly unlocked slot
+            RefreshAllDisplays();
+        }
+        else
+        {
+            // Not enough coins! You can add a sound effect or visual feedback here.
+            Debug.Log("Not enough coins to unlock the third slot!");
+        }
+    }
     public void ShowSkinsCategory()
     {
         currentCategory = InventoryCategory.Skins;
@@ -147,17 +206,25 @@ public class InventoryUI : MonoBehaviour
 
     public void OnItemClicked(PowerUpData item)
     {
+        // Slot 1 is always available
         if (InventoryManager.Instance.equippedPowerUps[0] == null)
         {
             InventoryManager.Instance.EquipPowerUp(item, 0);
         }
-        else if (InventoryManager.Instance.equippedPowerUps[1] == null)
+        // Check slot 2 ONLY if it's unlocked and empty
+        else if (InventoryManager.Instance.isSecondSlotUnlocked && InventoryManager.Instance.equippedPowerUps[1] == null)
         {
             InventoryManager.Instance.EquipPowerUp(item, 1);
         }
+        // Check slot 3 ONLY if it's unlocked and empty
+        else if (InventoryManager.Instance.isThirdSlotUnlocked && InventoryManager.Instance.equippedPowerUps[2] == null)
+        {
+            InventoryManager.Instance.EquipPowerUp(item, 2);
+        }
         else
         {
-            InventoryManager.Instance.EquipPowerUp(item, 0); // Default to replacing slot 1
+            // If all available slots are full, replace the first one
+            InventoryManager.Instance.EquipPowerUp(item, 0);
         }
         RefreshAllDisplays();
     }
@@ -170,37 +237,60 @@ public class InventoryUI : MonoBehaviour
 
     private void RefreshEquippedDisplay()
     {
-        // --- Determine which UI should be active ---
         bool isPowerUpView = (currentCategory == InventoryCategory.PowerUps);
 
-        // Show/Hide the PARENT objects of the equipped displays
-        // NOTE: You must create parent GameObjects for these in your hierarchy
-        // and drag them into new slots in the Inspector.
-        // For now, we will show/hide the individual elements.
+        // Get the parent GameObjects for the main displays
+        GameObject powerUpSlot1Parent = equippedIcon_1.transform.parent.gameObject;
+        GameObject skinSlotParent = equippedSkinIcon.transform.parent.gameObject;
 
-        // Power-up slots
-        equippedIcon_1.gameObject.SetActive(isPowerUpView);
-        equippedName_1.gameObject.SetActive(isPowerUpView);
-        unequipButton_1.gameObject.SetActive(isPowerUpView);
-        equippedIcon_2.gameObject.SetActive(isPowerUpView);
-        equippedName_2.gameObject.SetActive(isPowerUpView);
-        unequipButton_2.gameObject.SetActive(isPowerUpView);
+        // --- STEP 1: Set the master visibility for all displays ---
+        powerUpSlot1Parent.SetActive(isPowerUpView);
+        slot2_LockedGroup.SetActive(isPowerUpView);
+        slot2_UnlockedGroup.SetActive(isPowerUpView);
+        slot3_LockedGroup.SetActive(isPowerUpView);
+        slot3_UnlockedGroup.SetActive(isPowerUpView);
+        skinSlotParent.SetActive(!isPowerUpView);
 
-        // Skin slot
-        if (equippedSkinIcon != null) equippedSkinIcon.gameObject.SetActive(!isPowerUpView);
-        if (equippedSkinName != null) equippedSkinName.gameObject.SetActive(!isPowerUpView);
-
-
-        // --- Now, ONLY update the one that is VISIBLE ---
+        // --- STEP 2: Update the logic ONLY for the visible category ---
         if (isPowerUpView)
         {
-            // This is the power-up view, so only update the power-up slots
+            // --- POWER-UP VIEW LOGIC ---
+
+            // Slot 1 is always unlocked
             UpdateSlotDisplay(0, equippedIcon_1, equippedName_1, unequipButton_1);
-            UpdateSlotDisplay(1, equippedIcon_2, equippedName_2, unequipButton_2);
+
+            // Logic for Slot 2
+            if (InventoryManager.Instance.isSecondSlotUnlocked)
+            {
+                slot2_UnlockedGroup.SetActive(true);
+                slot2_LockedGroup.SetActive(false);
+                UpdateSlotDisplay(1, equippedIcon_2, equippedName_2, unequipButton_2);
+            }
+            else
+            {
+                slot2_UnlockedGroup.SetActive(false);
+                slot2_LockedGroup.SetActive(true);
+                unlockPrice2Text.text = secondSlotPrice.ToString();
+            }
+
+            // --- NEW, INDEPENDENT LOGIC FOR SLOT 3 ---
+            if (InventoryManager.Instance.isThirdSlotUnlocked)
+            {
+                slot3_UnlockedGroup.SetActive(true);
+                slot3_LockedGroup.SetActive(false);
+                UpdateSlotDisplay(2, equippedIcon_3, equippedName_3, unequipButton_3);
+            }
+            else
+            {
+                slot3_UnlockedGroup.SetActive(false);
+                slot3_LockedGroup.SetActive(true);
+                unlockPriceText.text = thirdSlotPrice.ToString();
+            }
+            // ----------------------------------------
         }
-        else // This is the skin view
+        else // It's the Skin view
         {
-            // Only update the skin slot
+            // --- SKIN VIEW LOGIC ---
             UpdateEquippedSkinDisplay();
         }
     }
