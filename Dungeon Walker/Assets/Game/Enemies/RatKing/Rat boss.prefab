@@ -11297,6 +11297,10 @@ MonoBehaviour:
   cheeseDamageAmount: 30
   cheeseExplosionRadius: 2
   cheeseKnockbackForce: 10
+  isV2SporeAttack: 0
+  splitDelay: 0.4
+  splitScaleMultiplier: 0.6
+  splitForce: 5
 --- !u!114 &1264289404633083085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11375,6 +11379,10 @@ MonoBehaviour:
   isStunned: 0
   deathSplatterEffectPrefab: {fileID: 2426752246179592511, guid: 9398fe330c75dc341baf52ce61f8d603, type: 3}
   splatterSpawnPoint: {fileID: 4506034669272728072}
+  isMutated: 0
+  dropTable: {fileID: 0}
+  dropChance: 0.05
+  powerUpPickupPrefab: {fileID: 0}
 --- !u!114 &4484414899429158999
 MonoBehaviour:
   m_ObjectHideFlags: 0

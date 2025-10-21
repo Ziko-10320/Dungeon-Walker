@@ -97,7 +97,25 @@ public class SoapTrailDamageL3antix : MonoBehaviour
             StartCoroutine(DamageCooldown());
         }
     }
+    public void DisablePowerUp()
+    {
+        // Disable the main logic.
+        this.enabled = false;
 
+        // Disable the trail particle systems.
+        foreach (var trail in soapTrailObjects)
+        {
+            if (trail != null) trail.SetActive(false);
+        }
+
+        // --- THIS IS THE CRITICAL FIX ---
+        // Disable the permanent visual sprites.
+        foreach (var visual in soapVisuals)
+        {
+            if (visual != null) visual.gameObject.SetActive(false);
+        }
+        // --- END OF FIX ---
+    }
     void DealDamage()
     {
         if (damagePoint == null) return;

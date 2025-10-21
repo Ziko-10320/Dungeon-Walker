@@ -5861,7 +5861,7 @@ Transform:
   m_GameObject: {fileID: 7473396217002937139}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.22, y: 1.25, z: 0}
+  m_LocalPosition: {x: -0.22, y: 1.58, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6203,11 +6203,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -73.03297
+      value: -72.861694
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.6806526
+      value: 0.3887477
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6643,10 +6643,15 @@ MonoBehaviour:
   signalDuration: 1.2
   blinkInterval: 0.1
   explosionRadius: 2.4
-  explosionDamage: 50
+  explosionDamage: 40
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
+  isMutated: 1
+  dropTable: {fileID: 11400000, guid: f15d97d19a3a35643bb0b312cd4c5d8c, type: 2}
+  dropChance: 0.03
+  powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
+  powerUpSpawnPoint: {fileID: 3986929835973374505}
 --- !u!114 &1395605611348485378
 MonoBehaviour:
   m_ObjectHideFlags: 0

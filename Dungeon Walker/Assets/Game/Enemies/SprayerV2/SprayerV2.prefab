@@ -119,7 +119,7 @@ Transform:
   m_GameObject: {fileID: 1934716326092570919}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.22, y: 1.25, z: 0}
+  m_LocalPosition: {x: -0.85, y: 1.49, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6426,6 +6426,11 @@ MonoBehaviour:
   isStunned: 0
   deathSplatterEffectPrefab: {fileID: 7744118527560474626, guid: 12ab4ee6a9deb0240af4a47d1b47119d, type: 3}
   splatterSpawnPoint: {fileID: 6887314040794923926}
+  isMutated: 1
+  dropTable: {fileID: 11400000, guid: f15d97d19a3a35643bb0b312cd4c5d8c, type: 2}
+  dropChance: 0.03
+  powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
+  powerUpSpawnPoint: {fileID: 6887314040794923926}
 --- !u!114 &1564694357942923393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6503,6 +6508,7 @@ MonoBehaviour:
   - {fileID: 5254049360258234812}
   inkHealth: {fileID: 0}
   fleaHealth: {fileID: 0}
+  fleaHealthV2: {fileID: 0}
   sprayerHealth: {fileID: 0}
   flyHealth: {fileID: 0}
   inChain: 0

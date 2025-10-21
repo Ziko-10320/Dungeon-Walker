@@ -68,6 +68,17 @@ public class FleaHealthV2 : MonoBehaviour, IPunObservable
     [Tooltip("The layer the player is on, for explosion detection.")]
     public LayerMask playerLayer;
     private static MaterialPropertyBlock propertyBlock;
+
+    [Header("V2 Power-Up Drop Settings")]
+    [Tooltip("If true, this enemy is considered 'mutated' and can drop power-ups.")]
+    public bool isMutated = true;
+    [Tooltip("The loot table to use for this enemy's drops.")]
+    public PowerUpDropTable dropTable;
+    [Tooltip("The chance (0.0 to 1.0) for this enemy to drop a power-up on death.")]
+    [Range(0f, 1f)] public float dropChance = 0.05f; // 5% chance
+    [Tooltip("The prefab for the physical power-up pickup item.")]
+    public GameObject powerUpPickupPrefab;
+    public Transform powerUpSpawnPoint;
     void OnEnable()
     {
         // This is the guaranteed reset for pooled enemies.
@@ -324,6 +335,38 @@ public class FleaHealthV2 : MonoBehaviour, IPunObservable
         // The only job of Die() now is to start the death sequence coroutine.
         StartCoroutine(DeathSequenceRoutine());
     }
+    private void TryDropPowerUp()
+    {
+        // If this isn't a mutated enemy or has no drop table, do nothing.
+        if (!isMutated || dropTable == null || powerUpPickupPrefab == null) return;
+
+        // Determine the final drop chance. For bosses, you can set this to 1.0 in the Inspector.
+        float roll = Random.Range(0f, 1f);
+        if (roll > dropChance) return; // The roll failed.
+
+        // The roll succeeded! Get a random power-up from the table.
+        PowerUpData powerUpToDrop = dropTable.GetRandomDrop();
+
+        // If the table gave us a valid power-up...
+        if (powerUpToDrop != null)
+        {
+            // Determine the spawn position.
+            // It will use the powerUpSpawnPoint's position if you have assigned one,
+            // otherwise it will default to the enemy's main transform position.
+            Vector3 spawnPosition = (powerUpSpawnPoint != null) ? powerUpSpawnPoint.position : transform.position;
+
+            // Spawn the pickup prefab at the chosen position.
+            GameObject pickupObject = Instantiate(powerUpPickupPrefab, spawnPosition, Quaternion.identity);
+
+            // Get the PowerUpPickup script from the new object and tell it what it is.
+            PowerUpPickup pickupScript = pickupObject.GetComponent<PowerUpPickup>();
+            if (pickupScript != null)
+            {
+                pickupScript.Initialize(powerUpToDrop);
+            }
+        }
+    }
+
     private IEnumerator DeathSequenceRoutine()
     {
         // --- 1. PRE-DEATH SETUP (Disable AI and Colliders) ---
@@ -417,7 +460,7 @@ public class FleaHealthV2 : MonoBehaviour, IPunObservable
                 weaponSwitchManager.OnEnemyKilled();
                 Debug.Log("Enemy died, notifying WeaponSwitchManager.");
             }
-
+            TryDropPowerUp();
             if (PhotonNetwork.IsConnected)
             {
                 PhotonNetwork.Destroy(gameObject);

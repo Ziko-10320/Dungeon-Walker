@@ -2096,6 +2096,7 @@ MonoBehaviour:
   inkBallDamage: 15
   inkBallKnockbackForce: 5
   inkBallLifetime: 3
+  isV2Attack: 0
   attackSound: {fileID: 0}
   attackSoundVolume: 0.75
   spawnPoint: {fileID: 1949210329794803547}
@@ -2195,8 +2196,25 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
+  isV2PuddleAttack: 0
+  puddleAnimator: {fileID: 0}
+  puddlePrefab: {fileID: 0}
+  puddleSpawnPoint: {fileID: 0}
+  inkDripAnimationName: InkDrip
+  smokeParticles: {fileID: 0}
+  damagePoint: {fileID: 0}
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  damageAreaSize: {x: 2, y: 0.5}
+  damagePerTick: 5
+  damageInterval: 0.5
   deathSplatterEffectPrefab: {fileID: 4559407249175245342, guid: 52685d678bee71b4fa752185dee03258, type: 3}
   splatterSpawnPoint: {fileID: 7229075169359459992}
+  isMutated: 0
+  dropTable: {fileID: 0}
+  dropChance: 0.05
+  powerUpPickupPrefab: {fileID: 0}
 --- !u!114 &8652883054127700324
 MonoBehaviour:
   m_ObjectHideFlags: 0

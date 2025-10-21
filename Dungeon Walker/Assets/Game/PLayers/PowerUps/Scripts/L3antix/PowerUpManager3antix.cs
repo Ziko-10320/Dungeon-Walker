@@ -1,9 +1,14 @@
 ﻿using Photon.Realtime;
 using System.Collections;
+using System.Collections.Generic; // Added for List support
+using System.Linq; // Added for .Any() and .Where()
 using UnityEngine;
 
-public class PowerUpManagerL3antix : MonoBehaviour
+public class PowerUpManagerL3antix : BasePowerUpManager
 {
+    // --- ADDED: Instance for easy access ---
+    public static PowerUpManagerL3antix Instance { get; private set; }
+
     [Header("Component References")]
     [SerializeField] private L3antixMovement L3antixMovement;
     [SerializeField] private L3antixHealth L3antixHealth;
@@ -19,11 +24,11 @@ public class PowerUpManagerL3antix : MonoBehaviour
     [SerializeField] public GameObject shieldObject;
 
     [Header("Upgraded Shield References")]
-    public GameObject upgradedShieldObject;   // 🆕 Upgraded Shield object
+    public GameObject upgradedShieldObject;
     public Animator upgradedShieldAnimator;
 
     [Header("Upgraded Shield Destruction Effect")]
-    public GameObject destructionShieldPrefab;   // prefab with particle system
+    public GameObject destructionShieldPrefab;
     public Transform[] destructionSpawnPoints;
 
     [Header("SoapTrail PowerUp")]
@@ -41,13 +46,22 @@ public class PowerUpManagerL3antix : MonoBehaviour
 
     void Awake()
     {
-        // Find components. This is correct.
+        // --- ADDED: Set up the Instance ---
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         superMeter = FindObjectOfType<PlayerSuperMeter>();
         if (superMeter == null) Debug.LogError("PowerUpManager: No PlayerSuperMeter found in scene!");
         if (L3antixMovement == null) L3antixMovement = GetComponent<L3antixMovement>();
         if (L3antixHealth == null) L3antixHealth = GetComponent<L3antixHealth>();
 
-        // Store the original speed before any modifications.
         originalMoveSpeed = L3antixMovement.moveSpeed;
 
         if (shieldObject != null)
@@ -55,7 +69,6 @@ public class PowerUpManagerL3antix : MonoBehaviour
         ReviveSystemL3antix = FindObjectOfType<ReviveSystemL3antix>();
     }
 
-    // We use a coroutine to ensure this runs AFTER all other Start() methods.
     IEnumerator Start()
     {
         yield return new WaitForEndOfFrame();
@@ -115,52 +128,28 @@ public class PowerUpManagerL3antix : MonoBehaviour
         }
     }
 
-
-    public void ApplyPersistentEffect(PowerUpData data)
+    public override void ApplyPersistentEffect(PowerUpData data)
     {
-
         switch (data.type)
         {
+            // --- UPDATED: Stacking Speed Boost Logic ---
             case PowerUpType.SpeedBoost:
-                // We apply the multiplier to the ORIGINAL speed we saved in Awake.
-                L3antixMovement.moveSpeed = originalMoveSpeed * data.speedMultiplier;
-                Debug.Log("Persistent Effect Applied: SpeedBoost 🚀 New Speed: " + L3antixMovement.moveSpeed);
-                if (speedBoostParticles != null) speedBoostParticles.Play();
-                break;
             case PowerUpType.SpeedBoost2:
-                // Same logic but with its own multiplier and particles
-                L3antixMovement.moveSpeed = originalMoveSpeed * data.speedMultiplier;
-                Debug.Log("Persistent Effect Applied: SpeedBoost2 ⚡ New Speed: " + L3antixMovement.moveSpeed);
-                if (speedBoostParticles2 != null) speedBoostParticles2.Play();
+                RecalculateSpeed();
                 break;
 
             case PowerUpType.Shield:
-                // Instead of infinite invincibility:
-                L3antixHealth.ActivateShield(Mathf.RoundToInt(data.effectValue));
-                L3antixHealth.RestoreShieldToMax();
-                if (shieldObject != null)
-                    shieldObject.SetActive(true);
-
-                if (shieldAnimator != null)
-                {
-                    shieldAnimator.SetTrigger("StartShield");
-                }
-
-                Debug.Log("Persistent Effect Applied: Shield 🛡️ with HP: " + data.effectValue);
-
+                // Instead of activating directly, we add it to the player's shield queue.
+                L3antixHealth.AddShieldToQueue(PowerUpType.Shield);
+                Debug.Log("Persistent Effect Applied: Added Normal Shield to queue.");
                 break;
+
             case PowerUpType.ShieldUpgraded:
-                L3antixHealth.ActivateShield(L3antixHealth.upgradedShieldMaxHealth, true);
-                L3antixHealth.RestoreShieldToMax();
-
-                if (upgradedShieldObject != null)
-                    upgradedShieldObject.SetActive(true);
-
-                if (upgradedShieldAnimator != null)
-                    upgradedShieldAnimator.SetTrigger("StartShield");
-
-                Debug.Log("Persistent Effect Applied: Upgraded Shield 🛡️ with HP: " + L3antixHealth.upgradedShieldMaxHealth);
+                // Same for the upgraded shield.
+                L3antixHealth.AddShieldToQueue(PowerUpType.ShieldUpgraded);
+                Debug.Log("Persistent Effect Applied: Added Upgraded Shield to queue.");
                 break;
+
             case PowerUpType.InstantHeal:
                 L3antixHealth.FullHeal();
                 Debug.Log("Instant Effect Applied: Full Heal ❤️");
@@ -172,183 +161,231 @@ public class PowerUpManagerL3antix : MonoBehaviour
                 break;
 
             case PowerUpType.SoapTrail:
+                SoapTrailDamageL3antix soap = GetComponent<SoapTrailDamageL3antix>();
+                if (soap != null)
                 {
-                    SoapTrailDamageL3antix soap = GetComponent<SoapTrailDamageL3antix>();
-                    if (soap != null)
-                    {
-                        // Assign references
-                        soap.soapTrailObjects = soapTrailObjects;
-                        soap.damagePoint = soapDamagePoint;
-                        soap.damageSize = soapDamageSize;
-                        soap.damage = (int)data.effectValue;
-                        soap.player = L3antixMovement;
-
-                        // --- FORCE ENABLE ALL TRAILS ONCE ---
-                        foreach (var trail in soapTrailObjects)
-                        {
-                            if (trail != null)
-                                trail.SetActive(true);
-                        }
-
-                        // --- ENABLE permanent SoapVisuals ---
-                        foreach (var visual in soap.soapVisuals)
-                        {
-                            if (visual != null && !visual.gameObject.activeSelf)
-                                visual.gameObject.SetActive(true);
-                        }
-
-                        soap.enabled = true;
-                    }
-                    else
-                    {
-                        Debug.LogError("No SoapTrailDamage found on player!");
-                    }
-
-                    Debug.Log("Persistent Effect Applied: SoapTrail 🧼 (Visuals enabled + trails active!)");
+                    soap.soapTrailObjects = soapTrailObjects;
+                    soap.damagePoint = soapDamagePoint;
+                    soap.damageSize = soapDamageSize;
+                    soap.damage = (int)data.effectValue;
+                    soap.player = L3antixMovement;
+                    foreach (var trail in soap.soapTrailObjects) { if (trail != null) trail.SetActive(true); }
+                    foreach (var visual in soap.soapVisuals) { if (visual != null && !visual.gameObject.activeSelf) visual.gameObject.SetActive(true); }
+                    soap.enabled = true;
+                    Debug.Log("Persistent Effect Applied: SoapTrail 🧼");
                 }
                 break;
 
             case PowerUpType.AcidTrail:
+                AcidTrailDamageL3antix acid = GetComponent<AcidTrailDamageL3antix>();
+                if (acid != null)
                 {
-                    AcidTrailDamageL3antix acid = GetComponent<AcidTrailDamageL3antix>();
-                    if (acid != null)
-                    {
-                        // Assign references
-                        acid.acidTrailObjects = acidTrailObjects;
-                        acid.damagePoint = acidDamagePoint;
-                        acid.damageSize = acidDamageSize;
-                        acid.damage = (int)data.effectValue;
-                        acid.player = L3antixMovement;
-
-                        // --- FORCE ENABLE ALL TRAILS ONCE ---
-                        foreach (var trail in acidTrailObjects)
-                        {
-                            if (trail != null)
-                                trail.SetActive(true);
-                        }
-
-                        // --- ENABLE permanent SoapVisuals ---
-                        foreach (var visual in acid.acidVisuals)
-                        {
-                            if (visual != null && !visual.gameObject.activeSelf)
-                                visual.gameObject.SetActive(true);
-                        }
-
-                        acid.enabled = true;
-                    }
-                    else
-                    {
-                        Debug.LogError("No SoapTrailDamage found on player!");
-                    }
-
-                    Debug.Log("Persistent Effect Applied: SoapTrail 🧼 (Visuals enabled + trails active!)");
+                    acid.acidTrailObjects = acidTrailObjects;
+                    acid.damagePoint = acidDamagePoint;
+                    acid.damageSize = acidDamageSize;
+                    acid.damage = (int)data.effectValue;
+                    acid.player = L3antixMovement;
+                    foreach (var trail in acid.acidTrailObjects) { if (trail != null) trail.SetActive(true); }
+                    foreach (var visual in acid.acidVisuals) { if (visual != null && !visual.gameObject.activeSelf) visual.gameObject.SetActive(true); }
+                    acid.enabled = true;
+                    Debug.Log("Persistent Effect Applied: AcidTrail 🧪");
                 }
                 break;
+
             case PowerUpType.Revive:
-                ReviveSystemL3antix revive = GetComponent<ReviveSystemL3antix>();
-                if (revive != null)
+                if (ReviveSystemL3antix != null)
                 {
-                    revive.hasRevivePowerUp = true;
-                    revive.hasUsedRevive = false; // optional: reset on equip
+                    ReviveSystemL3antix.hasRevivePowerUp = true;
+                    ReviveSystemL3antix.hasUsedRevive = false;
                     Debug.Log("Revive powerup equipped.");
                 }
                 break;
 
             case PowerUpType.ReviveUpgraded:
+                ReviveUpgradedSystemL3antix reviveUp = GetComponent<ReviveUpgradedSystemL3antix>();
+                if (reviveUp != null)
                 {
-                    ReviveUpgradedSystemL3antix reviveUp = GetComponent<ReviveUpgradedSystemL3antix>();
-                    if (reviveUp != null)
-                    {
-                        reviveUp.EquipReviveUpgraded();
-                        Debug.Log("Persistent Effect Applied: RevivePlus equipped");
-                    }
+                    reviveUp.EquipReviveUpgraded();
+                    Debug.Log("Persistent Effect Applied: RevivePlus equipped");
                 }
                 break;
 
             case PowerUpType.Invisibility:
+                PlayerInvisibility3antix invis = GetComponent<PlayerInvisibility3antix>();
+                if (invis != null)
                 {
-                    PlayerInvisibility3antix invis = GetComponent<PlayerInvisibility3antix>();
-                    if (invis != null)
-                    {
-                        // You can use effectValue if you want to override default duration
-                        if (data.effectValue > 0)
-                            invis.invisibilityDuration = data.effectValue;
-
-                        invis.ActivateInvisibility();
-                        Debug.Log("Persistent Effect Applied: Invisibility 👻 Duration: " + invis.invisibilityDuration);
-                    }
-                    else
-                    {
-                        Debug.LogError("No PlayerInvisibility component found on player!");
-                    }
+                    if (data.effectValue > 0) invis.invisibilityDuration = data.effectValue;
+                    invis.ActivateInvisibility();
+                    Debug.Log("Persistent Effect Applied: Invisibility 👻");
                 }
                 break;
+
             case PowerUpType.ExplosiveCoins:
+                ExplosiveCoinsPowerUpL3antix explosive = GetComponent<ExplosiveCoinsPowerUpL3antix>();
+                if (explosive != null)
                 {
-                    ExplosiveCoinsPowerUpL3antix explosive = GetComponent<ExplosiveCoinsPowerUpL3antix>();
-                    if (explosive != null)
-                    {
-                        if (data.effectValue > 0)
-                            explosive.spawnChance = Mathf.Clamp01(data.effectValue);
-
-                        explosive.enabled = true; // Only enabled if equipped
-                        Debug.Log("Persistent Effect Applied: Explosive Coins 💰💥 Chance: " + explosive.spawnChance);
-                    }
-                    else
-                    {
-                        Debug.LogError("No ExplosiveCoinsPowerUp component found on player!");
-                    }
+                    if (data.effectValue > 0) explosive.spawnChance = Mathf.Clamp01(data.effectValue);
+                    explosive.enabled = true;
+                    Debug.Log("Persistent Effect Applied: Explosive Coins 💰💥");
                 }
                 break;
+
             case PowerUpType.BeePowerUp:
+                BeePowerUpL3antix bee = GetComponent<BeePowerUpL3antix>();
+                if (bee != null)
                 {
-                    BeePowerUpL3antix bee = GetComponent<BeePowerUpL3antix>();
-                    if (bee != null)
-                    {
-                        if (data.effectValue > 0)
-                            bee.damage = data.effectValue; // override damage if defined in PowerUpData
-
-                        bee.EnableBeePowerUp();
-                        Debug.Log("Persistent Effect Applied: Bee Swarm 🐝 Active! Damage: " + bee.damage);
-                    }
-                    else
-                    {
-                        Debug.LogError("No BeePowerUp component found on player!");
-                    }
+                    if (data.effectValue > 0) bee.damage = data.effectValue;
+                    bee.EnableBeePowerUp();
+                    Debug.Log("Persistent Effect Applied: Bee Swarm 🐝");
                 }
                 break;
+
+            // --- UPDATED: Soul Link Logic ---
             case PowerUpType.SoulLink:
-                {
-                    // Player equipped the power-up
-                    float chance = Mathf.Clamp01(data.effectValue);
-                    SoulLinkEquipped = true;
-
-                    SoulLinkEnemy[] enemies = FindObjectsOfType<SoulLinkEnemy>();
-                    foreach (SoulLinkEnemy e in enemies)
-                    {
-                        if (e != null)
-                            e.linkChance = chance; // only now they can link
-                    }
-                    Debug.Log("Persistent Effect Applied: SoulLink 🔮 Chance: " + data.effectValue);
-                }
+                UpdateSoulLinkStatus(true, Mathf.Clamp01(data.effectValue));
                 break;
-
         }
     }
+
+    // --- ADDED: The entire missing RemovePersistentEffect method ---
+    public override void RemovePersistentEffect(PowerUpData data)
+    {
+        if (data == null) return;
+        Debug.Log($"Removing persistent effect: {data.powerUpName}");
+
+        switch (data.type)
+        {
+            case PowerUpType.SpeedBoost:
+            case PowerUpType.SpeedBoost2:
+                StartCoroutine(RecalculateSpeedAfterFrame());
+                break;
+
+            case PowerUpType.Shield:
+            case PowerUpType.ShieldUpgraded:
+                if (L3antixHealth != null) L3antixHealth.DamageShield(99999);
+                break;
+
+            case PowerUpType.SoapTrail:
+                SoapTrailDamageL3antix soap = GetComponent<SoapTrailDamageL3antix>();
+                if (soap != null) soap.DisablePowerUp();
+                break;
+
+            case PowerUpType.AcidTrail:
+                AcidTrailDamageL3antix acid = GetComponent<AcidTrailDamageL3antix>();
+                if (acid != null) acid.DisablePowerUp();
+                break;
+
+            case PowerUpType.Revive:
+                if (ReviveSystemL3antix != null) ReviveSystemL3antix.hasRevivePowerUp = false;
+                break;
+
+            case PowerUpType.ReviveUpgraded:
+                ReviveUpgradedSystemL3antix reviveUp = GetComponent<ReviveUpgradedSystemL3antix>();
+                if (reviveUp != null) reviveUp.hasReviveUpgradedPowerUp = false;
+                break;
+
+            case PowerUpType.Invisibility:
+                PlayerInvisibility3antix invis = GetComponent<PlayerInvisibility3antix>();
+                if (invis != null) invis.DeactivateInvisibility();
+                break;
+
+            case PowerUpType.ExplosiveCoins:
+                ExplosiveCoinsPowerUpL3antix explosive = GetComponent<ExplosiveCoinsPowerUpL3antix>();
+                if (explosive != null) explosive.enabled = false;
+                break;
+
+            case PowerUpType.BeePowerUp:
+                BeePowerUpL3antix bee = GetComponent<BeePowerUpL3antix>();
+                if (bee != null) bee.DisableBeePowerUp();
+                break;
+
+            case PowerUpType.SoulLink:
+                UpdateSoulLinkStatus(false, 0f);
+                break;
+
+            case PowerUpType.InstantHeal:
+            case PowerUpType.InstantSuper:
+                break;
+        }
+    }
+
+    // --- ADDED: Stacking speed boost logic ---
+    private void RecalculateSpeed()
+    {
+        float currentMultiplier = 1.0f;
+        var allActivePowerUps = new List<PowerUpData>();
+
+        if (InventoryManager.Instance != null)
+        {
+            allActivePowerUps.AddRange(InventoryManager.Instance.equippedPowerUps.Where(p => p != null));
+        }
+        InGamePowerUpManager tempManager = FindObjectOfType<InGamePowerUpManager>();
+        if (tempManager != null)
+        {
+            allActivePowerUps.AddRange(tempManager.inGameSlots.Where(p => p != null));
+        }
+
+        bool hasSpeedBoost1 = false;
+        bool hasSpeedBoost2 = false;
+
+        foreach (var powerUp in allActivePowerUps)
+        {
+            if (powerUp.type == PowerUpType.SpeedBoost)
+            {
+                currentMultiplier += powerUp.speedMultiplier - 1.0f;
+                hasSpeedBoost1 = true;
+            }
+            else if (powerUp.type == PowerUpType.SpeedBoost2)
+            {
+                currentMultiplier += powerUp.speedMultiplier - 1.0f;
+                hasSpeedBoost2 = true;
+            }
+        }
+
+        L3antixMovement.moveSpeed = originalMoveSpeed * currentMultiplier;
+
+        if (speedBoostParticles != null) { if (hasSpeedBoost1 && !speedBoostParticles.isPlaying) speedBoostParticles.Play(); if (!hasSpeedBoost1 && speedBoostParticles.isPlaying) speedBoostParticles.Stop(); }
+        if (speedBoostParticles2 != null) { if (hasSpeedBoost2 && !speedBoostParticles2.isPlaying) speedBoostParticles2.Play(); if (!hasSpeedBoost2 && speedBoostParticles2.isPlaying) speedBoostParticles2.Stop(); }
+
+        Debug.Log($"L3antix Speed Recalculated. New Multiplier: {currentMultiplier}, New Speed: {L3antixMovement.moveSpeed}");
+    }
+
+    private IEnumerator RecalculateSpeedAfterFrame()
+    {
+        yield return new WaitForEndOfFrame();
+        RecalculateSpeed();
+    }
+
+    // --- ADDED: Soul Link update logic ---
+    private void UpdateSoulLinkStatus(bool isEnabled, float chance)
+    {
+        SoulLinkEquipped = isEnabled;
+        SoulLinkEnemy[] enemies = FindObjectsOfType<SoulLinkEnemy>();
+        foreach (SoulLinkEnemy e in enemies)
+        {
+            if (e != null) e.linkChance = isEnabled ? chance : 0f;
+        }
+        Debug.Log($"SoulLink status UPDATED: {(isEnabled ? "ENABLED" : "DISABLED")}");
+    }
+
     public void OnShieldAnimationEnd()
     {
         if (shieldObject != null)
             shieldObject.SetActive(false);
     }
+
+    // --- UPDATED: The correct HasPowerUp check ---
     public bool HasPowerUp(PowerUpType type)
     {
         InventoryManager inventory = InventoryManager.Instance;
-        if (inventory == null) return false;
-
-        foreach (PowerUpData equippedItem in inventory.equippedPowerUps)
+        if (inventory != null && inventory.equippedPowerUps.Any(p => p != null && p.type == type))
         {
-            if (equippedItem != null && equippedItem.type == type)
-                return true;
+            return true;
+        }
+        InGamePowerUpManager tempManager = FindObjectOfType<InGamePowerUpManager>();
+        if (tempManager != null && tempManager.IsPowerUpAlreadyActive(type))
+        {
+            return true;
         }
         return false;
     }

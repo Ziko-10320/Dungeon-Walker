@@ -528,39 +528,4 @@ public class SoulLinkChain : MonoBehaviour
     }
 
 
-    private IEnumerator FadeAndDestroySegments(List<LineRenderer> segs, float fadeTime)
-    {
-        if (segs == null) yield break;
-        float elapsed = 0f;
-
-        // capture initial colors (if any)
-        Color[] startColors = new Color[segs.Count];
-        for (int i = 0; i < segs.Count; i++)
-        {
-            var s = segs[i];
-            startColors[i] = (s != null) ? s.startColor : Color.white;
-        }
-
-        while (elapsed < fadeTime)
-        {
-            float t = elapsed / fadeTime;
-            for (int i = 0; i < segs.Count; i++)
-            {
-                var s = segs[i];
-                if (s == null) continue;
-                Color sc = startColors[i];
-                Color c = Color.Lerp(sc, new Color(sc.r, sc.g, sc.b, 0f), t);
-                s.startColor = c;
-                s.endColor = c;
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        // final destroy
-        for (int i = 0; i < segs.Count; i++)
-        {
-            if (segs[i] != null) Destroy(segs[i].gameObject);
-        }
-    }
 }

@@ -1,9 +1,11 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.U2D.Animation;
-
+using FirstGearGames.SmoothCameraShaker;
 public class PlayerHealth : MonoBehaviour
 {
     [Header("Health Settings")]
@@ -50,12 +52,22 @@ public class PlayerHealth : MonoBehaviour
     private bool usingUpgradedShield = false;
     public bool HasShield => shieldCurrentHealth > 0;
 
+    [Header("Shield Stacking & Explosion")]
+    [Tooltip("The exact point where the shield explosion will originate.")]
+    [SerializeField] private Transform shieldExplosionPoint;
+    [Tooltip("The damage dealt by the normal shield's explosion when it breaks.")]
+    [SerializeField] private int shieldExplosionDamage = 50;
+    [Tooltip("The radius of the normal shield's explosion.")]
+    [SerializeField] private float shieldExplosionRadius = 3f;
+    private List<PowerUpType> shieldQueue = new List<PowerUpType>();
+  
     [Header("UI References")]
     [SerializeField] private UnityEngine.UI.Slider shieldSlider;
 
     [HideInInspector] public bool isSuperActive = false;
-  private static MaterialPropertyBlock propertyBlock;
+    private static MaterialPropertyBlock propertyBlock;
     [SerializeField] private PlayerInvisibility playerInvisibility;
+    public ShakeData CameraShakeDeath;
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -392,86 +404,137 @@ public class PlayerHealth : MonoBehaviour
         StopHealingParticles();
     }
 
-    public void ActivateShield(int health, bool upgraded = false)
+    // NEW METHOD 1: Adds a shield to the queue. Called by PowerUpManager.
+    // METHOD 1: Adds a shield to the queue. Called by PowerUpManager.
+    public void AddShieldToQueue(PowerUpType shieldType)
     {
-        usingUpgradedShield = upgraded;
+        if (shieldQueue.Contains(shieldType)) return; // Don't add duplicates
 
-        if (upgraded)
+        shieldQueue.Add(shieldType);
+        // Sort so the normal shield is always first.
+        shieldQueue = shieldQueue.OrderBy(s => s == PowerUpType.ShieldUpgraded).ToList();
+
+        // If no shield is currently active, activate the next one.
+        if (!HasShield)
         {
-            if (health <= 0) health = upgradedShieldMaxHealth;
-            upgradedShieldMaxHealth = health;
+            ActivateNextShield();
         }
-        else
-        {
-            if (health <= 0) health = shieldMaxHealth;
-            shieldMaxHealth = health;
-        }
-
-        shieldCurrentHealth = health;
-
-        if (shieldSlider != null)
-        {
-            shieldSlider.maxValue = shieldCurrentHealth;
-            shieldSlider.value = shieldCurrentHealth;
-            shieldSlider.gameObject.SetActive(true);
-        }
-
-        Debug.Log(upgraded
-            ? $"🛡️ Upgraded Shield activated with {shieldCurrentHealth} HP."
-            : $"🛡️ Normal Shield activated with {shieldCurrentHealth} HP.");
     }
 
-    private void DamageShield(int damage)
+    // METHOD 2: Activates the next shield in the queue.
+    private void ActivateNextShield()
     {
+        if (shieldQueue.Count == 0)
+        {
+            // No shields left, ensure everything is off.
+            shieldCurrentHealth = 0;
+            if (shieldSlider != null) shieldSlider.gameObject.SetActive(false);
+            return;
+        }
+
+        // Determine which shield is next and set its health.
+        PowerUpType nextShieldType = shieldQueue[0];
+        usingUpgradedShield = (nextShieldType == PowerUpType.ShieldUpgraded);
+        shieldCurrentHealth = usingUpgradedShield ? upgradedShieldMaxHealth : shieldMaxHealth;
+
+        // Use YOUR working RestoreShieldToMax logic to handle the visuals.
+        RestoreShieldToMax();
+    }
+
+    // METHOD 3: The new, corrected DamageShield.
+    public void DamageShield(int damage)
+    {
+        if (!HasShield) return;
+
         shieldCurrentHealth -= damage;
         if (shieldCurrentHealth < 0) shieldCurrentHealth = 0;
 
-        if (shieldSlider != null)
-            shieldSlider.value = shieldCurrentHealth;
+        if (shieldSlider != null) shieldSlider.value = shieldCurrentHealth;
 
         if (shieldCurrentHealth <= 0)
         {
-            PowerUpManager pm = FindObjectOfType<PowerUpManager>();
-            if (pm != null)
+            PowerUpType brokenShieldType = shieldQueue[0];
+            Debug.Log($"Shield broke! Type: {brokenShieldType}");
+
+            // --- THIS IS THE FIX ---
+            // We will call your OLD, WORKING destruction logic from here.
+            TriggerShieldDestructionVisuals(brokenShieldType);
+
+            // If the broken shield was the normal one, trigger the explosion.
+            if (brokenShieldType == PowerUpType.Shield)
             {
-                if (usingUpgradedShield)
-                {
-                    Debug.Log("🛡️ Upgraded Shield is broken!");
-                    if (pm.upgradedShieldAnimator != null)
-                        pm.upgradedShieldAnimator.SetTrigger("EndShield");
-
-                    if (pm.upgradedShieldObject != null)
-                        pm.upgradedShieldObject.SetActive(false);
-
-                    // 🔥 Spawn destruction particles
-                    if (pm.destructionShieldPrefab != null && pm.destructionSpawnPoints != null)
-                    {
-                        foreach (Transform spawn in pm.destructionSpawnPoints)
-                        {
-                            if (spawn != null)
-                                GameObject.Instantiate(pm.destructionShieldPrefab, spawn.position, spawn.rotation);
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.Log("🛡️ Normal Shield is broken!");
-                    if (pm.shieldAnimator != null)
-                        pm.shieldAnimator.SetTrigger("EndShield");
-
-                    if (pm.shieldObject != null)
-                        pm.shieldObject.SetActive(false);
-                }
+                TriggerShieldExplosion();
             }
+            // --- END OF FIX ---
 
-            if (shieldSlider != null)
-                shieldSlider.gameObject.SetActive(false);
+            shieldQueue.RemoveAt(0); // Remove the broken shield from the queue
+            ActivateNextShield();    // Activate the next one
         }
         else
         {
             Debug.Log($"Shield took {damage} damage. Remaining HP: {shieldCurrentHealth}");
         }
     }
+
+    // METHOD 4: A new helper method containing YOUR destruction logic.
+    private void TriggerShieldDestructionVisuals(PowerUpType brokenShieldType)
+    {
+        PowerUpManager pm = FindObjectOfType<PowerUpManager>();
+        if (pm == null) return;
+
+        if (brokenShieldType == PowerUpType.ShieldUpgraded)
+        {
+            Debug.Log("🛡️ Playing Upgraded Shield destruction visuals.");
+            pm.upgradedShieldAnimator?.SetTrigger("EndShield");
+            pm.upgradedShieldObject.SetActive(false);
+            // pm.upgradedShieldObject.SetActive(false); // The animation should handle this.
+            if (pm.destructionShieldPrefab != null && pm.destructionSpawnPoints != null)
+            {
+                foreach (Transform spawn in pm.destructionSpawnPoints)
+                {
+                    if (spawn != null) Instantiate(pm.destructionShieldPrefab, spawn.position, spawn.rotation);
+                }
+            }
+        }
+        else // It was a normal shield
+        {
+            Debug.Log("🛡️ Playing Normal Shield destruction visuals.");
+            // --- THE MISSING LINE ---
+            pm.shieldAnimator?.SetTrigger("EndShield");
+            // pm.shieldObject.SetActive(false); // The animation should handle this.
+        }
+
+        if (shieldSlider != null)
+            shieldSlider.gameObject.SetActive(false);
+    }
+
+    // NEW METHOD 4: The explosion logic.
+    private void TriggerShieldExplosion()
+    {
+        CameraShakerHandler.Shake(CameraShakeDeath);
+        Vector3 explosionOrigin = (shieldExplosionPoint != null) ? shieldExplosionPoint.position : transform.position;
+        Debug.Log($"Normal shield explosion at {explosionOrigin}!");
+        Collider2D[] enemiesInRange = Physics2D.OverlapCircleAll(explosionOrigin, shieldExplosionRadius, LayerMask.GetMask("Enemy"));
+        foreach (var enemyCollider in enemiesInRange)
+        {
+            if (enemyCollider.TryGetComponent(out FleaHealth flea)) flea.TakeDamage(shieldExplosionDamage, Vector2.zero);
+            if (enemyCollider.TryGetComponent(out FleaHealthV2 fleaV2)) fleaV2.TakeDamage(shieldExplosionDamage, Vector2.zero);
+            if (enemyCollider.TryGetComponent(out FlyHealth fly)) fly.TakeDamage(shieldExplosionDamage, Vector2.zero);
+            if (enemyCollider.TryGetComponent(out SprayerHealth sprayer)) sprayer.TakeDamage(shieldExplosionDamage, Vector2.zero);
+            if (enemyCollider.TryGetComponent(out InkHealth ink)) ink.TakeDamage(shieldExplosionDamage, Vector2.zero);
+            if (enemyCollider.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage(shieldExplosionDamage);
+        }
+
+    }
+
+    // NEW METHOD 5: The gizmo drawer.
+    private void OnDrawGizmosSelected()
+    {
+        Vector3 explosionOrigin = (shieldExplosionPoint != null) ? shieldExplosionPoint.position : transform.position;
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(explosionOrigin, shieldExplosionRadius);
+    }
+
 
 
     public void RestoreShieldToMax()
@@ -528,47 +591,24 @@ public class PlayerHealth : MonoBehaviour
         PowerUpManager pm = GetComponent<PowerUpManager>();
         if (pm == null) return;
 
-        bool hasNormal = pm.HasPowerUp(PowerUpType.Shield);
-        bool hasUpgraded = pm.HasPowerUp(PowerUpType.ShieldUpgraded);
+        // Clear the old queue completely.
+        shieldQueue.Clear();
+        shieldCurrentHealth = 0;
 
-        usingUpgradedShield = hasUpgraded; // If upgraded is equipped → FORCE upgraded
-        if (!hasNormal && !hasUpgraded) return;
-
-        shieldCurrentHealth = usingUpgradedShield ? upgradedShieldMaxHealth : shieldMaxHealth;
-
-        if (shieldSlider != null)
+        // Check which shields are permanently equipped and add them back to the queue.
+        if (pm.HasPowerUp(PowerUpType.Shield))
         {
-            shieldSlider.maxValue = shieldCurrentHealth;
-            shieldSlider.value = shieldCurrentHealth;
-            shieldSlider.gameObject.SetActive(true);
+            AddShieldToQueue(PowerUpType.Shield);
+        }
+        if (pm.HasPowerUp(PowerUpType.ShieldUpgraded))
+        {
+            AddShieldToQueue(PowerUpType.ShieldUpgraded);
         }
 
-        // --- Activate only the correct shield ---
-        if (pm.shieldObject != null) pm.shieldObject.SetActive(false);
-        if (pm.upgradedShieldObject != null) pm.upgradedShieldObject.SetActive(false);
-
-        if (usingUpgradedShield)
-        {
-            if (pm.upgradedShieldObject != null) pm.upgradedShieldObject.SetActive(true);
-            if (pm.upgradedShieldAnimator != null)
-            {
-                pm.upgradedShieldAnimator.Rebind();
-                pm.upgradedShieldAnimator.Update(0f);
-                pm.upgradedShieldAnimator.SetTrigger("StartShield");
-            }
-            Debug.Log("🛡️ Upgraded Shield restored at checkpoint!");
-        }
-        else
-        {
-            if (pm.shieldObject != null) pm.shieldObject.SetActive(true);
-            if (pm.shieldAnimator != null)
-            {
-                pm.shieldAnimator.Rebind();
-                pm.shieldAnimator.Update(0f);
-                pm.shieldAnimator.SetTrigger("StartShield");
-            }
-            Debug.Log("🛡️ Normal Shield restored at checkpoint!");
-        }
+        // The AddShieldToQueue method will automatically sort the list and call
+        // ActivateNextShield if the queue is not empty, which in turn calls
+        // your working RestoreShieldToMax logic.
+        Debug.Log("Shields restored at checkpoint.");
     }
-   
+
 }

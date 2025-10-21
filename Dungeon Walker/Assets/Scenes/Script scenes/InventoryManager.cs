@@ -16,6 +16,8 @@ public class InventoryManager : MonoBehaviour
     private const string ThirdSlotSaveKey = "PlayerInventory_ThirdSlotUnlocked";
     public bool isSecondSlotUnlocked = false;
     private const string SecondSlotSaveKey = "PlayerInventory_SecondSlotUnlocked";
+
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

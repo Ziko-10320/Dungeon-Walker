@@ -1,8 +1,9 @@
 ﻿using Photon.Realtime;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 
-public class PowerUpManager : MonoBehaviour
+public class PowerUpManager : BasePowerUpManager
 {
     [Header("Component References")]
     [SerializeField] private KritinaMovement playerMovement;
@@ -38,6 +39,8 @@ public class PowerUpManager : MonoBehaviour
 
     private ReviveSystem reviveSystem;
     public static bool SoulLinkEquipped = false;
+    public static PowerUpManager Instance { get; private set; }
+ 
 
     void Awake()
     {
@@ -116,50 +119,26 @@ public class PowerUpManager : MonoBehaviour
     }
 
 
-    public void ApplyPersistentEffect(PowerUpData data)
+    public override void ApplyPersistentEffect(PowerUpData data)
     {
         
         switch (data.type)
         {
             case PowerUpType.SpeedBoost:
-                // We apply the multiplier to the ORIGINAL speed we saved in Awake.
-                playerMovement.moveSpeed = originalMoveSpeed * data.speedMultiplier;
-                Debug.Log("Persistent Effect Applied: SpeedBoost 🚀 New Speed: " + playerMovement.moveSpeed);
-                if (speedBoostParticles != null) speedBoostParticles.Play();
-                break;
             case PowerUpType.SpeedBoost2:
-                // Same logic but with its own multiplier and particles
-                playerMovement.moveSpeed = originalMoveSpeed * data.speedMultiplier;
-                Debug.Log("Persistent Effect Applied: SpeedBoost2 ⚡ New Speed: " + playerMovement.moveSpeed);
-                if (speedBoostParticles2 != null) speedBoostParticles2.Play();
+                RecalculateSpeed();
                 break;
 
             case PowerUpType.Shield:
-                // Instead of infinite invincibility:
-                playerHealth.ActivateShield(Mathf.RoundToInt(data.effectValue));
-                playerHealth.RestoreShieldToMax();
-                if (shieldObject != null)
-                    shieldObject.SetActive(true);
-
-                if (shieldAnimator != null)
-                {
-                    shieldAnimator.SetTrigger("StartShield");
-                }
-
-                Debug.Log("Persistent Effect Applied: Shield 🛡️ with HP: " + data.effectValue);
-                
+                // Instead of activating directly, we add it to the player's shield queue.
+                playerHealth.AddShieldToQueue(PowerUpType.Shield);
+                Debug.Log("Persistent Effect Applied: Added Normal Shield to queue.");
                 break;
+
             case PowerUpType.ShieldUpgraded:
-                playerHealth.ActivateShield(playerHealth.upgradedShieldMaxHealth, true);
-                playerHealth.RestoreShieldToMax();
-
-                if (upgradedShieldObject != null)
-                    upgradedShieldObject.SetActive(true);
-
-                if (upgradedShieldAnimator != null)
-                    upgradedShieldAnimator.SetTrigger("StartShield");
-
-                Debug.Log("Persistent Effect Applied: Upgraded Shield 🛡️ with HP: " + playerHealth.upgradedShieldMaxHealth);
+                // Same for the upgraded shield.
+                playerHealth.AddShieldToQueue(PowerUpType.ShieldUpgraded);
+                Debug.Log("Persistent Effect Applied: Added Upgraded Shield to queue.");
                 break;
             case PowerUpType.InstantHeal:
                 playerHealth.FullHeal();
@@ -318,23 +297,176 @@ public class PowerUpManager : MonoBehaviour
                 } 
                 break;
             case PowerUpType.SoulLink:
-                {
-                    // Player equipped the power-up
-                    float chance = Mathf.Clamp01(data.effectValue);
-                    SoulLinkEquipped = true;
-
-                    SoulLinkEnemy[] enemies = FindObjectsOfType<SoulLinkEnemy>();
-                    foreach (SoulLinkEnemy e in enemies)
-                    {
-                        if (e != null)
-                            e.linkChance = chance; // only now they can link
-                    }
-                    Debug.Log("Persistent Effect Applied: SoulLink 🔮 Chance: " + data.effectValue);
-                }
+                UpdateSoulLinkStatus(true, Mathf.Clamp01(data.effectValue));
                 break;
+
+
 
         }
     }
+
+    public override void RemovePersistentEffect(PowerUpData data)
+    {
+        if (data == null) return;
+        Debug.Log($"Removing persistent effect: {data.powerUpName}");
+
+        switch (data.type)
+        {
+            case PowerUpType.SpeedBoost:
+            case PowerUpType.SpeedBoost2:
+                // We need to wait a frame before recalculating, because the item is still in the list when this is called.
+                // A coroutine is perfect for this.
+                StartCoroutine(RecalculateSpeedAfterFrame());
+                break;
+
+            case PowerUpType.Shield:
+            case PowerUpType.ShieldUpgraded:
+                // This case is now handled by the PlayerHealth queue logic.
+                // When a temporary shield is removed, we don't need to do anything extra here,
+                // as the PlayerHealth script will manage activating the next shield in line if needed.
+                // We can leave this empty or add a log.
+                Debug.Log("A shield power-up was removed. PlayerHealth will manage the queue.");
+                break;
+
+
+
+            case PowerUpType.SoapTrail:
+                SoapTrailDamage soap = GetComponent<SoapTrailDamage>();
+                if (soap != null)
+                {
+                    // We need to call a new method on the SoapTrailDamage script to hide everything.
+                    soap.DisablePowerUp();
+                }
+                break;
+
+            case PowerUpType.AcidTrail:
+                AcidTrailDamage acid = GetComponent<AcidTrailDamage>();
+                if (acid != null)
+                {
+                    // We do the same for the acid trail.
+                    acid.DisablePowerUp();
+                }
+                break;
+
+            case PowerUpType.Revive:
+                ReviveSystem revive = GetComponent<ReviveSystem>();
+                if (revive != null) revive.hasRevivePowerUp = false;
+                break;
+
+            case PowerUpType.ReviveUpgraded:
+                ReviveUpgradedSystem reviveUp = GetComponent<ReviveUpgradedSystem>();
+                if (reviveUp != null) reviveUp.hasReviveUpgradedPowerUp = false;
+                break;
+
+            case PowerUpType.Invisibility:
+                PlayerInvisibility invis = GetComponent<PlayerInvisibility>();
+                if (invis != null) invis.DeactivateInvisibility();
+                break;
+
+            case PowerUpType.ExplosiveCoins:
+                ExplosiveCoinsPowerUp explosive = GetComponent<ExplosiveCoinsPowerUp>();
+                if (explosive != null) explosive.enabled = false;
+                break;
+
+            case PowerUpType.BeePowerUp:
+                BeePowerUp bee = GetComponent<BeePowerUp>();
+                if (bee != null) bee.DisableBeePowerUp();
+                break;
+
+            case PowerUpType.SoulLink:
+                UpdateSoulLinkStatus(false, 0f);
+                break;
+
+
+            case PowerUpType.InstantHeal:
+            case PowerUpType.InstantSuper:
+                break;
+        }
+    }
+
+    private void UpdateSoulLinkStatus(bool isEnabled, float chance)
+    {
+        SoulLinkEquipped = isEnabled;
+        SoulLinkEnemy[] enemies = FindObjectsOfType<SoulLinkEnemy>();
+
+        foreach (SoulLinkEnemy e in enemies)
+        {
+            if (e != null)
+            {
+                e.linkChance = isEnabled ? chance : 0f;
+            }
+        }
+
+        if (isEnabled)
+        {
+            Debug.Log("SoulLink status UPDATED: ENABLED with chance: " + chance);
+        }
+        else
+        {
+            Debug.Log("SoulLink status UPDATED: DISABLED.");
+        }
+    }
+    private void RecalculateSpeed()
+    {
+        // Start with the base speed.
+        float currentMultiplier = 1.0f;
+
+        // --- Find all active power-ups from both managers ---
+        var allActivePowerUps = new System.Collections.Generic.List<PowerUpData>();
+        if (InventoryManager.Instance != null)
+        {
+            allActivePowerUps.AddRange(InventoryManager.Instance.equippedPowerUps.Where(p => p != null));
+        }
+        // NOTE: This assumes your InGamePowerUpManager has a public list named 'inGameSlots' or similar.
+        // Based on your script, it's `inGameSlots`.
+        InGamePowerUpManager tempManager = FindObjectOfType<InGamePowerUpManager>();
+        if (tempManager != null)
+        {
+            // We need to access the array of temporary powerups. Let's make it public.
+            // I will assume you will make `private PowerUpData[] inGameSlots` public for this to work.
+            // If you can't, let me know and I'll find another way.
+            allActivePowerUps.AddRange(tempManager.inGameSlots.Where(p => p != null));
+        }
+
+        // --- Calculate the combined multiplier ---
+        bool hasSpeedBoost1 = false;
+        bool hasSpeedBoost2 = false;
+
+        foreach (var powerUp in allActivePowerUps)
+        {
+            if (powerUp.type == PowerUpType.SpeedBoost)
+            {
+                // Add the bonus from the multiplier. (e.g., 1.5x multiplier adds 0.5)
+                currentMultiplier += powerUp.speedMultiplier - 1.0f;
+                hasSpeedBoost1 = true;
+            }
+            else if (powerUp.type == PowerUpType.SpeedBoost2)
+            {
+                currentMultiplier += powerUp.speedMultiplier - 1.0f;
+                hasSpeedBoost2 = true;
+            }
+        }
+
+        // Apply the final calculated speed.
+        playerMovement.moveSpeed = originalMoveSpeed * currentMultiplier;
+
+        // --- Update particle effects ---
+        if (hasSpeedBoost1 && !speedBoostParticles.isPlaying) speedBoostParticles.Play();
+        if (!hasSpeedBoost1 && speedBoostParticles.isPlaying) speedBoostParticles.Stop();
+
+        if (hasSpeedBoost2 && !speedBoostParticles2.isPlaying) speedBoostParticles2.Play();
+        if (!hasSpeedBoost2 && speedBoostParticles2.isPlaying) speedBoostParticles2.Stop();
+
+        Debug.Log($"Speed Recalculated. New Multiplier: {currentMultiplier}, New Speed: {playerMovement.moveSpeed}");
+    }
+    private IEnumerator RecalculateSpeedAfterFrame()
+    {
+        // Wait until the end of the current frame.
+        yield return new WaitForEndOfFrame();
+        // By now, the power-up has been removed from the list, so we can safely recalculate.
+        RecalculateSpeed();
+    }
+
     public void OnShieldAnimationEnd()
     {
         if (shieldObject != null)
@@ -342,14 +474,21 @@ public class PowerUpManager : MonoBehaviour
     }
     public bool HasPowerUp(PowerUpType type)
     {
+        // First, check the permanent inventory
         InventoryManager inventory = InventoryManager.Instance;
-        if (inventory == null) return false;
-
-        foreach (PowerUpData equippedItem in inventory.equippedPowerUps)
+        if (inventory != null && inventory.equippedPowerUps.Any(p => p != null && p.type == type))
         {
-            if (equippedItem != null && equippedItem.type == type)
-                return true;
+            return true;
         }
+
+        // SECOND, AND THIS IS THE FIX, check the temporary in-game slots
+        InGamePowerUpManager tempManager = FindObjectOfType<InGamePowerUpManager>(); // Find the temporary manager
+        if (tempManager != null && tempManager.IsPowerUpAlreadyActive(type)) // Use its own check
+        {
+            return true;
+        }
+
         return false;
     }
+
 }

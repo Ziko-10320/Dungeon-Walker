@@ -239,6 +239,14 @@ public class CheckpointManager : MonoBehaviour
 
     void ReachCheckpoint()
     {
+        if (player != null)
+        {
+            InGamePowerUpManager tempPowerUpManager = player.GetComponent<InGamePowerUpManager>();
+            if (tempPowerUpManager != null)
+            {
+                tempPowerUpManager.RemoveAllTemporaryPowerUps();
+            }
+        }
         if (playerHealth != null)
         {
             playerHealth.RestoreShieldAtCheckpoint();

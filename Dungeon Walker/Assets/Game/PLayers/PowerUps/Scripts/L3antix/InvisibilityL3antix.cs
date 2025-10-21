@@ -76,39 +76,46 @@ public class PlayerInvisibility3antix : MonoBehaviour
 
     private void SetInvisible(bool state)
     {
+        isInvisible = state;
+
+        // --- THIS IS THE GUARANTEED FIX ---
         if (state) // If we are BECOMING invisible...
         {
-            // Play the "become invisible" sound.
             if (becomeInvisibleSound != null)
             {
                 AudioSource.PlayClipAtPoint(becomeInvisibleSound, transform.position, invisibleVolume);
             }
+
+            // Swap to the invisible material.
+            for (int i = 0; i < playerChildren.Length; i++)
+            {
+                if (playerChildren[i] == null) continue;
+                Renderer r = playerChildren[i].GetComponent<Renderer>();
+                if (r != null)
+                {
+                    r.sharedMaterial = invisibleMaterial;
+                }
+            }
         }
         else // If we are BECOMING visible...
         {
-            // Play the "become visible" sound.
             if (becomeVisibleSound != null)
             {
                 AudioSource.PlayClipAtPoint(becomeVisibleSound, transform.position, visibleVolume);
             }
+
+            // Swap back to the original materials we saved in Awake().
+            for (int i = 0; i < playerChildren.Length; i++)
+            {
+                if (playerChildren[i] == null) continue;
+                Renderer r = playerChildren[i].GetComponent<Renderer>();
+                if (r != null && originalMaterials[i] != null)
+                {
+                    r.sharedMaterial = originalMaterials[i];
+                }
+            }
         }
-        isInvisible = state;
-
-        // The new alpha value: 0 for invisible, 1 for visible.
-        float targetAlpha = state ? 0f : 1f;
-
-        // Loop through all the renderers and just change their alpha.
-        foreach (GameObject child in playerChildren)
-        {
-            if (child == null) continue;
-            SpriteRenderer r = child.GetComponent<SpriteRenderer>();
-            if (r == null) continue;
-
-            // Get the current color, change only the alpha, and set it back.
-            Color currentColor = r.color;
-            currentColor.a = targetAlpha;
-            r.color = currentColor;
-        }
+        // --- END OF FIX ---
 
         // Your event call is still correct.
         OnInvisibilityChanged?.Invoke(state);

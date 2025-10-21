@@ -5825,7 +5825,7 @@ Transform:
   m_GameObject: {fileID: 5596640731513504763}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.13, y: -0.01, z: 0}
+  m_LocalPosition: {x: 0.19, y: 0.14, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11883,6 +11883,11 @@ MonoBehaviour:
   isStunned: 0
   deathSplatterEffectPrefab: {fileID: 7464382647960571032, guid: 74dda3b76cc37504c8bdec5ce8802a63, type: 3}
   splatterSpawnPoint: {fileID: 3206954105282813643}
+  isMutated: 1
+  dropTable: {fileID: 11400000, guid: f15d97d19a3a35643bb0b312cd4c5d8c, type: 2}
+  dropChance: 0.03
+  powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
+  powerUpSpawnPoint: {fileID: 3206954105282813643}
 --- !u!114 &4510624845929211908
 MonoBehaviour:
   m_ObjectHideFlags: 0
