@@ -11,7 +11,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button skinsTabButton;
     [SerializeField] private GameObject powerUpsContent; // Drag your PowerUps_OwnedContent here
     [SerializeField] private GameObject skinsContent;    // Drag your Skins_OwnedContent here
-    private enum InventoryCategory { PowerUps, Skins }
+    private enum InventoryCategory { PowerUps, Skins, Weapons }
     private InventoryCategory currentCategory;
     private CharacterType currentCharacterView;
     [Header("Skin Inventory Specifics")]
@@ -19,6 +19,9 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button selectManButton;
     [SerializeField] private Image equippedSkinIcon;
     [SerializeField] private TextMeshProUGUI equippedSkinName;
+    [Header("Weapon Data References")]
+    [SerializeField] private List<WeaponData> allWeapons;
+    private int currentWeaponIndex = 0;
     [Header("Main Panel")]
     [SerializeField] private GameObject inventoryPanel;
     [Header("Animation Settings")]
@@ -39,6 +42,19 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button unlockSlotButton;
     [SerializeField] private TextMeshProUGUI unlockPriceText;
     [SerializeField] private int thirdSlotPrice = 5000; // You can change this price in the Inspector!
+    [Header("Weapon Upgrade UI")]
+    [SerializeField] private Button weaponsTabButton;
+    [SerializeField] private GameObject weaponsContent;
+    [SerializeField] private Slider levelSlider;
+    [SerializeField] private TextMeshProUGUI levelText;
+    [SerializeField] private TextMeshProUGUI weaponNameText;
+    [SerializeField] private Button selectBatButton_Weapons;
+    [SerializeField] private Button selectBowButton_Weapons;
+    [SerializeField] private Button selectLauncherButton_Weapons;
+    [SerializeField] private Button selectPistolButton_Weapons;
+    [SerializeField] private Image weaponIconImage;
+    [SerializeField] private Button upgradeWeaponButton;
+    [SerializeField] private TextMeshProUGUI upgradeCostText;
     [Header("Second Slot Upgrade")]
     [SerializeField] private GameObject slot2_LockedGroup;
     [SerializeField] private GameObject slot2_UnlockedGroup;
@@ -55,6 +71,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button unequipSkinButton;
     [SerializeField] private Sprite defaultCatSprite;
     [SerializeField] private Sprite defaultManSprite;
+
     private void Awake()
     {
         unequipSkinButton.onClick.AddListener(OnUnequipSkin);
@@ -62,12 +79,24 @@ public class InventoryUI : MonoBehaviour
         skinsTabButton.onClick.AddListener(ShowSkinsCategory);
         selectCatButton.onClick.AddListener(ViewCatSkins);
         selectManButton.onClick.AddListener(ViewManSkins);
+        selectBatButton_Weapons.onClick.AddListener(() => SelectWeaponToDisplay(0));
+        selectBowButton_Weapons.onClick.AddListener(() => SelectWeaponToDisplay(1));
+        weaponsTabButton.onClick.AddListener(ShowWeaponsCategory);
+        selectLauncherButton_Weapons.onClick.AddListener(() => SelectWeaponToDisplay(2));
+        upgradeWeaponButton.onClick.AddListener(OnUpgradeWeaponClicked);
+        selectPistolButton_Weapons.onClick.AddListener(() => SelectWeaponToDisplay(3));
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         if (panelCanvasGroup == null)
         {
             panelCanvasGroup = inventoryPanel.GetComponent<CanvasGroup>();
         }
+    }
+    public void SelectWeaponToDisplay(int weaponIndex)
+    {
+        if (weaponIndex < 0 || weaponIndex >= allWeapons.Count) return;
+        currentWeaponIndex = weaponIndex;
+        RefreshWeaponDisplay();
     }
     public void OnUnequipSlot1()
     {
@@ -76,6 +105,17 @@ public class InventoryUI : MonoBehaviour
 
         // 2. Immediately refresh all the visuals
         RefreshAllDisplays();
+    }
+    public void ShowWeaponsCategory()
+    {
+        currentCategory = InventoryCategory.Weapons;
+        powerUpsContent.SetActive(false);
+        skinsContent.SetActive(false);
+        weaponsContent.SetActive(true);
+
+        // We'll add more logic here later to select which weapon to show.
+        // For now, let's just refresh the display for the bat.
+        RefreshWeaponDisplay();
     }
     private void Start()
     {
@@ -104,18 +144,9 @@ public class InventoryUI : MonoBehaviour
     public void ShowPowerUpsCategory()
     {
         currentCategory = InventoryCategory.PowerUps;
-
-        // --- THE FIX ---
-        // Only show/hide the CONTENT GRIDS. Leave the equipped displays alone.
         powerUpsContent.SetActive(true);
         skinsContent.SetActive(false);
-        // ---------------
-
-        // Animate the tabs
-        // AnimateTab(powerUpsTabButton, true);
-        // AnimateTab(skinsTabButton, false);
-
-        // Now, refresh everything. RefreshEquippedDisplay will handle showing/hiding the correct equipped display.
+        weaponsContent.SetActive(false); // <-- ADD THIS
         RefreshAllDisplays();
     }
     private void OnUnlockSlot2Clicked()
@@ -149,19 +180,12 @@ public class InventoryUI : MonoBehaviour
     public void ShowSkinsCategory()
     {
         currentCategory = InventoryCategory.Skins;
-
-        // --- THE FIX ---
-        // Only show/hide the CONTENT GRIDS.
         powerUpsContent.SetActive(false);
         skinsContent.SetActive(true);
-        // ---------------
-
-        // Animate the tabs
-        // AnimateTab(powerUpsTabButton, false);
-        // AnimateTab(skinsTabButton, true);
-
-        ViewCatSkins(); // This will call RefreshAllDisplays internally
+        weaponsContent.SetActive(false); // <-- ADD THIS
+        ViewCatSkins();
     }
+
     private void ViewCatSkins()
     {
         currentCharacterView = CharacterType.Cat;
@@ -203,7 +227,28 @@ public class InventoryUI : MonoBehaviour
             StartCoroutine(AnimatePanel(false));
         }
     }
+    private void RefreshWeaponDisplay()
+    {
+        WeaponData currentWeapon = allWeapons[currentWeaponIndex];
+        int currentLevel = InventoryManager.Instance.GetWeaponLevel(currentWeapon.name);
 
+        weaponNameText.text = currentWeapon.weaponName;
+        weaponIconImage.sprite = currentWeapon.weaponIcon;
+        levelSlider.value = currentLevel;
+        levelText.text = "Level: " + currentLevel + " / 5";
+        levelSlider.interactable = false;
+        if (currentLevel >= 5)
+        {
+            upgradeWeaponButton.interactable = false;
+            upgradeCostText.text = "MAX LEVEL";
+        }
+        else
+        {
+            upgradeWeaponButton.interactable = true;
+            WeaponUpgradeData nextLevelData = currentWeapon.upgradeLevels[currentLevel];
+            upgradeCostText.text = "Upgrade (" + nextLevelData.upgradeCost + " Coins)";
+        }
+    }
     public void OnItemClicked(PowerUpData item)
     {
         // Slot 1 is always available
@@ -228,7 +273,25 @@ public class InventoryUI : MonoBehaviour
         }
         RefreshAllDisplays();
     }
+    public void OnUpgradeWeaponClicked()
+    {
+        WeaponData currentWeapon = allWeapons[currentWeaponIndex];
+        int currentLevel = InventoryManager.Instance.GetWeaponLevel(currentWeapon.name);
 
+        if (currentLevel < 5)
+        {
+            int upgradeCost = currentWeapon.upgradeLevels[currentLevel].upgradeCost;
+            if (WalletManager.Instance.SpendCoins(upgradeCost))
+            {
+                InventoryManager.Instance.UpgradeWeapon(currentWeapon.name);
+                RefreshWeaponDisplay();
+            }
+            else
+            {
+                Debug.Log("Not enough coins to upgrade!");
+            }
+        }
+    }
     private void RefreshAllDisplays()
     {
         RefreshEquippedDisplay();

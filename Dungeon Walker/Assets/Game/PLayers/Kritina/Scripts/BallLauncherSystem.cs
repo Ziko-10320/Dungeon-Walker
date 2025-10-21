@@ -24,7 +24,8 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
     private bool isOnlineMode = false;
     private PlayerSyncManager syncManager;
     private bool isJoystickHeldDown = false;
-
+    [Header("Weapon Upgrade Data")]
+    [SerializeField] private WeaponData weaponData;
     [Header("Explosion Effects")]
     [Tooltip("Orange ball main explosion particle system prefab")]
     [SerializeField] private GameObject orangeExplosionPrefab;
@@ -280,6 +281,36 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
 
         UpdateMinDistancePointPosition();
         UpdateTrajectoryVisualPoint();
+        ApplyWeaponUpgrades();
+    }
+    private void ApplyWeaponUpgrades()
+    {
+        if (weaponData == null)
+        {
+            Debug.Log("No WeaponData assigned to RobustLauncherSystem. Using default stats.");
+            return;
+        }
+
+        int currentLevel = InventoryManager.Instance.GetWeaponLevel(weaponData.name);
+
+        if (currentLevel > 0)
+        {
+            Debug.Log("Applying upgrades for " + weaponData.weaponName + " at Level " + currentLevel);
+
+            // Get the data for the correct level
+            WeaponUpgradeData currentUpgrade = weaponData.upgradeLevels[currentLevel - 1];
+
+            // --- OVERRIDE THE LAUNCHER'S STATS ---
+            this.ballDamage = currentUpgrade.launcherStats.launcherDamage;
+            this.shootCooldown = currentUpgrade.launcherStats.launcherFireRate;
+            this.explosionDamageRadius = currentUpgrade.launcherStats.launcherRadius;
+
+            Debug.Log("New Stats -> Damage: " + this.ballDamage + ", Fire Rate: " + this.shootCooldown + ", Radius: " + this.explosionDamageRadius);
+        }
+        else
+        {
+            Debug.Log(weaponData.weaponName + " is Level 0. Using default stats.");
+        }
     }
     public void CreatePools()
     {

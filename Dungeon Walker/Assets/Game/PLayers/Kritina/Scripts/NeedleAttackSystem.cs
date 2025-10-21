@@ -28,7 +28,8 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private float joystickAimThreshold = 0.5f;
     [Tooltip("Temps maximum en secondes pour qu'un contact soit considéré comme un 'tap'.")]
     [SerializeField] private float joystickTapTime = 0.2f;
-
+    [Header("Weapon Upgrade Data")]
+    [SerializeField] private WeaponData weaponData;
     private int attackTouchId = -1;
 
     private bool isJoystickHeld = false;
@@ -246,6 +247,7 @@ public class BatAttackSystem : MonoBehaviour
         ResetBatSystemState();
         LoadVolumeSettings();
         SetupVolumeSliders();
+        ApplyWeaponUpgrades();
     }
 
     void Update()
@@ -293,6 +295,42 @@ public class BatAttackSystem : MonoBehaviour
         else if (batPointerRectTransform != null)
         {
             batPointerRectTransform.gameObject.SetActive(false); // Hide pointer if no bat is thrown
+        }
+    }
+    private void ApplyWeaponUpgrades()
+    {
+        // Safety check: if no weapon data is assigned, do nothing.
+        if (weaponData == null)
+        {
+            Debug.Log("No WeaponData assigned to BatAttackSystem. Using default stats.");
+            return;
+        }
+
+        // Ask the InventoryManager for the current level of THIS weapon.
+        int currentLevel = InventoryManager.Instance.GetWeaponLevel(weaponData.name);
+
+        // If the weapon has been upgraded at all (level is 1 or higher)
+        if (currentLevel > 0)
+        {
+            Debug.Log("Applying upgrades for " + weaponData.weaponName + " at Level " + currentLevel);
+
+            // Get the correct upgrade data for our level.
+            // The list is 0-indexed, so Level 1 is at index 0.
+            WeaponUpgradeData currentUpgrade = weaponData.upgradeLevels[currentLevel - 1];
+
+            // --- OVERRIDE THE STATS ---
+            // Now, we replace the default values in this script with the upgraded ones.
+            this.damage = currentUpgrade.batStats.meleeDamage;
+            this.anticipationDuration = currentUpgrade.batStats.meleeAnticipation;
+            this.throwSlashDamage = currentUpgrade.batStats.throwDamage;
+            this.throwSlashSpeed = currentUpgrade.batStats.throwSpeed;
+
+            Debug.Log("New Stats -> Melee Damage: " + this.damage + ", Throw Speed: " + this.throwSlashSpeed);
+        }
+        else
+        {
+            // If the weapon is Level 0, just use the default stats already set in the Inspector.
+            Debug.Log(weaponData.weaponName + " is Level 0. Using default stats.");
         }
     }
     private void HandleInput()

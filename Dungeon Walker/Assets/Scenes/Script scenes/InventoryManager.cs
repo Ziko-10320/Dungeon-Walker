@@ -9,6 +9,9 @@ public class InventoryManager : MonoBehaviour
     public List<PowerUpData> ownedPowerUps = new List<PowerUpData>();
     public PowerUpData[] equippedPowerUps = new PowerUpData[3];
     public List<string> ownedSkins = new List<string>();
+
+    public Dictionary<string, int> weaponLevels = new Dictionary<string, int>();
+    private const string WeaponLevelsSaveKey = "PlayerInventory_WeaponLevels";
     private const string OwnedSaveKey = "PlayerInventory_Owned";
     private const string EquippedSaveKey = "PlayerInventory_Equipped";
     private const string OwnedSkinsSaveKey = "PlayerInventory_OwnedSkins";
@@ -29,6 +32,26 @@ public class InventoryManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         LoadInventory();
+    }
+    public int GetWeaponLevel(string weaponName)
+    {
+        if (weaponLevels.ContainsKey(weaponName))
+        {
+            return weaponLevels[weaponName];
+        }
+        // If the weapon isn't in our dictionary, it's at level 0 (not yet upgraded)
+        return 0;
+    }
+
+    public void UpgradeWeapon(string weaponName)
+    {
+        int currentLevel = GetWeaponLevel(weaponName);
+        if (currentLevel < 5) // Make sure we don't upgrade past the max level
+        {
+            weaponLevels[weaponName] = currentLevel + 1;
+            SaveInventory();
+            Debug.Log(weaponName + " has been upgraded to Level " + (currentLevel + 1));
+        }
     }
     public void AddOwnedSkin(string uniqueID)
     {
@@ -141,6 +164,12 @@ public class InventoryManager : MonoBehaviour
         PlayerPrefs.SetInt(SecondSlotSaveKey, isSecondSlotUnlocked ? 1 : 0);
         // -----------------------------
         PlayerPrefs.SetInt(ThirdSlotSaveKey, isThirdSlotUnlocked ? 1 : 0);
+        string weaponLevelsString = "";
+        foreach (var entry in weaponLevels)
+        {
+            weaponLevelsString += entry.Key + ":" + entry.Value + ",";
+        }
+        PlayerPrefs.SetString(WeaponLevelsSaveKey, weaponLevelsString);
         PlayerPrefs.Save();
         Debug.Log("Inventory Saved (Power-ups and Skins).");
     }
@@ -187,6 +216,21 @@ public class InventoryManager : MonoBehaviour
         }
         // -----------------------------
         isThirdSlotUnlocked = PlayerPrefs.GetInt(ThirdSlotSaveKey, 0) == 1;
+        weaponLevels.Clear();
+        string weaponLevelsString = PlayerPrefs.GetString(WeaponLevelsSaveKey, "");
+        if (!string.IsNullOrEmpty(weaponLevelsString))
+        {
+            string[] entries = weaponLevelsString.Split(',');
+            foreach (string entry in entries)
+            {
+                if (string.IsNullOrEmpty(entry)) continue;
+                string[] parts = entry.Split(':');
+                if (parts.Length == 2)
+                {
+                    weaponLevels[parts[0]] = int.Parse(parts[1]);
+                }
+            }
+        }
         Debug.Log("Inventory Loaded (Power-ups and Skins).");
     }
 }

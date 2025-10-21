@@ -51,7 +51,8 @@ public class BowSystems : MonoBehaviour, IPunObservable, IPoolable
     public bool showDestructionDebug = false;
     [Tooltip("Particle system to play when arrow is destroyed")]
     [SerializeField] private ParticleSystem arrowDestroyParticleSystem;
-
+    [Header("Weapon Upgrade Data")]
+    [SerializeField] private WeaponData weaponData;
     [Header("Arrow Damage System")]
     [Tooltip("Damage dealt by arrows to enemies (min value)")]
     public float minArrowDamage = 10f;
@@ -275,8 +276,36 @@ public class BowSystems : MonoBehaviour, IPunObservable, IPoolable
 
         UpdateMinDistancePointPosition();
         UpdateTrajectoryVisualPoint();
+        ApplyWeaponUpgrades();
     }
+    private void ApplyWeaponUpgrades()
+    {
+        if (weaponData == null)
+        {
+            Debug.Log("No WeaponData assigned to BowSystems. Using default stats.");
+            return;
+        }
 
+        int currentLevel = InventoryManager.Instance.GetWeaponLevel(weaponData.name);
+
+        if (currentLevel > 0)
+        {
+            Debug.Log("Applying upgrades for " + weaponData.weaponName + " at Level " + currentLevel);
+
+            WeaponUpgradeData currentUpgrade = weaponData.upgradeLevels[currentLevel - 1];
+
+            // --- OVERRIDE THE BOW'S STATS ---
+            this.maxChargeTime = currentUpgrade.bowStats.bowChargeTime;
+            this.minArrowDamage = currentUpgrade.bowStats.bowMinDamage;
+            this.maxArrowDamage = currentUpgrade.bowStats.bowMaxDamage;
+
+            Debug.Log("New Stats -> Charge Time: " + this.maxChargeTime + ", Min/Max Damage: " + this.minArrowDamage + "/" + this.maxArrowDamage);
+        }
+        else
+        {
+            Debug.Log(weaponData.weaponName + " is Level 0. Using default stats.");
+        }
+    }
     void Update()
     {
         if (isOnlineMode && !view.IsMine)

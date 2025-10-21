@@ -25,7 +25,8 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable, IPoolable
     [SerializeField] public int bulletDamage = 15;
     [SerializeField] private LayerMask damageableLayers;
     [SerializeField] public LayerMask collisionLayers;
-
+    [Header("Weapon Upgrade Data")]
+    [SerializeField] private WeaponData weaponData;
     [Header("AIMING & ROTATION (FROM ROBUST LAUNCHER)")]
     [Tooltip("Angle maximum de visée vers le haut")]
     [SerializeField] private float maxUpwardAngle = 80f;
@@ -92,7 +93,7 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable, IPoolable
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
-      
+        ApplyWeaponUpgrades();
     }
     public void CreatePools()
     {
@@ -100,6 +101,39 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable, IPoolable
         {
             if (bulletPrefab != null) ObjectPoolManager.Instance.CreatePool(bulletPrefab, bulletPoolSize);
             if (destructionEffectPrefab != null) ObjectPoolManager.Instance.CreatePool(destructionEffectPrefab.gameObject, effectPoolSize);
+        }
+    }
+    private void ApplyWeaponUpgrades()
+    {
+        if (weaponData == null)
+        {
+            Debug.Log("No WeaponData assigned to WaterGunSystem. Using default stats.");
+            return;
+        }
+
+        int currentLevel = InventoryManager.Instance.GetWeaponLevel(weaponData.name);
+
+        if (currentLevel > 0)
+        {
+            Debug.Log("Applying upgrades for " + weaponData.weaponName + " at Level " + currentLevel);
+
+            WeaponUpgradeData currentUpgrade = weaponData.upgradeLevels[currentLevel - 1];
+
+            // --- OVERRIDE THE PISTOL'S STATS ---
+            this.bulletDamage = currentUpgrade.pistolStats.pistolDamage;
+            this.fireRate = currentUpgrade.pistolStats.pistolFireRate;
+            this.bulletSpeed = currentUpgrade.pistolStats.pistolBulletSpeed;
+            this.maxAmmo = currentUpgrade.pistolStats.pistolAmmoCapacity;
+            this.reloadTime = currentUpgrade.pistolStats.pistolReloadSpeed;
+
+            // --- IMPORTANT: Reset ammo to the new max ---
+            this.currentAmmo = this.maxAmmo;
+
+            Debug.Log("New Stats -> Damage: " + this.bulletDamage + ", Fire Rate: " + this.fireRate + ", Capacity: " + this.maxAmmo);
+        }
+        else
+        {
+            Debug.Log(weaponData.weaponName + " is Level 0. Using default stats.");
         }
     }
     void Update()
