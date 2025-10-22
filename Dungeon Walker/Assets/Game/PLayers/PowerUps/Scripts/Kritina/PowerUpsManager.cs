@@ -40,7 +40,7 @@ public class PowerUpManager : BasePowerUpManager
     private ReviveSystem reviveSystem;
     public static bool SoulLinkEquipped = false;
     public static PowerUpManager Instance { get; private set; }
- 
+    private InGamePowerUpManager tempManager;
 
     void Awake()
     {
@@ -56,6 +56,7 @@ public class PowerUpManager : BasePowerUpManager
         if (shieldObject != null)
             shieldObject.SetActive(false);
         reviveSystem = FindObjectOfType<ReviveSystem>();
+        tempManager = GetComponent<InGamePowerUpManager>();
     }
 
     // We use a coroutine to ensure this runs AFTER all other Start() methods.
@@ -474,21 +475,23 @@ public class PowerUpManager : BasePowerUpManager
     }
     public bool HasPowerUp(PowerUpType type)
     {
-        // First, check the permanent inventory
+        // First, check the permanent inventory (this is already fast).
         InventoryManager inventory = InventoryManager.Instance;
         if (inventory != null && inventory.equippedPowerUps.Any(p => p != null && p.type == type))
         {
             return true;
         }
 
-        // SECOND, AND THIS IS THE FIX, check the temporary in-game slots
-        InGamePowerUpManager tempManager = FindObjectOfType<InGamePowerUpManager>(); // Find the temporary manager
-        if (tempManager != null && tempManager.IsPowerUpAlreadyActive(type)) // Use its own check
+        // --- THE OPTIMIZATION ---
+        // Use the stored reference to the temporary manager. No searching!
+        if (tempManager != null && tempManager.IsPowerUpAlreadyActive(type))
         {
             return true;
         }
+        // --- END OF OPTIMIZATION ---
 
         return false;
     }
+
 
 }

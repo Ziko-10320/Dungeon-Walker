@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting.Antlr3.Runtime.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+
 public class MachineGunSystem : MonoBehaviour, IPunObservable, IPoolable
 {
     [Header("COMPONENT REFERENCES")]

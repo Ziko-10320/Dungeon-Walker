@@ -2,6 +2,7 @@
 using UnityEngine;
 using FirstGearGames.SmoothCameraShaker;
 using UnityEngine.Events;
+
 public class FlyHealth : MonoBehaviour
 {
     // Public variables for health and effects

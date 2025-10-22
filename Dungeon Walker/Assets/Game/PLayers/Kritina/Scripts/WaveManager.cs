@@ -1,8 +1,9 @@
-using UnityEngine;
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Photon.Pun;
+using Unity.VisualScripting.FullSerializer;
+using UnityEngine;
 
 // Classe de configuration pour chaque vague.
 // [System.Serializable] permet de la voir et de la modifier dans l'inspecteur Unity.
@@ -15,6 +16,12 @@ public class WaveConfig
     public int enemyCount; // Le nombre total d'ennemis à faire apparaître
     public bool hasBoss; // Cette vague inclut-elle un boss ?
     public GameObject bossPrefab; // Le prefab du boss
+    [Header("Wave Rhythm")]
+    [Tooltip("The total time it should take to spawn all enemies from a SINGLE activated spawn point for THIS wave.")]
+    public float spawnPointDuration = 6.0f;
+
+    [Tooltip("How much the spawn rate speeds up as THIS wave progresses. 1.0 = no change. 2.0 = gets 100% faster.")]
+    public float wavePacingMultiplier = 1.5f;
 }
 
 public class WaveManager : MonoBehaviour
@@ -37,18 +44,23 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private GameObject spawnEffectPrefab;
 
     private List<GameObject> activeEnemies = new List<GameObject>();
+    private List<PendingSpawn> pendingSpawns = new List<PendingSpawn>();
+    private Coroutine spawnCheckCoroutine;
+    private const float SPAWN_CHECK_INTERVAL = 0.5f;
     private GameObject activeBoss = null;
     private bool bossHasBeenSpawnedForThisWave = false;
     private int currentScore = -1; // Initialisé à -1 pour forcer la première vague au démarrage
     private bool waveIsActive = false;
    
     private Coroutine currentWaveCoroutine;
-
     public Transform playerTransform { get; private set; }
-
-
+    [Tooltip("How much the spawn rate speeds up as the wave progresses. 1.0 = no change. 1.5 = gets 50% faster. 2.0 = gets 100% faster.")]
+    [SerializeField] private float wavePacingMultiplier = 1.5f;
+    private List<Transform> activeSpawningPoints = new List<Transform>();
     private PhotonView view;
     private bool isOnlineMode = false;
+    private WaveConfig currentWaveConfig;
+
     void Start()
     {
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
@@ -115,8 +127,11 @@ public class WaveManager : MonoBehaviour
         // Déclenche la première vague en fonction du score initial (qui est probablement 0)
         OnScoreUpdated(checkpointManager.TotalScore);
 
-     
-       
+        if (spawnCheckCoroutine == null)
+        {
+            spawnCheckCoroutine = StartCoroutine(SpawnCheckBrain());
+        }
+
     }
 
     // REMPLACER l'ancienne méthode OnScoreUpdated par celle-ci :
@@ -152,7 +167,8 @@ public class WaveManager : MonoBehaviour
 
             // --- THE FIX: Reset the boss spawn tracker for the new wave ---
             bossHasBeenSpawnedForThisWave = false;
-            // ---
+
+            currentWaveConfig = configToSpawn;
 
             currentWaveCoroutine = StartCoroutine(SpawnWave(configToSpawn));
         }
@@ -182,9 +198,10 @@ public class WaveManager : MonoBehaviour
                 continue;
             }
 
-            if (spawnEffectPrefab != null && IsObjectVisible(enemy))
+            if (spawnEffectPrefab != null && EffectCullingSystem.Instance != null)
             {
-                ObjectPoolManager.Instance.SpawnFromPool(spawnEffectPrefab, enemy.transform.position, Quaternion.identity);
+                // We no longer need IsObjectVisible, the culling system handles the check.
+                EffectCullingSystem.Instance.SpawnEffect(spawnEffectPrefab, enemy.transform.position, Quaternion.identity);
             }
 
             // --- THIS IS THE GUARANTEED FIX ---
@@ -215,153 +232,166 @@ public class WaveManager : MonoBehaviour
 
         activeEnemies.Clear();
     }
+    private IEnumerator SpawnCheckBrain()
+    {
+        WaitForSeconds checkWait = new WaitForSeconds(SPAWN_CHECK_INTERVAL);
 
+        while (true)
+        {
+            if (pendingSpawns.Count == 0 || EffectCullingSystem.Instance == null)
+            {
+                yield return checkWait;
+                continue;
+            }
+
+            // --- NEW LOGIC: Find a new spawn point to activate ---
+            // We check all unique spawn points that have enemies waiting.
+            var uniquePendingSpawnPoints = pendingSpawns.Select(p => p.SpawnPoint).Distinct();
+
+            foreach (Transform spawnPoint in uniquePendingSpawnPoints)
+            {
+                // Check three conditions:
+                // 1. Is the spawn point valid?
+                // 2. Is it now inside the player's radius?
+                // 3. Is it NOT already in our list of active spawners?
+                if (spawnPoint != null &&
+                    EffectCullingSystem.Instance.IsPositionInRadius(spawnPoint.position) &&
+                    !activeSpawningPoints.Contains(spawnPoint))
+                {
+                    // All conditions met! Activate this spawn point.
+                    Debug.Log($"Player has entered range of spawn point {spawnPoint.name}. Activating it.");
+
+                    // Add it to the active list to prevent re-triggering.
+                    activeSpawningPoints.Add(spawnPoint);
+
+                    // Start a NEW, DEDICATED coroutine just for this spawn point.
+                   StartCoroutine(SpawnEnemiesAtPoint(spawnPoint, currentWaveConfig));
+                }
+            }
+
+            yield return checkWait;
+        }
+    }
+    private IEnumerator SpawnEnemiesAtPoint(Transform spawnPoint, WaveConfig config)
+    {
+        // 1. Find all enemies that are waiting at this specific spawn point.
+        List<PendingSpawn> enemiesToSpawn = pendingSpawns.Where(p => p.SpawnPoint == spawnPoint).ToList();
+        int enemyCountForThisPoint = enemiesToSpawn.Count;
+
+        if (enemyCountForThisPoint == 0)
+        {
+            // No enemies for this point, so we're done.
+            activeSpawningPoints.Remove(spawnPoint); // Clean up
+            yield break;
+        }
+
+        float baseDelay = config.spawnPointDuration / enemyCountForThisPoint;
+
+
+        // 3. The Spawning Loop
+        foreach (PendingSpawn pending in enemiesToSpawn)
+        {
+            // --- DYNAMIC PACING LOGIC ---
+            // Calculate the progress of the entire wave (0.0 to 1.0).
+            float waveProgress = 1.0f - ((float)pendingSpawns.Count / (config.enemyCount + 1)); // +1 to avoid division by zero
+
+            // Use an AnimationCurve-like formula (EaseInOut) to create a nice rhythm.
+            // This makes the delay shorter in the middle of the wave and longer at the start/end.
+            float pacingFactor = 1.0f - (4.0f * (waveProgress - 0.5f) * (waveProgress - 0.5f)); // Parabolic curve
+                                                                                                // Use THIS wave's specific pacing multiplier.
+            pacingFactor = Mathf.Clamp(pacingFactor, 1.0f / config.wavePacingMultiplier, 1.0f);
+
+
+            // Calculate the final delay for this specific spawn.
+            float currentDelay = baseDelay * pacingFactor;
+            // --- END OF PACING LOGIC ---
+
+            // Wait for the calculated delay.
+            yield return new WaitForSeconds(currentDelay);
+
+            // Spawn this enemy and remove it from the master "waiting" list.
+            if (pendingSpawns.Contains(pending))
+            {
+                SpawnSingleEnemy(pending.EnemyPrefab, pending.SpawnPoint);
+                pendingSpawns.Remove(pending);
+            }
+        }
+
+        // 4. Cleanup: Once all enemies for this point are spawned, remove it from the active list.
+        Debug.Log($"Finished spawning all enemies for {spawnPoint.name}.");
+        activeSpawningPoints.Remove(spawnPoint);
+    }
+
+
+    private void SpawnSingleEnemy(GameObject enemyPrefab, Transform spawnPoint)
+    {
+        Vector2 randomOffset = Random.insideUnitCircle * spawnRadius;
+        Vector3 spawnPosition = spawnPoint.position + new Vector3(randomOffset.x, randomOffset.y, 0);
+
+        // Use your object pooler to get the enemy.
+        GameObject spawnedEnemy = ObjectPoolManager.Instance.SpawnFromPool(enemyPrefab, spawnPosition, spawnPoint.rotation);
+
+        // Use the culling system to play the spawn effect (it will only play if in range).
+        if (spawnEffectPrefab != null && EffectCullingSystem.Instance != null)
+        {
+            EffectCullingSystem.Instance.SpawnEffect(spawnEffectPrefab, spawnPosition, Quaternion.identity);
+        }
+
+        // Add to the list of active enemies and initialize it.
+        activeEnemies.Add(spawnedEnemy);
+        InitializeEnemy(spawnedEnemy);
+
+        // Add the death listener so we know when it's killed.
+        // (You will need to add cases for all your enemy health scripts here)
+        if (spawnedEnemy.TryGetComponent(out FleaHealth fleaHealth)) fleaHealth.OnDeath.AddListener(OnEnemyDied);
+        if (spawnedEnemy.TryGetComponent(out SprayerHealth sprayerHealth)) sprayerHealth.OnDeath.AddListener(OnEnemyDied);
+        if (spawnedEnemy.TryGetComponent(out FlyHealth flyHealth)) flyHealth.OnDeath.AddListener(OnEnemyDied);
+        if (spawnedEnemy.TryGetComponent(out InkHealth inkHealth)) inkHealth.OnDeath.AddListener(OnEnemyDied);
+        if (spawnedEnemy.TryGetComponent(out RatKingHealth ratKingHealth)) ratKingHealth.OnDeath.AddListener(OnEnemyDied);
+    }
 
     // --- START OF THE FINAL, COMPLETE SPAWNWAVE METHOD ---
     private IEnumerator SpawnWave(WaveConfig config)
     {
         waveIsActive = true;
-        Debug.Log($"Master Client starting wave: {config.waveName}");
+        Debug.Log($"Master Client preparing wave: {config.waveName}. Adding {config.enemyCount} enemies to the pending list.");
 
-        // --- PRIORITY 1: SPAWN THE BOSS (ONCE PER WAVE) ---
-        // Check if this wave has a boss AND if we haven't spawned it for this wave yet.
+        // Clear any enemies that were waiting from a previous wave.
+        pendingSpawns.Clear();
+        activeSpawningPoints.Clear();
+        // --- PRIORITY 1: HANDLE THE BOSS ---
         if (config.hasBoss && config.bossPrefab != null && !bossHasBeenSpawnedForThisWave)
         {
-            // Immediately mark that we are spawning the boss so it can't happen again this wave.
             bossHasBeenSpawnedForThisWave = true;
-            Debug.Log("Spawning the boss for this wave...");
-
+            // Bosses are important, so we spawn them immediately regardless of range.
             Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
-            Vector3 spawnPosition = spawnPoint.position;
-
-            GameObject spawnedBoss;
-            if (isOnlineMode)
-            {
-                spawnedBoss = ObjectPoolManager.Instance.SpawnFromPool(config.bossPrefab, spawnPosition, spawnPoint.rotation);
-
-            }
-            else
-            {
-                spawnedBoss = ObjectPoolManager.Instance.SpawnFromPool(config.bossPrefab, spawnPosition, spawnPoint.rotation);
-
-            }
-
-            // Your logic for finding the effect spawn point.
-            Vector3 bossEffectPosition = spawnedBoss.transform.position;
-            foreach (Transform child in spawnedBoss.transform)
-            {
-                if (child.CompareTag("EffectSpawnPoint"))
-                {
-                    bossEffectPosition = child.position;
-                    break;
-                }
-            }
-
-            // Your logic for playing the effect.
-            if (spawnEffectPrefab != null)
-            {
-                if (isOnlineMode && view != null)
-                {
-                    view.RPC("RPC_PlaySpawnEffect", RpcTarget.All, bossEffectPosition);
-                }
-                else if (!isOnlineMode)
-                {
-                    
-                    ObjectPoolManager.Instance.SpawnFromPool(spawnEffectPrefab, bossEffectPosition, Quaternion.identity);
-
-                }
-            }
-
-            // Add the boss to the active enemies list so it's tracked (but it will be protected from clearing).
-            activeEnemies.Add(spawnedBoss);
-            InitializeEnemy(spawnedBoss);
-
-            // Your logic for the boss's death listener.
-            var bossHealth = spawnedBoss.GetComponent<RatKingHealth>();
-            if (bossHealth != null)
-            {
-                bossHealth.OnDeath.AddListener(OnEnemyDied);
-            }
-
+            Debug.Log("Spawning Boss immediately.");
+            SpawnSingleEnemy(config.bossPrefab, spawnPoint);
             yield return new WaitForSeconds(1.5f); // Wait a moment after the boss spawns.
         }
 
-        // --- PRIORITY 2: SPAWN NORMAL ENEMIES ---
-        // This is your original, complete code block for spawning normal enemies. It is preserved perfectly.
+        // --- PRIORITY 2: PREPARE NORMAL ENEMIES ---
+        // Instead of spawning, we now add them to the "waiting" list.
         for (int i = 0; i < config.enemyCount; i++)
         {
             GameObject enemyPrefab = config.enemyPrefabs[Random.Range(0, config.enemyPrefabs.Count)];
             Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
-            Vector2 randomOffset = Random.insideUnitCircle * spawnRadius;
-            Vector3 spawnPosition = spawnPoint.position + new Vector3(randomOffset.x, randomOffset.y, 0);
 
-            GameObject spawnedEnemy;
-            if (isOnlineMode)
+            // Create a new "pending spawn" request and add it to our list.
+            PendingSpawn newPendingSpawn = new PendingSpawn
             {
-                spawnedEnemy = PhotonNetwork.Instantiate(enemyPrefab.name, spawnPosition, spawnPoint.rotation);
-            }
-            else
-            {
-                spawnedEnemy = ObjectPoolManager.Instance.SpawnFromPool(enemyPrefab, spawnPosition, spawnPoint.rotation);
-
-            }
-
-            Vector3 effectPosition = spawnedEnemy.transform.position;
-            foreach (Transform child in spawnedEnemy.transform)
-            {
-                if (child.CompareTag("EffectSpawnPoint"))
-                {
-                    effectPosition = child.position;
-                    break;
-                }
-            }
-
-            if (spawnEffectPrefab != null)
-            {
-                if (isOnlineMode)
-                {
-                    view.RPC("RPC_PlaySpawnEffect", RpcTarget.All, effectPosition);
-                }
-                else
-                {
-                   
-                    ObjectPoolManager.Instance.SpawnFromPool(spawnEffectPrefab, effectPosition, Quaternion.identity);
-
-                }
-            }
-
-            activeEnemies.Add(spawnedEnemy);
-            InitializeEnemy(spawnedEnemy);
-
-            // --- ALL YOUR ORIGINAL DEATH LISTENERS ARE HERE AND UNTOUCHED ---
-            var healthScript = spawnedEnemy.GetComponent<FleaHealth>();
-            if (healthScript != null)
-            {
-                healthScript.OnDeath.AddListener(OnEnemyDied);
-            }
-            var SprayerhealthScript = spawnedEnemy.GetComponent<SprayerHealth>();
-            if (SprayerhealthScript != null)
-            {
-                SprayerhealthScript.OnDeath.AddListener(OnEnemyDied);
-            }
-            var FlyhealthScript = spawnedEnemy.GetComponent<FlyHealth>();
-            if (FlyhealthScript != null)
-            {
-                FlyhealthScript.OnDeath.AddListener(OnEnemyDied);
-            }
-            var InkhealthScript = spawnedEnemy.GetComponent<InkHealth>();
-            if (InkhealthScript != null)
-            {
-                InkhealthScript.OnDeath.AddListener(OnEnemyDied);
-            }
-            // I removed the 'else Debug.LogWarning' as it could be spammy if some enemies don't have these scripts.
-
-            yield return new WaitForSeconds(0.5f); // Petit délai entre chaque spawn
+                EnemyPrefab = enemyPrefab,
+                SpawnPoint = spawnPoint
+            };
+            pendingSpawns.Add(newPendingSpawn);
         }
 
+        Debug.Log($"Finished preparing wave. {pendingSpawns.Count} enemies are now waiting to be spawned.");
         currentWaveCoroutine = null;
+        yield return null; // End the coroutine.
     }
-   
+
+
     private void InitializeEnemy(GameObject enemy)
     {
         // Assigner le joueur au script de suivi (FlyFollow)
@@ -523,4 +553,9 @@ public class WaveManager : MonoBehaviour
         // Check if the collider's bounds intersect with the camera's view frustum
         return GeometryUtility.TestPlanesAABB(planes, objectCollider.bounds);
     }
+}
+public class PendingSpawn
+{
+    public GameObject EnemyPrefab;
+    public Transform SpawnPoint;
 }

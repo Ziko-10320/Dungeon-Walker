@@ -43,7 +43,7 @@ public class PowerUpManagerL3antix : BasePowerUpManager
 
     private ReviveSystemL3antix ReviveSystemL3antix;
     public static bool SoulLinkEquipped = false;
-
+    private InGamePowerUpManager tempManager;
     void Awake()
     {
         // --- ADDED: Set up the Instance ---
@@ -67,6 +67,7 @@ public class PowerUpManagerL3antix : BasePowerUpManager
         if (shieldObject != null)
             shieldObject.SetActive(false);
         ReviveSystemL3antix = FindObjectOfType<ReviveSystemL3antix>();
+        tempManager = GetComponent<InGamePowerUpManager>();
     }
 
     IEnumerator Start()
@@ -377,16 +378,22 @@ public class PowerUpManagerL3antix : BasePowerUpManager
     // --- UPDATED: The correct HasPowerUp check ---
     public bool HasPowerUp(PowerUpType type)
     {
+        // First, check the permanent inventory (this is already fast).
         InventoryManager inventory = InventoryManager.Instance;
         if (inventory != null && inventory.equippedPowerUps.Any(p => p != null && p.type == type))
         {
             return true;
         }
-        InGamePowerUpManager tempManager = FindObjectOfType<InGamePowerUpManager>();
+
+        // --- THE OPTIMIZATION ---
+        // Use the stored reference to the temporary manager. No searching!
         if (tempManager != null && tempManager.IsPowerUpAlreadyActive(type))
         {
             return true;
         }
+        // --- END OF OPTIMIZATION ---
+
         return false;
     }
+
 }

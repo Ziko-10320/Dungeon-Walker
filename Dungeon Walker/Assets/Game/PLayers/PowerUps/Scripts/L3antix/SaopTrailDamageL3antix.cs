@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+
 public class SoapTrailDamageL3antix : MonoBehaviour
 {
     [Header("Trail Settings")]

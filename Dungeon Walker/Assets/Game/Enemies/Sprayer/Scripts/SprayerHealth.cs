@@ -4,6 +4,7 @@ using Photon.Realtime;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+
 public class SprayerHealth : MonoBehaviour, IPunObservable
 {
     // Public variables for health and effects

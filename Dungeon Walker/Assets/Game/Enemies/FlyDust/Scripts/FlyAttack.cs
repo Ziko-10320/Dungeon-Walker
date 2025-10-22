@@ -26,6 +26,12 @@ public class FlyAttack : MonoBehaviour
     public float playerKnockbackForce = 5f;
     public Vector2 playerKnockbackDirection = Vector2.up;
 
+    [Header("Attack Range")]
+    [Tooltip("The maximum distance from the player at which the fly will attempt to attack.")]
+    [SerializeField] private float attackRange = 15f;
+    [Tooltip("An optional transform to define the center of the attack range. If empty, the fly's own position is used.")]
+    [SerializeField] private Transform rangeOriginPoint;
+
     [Header("Explosion Settings")]
     public float explosionRadius = 2f;
     public int explosionDamage = 15;
@@ -75,6 +81,8 @@ public class FlyAttack : MonoBehaviour
     private Queue<GameObject> chargedProjectilePool;
     private Queue<GameObject> chargedExplosionPool;
     private Queue<GameObject> anticipationParticlesPool;
+    private PlayerInvisibility playerInvisibility;
+    private PlayerInvisibility3antix playerInvisibility3antix;
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -97,7 +105,11 @@ public class FlyAttack : MonoBehaviour
         {
             playerTransform = FindObjectOfType<WaveManager>().playerTransform;
         }
-        // --- END OF FIX ---
+        if (playerTransform != null)
+        {
+            playerInvisibility = playerTransform.GetComponent<PlayerInvisibility>();
+            playerInvisibility3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
+        }
 
         animator = GetComponent<Animator>();
         SetNextAttackTime();
@@ -179,17 +191,8 @@ public class FlyAttack : MonoBehaviour
 
     void Update()
     {
-        bool playerInvisible = false;
-        if (playerTransform != null)
-        {
-            PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
-            if (invis != null) playerInvisible = invis.IsInvisible();
-        }
-        if (playerTransform != null)
-        {
-            PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
-            if (invis3antix != null) playerInvisible = invis3antix.IsInvisible();
-        }
+        bool playerInvisible = (playerInvisibility != null && playerInvisibility.IsInvisible()) ||
+                              (playerInvisibility3antix != null && playerInvisibility3antix.IsInvisible());
         // Stop attack if player invisible
         if (playerInvisible)
         {
@@ -201,11 +204,16 @@ public class FlyAttack : MonoBehaviour
 
         if (Time.time >= nextAttackTime)
         {
-            if (animator != null)
+            // --- THE FIX: Check if the player is in range BEFORE attacking ---
+            if (IsPlayerInRange())
             {
-                animator.SetTrigger("Attack");
+                if (animator != null)
+                {
+                    animator.SetTrigger("Attack");
+                }
+                SetNextAttackTime();
             }
-            SetNextAttackTime();
+            // If player is not in range, we simply do nothing and wait for the next attack check.
         }
 
         for (int i = activeProjectiles.Count - 1; i >= 0; i--)
@@ -289,6 +297,22 @@ public class FlyAttack : MonoBehaviour
             }
         }
 
+    }
+    private bool IsPlayerInRange()
+    {
+        // If we don't have a reference to the player, they can't be in range.
+        if (playerTransform == null)
+        {
+            return false;
+        }
+
+        // Determine the origin point for our range check.
+        Vector3 origin = (rangeOriginPoint != null) ? rangeOriginPoint.position : transform.position;
+
+        // Calculate the distance and check it against our attackRange.
+        float distanceToPlayer = Vector2.Distance(origin, playerTransform.position);
+
+        return distanceToPlayer <= attackRange;
     }
 
     public void ThrowDust()
@@ -616,4 +640,16 @@ public class FlyAttack : MonoBehaviour
             hasBeenDestroyed = true;
         }
     }
+
+    // This method is automatically called by Unity in the Scene view.
+    private void OnDrawGizmosSelected()
+    {
+        // Determine the origin point for our gizmo.
+        Vector3 origin = (rangeOriginPoint != null) ? rangeOriginPoint.position : transform.position;
+
+        // Draw a yellow wireframe circle representing the attack range.
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(origin, attackRange);
+    }
+
 }

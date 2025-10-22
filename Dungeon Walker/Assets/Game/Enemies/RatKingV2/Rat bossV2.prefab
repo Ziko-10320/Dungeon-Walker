@@ -12309,11 +12309,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -55.643906
+      value: -106.9
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.7987134
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.z
@@ -12742,7 +12742,11 @@ MonoBehaviour:
   isV2SporeAttack: 1
   splitDelay: 0.5
   splitScaleMultiplier: 0.6
+  sporeFlashMaterial: {fileID: 2100000, guid: 089aa85adc6bd2546965e16d517a5e7d, type: 2}
+  sporeFlashInterval: 0.2
+  sporeMineLifetime: 5
   splitForce: 20
+  maxStuckTime: 2
 --- !u!114 &142743461677748831
 MonoBehaviour:
   m_ObjectHideFlags: 0

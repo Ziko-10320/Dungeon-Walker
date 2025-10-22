@@ -21,6 +21,9 @@ public class PlayerHealth : MonoBehaviour
     [Header("Health Regeneration")]
     [SerializeField] private int healthPerSecond = 10;
     [SerializeField] private float delayBeforeHeal = 3f;
+    [Header("Bee PowerUp Synergy")]
+    [SerializeField] private int beeHealthPerSecond = 20;
+    [SerializeField] private float beeDelayBeforeHeal = 1.5f;
     private Coroutine healingCoroutine;
     private float lastDamageTime;
     [SerializeField] private ParticleSystem[] healingParticles;
@@ -68,6 +71,7 @@ public class PlayerHealth : MonoBehaviour
     private static MaterialPropertyBlock propertyBlock;
     [SerializeField] private PlayerInvisibility playerInvisibility;
     public ShakeData CameraShakeDeath;
+    private PowerUpManager powerUpManager;
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -80,6 +84,11 @@ public class PlayerHealth : MonoBehaviour
             {
                 originalMaterials[i] = spriteRenderers[i].sharedMaterial;
             }
+        }
+        powerUpManager = FindObjectOfType<PowerUpManager>();
+        if (powerUpManager == null)
+        {
+            Debug.LogWarning("PlayerHealth could not find PowerUpManager on Awake.");
         }
     }
 
@@ -114,11 +123,43 @@ public class PlayerHealth : MonoBehaviour
 
     void Update()
     {
-        if (currentHealth < maxHealth && healingCoroutine == null && Time.time > lastDamageTime + delayBeforeHeal)
+        // First, check if we even need to heal.
+        if (currentHealth >= maxHealth || healingCoroutine != null)
         {
-            healingCoroutine = StartCoroutine(HealOverTime());
+            return;
+        }
+
+        // --- BEE HEALING LOGIC ---
+        // Check if the player has the Bee Power-Up active.
+        bool hasBeePowerUp = (powerUpManager != null && powerUpManager.HasPowerUp(PowerUpType.BeePowerUp));
+       
+
+        // Determine which healing values to use.
+        int activeHealthPerSecond;
+        float activeDelayBeforeHeal;
+
+        if (hasBeePowerUp)
+        {
+            // If the bee power-up is active, use the enhanced values.
+            activeHealthPerSecond = beeHealthPerSecond;
+            activeDelayBeforeHeal = beeDelayBeforeHeal;
+        }
+        else
+        {
+            // Otherwise, use the default values.
+            activeHealthPerSecond = healthPerSecond;
+            activeDelayBeforeHeal = delayBeforeHeal;
+        }
+        // --- END OF BEE HEALING LOGIC ---
+
+        // Now, check if enough time has passed using the ACTIVE delay.
+        if (Time.time > lastDamageTime + activeDelayBeforeHeal)
+        {
+            // Start the healing coroutine, but pass it the ACTIVE healing rate.
+            healingCoroutine = StartCoroutine(HealOverTime(activeHealthPerSecond));
         }
     }
+
 
     public void TakeDamage(int damage, float knockbackForce, Vector2 knockbackDirection)
     {
@@ -225,25 +266,26 @@ public class PlayerHealth : MonoBehaviour
             currentHealth = 1;
         }
     }
-    private IEnumerator HealOverTime()
+    private IEnumerator HealOverTime(int healRate) // It now takes the healRate as an argument
     {
-        Debug.Log("Health regeneration started.");
+        Debug.Log($"Health regeneration started at a rate of {healRate}/sec.");
         while (currentHealth < maxHealth)
         {
             StartHealingParticles();
-            currentHealth += healthPerSecond;
+            currentHealth += healRate; // Use the new healRate variable
             if (currentHealth > maxHealth)
             {
                 currentHealth = maxHealth;
             }
             UpdateHealthEffects();
-            Debug.Log("Player healed. Current health: " + currentHealth);
+            Debug.Log($"Player healed. Current health: {currentHealth}");
             yield return new WaitForSeconds(1f);
         }
         Debug.Log("Health is full.");
         StopHealingParticles();
         healingCoroutine = null;
     }
+
 
     private void UpdateHealthEffects()
     {

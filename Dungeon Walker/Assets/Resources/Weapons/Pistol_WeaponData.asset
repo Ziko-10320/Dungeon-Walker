@@ -17,11 +17,11 @@ MonoBehaviour:
   upgradeLevels:
   - upgradeCost: 10
     pistolStats:
-      pistolDamage: 0
-      pistolFireRate: 0
-      pistolBulletSpeed: 0
-      pistolAmmoCapacity: 0
-      pistolReloadSpeed: 0
+      pistolDamage: 12
+      pistolFireRate: 0.28
+      pistolBulletSpeed: 25
+      pistolAmmoCapacity: 12
+      pistolReloadSpeed: 1.4
     batStats:
       meleeAnticipation: 0
       meleeDamage: 0
@@ -37,11 +37,11 @@ MonoBehaviour:
       launcherRadius: 0
   - upgradeCost: 20
     pistolStats:
-      pistolDamage: 0
-      pistolFireRate: 0
-      pistolBulletSpeed: 0
-      pistolAmmoCapacity: 0
-      pistolReloadSpeed: 0
+      pistolDamage: 15
+      pistolFireRate: 0.25
+      pistolBulletSpeed: 30
+      pistolAmmoCapacity: 14
+      pistolReloadSpeed: 1.2
     batStats:
       meleeAnticipation: 0
       meleeDamage: 0
@@ -57,11 +57,11 @@ MonoBehaviour:
       launcherRadius: 0
   - upgradeCost: 30
     pistolStats:
-      pistolDamage: 0
-      pistolFireRate: 0
-      pistolBulletSpeed: 0
-      pistolAmmoCapacity: 0
-      pistolReloadSpeed: 0
+      pistolDamage: 25
+      pistolFireRate: 0.2
+      pistolBulletSpeed: 35
+      pistolAmmoCapacity: 16
+      pistolReloadSpeed: 1
     batStats:
       meleeAnticipation: 0
       meleeDamage: 0
@@ -77,11 +77,11 @@ MonoBehaviour:
       launcherRadius: 0
   - upgradeCost: 40
     pistolStats:
-      pistolDamage: 0
-      pistolFireRate: 0
-      pistolBulletSpeed: 0
-      pistolAmmoCapacity: 0
-      pistolReloadSpeed: 0
+      pistolDamage: 32
+      pistolFireRate: 0.1
+      pistolBulletSpeed: 42
+      pistolAmmoCapacity: 18
+      pistolReloadSpeed: 0.8
     batStats:
       meleeAnticipation: 0
       meleeDamage: 0
@@ -97,11 +97,11 @@ MonoBehaviour:
       launcherRadius: 0
   - upgradeCost: 50
     pistolStats:
-      pistolDamage: 20
-      pistolFireRate: 2
-      pistolBulletSpeed: 70
-      pistolAmmoCapacity: 20
-      pistolReloadSpeed: 1.5
+      pistolDamage: 40
+      pistolFireRate: 0.05
+      pistolBulletSpeed: 50
+      pistolAmmoCapacity: 24
+      pistolReloadSpeed: 0.6
     batStats:
       meleeAnticipation: 0
       meleeDamage: 0

@@ -72,11 +72,23 @@ public class RatKingAttack : MonoBehaviour
     [Range(0.1f, 1.0f)]
     public float splitScaleMultiplier = 0.6f;
 
+    [Header("V2 Spore Mine Settings")]
+    [Tooltip("The material used to make the spore mines flash red.")]
+    public Material sporeFlashMaterial;
+    [Tooltip("How fast the mines flash (seconds between flashes).")]
+    public float sporeFlashInterval = 0.2f;
+    [Tooltip("How long a spore mine lasts before exploding on its own.")]
+    public float sporeMineLifetime = 5f;
+
     [Tooltip("How much random force to apply to the smaller spores when they split.")]
     public float splitForce = 5f;
     private GameObject cheese1Instance; // Store reference to the first spawned cheese
     private GameObject cheese2Instance; // Store reference to the second spawned cheese
     private Vector3 lastPlayerPosition; // Store the player's last known position
+    [Header("Animation Failsafe")]
+    [Tooltip("How long the Rat King can be in a 'stuck' state before we force a reset.")]
+    [SerializeField] private float maxStuckTime = 4f;
+    private Coroutine animationWatchdogCoroutine;
 
     // Public properties to access RatKingBoss variables
     public float StoppingDistance => ratKingBoss.stoppingDistance;
@@ -111,6 +123,10 @@ public class RatKingAttack : MonoBehaviour
     {
         lastJumpTime = -jumpCooldown;
         lastThrowTime = -throwCooldown;
+        if (animationWatchdogCoroutine == null)
+        {
+            animationWatchdogCoroutine = StartCoroutine(AnimationWatchdog());
+        }
     }
     public void Initialize(Transform player)
     {
@@ -191,17 +207,19 @@ public class RatKingAttack : MonoBehaviour
         // Store player's last position for cheese throwing
         lastPlayerPosition = playerTransform.position;
 
-        // SIMPLIFIED THROW ATTACK TRIGGER - ALWAYS TRY TO THROW IF CONDITIONS ARE MET
         if (!isJumping && ratKingBoss.CanMove && Time.time >= lastThrowTime + throwCooldown)
         {
-            float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
-            Debug.Log($"Distance to player: {distanceToPlayer}, ThrowRange: {throwAttackRange}, StoppingDistance: {StoppingDistance}");
-
-            if (distanceToPlayer <= throwAttackRange)
+            if (playerTransform != null) // Ensure player exists
             {
-                Debug.Log("TRIGGERING THROW ATTACK ANIMATION!");
-                ratKingAnimator.SetTrigger("ThrowAttack");
-                lastThrowTime = Time.time;
+                float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
+
+                // THE FIX: Only attack if the player is within the throwAttackRange AND outside the stoppingDistance.
+                if (distanceToPlayer <= throwAttackRange && distanceToPlayer > StoppingDistance)
+                {
+                    Debug.Log("Player is in range! Triggering ThrowAttack animation.");
+                    ratKingAnimator.SetTrigger("ThrowAttack");
+                    lastThrowTime = Time.time;
+                }
             }
         }
     }
@@ -214,9 +232,92 @@ public class RatKingAttack : MonoBehaviour
             rb.velocity = new Vector2(calculatedJumpXVelocity * horizontalSpeedMultiplier, rb.velocity.y);
         }
     }
+    private IEnumerator AnimationWatchdog()
+    {
+        float stuckTimer = 0f;
+
+        // This loop runs forever in the background.
+        while (true)
+        {
+            // We only care about getting stuck if the Rat King is in a jump or fall state.
+            if (isJumping || isFalling)
+            {
+                // If we are in a "stuckable" state, the timer starts counting up.
+                stuckTimer += Time.deltaTime;
+
+                // If the timer exceeds our max allowed stuck time...
+                if (stuckTimer > maxStuckTime)
+                {
+                    Debug.LogWarning($"RAT KING STUCK! In state (Jumping: {isJumping}, Falling: {isFalling}) for too long. Forcing a reset.");
+
+                    // --- FORCE RESET ---
+                    ForceResetState();
+
+                    // Reset the timer after the fix.
+                    stuckTimer = 0f;
+                }
+            }
+            else
+            {
+                // If we are not in a stuckable state, the timer is always reset to zero.
+                stuckTimer = 0f;
+            }
+
+            // Wait for the next frame before checking again.
+            yield return null;
+        }
+    }
+    private void ForceResetState()
+    {
+        // Reset all state booleans
+        isJumping = false;
+        isFalling = false;
+        canPerformConsecutiveJump = false;
+
+        // Allow movement again
+        ratKingBoss.CanMove = true;
+
+        // Reset the Rigidbody to prevent flying off
+        if (rb != null)
+        {
+            rb.velocity = Vector2.zero;
+            rb.gravityScale = 1f; // Ensure gravity is normal
+        }
+
+        // Reset all animator parameters to their default "idle" state
+        if (ratKingAnimator != null)
+        {
+            ratKingAnimator.SetBool("IsJumping", false);
+            ratKingAnimator.SetBool("IsFalling", false);
+            ratKingAnimator.SetTrigger("Land"); // Force a land animation to break out of jumps
+            ratKingAnimator.ResetTrigger("ThrowAttack");
+            ratKingAnimator.ResetTrigger("JumpAnticipation");
+        }
+
+        // Reset attack cooldowns to allow a new attack soon
+        lastJumpTime = Time.time;
+        lastThrowTime = Time.time;
+
+        // Stop any attack coroutines that might be stuck
+        StopCoroutine("JumpAttackRoutine");
+    }
+    private void ResetAnimatorStates()
+    {
+        if (ratKingAnimator == null) return;
+
+        // Reset all boolean flags that could get stuck
+        ratKingAnimator.SetBool("IsJumping", false);
+        ratKingAnimator.SetBool("IsFalling", false);
+
+        // Reset any triggers that might have been fired but not consumed
+        ratKingAnimator.ResetTrigger("JumpAnticipation");
+        ratKingAnimator.ResetTrigger("ThrowAttack");
+        ratKingAnimator.ResetTrigger("Land");
+    }
 
     private IEnumerator JumpAttackRoutine()
     {
+        ResetAnimatorStates();
         isJumping = true;
         ratKingBoss.CanMove = false; // Prevent other movements during jump attack
         rb.velocity = Vector2.zero; // Stop all movement before anticipation
@@ -280,25 +381,30 @@ public class RatKingAttack : MonoBehaviour
         // --- THIS IS THE FINAL FIX ---
         // We are now calling the corrected Initialize method with the correct parameters.
         cheese1Instance.AddComponent<CheeseProjectile>().Initialize(
-            true, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround,
-            cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3,
-            cheeseExplosionRadius, cheeseKnockbackForce,
-            isV2SporeAttack, splitDelay, splitScaleMultiplier, splitForce, playerTransform
+    true, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround,
+    cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3,
+    cheeseExplosionRadius, cheeseKnockbackForce,
+    isV2SporeAttack, splitDelay, splitScaleMultiplier, splitForce, playerTransform,
+    sporeFlashMaterial, sporeFlashInterval, sporeMineLifetime, // The mine settings
+    false
         );
         // --- END OF FIX ---
     }
 
     public void SpawnCheese2()
     {
+        if (isV2SporeAttack) return;
         cheese2Instance = Instantiate(cheesePrefab, cheeseSpawnPoint2.position, Quaternion.identity);
 
         // --- THIS IS THE FINAL FIX (for the second cheese) ---
         cheese2Instance.AddComponent<CheeseProjectile>().Initialize(
-            true, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround,
-            cheeseImpactParticlesPrefab1,cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3,
-            cheeseExplosionRadius, cheeseKnockbackForce,
-            isV2SporeAttack, splitDelay, splitScaleMultiplier, splitForce, playerTransform
-        );
+         true, cheeseDamageAmount, playerLayer, explosionParticlesPrefab, WhatIsGround,
+         cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3,
+         cheeseExplosionRadius, cheeseKnockbackForce,
+         isV2SporeAttack, splitDelay, splitScaleMultiplier, splitForce, playerTransform,
+         sporeFlashMaterial, sporeFlashInterval, sporeMineLifetime,
+         false // isChildSpore
+     );
         // --- END OF FIX ---
     }
     public void ThrowCheese1()
@@ -337,6 +443,7 @@ public class RatKingAttack : MonoBehaviour
 
     public void ThrowCheese2()
     {
+        if (isV2SporeAttack) return;
         Debug.Log("ThrowCheese2 called!");
         if (cheese2Instance != null)
         {
@@ -452,7 +559,7 @@ public class CheeseProjectile : MonoBehaviour
     private bool isRealCheese;
     private int damageAmount;
     private LayerMask playerLayer;
-    public  LayerMask groundLayer;
+    public LayerMask groundLayer;
     private ParticleSystem explosionParticlesPrefab;
     private ParticleSystem cheeseImpactParticlesPrefab1;
     private ParticleSystem cheeseImpactParticlesPrefab2;
@@ -471,15 +578,23 @@ public class CheeseProjectile : MonoBehaviour
     private Vector3 originalScale;
     private Transform playerTransform;
     public bool IsRealCheese { get; private set; } // Public getter for isRealCheese
-
+    [Header("Mine Settings")]
+    private Material originalMaterial;
+    private Coroutine mineRoutine;
+    private Material flashMaterial;
+    private float flashInterval;
+    private float mineLifetime;
     public void Initialize(
-     bool isReal, int damage, LayerMask playerL, ParticleSystem explosionPrefab, LayerMask groundL,
-     ParticleSystem impactPrefab1, ParticleSystem impactPrefab2, ParticleSystem impactPrefab3,
-     float explosionRadius, float knockbackForce,
-     // V2 PARAMETERS
-     bool isV2, float splitTime, float newScale, float newForce, Transform player,
-     // --- THIS IS THE FIX ---
-     bool isChildSpore = false) // Add this new parameter with a default value
+    // --- Standard Parameters ---
+    bool isReal, int damage, LayerMask playerL, ParticleSystem explosionPrefab, LayerMask groundL,
+    ParticleSystem impactPrefab1, ParticleSystem impactPrefab2, ParticleSystem impactPrefab3,
+    float explosionRadius, float knockbackForce,
+    // --- V2 Parameters ---
+    bool isV2, float splitTime, float newScale, float newForce, Transform player,
+    // --- Mine Parameters ---
+    Material flashMat, float flashInt, float lifetime,
+    // --- Internal State Parameter ---
+    bool isChildSpore = false)
     {
         // Your existing initialization is preserved
         isRealCheese = isReal;
@@ -492,19 +607,32 @@ public class CheeseProjectile : MonoBehaviour
         cheeseExplosionRadius = explosionRadius;
         cheeseKnockbackForce = knockbackForce;
         spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            originalMaterial = spriteRenderer.material;
+        }
 
-        // Store the V2 parameters AND the player reference
+        // Store the V2 parameters
         isV2Spore = isV2;
         splitDelay = splitTime;
         splitScale = newScale;
         splitForce = newForce;
         playerTransform = player;
 
-        // Reset state for object pooling
-        hasSplit = isChildSpore; // If it's a child, it has "already split"
-        isMine = false;
+        // --- ASSIGN THE MINE SETTINGS ---
+        this.flashMaterial = flashMat;
+        this.flashInterval = flashInt;
+        this.mineLifetime = lifetime;
 
-        // Get components and save original scale
+        // Reset internal state
+        hasSplit = isChildSpore;
+        isMine = false;
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+        {
+            col.isTrigger = false;
+        }
+        // Get components
         rb = GetComponent<Rigidbody2D>();
         originalScale = transform.localScale;
 
@@ -514,15 +642,14 @@ public class CheeseProjectile : MonoBehaviour
             rb.gravityScale = 1f;
         }
 
-        // --- THIS IS THE GUARANTEED FIX ---
         // Only start the split routine if this is the ORIGINAL V2 spore.
-        // Child spores will have 'isChildSpore' as true, so this block will be skipped for them.
         if (isV2Spore && !isChildSpore)
         {
             StartCoroutine(SplitRoutine());
         }
-        // --- END OF FIX ---
     }
+
+
     private IEnumerator SplitRoutine()
     {
         yield return new WaitForSeconds(splitDelay);
@@ -548,15 +675,18 @@ public class CheeseProjectile : MonoBehaviour
             CheeseProjectile smallerSporeScript = smallerSpore.GetComponent<CheeseProjectile>();
             if (smallerSporeScript != null)
             {
-                // Initialize the smaller spore (this logic is correct).
+                // --- THIS IS THE FIX ---
+                // We now pass ALL parameters, including the mine settings, to the child spores.
                 smallerSporeScript.Initialize(
-                    true, damageAmount, playerLayer, explosionParticlesPrefab, groundLayer,
-                    cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3,
-                    cheeseExplosionRadius, cheeseKnockbackForce,
-                    true, splitDelay, splitScale, splitForce, playerTransform,
-                    true // Mark as a child spore
-                );
+    true, damageAmount, playerLayer, explosionParticlesPrefab, groundLayer,
+    cheeseImpactParticlesPrefab1, cheeseImpactParticlesPrefab2, cheeseImpactParticlesPrefab3,
+    cheeseExplosionRadius, cheeseKnockbackForce,
+    true, splitDelay, splitScale, splitForce, playerTransform,
+    this.flashMaterial, this.flashInterval, this.mineLifetime, // The mine settings
+    true // isChildSpore
+);
             }
+
 
             Rigidbody2D smallerRb = smallerSpore.GetComponent<Rigidbody2D>();
             if (smallerRb != null)
@@ -626,40 +756,61 @@ public class CheeseProjectile : MonoBehaviour
     }
     private void BecomeMine()
     {
-        // Mark this spore as a mine.
         isMine = true;
 
-        // --- THIS IS THE GUARANTEED FIX ---
-        // 1. We DO NOT set the collider to be a trigger.
-        // By keeping it as a solid collider, it can never pass through the ground.
         Collider2D col = GetComponent<Collider2D>();
         if (col != null)
         {
-            col.isTrigger = false; // Force it to be a solid collider.
+            col.isTrigger = true; // Set to trigger so the player can walk INTO it
         }
 
-        // 2. We lock the Rigidbody in place by making it Static.
-        // A Static Rigidbody with a solid collider will NOT move, but other
-        // Dynamic rigidbodies (like the player) can still pass through it and
-        // trigger OnCollisionEnter2D events. This is the perfect "mine" behavior.
         if (rb != null)
         {
-            rb.bodyType = RigidbodyType2D.Static;
+            rb.bodyType = RigidbodyType2D.Static; // Lock it in place
         }
-        // --- END OF FIX ---
 
-        // Optional: You could play a "plant" sound or particle effect here.
+        // --- THE FIX: Start the new mine behavior coroutine ---
+        if (mineRoutine == null)
+        {
+            mineRoutine = StartCoroutine(MineBehaviorRoutine());
+        }
     }
+    private IEnumerator MineBehaviorRoutine()
+    {
+        float lifetimeTimer = 0f;
+        bool isFlashing = false;
+
+        // Loop as long as the mine exists
+        while (lifetimeTimer < mineLifetime)
+        {
+            // Toggle the material to create a flash effect
+            isFlashing = !isFlashing;
+            spriteRenderer.material = isFlashing ? flashMaterial : originalMaterial;
+
+            // Wait for the flash interval
+            yield return new WaitForSeconds(flashInterval);
+
+            // Increment the lifetime timer
+            lifetimeTimer += flashInterval;
+        }
+
+        // If the loop finishes, it means 5 seconds have passed. Time to explode.
+        Debug.Log("Mine lifetime expired. Self-destructing.");
+        Explode();
+    }
+
     private void Explode()
     {
+        if (mineRoutine != null)
+        {
+            StopCoroutine(mineRoutine);
+        }
         // If already destroyed, do nothing.
         if (hasBeenDestroyed) return;
         hasBeenDestroyed = true; // Mark as destroyed immediately.
 
         // Apply the explosion damage and knockback.
         ApplyExplosionDamageAndKnockback();
-
-        // Destroy the cheese/spore.
         DestroyCheese();
     }
     void OnTriggerEnter2D(Collider2D other)
@@ -677,7 +828,7 @@ public class CheeseProjectile : MonoBehaviour
             DestroyCheese();
         }
     }
-  
+
     private void ApplyExplosionDamageAndKnockback()
     {
         Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(transform.position, cheeseExplosionRadius, playerLayer);
@@ -775,7 +926,23 @@ public class CheeseProjectile : MonoBehaviour
         }
         Destroy(gameObject);
     }
+    void OnDestroy()
+    {
+        // --- THIS IS THE MATERIAL FIX ---
+        // If the mine coroutine was running, stop it.
+        if (mineRoutine != null)
+        {
+            StopCoroutine(mineRoutine);
+        }
 
+        // No matter what, reset the material back to the original.
+        // This prevents the "stuck on red" bug if the object is destroyed mid-flash.
+        if (spriteRenderer != null && originalMaterial != null)
+        {
+            spriteRenderer.material = originalMaterial;
+        }
+        // --- END OF MATERIAL FIX ---
+    }
     public void TakeDamage(int damageAmount, Vector2 attackDirection, float knockbackForce = 0f)
     {
         Explode();

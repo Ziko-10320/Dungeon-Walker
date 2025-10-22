@@ -204,6 +204,15 @@ public class InkHealth : MonoBehaviour
     [Tooltip("The prefab for the physical power-up pickup item.")]
     public GameObject powerUpPickupPrefab;
     public Transform powerUpSpawnPoint;
+
+    [Header("Invincibility Aggro Range")]
+    [Tooltip("The Ink will only start its hide/show cycle if the player is within this range.")]
+    [SerializeField] private float invincibilityActivationRange = 20f;
+    [Tooltip("A reference to the player's transform. Can be left empty if found automatically.")]
+    [SerializeField] private Transform playerTransform;
+    private WaitForSeconds invincibilityCheckWait;
+    private enum AIState { Idle, Aggro };
+    private AIState currentState = AIState.Idle;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -237,8 +246,16 @@ public class InkHealth : MonoBehaviour
                 }
             }
         }
+        if (playerTransform == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                playerTransform = playerObj.transform;
+            }
+        }
+        invincibilityCheckWait = new WaitForSeconds(0.25f);
 
-       
     }
     void OnEnable()
     {
@@ -259,6 +276,7 @@ public class InkHealth : MonoBehaviour
         hasLanded = false; // <-- CRITICAL: This must be reset to false.
         isInvincible = false;
         isInInvincibilityTransition = false;
+        currentState = AIState.Idle;
 
         // --- V2 PUDDLE ATTACK RESET ---
         if (isV2PuddleAttack)
@@ -318,12 +336,7 @@ public class InkHealth : MonoBehaviour
             }
         }
 
-        // --- INVINCIBILITY & AI RESET ---
-        // We already stopped all coroutines, so now we just re-initialize the system.
-        if (enableInvincibilitySystem)
-        {
-            InitializeInvincibilitySystem();
-        }
+    
 
         // --- MAIN ANIMATOR RESET ---
         if (inkAnimator != null)
@@ -348,11 +361,7 @@ public class InkHealth : MonoBehaviour
         // Initialize health
         currentHealth = maxHealth;
 
-        // Initialize invincibility system
-        if (enableInvincibilitySystem)
-        {
-            InitializeInvincibilitySystem();
-        }
+      
         if (spriteRenderers != null && spriteRenderers.Length > 0)
         {
             originalMaterials = new Material[spriteRenderers.Length];
@@ -362,6 +371,13 @@ public class InkHealth : MonoBehaviour
                 {
                     originalMaterials[i] = spriteRenderers[i].sharedMaterial;
                 }
+            }
+        }
+        if (enableInvincibilitySystem)
+        {
+            if (invincibilityTimerCoroutine == null) // Only start if it's not already running
+            {
+                invincibilityTimerCoroutine = StartCoroutine(InvincibilityBrain());
             }
         }
     }
@@ -464,72 +480,65 @@ private IEnumerator DamageOverTimeRoutine()
         }
     }
 
-
-    // Initialize the invincibility system
-    private void InitializeInvincibilitySystem()
+    private IEnumerator InvincibilityBrain()
     {
-        if (startWithInvincibility)
-        {
-            // Start with invincibility immediately
-            StartCoroutine(ActivateInvincibilityWithDelay(0f));
-        }
-        else
-        {
-            // Schedule first invincibility check
-            ScheduleNextInvincibilityCheck();
-        }
+        // Wait for the initial delay before starting the brain.
+        yield return new WaitForSeconds(initialInvincibilityDelay);
 
-        if (showInvincibilityDebug)
+        // The main loop for the entire life of the enemy.
+        while (true)
         {
-            Debug.Log($"InkHealth: Invincibility system initialized. First check in {initialInvincibilityDelay}s");
-        }
-    }
-
-    // Schedule the next invincibility check
-    private void ScheduleNextInvincibilityCheck()
-    {
-        float randomInterval = Random.Range(minInvincibilityInterval, maxInvincibilityInterval);
-        nextInvincibilityCheckTime = Time.time + randomInterval;
-
-        if (invincibilityTimerCoroutine != null)
-        {
-            StopCoroutine(invincibilityTimerCoroutine);
-        }
-        invincibilityTimerCoroutine = StartCoroutine(InvincibilityTimer(randomInterval));
-
-        if (showInvincibilityDebug)
-        {
-            Debug.Log($"InkHealth: Next invincibility check scheduled in {randomInterval:F2}s");
-        }
-    }
-
-    // Timer coroutine for invincibility checks
-    private IEnumerator InvincibilityTimer(float waitTime)
-    {
-        yield return new WaitForSeconds(waitTime);
-
-        // Check if we should activate invincibility
-        if (enableInvincibilitySystem && !isInvincible && !isInInvincibilityTransition)
-        {
-            float randomChance = Random.Range(0f, 1f);
-            if (randomChance <= invincibilityActivationChance)
+            // --- STATE 1: IDLE (Player is out of range) ---
+            if (currentState == AIState.Idle)
             {
-                if (showInvincibilityDebug)
-                {
-                    Debug.Log($"InkHealth: Activating invincibility (chance: {randomChance:F2} <= {invincibilityActivationChance:F2})");
-                }
-                StartCoroutine(ActivateInvincibility());
+                if (showInvincibilityDebug) Debug.Log("InkHealth: Now in IDLE state. Waiting for player to get close.");
+
+                // In the Idle state, we just wait until the player comes into range.
+                // 'yield return new WaitUntil(...)' is extremely efficient.
+                yield return new WaitUntil(() => playerTransform != null && Vector2.Distance(transform.position, playerTransform.position) <= invincibilityActivationRange);
+
+                // Once the player is in range, switch to the Aggro state.
+                currentState = AIState.Aggro;
+                // Reset the timer so it can try to hide immediately.
+                nextInvincibilityCheckTime = Time.time;
             }
-            else
+
+            // --- STATE 2: AGGRO (Player is in range) ---
+            if (currentState == AIState.Aggro)
             {
-                if (showInvincibilityDebug)
+                if (showInvincibilityDebug) Debug.Log("InkHealth: Now in AGGRO state. Checking hide conditions.");
+
+                // First, check if the player has run away.
+                if (playerTransform == null || Vector2.Distance(transform.position, playerTransform.position) > invincibilityActivationRange)
                 {
-                    Debug.Log($"InkHealth: Skipping invincibility (chance: {randomChance:F2} > {invincibilityActivationChance:F2})");
+                    // If the player is too far, switch back to the Idle state and restart the main loop.
+                    currentState = AIState.Idle;
+                    continue; // 'continue' jumps back to the start of the 'while(true)' loop.
                 }
-                ScheduleNextInvincibilityCheck();
+
+                // If the player is still in range, check the conditions to hide.
+                if (enableInvincibilitySystem && !isInvincible && !isInInvincibilityTransition && Time.time >= nextInvincibilityCheckTime)
+                {
+                    if (Random.value <= invincibilityActivationChance)
+                    {
+                        if (showInvincibilityDebug) Debug.Log("InkHealth: Conditions met, activating invincibility.");
+                        StartCoroutine(ActivateInvincibility());
+                    }
+                    else
+                    {
+                        if (showInvincibilityDebug) Debug.Log("InkHealth: Chance failed, postponing.");
+                    }
+
+                    // ALWAYS schedule the next check time after an attempt.
+                    nextInvincibilityCheckTime = Time.time + Random.Range(minInvincibilityInterval, maxInvincibilityInterval);
+                }
             }
+
+            // Wait efficiently before the next frame's check.
+            yield return invincibilityCheckWait;
         }
     }
+
 
     // Activate invincibility with delay
     private IEnumerator ActivateInvincibilityWithDelay(float delay)
@@ -557,7 +566,7 @@ private IEnumerator DamageOverTimeRoutine()
 
             // Abort the invincibility sequence.
             isInInvincibilityTransition = false; // Reset the flag
-            ScheduleNextInvincibilityCheck();    // Immediately schedule the next attempt
+          // Immediately schedule the next attempt
             yield break;                         // Exit the coroutine
         }
         if (showInvincibilityDebug)
@@ -716,8 +725,7 @@ private IEnumerator DamageOverTimeRoutine()
 
         isInInvincibilityTransition = false;
 
-        // Schedule next invincibility check
-        ScheduleNextInvincibilityCheck();
+      
     }
 
     // Public method to play ink dripping particles once (for animation events)
@@ -1030,10 +1038,12 @@ private IEnumerator DamageOverTimeRoutine()
 
             // Now, we draw the cube at the correct world position.
             Gizmos.DrawWireCube(worldCenter, damageAreaSize);
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, invincibilityActivationRange);
             // --- END OF FIX ---
         }
     }
-
+  
 
 }
 
