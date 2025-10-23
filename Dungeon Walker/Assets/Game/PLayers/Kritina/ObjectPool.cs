@@ -52,7 +52,8 @@ public class ObjectPoolManager : MonoBehaviour
     public int inkPuddlePoolSize = 10;
     // A dictionary to hold different pools. The key is the prefab of the object to pool.
     private Dictionary<GameObject, Queue<GameObject>> poolDictionary;
-
+    public GameObject volcanoObstaclePrefab;
+    public int volcanoPoolSize = 10;
     void Awake()
     {
         if (Instance == null)
@@ -102,6 +103,7 @@ public class ObjectPoolManager : MonoBehaviour
         if (dustExplosionEffectPrefab != null) CreatePool(dustExplosionEffectPrefab, effectPoolSize);
         if (dustExplosionEffectPrefabV2 != null) CreatePool(dustExplosionEffectPrefabV2, effectPoolSize);
         if (inkPuddleV2Prefab != null) CreatePool(inkPuddleV2Prefab, inkPuddlePoolSize);
+        if (volcanoObstaclePrefab != null) CreatePool(volcanoObstaclePrefab, volcanoPoolSize);
         foreach (MonoBehaviour script in allScripts)
         {
             // Check if the script we found has "signed the contract" of our IPoolable interface.

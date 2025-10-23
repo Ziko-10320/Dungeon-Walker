@@ -83,6 +83,9 @@ public class FlyAttack : MonoBehaviour
     private Queue<GameObject> anticipationParticlesPool;
     private PlayerInvisibility playerInvisibility;
     private PlayerInvisibility3antix playerInvisibility3antix;
+    private int frameCounter = 0;
+    private int updateRate = 1;
+
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -115,10 +118,12 @@ public class FlyAttack : MonoBehaviour
         SetNextAttackTime();
         activeProjectiles.Clear();
         StopAllCoroutines();
+        StartCoroutine(UpdateAI_LOD_Routine());
     }
 
     void Start()
     {
+
         projectilePool = new Queue<GameObject>();
         // Create a clean parent object for this fly's projectiles
         projectilePoolParent = new GameObject(gameObject.name + " Projectile Pool");
@@ -191,6 +196,13 @@ public class FlyAttack : MonoBehaviour
 
     void Update()
     {
+        frameCounter++;
+        if (frameCounter < updateRate)
+        {
+            return; // SKIP THIS FRAME!
+        }
+        frameCounter = 0;
+
         bool playerInvisible = (playerInvisibility != null && playerInvisibility.IsInvisible()) ||
                               (playerInvisibility3antix != null && playerInvisibility3antix.IsInvisible());
         // Stop attack if player invisible
@@ -278,7 +290,7 @@ public class FlyAttack : MonoBehaviour
                     if (lh != null) lh.TakeDamage(directDamage, playerKnockbackForce, playerKnockbackDirection);
                 }
 
-           
+
 
                 // --- 3. Apply AREA damage with the CORRECT radius and damage ---
                 Collider2D[] playersInExplosion = Physics2D.OverlapCircleAll(projectile.transform.position, explosionRad, playerLayer);
@@ -298,6 +310,48 @@ public class FlyAttack : MonoBehaviour
         }
 
     }
+
+    private IEnumerator UpdateAI_LOD_Routine()
+    {
+        // Create the wait object once to be efficient.
+        WaitForSeconds wait = new WaitForSeconds(0.5f);
+
+        // This loop will run as long as the component is active.
+        while (true)
+        {
+            // First, check for all required components. If any are missing, wait and try again.
+            if (playerTransform == null || AI_LOD_Manager.Instance == null)
+            {
+                Debug.LogWarning("FlyAttack LOD: Waiting for player or manager...");
+                yield return wait;
+                continue; // Skip the rest of this loop iteration and try again after the wait.
+            }
+
+            // If we get here, everything exists. Now we can do the logic.
+            float dist = Vector2.Distance(transform.position, playerTransform.position);
+
+            if (dist > AI_LOD_Manager.Instance.lowPriorityRange)
+            {
+                updateRate = AI_LOD_Manager.Instance.lowPriorityUpdateRate;
+            }
+            else if (dist > AI_LOD_Manager.Instance.midPriorityRange)
+            {
+                updateRate = AI_LOD_Manager.Instance.midPriorityUpdateRate;
+            }
+            else
+            {
+                updateRate = 1;
+            }
+
+            // --- THIS IS THE GUARANTEED FIX ---
+            // The 'yield return' is now OUTSIDE of the if/else blocks.
+            // This means the coroutine will ALWAYS pause here, preventing the infinite loop.
+            yield return wait;
+            // --- END OF FIX ---
+        }
+    }
+
+
     private bool IsPlayerInRange()
     {
         // If we don't have a reference to the player, they can't be in range.

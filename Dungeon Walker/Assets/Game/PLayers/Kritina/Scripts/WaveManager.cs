@@ -22,6 +22,20 @@ public class WaveConfig
 
     [Tooltip("How much the spawn rate speeds up as THIS wave progresses. 1.0 = no change. 2.0 = gets 100% faster.")]
     public float wavePacingMultiplier = 1.5f;
+    public bool hasVolcanoes = false;
+    [Tooltip("The prefab for the volcano obstacle.")]
+    public GameObject volcanoPrefab;
+    [Tooltip("A list of specific points where volcanoes should spawn for THIS wave.")]
+    public List<Transform> volcanoSpawnPoints;
+    [Header("Volcano Cycle Settings")]
+    [Tooltip("How long the volcanoes stay active when triggered.")]
+    [SerializeField] private float volcanoActiveDuration = 1.5f;
+    [Tooltip("How long the volcanoes stay dormant between eruptions.")]
+    [SerializeField] private float volcanoDormantDuration = 2.0f;
+
+    private Coroutine volcanoBrainCoroutine;
+    // A list of ALL potential volcano locations for the current wave.
+    private List<Transform> potentialVolcanoSpawns = new List<Transform>();
 }
 
 public class WaveManager : MonoBehaviour
@@ -45,6 +59,7 @@ public class WaveManager : MonoBehaviour
 
     private List<GameObject> activeEnemies = new List<GameObject>();
     private List<PendingSpawn> pendingSpawns = new List<PendingSpawn>();
+    private List<GameObject> activeVolcanoes = new List<GameObject>();
     private Coroutine spawnCheckCoroutine;
     private const float SPAWN_CHECK_INTERVAL = 0.5f;
     private GameObject activeBoss = null;
@@ -60,6 +75,13 @@ public class WaveManager : MonoBehaviour
     private PhotonView view;
     private bool isOnlineMode = false;
     private WaveConfig currentWaveConfig;
+    [Tooltip("How long the volcanoes stay active when triggered.")]
+    [SerializeField] private float volcanoActiveDuration = 1.5f;
+    [Tooltip("How long the volcanoes stay dormant between eruptions.")]
+    [SerializeField] private float volcanoDormantDuration = 2.0f;
+    private Coroutine volcanoBrainCoroutine;
+    // A list of ALL potential volcano locations for the current wave.
+    private List<Transform> potentialVolcanoSpawns = new List<Transform>();
 
     void Start()
     {
@@ -131,7 +153,10 @@ public class WaveManager : MonoBehaviour
         {
             spawnCheckCoroutine = StartCoroutine(SpawnCheckBrain());
         }
-
+        if (volcanoBrainCoroutine == null)
+        {
+            volcanoBrainCoroutine = StartCoroutine(VolcanoBrain());
+        }
     }
 
     // REMPLACER l'ancienne méthode OnScoreUpdated par celle-ci :
@@ -164,7 +189,7 @@ public class WaveManager : MonoBehaviour
             }
 
             ClearExistingEnemies();
-
+           
             // --- THE FIX: Reset the boss spawn tracker for the new wave ---
             bossHasBeenSpawnedForThisWave = false;
 
@@ -231,6 +256,21 @@ public class WaveManager : MonoBehaviour
         }
 
         activeEnemies.Clear();
+        if (volcanoBrainCoroutine != null)
+        {
+            StopCoroutine(volcanoBrainCoroutine);
+            volcanoBrainCoroutine = null;
+        }
+
+        // 2. Now it's safe to disable all volcano objects and return them to the pool.
+        foreach (GameObject volcano in activeVolcanoes)
+        {
+            if (volcano != null)
+            {
+                volcano.SetActive(false);
+            }
+        }
+        activeVolcanoes.Clear();
     }
     private IEnumerator SpawnCheckBrain()
     {
@@ -369,6 +409,26 @@ public class WaveManager : MonoBehaviour
             SpawnSingleEnemy(config.bossPrefab, spawnPoint);
             yield return new WaitForSeconds(1.5f); // Wait a moment after the boss spawns.
         }
+        if (config.hasVolcanoes && config.volcanoPrefab != null)
+        {
+            foreach (Transform spawnPoint in config.volcanoSpawnPoints)
+            {
+                // Spawn from the pool at the correct position and with the prefab's rotation.
+                GameObject volcano = ObjectPoolManager.Instance.SpawnFromPool(
+                    config.volcanoPrefab,
+                    spawnPoint.position,
+                    config.volcanoPrefab.transform.rotation
+                );
+
+                if (volcano != null)
+                {
+                    // CRITICAL: Add it to our master list for this wave, but keep it DISABLED.
+                    // The VolcanoBrain will be responsible for enabling/disabling it based on range.
+                    volcano.SetActive(false);
+                    activeVolcanoes.Add(volcano);
+                }
+            }
+        }
 
         // --- PRIORITY 2: PREPARE NORMAL ENEMIES ---
         // Instead of spawning, we now add them to the "waiting" list.
@@ -387,9 +447,84 @@ public class WaveManager : MonoBehaviour
         }
 
         Debug.Log($"Finished preparing wave. {pendingSpawns.Count} enemies are now waiting to be spawned.");
+        if (activeVolcanoes.Count > 0)
+        {
+            volcanoBrainCoroutine = StartCoroutine(VolcanoBrain());
+        }
         currentWaveCoroutine = null;
         yield return null; // End the coroutine.
     }
+
+    private IEnumerator VolcanoBrain()
+    {
+        // This dictionary tracks which spawn points have an active volcano.
+        Dictionary<Transform, GameObject> activeVolcanoInstances = new Dictionary<Transform, GameObject>();
+        WaitForSeconds checkWait = new WaitForSeconds(0.5f); // Check ranges twice per second.
+
+        while (true)
+        {
+            // Only run the logic if the current wave is supposed to have volcanoes.
+            if (currentWaveConfig != null && currentWaveConfig.hasVolcanoes)
+            {
+                // Go through every potential volcano spawn point for the current wave.
+                foreach (Transform spawnPoint in currentWaveConfig.volcanoSpawnPoints)
+                {
+                    bool isSpawnPointInRange = EffectCullingSystem.Instance.IsPositionInRadius(spawnPoint.position);
+                    bool isVolcanoAlreadyActive = activeVolcanoInstances.ContainsKey(spawnPoint);
+
+                    // --- ACTIVATION LOGIC ---
+                    // If the spawn point IS in range AND a volcano is NOT already active there...
+                    if (isSpawnPointInRange && !isVolcanoAlreadyActive)
+                    {
+                        // ...then SPAWN a new one!
+                        GameObject volcano = ObjectPoolManager.Instance.SpawnFromPool(
+                            currentWaveConfig.volcanoPrefab,
+                            spawnPoint.position,
+                            currentWaveConfig.volcanoPrefab.transform.rotation
+                        );
+
+                        if (volcano != null)
+                        {
+                            // Add it to our dictionary to track it.
+                            activeVolcanoInstances[spawnPoint] = volcano;
+                            Debug.Log($"Player entered range. Activated volcano at {spawnPoint.name}.");
+                        }
+                    }
+                    // --- DEACTIVATION LOGIC ---
+                    // If the spawn point is NOT in range AND a volcano IS currently active there...
+                    else if (!isSpawnPointInRange && isVolcanoAlreadyActive)
+                    {
+                        // ...then DESPAWN it!
+                        GameObject volcanoToDespawn = activeVolcanoInstances[spawnPoint];
+                        if (volcanoToDespawn != null)
+                        {
+                            volcanoToDespawn.SetActive(false); // Return to pool.
+                        }
+                        // Remove it from our tracking dictionary.
+                        activeVolcanoInstances.Remove(spawnPoint);
+                        Debug.Log($"Player left range. Deactivated volcano at {spawnPoint.name}.");
+                    }
+                }
+            }
+            else
+            {
+                // If the current wave does NOT have volcanoes, clean up any leftovers.
+                if (activeVolcanoInstances.Count > 0)
+                {
+                    foreach (var pair in activeVolcanoInstances)
+                    {
+                        if (pair.Value != null) pair.Value.SetActive(false);
+                    }
+                    activeVolcanoInstances.Clear();
+                }
+            }
+
+            // Wait efficiently before checking all ranges again.
+            yield return checkWait;
+        }
+    }
+
+
 
 
     private void InitializeEnemy(GameObject enemy)

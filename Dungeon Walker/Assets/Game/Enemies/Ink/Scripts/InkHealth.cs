@@ -213,6 +213,7 @@ public class InkHealth : MonoBehaviour
     private WaitForSeconds invincibilityCheckWait;
     private enum AIState { Idle, Aggro };
     private AIState currentState = AIState.Idle;
+    private int updateRate = 1;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -480,64 +481,74 @@ private IEnumerator DamageOverTimeRoutine()
         }
     }
 
-    private IEnumerator InvincibilityBrain()
+   private IEnumerator InvincibilityBrain()
+{
+    yield return new WaitForSeconds(initialInvincibilityDelay);
+
+    while (true)
     {
-        // Wait for the initial delay before starting the brain.
-        yield return new WaitForSeconds(initialInvincibilityDelay);
-
-        // The main loop for the entire life of the enemy.
-        while (true)
+        // --- AI LOD LOGIC ---
+        // First, determine our thinking speed based on distance.
+        if (playerTransform != null && AI_LOD_Manager.Instance != null)
         {
-            // --- STATE 1: IDLE (Player is out of range) ---
-            if (currentState == AIState.Idle)
+            float dist = Vector2.Distance(transform.position, playerTransform.position);
+            if (dist > AI_LOD_Manager.Instance.lowPriorityRange)
             {
-                if (showInvincibilityDebug) Debug.Log("InkHealth: Now in IDLE state. Waiting for player to get close.");
+                updateRate = AI_LOD_Manager.Instance.lowPriorityUpdateRate;
+            }
+            else if (dist > AI_LOD_Manager.Instance.midPriorityRange)
+            {
+                updateRate = AI_LOD_Manager.Instance.midPriorityUpdateRate;
+            }
+            else
+            {
+                updateRate = 1;
+            }
+        }
+        else
+        {
+            updateRate = 1; // Default to high priority if something is missing
+        }
+        // --- END OF AI LOD LOGIC ---
 
-                // In the Idle state, we just wait until the player comes into range.
-                // 'yield return new WaitUntil(...)' is extremely efficient.
-                yield return new WaitUntil(() => playerTransform != null && Vector2.Distance(transform.position, playerTransform.position) <= invincibilityActivationRange);
-
-                // Once the player is in range, switch to the Aggro state.
+        // The rest of the logic is the same as before...
+        if (currentState == AIState.Idle)
+        {
+            if (playerTransform != null && Vector2.Distance(transform.position, playerTransform.position) <= invincibilityActivationRange)
+            {
                 currentState = AIState.Aggro;
-                // Reset the timer so it can try to hide immediately.
                 nextInvincibilityCheckTime = Time.time;
             }
+        }
 
-            // --- STATE 2: AGGRO (Player is in range) ---
-            if (currentState == AIState.Aggro)
+        if (currentState == AIState.Aggro)
+        {
+            if (playerTransform == null || Vector2.Distance(transform.position, playerTransform.position) > invincibilityActivationRange)
             {
-                if (showInvincibilityDebug) Debug.Log("InkHealth: Now in AGGRO state. Checking hide conditions.");
-
-                // First, check if the player has run away.
-                if (playerTransform == null || Vector2.Distance(transform.position, playerTransform.position) > invincibilityActivationRange)
-                {
-                    // If the player is too far, switch back to the Idle state and restart the main loop.
-                    currentState = AIState.Idle;
-                    continue; // 'continue' jumps back to the start of the 'while(true)' loop.
-                }
-
-                // If the player is still in range, check the conditions to hide.
-                if (enableInvincibilitySystem && !isInvincible && !isInInvincibilityTransition && Time.time >= nextInvincibilityCheckTime)
-                {
-                    if (Random.value <= invincibilityActivationChance)
-                    {
-                        if (showInvincibilityDebug) Debug.Log("InkHealth: Conditions met, activating invincibility.");
-                        StartCoroutine(ActivateInvincibility());
-                    }
-                    else
-                    {
-                        if (showInvincibilityDebug) Debug.Log("InkHealth: Chance failed, postponing.");
-                    }
-
-                    // ALWAYS schedule the next check time after an attempt.
-                    nextInvincibilityCheckTime = Time.time + Random.Range(minInvincibilityInterval, maxInvincibilityInterval);
-                }
+                currentState = AIState.Idle;
+                continue;
             }
 
-            // Wait efficiently before the next frame's check.
+            if (enableInvincibilitySystem && !isInvincible && !isInInvincibilityTransition && Time.time >= nextInvincibilityCheckTime)
+            {
+                if (Random.value <= invincibilityActivationChance)
+                {
+                    StartCoroutine(ActivateInvincibility());
+                }
+                nextInvincibilityCheckTime = Time.time + Random.Range(minInvincibilityInterval, maxInvincibilityInterval);
+            }
+        }
+
+        // --- THE OPTIMIZATION ---
+        // Wait for the normal interval, MULTIPLIED by our current updateRate.
+        // If updateRate is 10, it will wait 10x longer before thinking again.
+        for (int i = 0; i < updateRate; i++)
+        {
             yield return invincibilityCheckWait;
         }
     }
+}
+
 
 
     // Activate invincibility with delay

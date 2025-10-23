@@ -487,14 +487,7 @@ public class WaterBullet : MonoBehaviour
                 FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
             }
 
-            var BarrelExplosion = other.GetComponent<BarrelExplosion>();
-            if (BarrelExplosion != null)
-            {
-                Vector2 attackDirection = (other.transform.position - transform.position).normalized;
-                // Assuming InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
-                // You might need to adjust the knockbackForce value (e.g., 1f) based on your game design.
-                BarrelExplosion.TakeDamage(damage);
-            }
+          
 
             if (audioSource != null && collisionSound != null) audioSource.PlayOneShot(collisionSound, collisionSoundVolume);
 

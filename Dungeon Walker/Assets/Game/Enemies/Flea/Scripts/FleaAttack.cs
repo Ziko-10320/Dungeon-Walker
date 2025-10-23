@@ -48,6 +48,9 @@ public class FleaChargeAttack : MonoBehaviour
     private const float CHECK_INTERVAL = 0.3f;
 
     private Collider2D[] hitResults = new Collider2D[1];
+
+    private int frameCounter = 0;
+    private int updateRate = 1;
     void Awake()
     {
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
@@ -86,10 +89,11 @@ public class FleaChargeAttack : MonoBehaviour
             fleaAnimator.SetBool(isAnticipatingHash, false);
             fleaAnimator.SetBool(isChargingHash, false);
         }
-        // ---------------------------------------------
-
+      
+        StartCoroutine(UpdateAI_LOD_Routine());
         // 4. Stop any old attack coroutines that might be stuck mid-charge.
         StopAllCoroutines();
+
 
         // 5. Ensure the script is enabled and ready to go.
         this.enabled = true;
@@ -131,7 +135,12 @@ public class FleaChargeAttack : MonoBehaviour
 
     void Update()
     {
-
+        frameCounter++;
+        if (frameCounter < updateRate)
+        {
+            return; // Skip this frame
+        }
+        frameCounter = 0;
         if (playerTransform == null || isAttacking || !canAttack) return;
 
         if (followScript != null && followScript.IsChasing)
@@ -159,6 +168,30 @@ public class FleaChargeAttack : MonoBehaviour
         else
         {
             ResetDecisionTimer();
+        }
+    }
+    private IEnumerator UpdateAI_LOD_Routine()
+    {
+        WaitForSeconds wait = new WaitForSeconds(0.5f);
+        while (true)
+        {
+            if (playerTransform != null && AI_LOD_Manager.Instance != null)
+            {
+                float dist = Vector2.Distance(transform.position, playerTransform.position);
+                if (dist > AI_LOD_Manager.Instance.lowPriorityRange)
+                {
+                    updateRate = AI_LOD_Manager.Instance.lowPriorityUpdateRate;
+                }
+                else if (dist > AI_LOD_Manager.Instance.midPriorityRange)
+                {
+                    updateRate = AI_LOD_Manager.Instance.midPriorityUpdateRate;
+                }
+                else
+                {
+                    updateRate = 1;
+                }
+            }
+            yield return wait;
         }
     }
 

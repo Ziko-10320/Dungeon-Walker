@@ -95,7 +95,9 @@ public class RatKingAttack : MonoBehaviour
     public Transform GroundCheck => ratKingBoss.groundCheck;
     public float GroundCheckRadius => ratKingBoss.groundCheckRadius;
     public LayerMask WhatIsGround => ratKingBoss.whatIsGround;
-
+    private int frameCounter = 0;
+    private int updateRate = 1; // Default to update every frame (High Priority)
+    private Coroutine aiLODCoroutine;
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -144,6 +146,45 @@ public class RatKingAttack : MonoBehaviour
 
         // Stop any leftover attack coroutines from the previous life
         StopAllCoroutines();
+        aiLODCoroutine = StartCoroutine(UpdateAI_LOD_Routine());
+        animationWatchdogCoroutine = StartCoroutine(AnimationWatchdog());
+    }
+    private IEnumerator UpdateAI_LOD_Routine()
+    {
+        // Create the wait object once to be efficient.
+        WaitForSeconds wait = new WaitForSeconds(0.5f); // Check distance twice per second.
+
+        while (true)
+        {
+            // Check for all required components first.
+            if (playerTransform == null || AI_LOD_Manager.Instance == null)
+            {
+                // If something is missing, wait and try again.
+                yield return wait;
+                continue;
+            }
+
+            // If everything exists, calculate the distance and set the update rate.
+            float dist = Vector2.Distance(transform.position, playerTransform.position);
+
+            if (dist > AI_LOD_Manager.Instance.lowPriorityRange)
+            {
+                // Player is far away. Think very slowly.
+                updateRate = AI_LOD_Manager.Instance.lowPriorityUpdateRate;
+            }
+            else if (dist > AI_LOD_Manager.Instance.midPriorityRange)
+            {
+                // Player is at a medium distance. Think a bit slower.
+                updateRate = AI_LOD_Manager.Instance.midPriorityUpdateRate;
+            }
+            else
+            {
+                // Player is close. Think at maximum speed.
+                updateRate = 1;
+            }
+
+            yield return wait;
+        }
     }
 
     public bool CanPerformJumpAttack()
@@ -191,6 +232,14 @@ public class RatKingAttack : MonoBehaviour
 
     void Update()
     {
+        frameCounter++;
+        // If it's not time to "think" yet, skip the entire Update method.
+        if (frameCounter < updateRate)
+        {
+            return;
+        }
+        // If it IS time to think, reset the counter and proceed with the rest of the logic.
+        frameCounter = 0;
         // Update falling animation state based on vertical velocity
         if (isJumping && rb.velocity.y < -0.1f && !isFalling)
         {

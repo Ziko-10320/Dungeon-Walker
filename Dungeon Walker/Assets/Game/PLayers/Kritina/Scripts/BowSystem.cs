@@ -1131,13 +1131,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                     return;
                 }
               
-                if (target.TryGetComponent<BarrelExplosion>(out var barrelExplosion))
-                {
-                    barrelExplosion.TakeDamage(Mathf.RoundToInt(damageToDeal));
-                    if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Barrel {target.name} at {impactPoint}");
-                    if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
-                    return;
-                }
+               
 
                 if (showDamageDebug)
                 {

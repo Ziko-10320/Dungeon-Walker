@@ -35,6 +35,9 @@ public class SprayerAttack : MonoBehaviour
     private bool isAttacking = false;
     private float attackDirection; // Stores the direction (1 or -1) when attack starts
     private Transform playerTransform;
+
+    private int frameCounter = 0;
+    private int updateRate = 1;
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -71,6 +74,8 @@ public class SprayerAttack : MonoBehaviour
         isAttacking = false; // THIS IS THE KEY FIX. It allows the Update loop to run again.
         lastAttackTime = -attackCooldown; // This resets the attack cooldown timer.
 
+        StartCoroutine(UpdateAI_LOD_Routine());
+
         // 3. Stop any old attack coroutines that might be stuck.
         StopAllCoroutines();
 
@@ -81,6 +86,13 @@ public class SprayerAttack : MonoBehaviour
 
     void Update()
     {
+        frameCounter++;
+        if (frameCounter < updateRate)
+        {
+            return; // Skip this frame
+        }
+        frameCounter = 0;
+
         if (isAttacking)
         {
             return; // Don\"t do anything else while an attack is in progress
@@ -111,6 +123,30 @@ public class SprayerAttack : MonoBehaviour
             {
                 StartAttack();
             }
+        }
+    }
+    private IEnumerator UpdateAI_LOD_Routine()
+    {
+        WaitForSeconds wait = new WaitForSeconds(0.5f);
+        while (true)
+        {
+            if (playerTransform != null && AI_LOD_Manager.Instance != null)
+            {
+                float dist = Vector2.Distance(transform.position, playerTransform.position);
+                if (dist > AI_LOD_Manager.Instance.lowPriorityRange)
+                {
+                    updateRate = AI_LOD_Manager.Instance.lowPriorityUpdateRate;
+                }
+                else if (dist > AI_LOD_Manager.Instance.midPriorityRange)
+                {
+                    updateRate = AI_LOD_Manager.Instance.midPriorityUpdateRate;
+                }
+                else
+                {
+                    updateRate = 1;
+                }
+            }
+            yield return wait;
         }
     }
 

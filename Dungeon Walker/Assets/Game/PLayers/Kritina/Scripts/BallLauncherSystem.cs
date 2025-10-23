@@ -1505,17 +1505,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
                 sporeMine.TakeDamage(ballDamage, Vector2.zero, 0f);
 
             }
-            BarrelExplosion BarrelExplosion = target.GetComponent<BarrelExplosion>();
-            if (BarrelExplosion != null)
-            {
-                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                BarrelExplosion.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
-                if (showDamageDebug)
-                {
-                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
-                }
-                return;
-            }
+           
           
         }
     }
@@ -1631,17 +1621,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
                 sporeMine.TakeDamage(ballDamage, Vector2.zero, 0f);
 
             }
-            BarrelExplosion BarrelExplosion = target.GetComponent<BarrelExplosion>();
-            if (BarrelExplosion != null)
-            {
-                Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                BarrelExplosion.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
-                if (showDamageDebug)
-                {
-                    Debug.Log($"Projectile dealt {ballDamage} trigger damage to Ink {target.name} at {impactPoint}");
-                }
-                return;
-            }
+          
 
             if (fleaHealth == null && sprayerHealth == null && flyHealth == null && inkHealth == null && showDamageDebug)
             {

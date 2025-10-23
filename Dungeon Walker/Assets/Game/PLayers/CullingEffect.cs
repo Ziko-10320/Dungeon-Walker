@@ -12,7 +12,7 @@ public class EffectCullingSystem : MonoBehaviour
 
     [Header("Culling Settings")]
     [Tooltip("The radius of the circle. Effects outside this circle will not be spawned.")]
-    [SerializeField] private float effectCullingRadius = 30f;
+    [SerializeField] public float effectCullingRadius = 30f;
     [Tooltip("The central point for the culling radius.")]
     [SerializeField] private Transform effectOriginPoint;
 
