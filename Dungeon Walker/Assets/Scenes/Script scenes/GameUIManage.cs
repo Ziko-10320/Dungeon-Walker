@@ -136,29 +136,45 @@ public class GameUIManager : MonoBehaviour
 
     public void ShowDeathScreen()
     {
-        if (deathPanel != null)
+        // First, make sure the panel exists before we do anything.
+        if (deathPanel == null)
         {
-            // --- THIS IS THE CORRECTED LOGIC ---
-            // 1. Find the currently ACTIVE CheckpointManager in the scene.
-            CheckpointManager activeCheckpointManager = FindObjectOfType<CheckpointManager>();
+            Debug.LogError("Death Panel is not assigned in the Inspector!");
+            return;
+        }
 
-            // 2. Set the final score and check for new records using the one we just found.
-            if (PlayerStatsManager.Instance != null && activeCheckpointManager != null)
+        // --- THIS IS THE CORRECTED LOGIC FLOW ---
+
+        // Find the active CheckpointManager to get the score
+        CheckpointManager activeCheckpointManager = FindObjectOfType<CheckpointManager>();
+
+        // Make sure the PlayerStatsManager exists before doing anything
+        if (PlayerStatsManager.Instance != null)
+        {
+            // 1. SET THE FINAL SCORE FIRST
+            // This is critical. The score must be set before we check it.
+            if (activeCheckpointManager != null)
             {
                 PlayerStatsManager.Instance.SetFinalScore(activeCheckpointManager.TotalScore);
-                PlayerStatsManager.Instance.CheckAndSaveHighScores();
             }
             else
             {
-                // This warning helps if something goes wrong.
-                Debug.LogWarning("Could not find an active CheckpointManager or PlayerStatsManager!");
+                // If there's no manager, at least set the score to 0.
+                PlayerStatsManager.Instance.SetFinalScore(0);
+                Debug.LogWarning("Could not find an active CheckpointManager. Score set to 0.");
             }
 
-            // 3. Show the panel
+            // 2. NOW, CHECK FOR HIGH SCORES
+            // This will set the 'newHighScoreAchieved' flags correctly.
+            PlayerStatsManager.Instance.CheckAndSaveHighScores();
+
+            // 3. SHOW THE PANEL
+            // It's better to show the panel *after* the data is ready.
             deathPanel.SetActive(true);
 
-            // 4. Start the animation (this part is unchanged)
-            if (PlayerStatsManager.Instance != null && statAnimation != null)
+            // 4. FINALLY, START THE ANIMATION
+            // The animation script will now have the correct data to work with.
+            if (statAnimation != null)
             {
                 statAnimation.StartAnimation(
                     PlayerStatsManager.Instance.finalScore,
@@ -167,6 +183,12 @@ public class GameUIManager : MonoBehaviour
                 );
             }
         }
+        else
+        {
+            Debug.LogError("PlayerStatsManager.Instance is not found! Cannot show stats.");
+        }
+
+        // Pause the game at the very end.
         Time.timeScale = 0f;
         isGamePaused = true;
     }

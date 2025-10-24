@@ -51,7 +51,7 @@ Shader "Unlit/CRTUnlit"
             #pragma vertex vert
             #pragma fragment frag
             // make fog work
-            #pragma multi_compile_fog
+            #pragma multi_compile_fogf
 
             #include "UnityCG.cginc"
 
@@ -195,7 +195,7 @@ Shader "Unlit/CRTUnlit"
             }
 
             
-            fixed4 frag (v2f i) : SV_Target
+                       fixed4 frag (v2f i) : SV_Target
             {
                 float2 p = i.uv*2 - 1;
 
@@ -219,22 +219,23 @@ Shader "Unlit/CRTUnlit"
                 borderColor.rgb = lerp(borderColor.rgb * _BorderTint.rgb, _BorderTint.rgb, 1-_BorderTint.a);
                 
                 float2 uv = p * (1-_BorderOutterRound);
-                float2 offset = uv / _Curvature;
-                float2 curvedSpace = uv + uv * offset * offset;
+                float2 offset = uv / _Curvature; // This variable is not used correctly by the original author
+                float2 curvedSpace = uv + uv * offset * offset; // This is also not used correctly
                 float2 mappedUv = curvedSpace * .5 + .5;
                 
-                float2 crt = crtCurve(curvedSpace, _CrtReflectionCurve);
+                // THIS IS THE PART THAT ACTUALLY HAS THE CURVE
+                float2 crt = crtCurve(curvedSpace, _CrtReflectionCurve); // Uses _CrtReflectionCurve
                 float2 qUv = borderReflect(crt, _CrtReflectionRadius);
+                fixed4 qColor = insideMask * insideArg * sampleColor(i.uv, qUv); // This is the color WITH the curve
                 
-                fixed4 qColor = insideMask * insideArg * sampleColor(i.uv, qUv); // TODO: add blur
-                
+                // This is the color WITHOUT the curve
                 float4 col = sampleColor(i.uv, mappedUv);
                 float screenMask = 1-boundIn;
 
-                // return outsideMask;
-                return col * screenMask + ( _CrtGlowAmount * qColor + _BorderInnerDarkerAmount * borderColor * insideMask) + (borderColor * outsideMask);
-
+                // THE FIX IS HERE. WE USE qColor INSTEAD OF col.
+                return qColor * screenMask + ( _CrtGlowAmount * qColor + _BorderInnerDarkerAmount * borderColor * insideMask) + (borderColor * outsideMask);
             }
+
             ENDCG
         }
     }

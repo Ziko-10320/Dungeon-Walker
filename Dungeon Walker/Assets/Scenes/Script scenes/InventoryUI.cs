@@ -6,6 +6,7 @@ using System.Collections;
 public class InventoryUI : MonoBehaviour
 {
     public static InventoryUI Instance { get; private set; }
+    [SerializeField] private TextMeshProUGUI coinCountText;
     [Header("Category Tabs")]
     [SerializeField] private Button powerUpsTabButton;
     [SerializeField] private Button skinsTabButton;
@@ -21,6 +22,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI equippedSkinName;
     [Header("Weapon Data References")]
     [SerializeField] private List<WeaponData> allWeapons;
+    
     private int currentWeaponIndex = 0;
     [Header("Main Panel")]
     [SerializeField] private GameObject inventoryPanel;
@@ -45,7 +47,7 @@ public class InventoryUI : MonoBehaviour
     [Header("Weapon Upgrade UI")]
     [SerializeField] private Button weaponsTabButton;
     [SerializeField] private GameObject weaponsContent;
-    [SerializeField] private Slider levelSlider;
+    [SerializeField] private List<Image> levelSegments;
     [SerializeField] private TextMeshProUGUI levelText;
     [SerializeField] private TextMeshProUGUI weaponNameText;
     [SerializeField] private Button selectBatButton_Weapons;
@@ -92,6 +94,13 @@ public class InventoryUI : MonoBehaviour
             panelCanvasGroup = inventoryPanel.GetComponent<CanvasGroup>();
         }
     }
+    public void UpdateCoinCount()
+    {
+        if (coinCountText != null && WalletManager.Instance != null)
+        {
+            coinCountText.text = WalletManager.Instance.CurrentCoins.ToString();
+        }
+    }
     public void SelectWeaponToDisplay(int weaponIndex)
     {
         if (weaponIndex < 0 || weaponIndex >= allWeapons.Count) return;
@@ -112,7 +121,8 @@ public class InventoryUI : MonoBehaviour
         powerUpsContent.SetActive(false);
         skinsContent.SetActive(false);
         weaponsContent.SetActive(true);
-
+        if (coinCountText != null) coinCountText.gameObject.SetActive(true);
+        UpdateCoinCount();
         // We'll add more logic here later to select which weapon to show.
         // For now, let's just refresh the display for the bat.
         RefreshWeaponDisplay();
@@ -148,6 +158,7 @@ public class InventoryUI : MonoBehaviour
         skinsContent.SetActive(false);
         weaponsContent.SetActive(false); // <-- ADD THIS
         RefreshAllDisplays();
+        if (coinCountText != null) coinCountText.gameObject.SetActive(false);
     }
     private void OnUnlockSlot2Clicked()
     {
@@ -184,6 +195,7 @@ public class InventoryUI : MonoBehaviour
         skinsContent.SetActive(true);
         weaponsContent.SetActive(false); // <-- ADD THIS
         ViewCatSkins();
+        if (coinCountText != null) coinCountText.gameObject.SetActive(false);
     }
 
     private void ViewCatSkins()
@@ -212,10 +224,14 @@ public class InventoryUI : MonoBehaviour
     {
         if (inventoryPanel != null)
         {
-            // Stop any previous animations and start the new one.
             StopAllCoroutines();
             StartCoroutine(AnimatePanel(true));
-            RefreshAllDisplays();
+
+            // You can now remove this line if you want, as it's handled by the category functions.
+            // UpdateCoinCount(); 
+
+            // We should default to a category when opening. Let's make it Power-ups.
+            ShowPowerUpsCategory();
         }
     }
 
@@ -232,11 +248,28 @@ public class InventoryUI : MonoBehaviour
         WeaponData currentWeapon = allWeapons[currentWeaponIndex];
         int currentLevel = InventoryManager.Instance.GetWeaponLevel(currentWeapon.name);
 
+        // Update main info
         weaponNameText.text = currentWeapon.weaponName;
         weaponIconImage.sprite = currentWeapon.weaponIcon;
-        levelSlider.value = currentLevel;
         levelText.text = "Level: " + currentLevel + " / 5";
-        levelSlider.interactable = false;
+
+        // --- NEW LOGIC FOR THE SEGMENTED BAR ---
+        for (int i = 0; i < levelSegments.Count; i++)
+        {
+            if (i < currentLevel)
+            {
+                // This segment represents a level the player has achieved.
+                levelSegments[i].color = Color.green; // Or whatever "filled" color you want
+            }
+            else
+            {
+                // This is an un-achieved level.
+                levelSegments[i].color = Color.gray; // Or a darker, "empty" color
+            }
+        }
+        // ----------------------------------------
+
+        // Update the upgrade button (this logic is unchanged)
         if (currentLevel >= 5)
         {
             upgradeWeaponButton.interactable = false;
@@ -246,7 +279,7 @@ public class InventoryUI : MonoBehaviour
         {
             upgradeWeaponButton.interactable = true;
             WeaponUpgradeData nextLevelData = currentWeapon.upgradeLevels[currentLevel];
-            upgradeCostText.text = "Upgrade (" + nextLevelData.upgradeCost + " Coins)";
+            upgradeCostText.text = nextLevelData.upgradeCost.ToString();
         }
     }
     public void OnItemClicked(PowerUpData item)
@@ -285,6 +318,7 @@ public class InventoryUI : MonoBehaviour
             {
                 InventoryManager.Instance.UpgradeWeapon(currentWeapon.name);
                 RefreshWeaponDisplay();
+                UpdateCoinCount();
             }
             else
             {
