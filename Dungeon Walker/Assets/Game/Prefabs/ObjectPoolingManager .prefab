@@ -1,65 +1,207 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &566348276385136167
-GameObject:
+--- !u!1001 &8083571263155185998
+PrefabInstance:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7323705339132282683}
-  - component: {fileID: 7868306092270758708}
-  m_Layer: 0
-  m_Name: 'ObjectPoolingManager '
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &7323705339132282683
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 566348276385136167}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -69.41369, y: 6.256324, z: 0.015039327}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7868306092270758708
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 566348276385136167}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de039f8fb7eaa304d9fab58d28b8c3aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fleaPrefab: {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
-  sprayerPrefab: {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
-  flyPrefab: {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
-  inkPrefab: {fileID: 6871114477328718656, guid: def788d9280bf0241b6807fd4864a96c, type: 3}
-  bossPrefab: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
-  splatterFleaPrefab: {fileID: 1266603064206159665, guid: 83134c1ee46f09f4eab9d8e3d42b48fc, type: 3}
-  splatterSprayerPrefab: {fileID: 7744118527560474626, guid: 12ab4ee6a9deb0240af4a47d1b47119d, type: 3}
-  splatterFlyPrefab: {fileID: 7464382647960571032, guid: ab3a9f1136287af45aaeeda158f8287f, type: 3}
-  splatterInkPrefab: {fileID: 4559407249175245342, guid: 52685d678bee71b4fa752185dee03258, type: 3}
-  splatterBossPrefab: {fileID: 2426752246179592511, guid: 9398fe330c75dc341baf52ce61f8d603, type: 3}
-  spawnEffectPrefab: {fileID: 6931139375341048568, guid: 167cfba23a69cb04c9d4e5465254483f, type: 3}
-  fartEffectPrefab: {fileID: 7832334667084426812, guid: dbeadf9f25d19c74abdc58506a67edaf, type: 3}
-  fartEffectPoolSize: 3
-  splatterPoolSize: 6
-  spawnEffectPoolSize: 200
-  normalEnemyPoolSize: 60
-  bossPoolSize: 10
-  dustExplosionEffectPrefab: {fileID: 4696925322321457287, guid: 40c48c1cf3f6c504f8abf2b219d6c04b, type: 3}
-  effectPoolSize: 50
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: flyPrefab
+      value: 
+      objectReference: {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: inkPrefab
+      value: 
+      objectReference: {fileID: 6871114477328718656, guid: def788d9280bf0241b6807fd4864a96c, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: bossPrefab
+      value: 
+      objectReference: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: fleaPrefab
+      value: 
+      objectReference: {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: flyV2Prefab
+      value: 
+      objectReference: {fileID: 3982030784277162989, guid: a349b6d05f8bc114eb1356f8b1aa1c61, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: inkV2Prefab
+      value: 
+      objectReference: {fileID: 8700848017474888702, guid: 40537e71dc0ad6a49a6f3f40220c3900, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: bossPoolSize
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: bossV2Prefab
+      value: 
+      objectReference: {fileID: 7789777947036455407, guid: c8c7606683e754847bea5d1fef0e7692, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: fleaV2Prefab
+      value: 
+      objectReference: {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: sprayerPrefab
+      value: 
+      objectReference: {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: sprayerV2Prefab
+      value: 
+      objectReference: {fileID: 1787418285100596395, guid: 2cc8664ed32428a4f859b268909dbef1, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: fartEffectPrefab
+      value: 
+      objectReference: {fileID: 7832334667084426812, guid: dbeadf9f25d19c74abdc58506a67edaf, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterPoolSize
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: inkPuddlePoolSize
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: inkPuddleV2Prefab
+      value: 
+      objectReference: {fileID: 553892719865404256, guid: 86dc8c8b6eab4924b88cad66a77cbb59, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: spawnEffectPrefab
+      value: 
+      objectReference: {fileID: 6931139375341048568, guid: 167cfba23a69cb04c9d4e5465254483f, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterFlyPrefab
+      value: 
+      objectReference: {fileID: 7464382647960571032, guid: ab3a9f1136287af45aaeeda158f8287f, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterInkPrefab
+      value: 
+      objectReference: {fileID: 4559407249175245342, guid: 52685d678bee71b4fa752185dee03258, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: ChargeDustPoolSize
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: fartEffectPoolSize
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterBossPrefab
+      value: 
+      objectReference: {fileID: 2426752246179592511, guid: 9398fe330c75dc341baf52ce61f8d603, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterFleaPrefab
+      value: 
+      objectReference: {fileID: 1266603064206159665, guid: 83134c1ee46f09f4eab9d8e3d42b48fc, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: normalEnemyPoolSize
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: spawnEffectPoolSize
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterFlyV2Prefab
+      value: 
+      objectReference: {fileID: 7464382647960571032, guid: 74dda3b76cc37504c8bdec5ce8802a63, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterInkV2Prefab
+      value: 
+      objectReference: {fileID: 4559407249175245342, guid: 8e0e136ff3ffad343a575783ef314308, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterBossV2Prefab
+      value: 
+      objectReference: {fileID: 2426752246179592511, guid: ab20299663f0e304d937ce8d9f3ea833, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterFleaV2Prefab
+      value: 
+      objectReference: {fileID: 1266603064206159665, guid: e8997dd2c61a5e64897ed0308ebb45b6, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterSprayerPrefab
+      value: 
+      objectReference: {fileID: 7744118527560474626, guid: 12ab4ee6a9deb0240af4a47d1b47119d, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: volcanoObstaclePrefab
+      value: 
+      objectReference: {fileID: 9137231053663555815, guid: 398c98f22262ca64baf99fcb98822027, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: chargedProjectilePrefab
+      value: 
+      objectReference: {fileID: 5457631616143913318, guid: 86b25f9a407f5364b825816a662a673d, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: splatterSprayerV2Prefab
+      value: 
+      objectReference: {fileID: 7464382647960571032, guid: 74dda3b76cc37504c8bdec5ce8802a63, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: dustExplosionEffectPrefab
+      value: 
+      objectReference: {fileID: 4696925322321457287, guid: 852882cfe38ff3344b2ca6159032625b, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: anticipationParticlesPrefab
+      value: 
+      objectReference: {fileID: 5752330882798738898, guid: 2a5322de8b6b26e4587e21223ce3fc1d, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: dustExplosionEffectPrefabV2
+      value: 
+      objectReference: {fileID: 4696925322321457287, guid: 40c48c1cf3f6c504f8abf2b219d6c04b, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: chargedExplosionEffectPrefab
+      value: 
+      objectReference: {fileID: 8778845786154321008, guid: 20cd725737ef78440af7e8abeacefe18, type: 3}
+    - target: {fileID: 3078163700532373927, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_Name
+      value: 'ObjectPoolingManager '
+      objectReference: {fileID: 0}
+    - target: {fileID: 3078163700532373927, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145587519938378158, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -69.41369
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145587519938378158, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 6.256324
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145587519938378158, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.015039327
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145587519938378158, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145587519938378158, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145587519938378158, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145587519938378158, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145587519938378158, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145587519938378158, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8145587519938378158, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}

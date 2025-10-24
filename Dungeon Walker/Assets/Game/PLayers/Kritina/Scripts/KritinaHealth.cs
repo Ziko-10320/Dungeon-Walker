@@ -376,10 +376,10 @@ public class PlayerHealth : MonoBehaviour
         }
         PlayerSkinController skinController = GetComponent<PlayerSkinController>();
         string currentSkinName = (skinController != null) ? skinController.GetCurrentSkinName() : "Default";
-        Sprite skinSprite = spriteLibrary.spriteLibraryAsset.GetSprite("Head", currentSkinName);
+        Sprite skinSprite = spriteLibrary.spriteLibraryAsset.GetSprite("Body", currentSkinName);
         if (skinSprite == null)
         {
-            Debug.LogError($"FlashEffect Error: Could not find a sprite in the library with Category 'Head' and Label '{currentSkinName}'. Check your Sprite Library Asset!", this);
+            Debug.LogError($"FlashEffect Error: Could not find a sprite in the library with Category 'Body' and Label '{currentSkinName}'. Check your Sprite Library Asset!", this);
             yield break;
         }
         Texture2D skinTexture = skinSprite.texture;

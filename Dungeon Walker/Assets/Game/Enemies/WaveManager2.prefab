@@ -1,6 +1,37 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &1662042171021638877
+--- !u!1 &4609059488182296410
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2815108785670225725}
+  m_Layer: 0
+  m_Name: SpawnEnemiesPoint (4)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2815108785670225725
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4609059488182296410}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 268.57, y: 11.82, z: 1.6748832}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6478978932962810097}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1103684820748159168
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -10,27 +41,31 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 705113007110017079, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3.3
+      value: 203
       objectReference: {fileID: 0}
     - target: {fileID: 705113007110017079, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 28.5
+      value: -39.1
       objectReference: {fileID: 0}
     - target: {fileID: 868622344847029109, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_Name
-      value: WaveManager
+      value: WaveManager2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1219393797482476753, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 110.1
       objectReference: {fileID: 0}
     - target: {fileID: 1219393797482476753, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.5
+      value: -7.9
       objectReference: {fileID: 0}
     - target: {fileID: 1405639936855601468, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 36.2
+      value: 121.77
       objectReference: {fileID: 0}
     - target: {fileID: 1405639936855601468, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 17.7
+      value: 30.04
       objectReference: {fileID: 0}
     - target: {fileID: 6248997903676969009, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_LocalPosition.x
@@ -74,19 +109,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7595188842415726211, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -30.61
+      value: 215.4
       objectReference: {fileID: 0}
     - target: {fileID: 7595188842415726211, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 20.3
+      value: 66.8
       objectReference: {fileID: 0}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: spawnRadius
-      value: 5.64
+      value: 4.94
       objectReference: {fileID: 0}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: wavePacingMultiplier
       value: 1.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
+      propertyPath: spawnPoints.Array.size
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: volcanoDormantDuration
@@ -96,6 +135,10 @@ PrefabInstance:
       propertyPath: waveConfigs.Array.size
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
+      propertyPath: spawnPoints.Array.data[4]
+      value: 
+      objectReference: {fileID: 2815108785670225725}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[5].hasBoss
       value: 1
@@ -162,19 +205,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[3].hasVolcanoes
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[4].hasVolcanoes
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[5].hasVolcanoes
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[6].hasVolcanoes
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8756839013093787569, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
       propertyPath: waveConfigs.Array.data[0].volcanoPrefab
@@ -374,6 +417,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 6248997903676969009, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2815108785670225725}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
+--- !u!4 &6478978932962810097 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6248997903676969009, guid: 97a43786ea43fd24091f174892c55c77, type: 3}
+  m_PrefabInstance: {fileID: 1103684820748159168}
+  m_PrefabAsset: {fileID: 0}

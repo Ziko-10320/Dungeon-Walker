@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 868622344847029109}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -77.13107, y: 9.5317335, z: -1.9017634}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -55,18 +55,52 @@ MonoBehaviour:
     enemyPrefabs:
     - {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
     - {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
-    enemyCount: 10
+    enemyCount: 40
     hasBoss: 0
-    bossPrefab: {fileID: 0}
+    bossPrefab: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
+    spawnPointDuration: 8
+    wavePacingMultiplier: 1.5
+    hasVolcanoes: 0
+    volcanoPrefab: {fileID: 9137231053663555815, guid: 398c98f22262ca64baf99fcb98822027, type: 3}
+    volcanoSpawnPoints:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    volcanoActiveDuration: 1.5
+    volcanoDormantDuration: 1
   - waveName: Score 1
     scoreThreshold: 1
     enemyPrefabs:
     - {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
     - {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
     - {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
-    enemyCount: 52
+    enemyCount: 80
     hasBoss: 0
-    bossPrefab: {fileID: 0}
+    bossPrefab: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
+    spawnPointDuration: 15
+    wavePacingMultiplier: 1.3
+    hasVolcanoes: 0
+    volcanoPrefab: {fileID: 9137231053663555815, guid: 398c98f22262ca64baf99fcb98822027, type: 3}
+    volcanoSpawnPoints:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    volcanoActiveDuration: 1.5
+    volcanoDormantDuration: 1
   - waveName: Score 2
     scoreThreshold: 2
     enemyPrefabs:
@@ -74,9 +108,16 @@ MonoBehaviour:
     - {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
     - {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
     - {fileID: 6871114477328718656, guid: def788d9280bf0241b6807fd4864a96c, type: 3}
-    enemyCount: 41
+    enemyCount: 120
     hasBoss: 0
-    bossPrefab: {fileID: 0}
+    bossPrefab: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
+    spawnPointDuration: 25
+    wavePacingMultiplier: 1.25
+    hasVolcanoes: 0
+    volcanoPrefab: {fileID: 0}
+    volcanoSpawnPoints: []
+    volcanoActiveDuration: 1.5
+    volcanoDormantDuration: 2
   - waveName: Score 3
     scoreThreshold: 3
     enemyPrefabs:
@@ -84,9 +125,26 @@ MonoBehaviour:
     - {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
     - {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
     - {fileID: 6871114477328718656, guid: def788d9280bf0241b6807fd4864a96c, type: 3}
-    enemyCount: 69
+    enemyCount: 160
     hasBoss: 1
     bossPrefab: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
+    spawnPointDuration: 35
+    wavePacingMultiplier: 1.2
+    hasVolcanoes: 1
+    volcanoPrefab: {fileID: 9137231053663555815, guid: 398c98f22262ca64baf99fcb98822027, type: 3}
+    volcanoSpawnPoints:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    volcanoActiveDuration: 1.5
+    volcanoDormantDuration: 1
   - waveName: Score 4
     scoreThreshold: 4
     enemyPrefabs:
@@ -94,16 +152,93 @@ MonoBehaviour:
     - {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
     - {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
     - {fileID: 6871114477328718656, guid: def788d9280bf0241b6807fd4864a96c, type: 3}
-    enemyCount: 87
+    - {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
+    - {fileID: 1787418285100596395, guid: 2cc8664ed32428a4f859b268909dbef1, type: 3}
+    enemyCount: 200
     hasBoss: 1
     bossPrefab: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
+    spawnPointDuration: 40
+    wavePacingMultiplier: 1.2
+    hasVolcanoes: 1
+    volcanoPrefab: {fileID: 9137231053663555815, guid: 398c98f22262ca64baf99fcb98822027, type: 3}
+    volcanoSpawnPoints:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    volcanoActiveDuration: 1.5
+    volcanoDormantDuration: 1
+  - waveName: Score 5
+    scoreThreshold: 5
+    enemyPrefabs:
+    - {fileID: 4895704407418736289, guid: db8de16f3868c924b97437dfd1bede1e, type: 3}
+    - {fileID: 6871114477328718656, guid: def788d9280bf0241b6807fd4864a96c, type: 3}
+    - {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
+    - {fileID: 1787418285100596395, guid: 2cc8664ed32428a4f859b268909dbef1, type: 3}
+    - {fileID: 3982030784277162989, guid: a349b6d05f8bc114eb1356f8b1aa1c61, type: 3}
+    enemyCount: 220
+    hasBoss: 1
+    bossPrefab: {fileID: 4223467056326367725, guid: fe47b11f439a4e946b66040f02ef5944, type: 3}
+    spawnPointDuration: 55
+    wavePacingMultiplier: 1.2
+    hasVolcanoes: 1
+    volcanoPrefab: {fileID: 9137231053663555815, guid: 398c98f22262ca64baf99fcb98822027, type: 3}
+    volcanoSpawnPoints:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    volcanoActiveDuration: 1.5
+    volcanoDormantDuration: 1
+  - waveName: Score 6
+    scoreThreshold: 6
+    enemyPrefabs:
+    - {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
+    - {fileID: 1787418285100596395, guid: 2cc8664ed32428a4f859b268909dbef1, type: 3}
+    - {fileID: 3982030784277162989, guid: a349b6d05f8bc114eb1356f8b1aa1c61, type: 3}
+    - {fileID: 8700848017474888702, guid: 40537e71dc0ad6a49a6f3f40220c3900, type: 3}
+    enemyCount: 240
+    hasBoss: 1
+    bossPrefab: {fileID: 7789777947036455407, guid: c8c7606683e754847bea5d1fef0e7692, type: 3}
+    spawnPointDuration: 60
+    wavePacingMultiplier: 1.15
+    hasVolcanoes: 1
+    volcanoPrefab: {fileID: 9137231053663555815, guid: 398c98f22262ca64baf99fcb98822027, type: 3}
+    volcanoSpawnPoints:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    volcanoActiveDuration: 1.5
+    volcanoDormantDuration: 1
   spawnPoints:
   - {fileID: 1219393797482476753}
   - {fileID: 7595188842415726211}
   - {fileID: 705113007110017079}
   - {fileID: 1405639936855601468}
-  spawnRadius: 7.53
+  spawnRadius: 5.64
   spawnEffectPrefab: {fileID: 6931139375341048568, guid: 167cfba23a69cb04c9d4e5465254483f, type: 3}
+  wavePacingMultiplier: 1.1
+  volcanoActiveDuration: 1.5
+  volcanoDormantDuration: 1.5
 --- !u!1 &1778955840443360390
 GameObject:
   m_ObjectHideFlags: 0
@@ -129,7 +264,7 @@ Transform:
   m_GameObject: {fileID: 1778955840443360390}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.53, y: 28.95, z: 1.6748832}
+  m_LocalPosition: {x: -3.3, y: 28.5, z: 1.6748832}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -160,7 +295,7 @@ Transform:
   m_GameObject: {fileID: 6022377996802709889}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 27.2, y: 13.9, z: 1.6748832}
+  m_LocalPosition: {x: 36.2, y: 17.7, z: 1.6748832}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -191,7 +326,7 @@ Transform:
   m_GameObject: {fileID: 6130219837885746831}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -31.59, y: 18.95, z: 1.6748832}
+  m_LocalPosition: {x: -30.61, y: 20.3, z: 1.6748832}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -222,7 +357,7 @@ Transform:
   m_GameObject: {fileID: 6568029037622592209}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.43, y: -2.76, z: 1.6748832}
+  m_LocalPosition: {x: 2.43, y: -5.5, z: 1.6748832}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
