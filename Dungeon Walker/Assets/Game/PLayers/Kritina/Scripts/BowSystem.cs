@@ -1130,8 +1130,13 @@ public void HandleImpactDamage(Vector2 impactPosition)
                     
                     return;
                 }
-              
-               
+                if (target.TryGetComponent<DestructibleObject>(out var DestructibleObject))
+                {
+                    DestructibleObject.TakeDamage(Mathf.RoundToInt(damageToDeal));
+
+                    return;
+                }
+
 
                 if (showDamageDebug)
                 {

@@ -36,7 +36,7 @@ public class RatKingBoss : MonoBehaviour
     private const float FLIP_COOLDOWN = 0.5f;
 
     private bool zonesDeactivated = false;
-
+ 
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -85,6 +85,32 @@ public class RatKingBoss : MonoBehaviour
         StopAllCoroutines(); // A failsafe to stop any other routines
         ChangeState(AIState.Wandering); // Always start in the Wandering state
     }
+    private void HandleInvisibility(bool invisible)
+    {
+        if (invisible)
+        {
+            // Player is invisible. Lose the reference and go back to wandering.
+            Debug.Log("RatKing: Player has become invisible. Losing target.");
+            playerTransform = null;
+            ChangeState(AIState.Wandering); // Force the AI to go back to its passive state.
+        }
+        else
+        {
+            // Player is visible again. Find them.
+            Debug.Log("RatKing: Player is visible again. Re-acquiring target.");
+            FindPlayerAgain();
+        }
+    }
+
+    private void FindPlayerAgain()
+    {
+        // This is the same robust logic to find the player.
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null)
+        {
+            playerTransform = p.transform;
+        }
+    }
 
     void Update()
     {
@@ -106,6 +132,19 @@ public class RatKingBoss : MonoBehaviour
         ExecuteCurrentState();
         UpdateAnimation();
     }
+    private bool IsPlayerInvisible()
+    {
+        if (playerTransform == null) return true;
+        PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+        return invis != null && invis.IsInvisible();
+    }
+
+    private bool IsPlayerInvisible3antix()
+    {
+        if (playerTransform == null) return true;
+        PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
+        return invis3antix != null && invis3antix.IsInvisible();
+    }
 
     private void ChangeState(AIState newState)
     {
@@ -126,6 +165,15 @@ public class RatKingBoss : MonoBehaviour
 
     private void UpdateAIState()
     {
+        if (IsPlayerInvisible() || IsPlayerInvisible3antix())
+        {
+            // If they are, and we are currently chasing, switch to wandering.
+            if (currentState == AIState.Chasing)
+            {
+                ChangeState(AIState.Wandering);
+            }
+            return; // Do not proceed with any other AI logic.
+        }
         if (zonesDeactivated) return;
 
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);

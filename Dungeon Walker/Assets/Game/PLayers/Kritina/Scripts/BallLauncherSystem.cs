@@ -1505,8 +1505,14 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
                 sporeMine.TakeDamage(ballDamage, Vector2.zero, 0f);
 
             }
-           
-          
+            DestructibleObject DestructibleObject = target.GetComponent<DestructibleObject>();
+            if (DestructibleObject != null)
+            {
+
+                DestructibleObject.TakeDamage(ballDamage);
+
+            }
+
         }
     }
 
@@ -1621,7 +1627,13 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
                 sporeMine.TakeDamage(ballDamage, Vector2.zero, 0f);
 
             }
-          
+            DestructibleObject DestructibleObject = target.GetComponent<DestructibleObject>();
+            if (DestructibleObject != null)
+            {
+
+                DestructibleObject.TakeDamage(ballDamage);
+
+            }
 
             if (fleaHealth == null && sprayerHealth == null && flyHealth == null && inkHealth == null && showDamageDebug)
             {
@@ -1747,6 +1759,14 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
             {
               
                 sporeMine.TakeDamage(ballDamage, Vector2.zero, 0f);
+
+            }
+
+            DestructibleObject DestructibleObject = enemyCollider.GetComponent<DestructibleObject>();
+            if (DestructibleObject != null)
+            {
+
+                DestructibleObject.TakeDamage(ballDamage);
 
             }
             if (fleaHealth == null && sprayerHealth == null && flyHealth == null && inkHealth == null && showDamageDebug)

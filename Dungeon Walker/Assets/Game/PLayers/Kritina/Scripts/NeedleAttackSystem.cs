@@ -777,7 +777,11 @@ public class BatAttackSystem : MonoBehaviour
                     CheeseProjectile.TakeDamage(throwSlashDamage,Vector2.zero, 0f);
 
                 }
-              
+                else if (enemyCollider.TryGetComponent<DestructibleObject>(out var DestructibleObject) && DestructibleObject != null)
+                {
+                    DestructibleObject.TakeDamage(throwSlashDamage);
+
+                }
                 else
                 {
                     Debug.LogWarning($"No recognized health script found on {enemyCollider.name}. Damage applied without specific knockback.");
@@ -1442,7 +1446,11 @@ public class BatAttackSystem : MonoBehaviour
                 CheeseProjectile.TakeDamage(damage, Vector2.zero, 0f);
                
             }
-           
+            else if (enemy.TryGetComponent<DestructibleObject>(out var DestructibleObject) && DestructibleObject != null)
+            {
+                DestructibleObject.TakeDamage(damage);
+
+            }
             // Play bat hit enemy sound
             if (audioSource != null && batHitEnemySound != null)
             {

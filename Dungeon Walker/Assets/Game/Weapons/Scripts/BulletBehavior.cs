@@ -133,6 +133,11 @@ public class BulletBehavior : MonoBehaviour
             CheeseProjectile.TakeDamage(bulletDamage, rb.velocity.normalized);
             
         }
+        DestructibleObject DestructibleObject = hitObject.GetComponent<DestructibleObject>();
+        if (DestructibleObject != null)
+        {
+            DestructibleObject.TakeDamage(bulletDamage);
+        } 
         // 3. SPAWN EFFECT: Ask the pool for a particle effect.
         if (waterExplosionPrefab != null && ObjectPoolManager.Instance != null)
         {

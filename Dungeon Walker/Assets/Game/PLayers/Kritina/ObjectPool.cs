@@ -54,6 +54,7 @@ public class ObjectPoolManager : MonoBehaviour
     private Dictionary<GameObject, Queue<GameObject>> poolDictionary;
     public GameObject volcanoObstaclePrefab;
     public int volcanoPoolSize = 10;
+    public GameObject destructionBoxePrefab;
     void Awake()
     {
         if (Instance == null)
@@ -104,6 +105,7 @@ public class ObjectPoolManager : MonoBehaviour
         if (dustExplosionEffectPrefabV2 != null) CreatePool(dustExplosionEffectPrefabV2, effectPoolSize);
         if (inkPuddleV2Prefab != null) CreatePool(inkPuddleV2Prefab, inkPuddlePoolSize);
         if (volcanoObstaclePrefab != null) CreatePool(volcanoObstaclePrefab, volcanoPoolSize);
+        if (destructionBoxePrefab != null) CreatePool(destructionBoxePrefab, 7);
         foreach (MonoBehaviour script in allScripts)
         {
             // Check if the script we found has "signed the contract" of our IPoolable interface.

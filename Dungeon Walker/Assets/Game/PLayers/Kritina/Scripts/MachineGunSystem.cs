@@ -770,8 +770,14 @@ public class BulletComponent : MonoBehaviour
                     sporeMine.TakeDamage(damage, Vector2.zero, 0f);
 
                 }
-               
+                DestructibleObject DestructibleObject = collidedObject.GetComponent<DestructibleObject>();
+                if (DestructibleObject != null)
+                {
+
+                    DestructibleObject.TakeDamage(damage);
+
                 }
+            }
 
                 machineGunSystem.TriggerDestructionEffect(transform.position);
 

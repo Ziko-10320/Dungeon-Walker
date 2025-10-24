@@ -120,6 +120,19 @@ public class RatKingAttack : MonoBehaviour
             return;
         }
     }
+    void OnEnable()
+    {
+        // Subscribe to the events when this enemy becomes active.
+        PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;
+        PlayerInvisibility3antix.OnInvisibilityChanged += HandleInvisibility;
+    }
+
+    void OnDisable()
+    {
+        // Unsubscribe when this enemy is disabled or destroyed to prevent memory leaks.
+        PlayerInvisibility.OnInvisibilityChanged -= HandleInvisibility;
+        PlayerInvisibility3antix.OnInvisibilityChanged -= HandleInvisibility;
+    }
 
     void Start()
     {
@@ -130,6 +143,32 @@ public class RatKingAttack : MonoBehaviour
             animationWatchdogCoroutine = StartCoroutine(AnimationWatchdog());
         }
     }
+    private void HandleInvisibility(bool invisible)
+    {
+        if (invisible)
+        {
+            // Player is invisible. Lose the reference.
+            Debug.Log("RatKingAttack: Player has become invisible. Clearing target.");
+            playerTransform = null;
+        }
+        else
+        {
+            // Player is visible again. Find them.
+            Debug.Log("RatKingAttack: Player is visible again. Re-acquiring target.");
+            FindPlayerAgain();
+        }
+    }
+
+    private void FindPlayerAgain()
+    {
+        // This is the same robust logic to find the player.
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null)
+        {
+            playerTransform = p.transform;
+        }
+    }
+
     public void Initialize(Transform player)
     {
         // Get player reference reliably
@@ -232,6 +271,10 @@ public class RatKingAttack : MonoBehaviour
 
     void Update()
     {
+        if (playerTransform == null)
+        {
+            return; // Exit the Update method immediately.
+        }
         frameCounter++;
         // If it's not time to "think" yet, skip the entire Update method.
         if (frameCounter < updateRate)
@@ -258,14 +301,18 @@ public class RatKingAttack : MonoBehaviour
 
         if (!isJumping && ratKingBoss.CanMove && Time.time >= lastThrowTime + throwCooldown)
         {
-            if (playerTransform != null) // Ensure player exists
+            // --- THIS IS THE FIX ---
+            // Check for invisibility BEFORE triggering the attack.
+            if (IsPlayerInvisible() || IsPlayerInvisible3antix())
+            {
+                // Do nothing if the player is invisible.
+            }
+            else if (playerTransform != null)
+            // --- END OF FIX ---
             {
                 float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
-
-                // THE FIX: Only attack if the player is within the throwAttackRange AND outside the stoppingDistance.
                 if (distanceToPlayer <= throwAttackRange && distanceToPlayer > StoppingDistance)
                 {
-                    Debug.Log("Player is in range! Triggering ThrowAttack animation.");
                     ratKingAnimator.SetTrigger("ThrowAttack");
                     lastThrowTime = Time.time;
                 }
@@ -363,9 +410,28 @@ public class RatKingAttack : MonoBehaviour
         ratKingAnimator.ResetTrigger("ThrowAttack");
         ratKingAnimator.ResetTrigger("Land");
     }
+    private bool IsPlayerInvisible()
+    {
+        if (playerTransform == null) return true; // If we truly have no target, they are "invisible" to us.
+        PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+        return invis != null && invis.IsInvisible();
+    }
+
+    private bool IsPlayerInvisible3antix()
+    {
+        if (playerTransform == null) return true;
+        PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
+        return invis3antix != null && invis3antix.IsInvisible();
+    }
 
     private IEnumerator JumpAttackRoutine()
     {
+        if (IsPlayerInvisible() || IsPlayerInvisible3antix())
+        {
+            isJumping = false;
+            ratKingBoss.CanMove = true;
+            yield break; // Abort the jump if player is invisible.
+        }
         ResetAnimatorStates();
         isJumping = true;
         ratKingBoss.CanMove = false; // Prevent other movements during jump attack
@@ -422,6 +488,7 @@ public class RatKingAttack : MonoBehaviour
 
     public void SpawnCheese1()
     {
+        if (playerTransform == null) return;
         if (cheese1Instance != null) Destroy(cheese1Instance);
         if (cheese2Instance != null) Destroy(cheese2Instance);
 
@@ -442,6 +509,7 @@ public class RatKingAttack : MonoBehaviour
 
     public void SpawnCheese2()
     {
+        if (playerTransform == null) return;
         if (isV2SporeAttack) return;
         cheese2Instance = Instantiate(cheesePrefab, cheeseSpawnPoint2.position, Quaternion.identity);
 
@@ -458,6 +526,7 @@ public class RatKingAttack : MonoBehaviour
     }
     public void ThrowCheese1()
     {
+        if (playerTransform == null) return;
         Debug.Log("ThrowCheese1 called!");
         if (cheese1Instance != null)
         {
@@ -492,6 +561,7 @@ public class RatKingAttack : MonoBehaviour
 
     public void ThrowCheese2()
     {
+        if (playerTransform == null) return;
         if (isV2SporeAttack) return;
         Debug.Log("ThrowCheese2 called!");
         if (cheese2Instance != null)
