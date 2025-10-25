@@ -270,7 +270,7 @@ public class InventoryUI : MonoBehaviour
         // ----------------------------------------
 
         // Update the upgrade button (this logic is unchanged)
-        if (currentLevel >= 5)
+        if (currentLevel >= 2)
         {
             upgradeWeaponButton.interactable = false;
             upgradeCostText.text = "MAX LEVEL";

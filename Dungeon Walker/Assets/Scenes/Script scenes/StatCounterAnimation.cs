@@ -12,7 +12,9 @@ public class StatCounterAnimation : MonoBehaviour
     [SerializeField] private TextMeshProUGUI killsValueText;
     [SerializeField] private TextMeshProUGUI coinsLabelText;
     [SerializeField] private TextMeshProUGUI coinsValueText;
-
+    [SerializeField] private GameObject scoreIcon;
+    [SerializeField] private GameObject killsIcon;
+    [SerializeField] private GameObject coinsIcon;
     [Header("High Score UI")]
     [SerializeField] private TextMeshProUGUI highScoreLabelText; // e.g., "High Score:" or "New Record!"
     [SerializeField] private TextMeshProUGUI highScoreValueText; // The number for the high score
@@ -55,7 +57,7 @@ public class StatCounterAnimation : MonoBehaviour
         scoreValueText.gameObject.SetActive(true);
         highScoreLabelText.gameObject.SetActive(true);
         highScoreValueText.gameObject.SetActive(true);
-
+        if (scoreIcon != null) scoreIcon.SetActive(true);
         // Set the text for the labels
         scoreLabelText.text = "Score:";
         if (PlayerStatsManager.Instance.newHighScoreAchieved)
@@ -80,7 +82,7 @@ public class StatCounterAnimation : MonoBehaviour
         killsValueText.gameObject.SetActive(true);
         mostKillsLabelText.gameObject.SetActive(true);
         mostKillsValueText.gameObject.SetActive(true);
-
+        if (killsIcon != null) killsIcon.SetActive(true);
         // Set the text for the labels
         killsLabelText.text = "Enemies Killed:"; // <--- UPDATED TEXT
         if (PlayerStatsManager.Instance.newMostKillsAchieved)
@@ -103,7 +105,7 @@ public class StatCounterAnimation : MonoBehaviour
         // Finally, make the coins labels and values visible
         coinsLabelText.gameObject.SetActive(true);
         coinsValueText.gameObject.SetActive(true);
-
+        if (coinsIcon != null) coinsIcon.SetActive(true);
         // Set the text for the label
         coinsLabelText.text = "Coins Gathered:"; // <--- UPDATED TEXT
 
@@ -136,25 +138,18 @@ public class StatCounterAnimation : MonoBehaviour
     public void SkipAnimation()
     {
         if (!isAnimating) return;
+        Debug.Log("Skipping stat animation!");
+
+        // 1. Stop all animations and sounds
         StopAllCoroutines();
         if (tickSound != null) tickSound.Stop();
 
-        // This instantly shows the final result
-        AnimateAllStats(
-            PlayerStatsManager.Instance.finalScore,
-            PlayerStatsManager.Instance.enemiesKilled,
-            PlayerStatsManager.Instance.coinsGathered
-        );
-        // We call the coroutine but since it has no yields in the instant-display path, it finishes in one frame.
-        // To be safe, let's just set the final values directly.
+        // 2. Instantly display the final results
+        ShowFinalResults();
 
-        StopAllCoroutines(); // Stop it again just in case
-
-        scoreValueText.text = PlayerStatsManager.Instance.finalScore.ToString();
-        killsValueText.text = PlayerStatsManager.Instance.enemiesKilled.ToString();
-        coinsValueText.text = PlayerStatsManager.Instance.coinsGathered.ToString();
-
+        // 3. Mark the animation as complete
         isAnimating = false;
+        animationCoroutine = null;
     }
 
     // A helper method to turn everything on or off.
@@ -171,10 +166,58 @@ public class StatCounterAnimation : MonoBehaviour
         mostKillsLabelText.gameObject.SetActive(isActive);
         mostKillsValueText.gameObject.SetActive(isActive);
     }
+    private void ShowFinalResults()
+    {
+        // --- 1. Get all the final numbers ---
+        int finalScore = PlayerStatsManager.Instance.finalScore;
+        int finalKills = PlayerStatsManager.Instance.enemiesKilled;
+        int finalCoins = PlayerStatsManager.Instance.coinsGathered;
 
+        // --- 2. Make EVERYTHING visible ---
+        ResetUI(); // First, clear anything that might be partially visible.
+        SetAllActive(true); // Now, turn everything on.
+        if (scoreIcon != null) scoreIcon.SetActive(true);
+        if (killsIcon != null) killsIcon.SetActive(true);
+        if (coinsIcon != null) coinsIcon.SetActive(true);
+        // --- 3. Set all the text labels and values ---
+        // Score
+        scoreLabelText.text = "Score:";
+        scoreValueText.text = finalScore.ToString();
+        if (PlayerStatsManager.Instance.newHighScoreAchieved)
+        {
+            highScoreLabelText.text = "New Record!";
+            highScoreValueText.text = finalScore.ToString();
+        }
+        else
+        {
+            highScoreLabelText.text = "High Score:";
+            highScoreValueText.text = PlayerPrefs.GetInt("HighScore", 0).ToString();
+        }
+
+        // Kills
+        killsLabelText.text = "Enemies Killed:";
+        killsValueText.text = finalKills.ToString();
+        if (PlayerStatsManager.Instance.newMostKillsAchieved)
+        {
+            mostKillsLabelText.text = "New Record!";
+            mostKillsValueText.text = finalKills.ToString();
+        }
+        else
+        {
+            mostKillsLabelText.text = "Most Kills:";
+            mostKillsValueText.text = PlayerPrefs.GetInt("MostKills", 0).ToString();
+        }
+
+        // Coins
+        coinsLabelText.text = "Coins Gathered:";
+        coinsValueText.text = finalCoins.ToString();
+    }
     public void ResetUI()
     {
         SetAllActive(false);
+        if (scoreIcon != null) scoreIcon.SetActive(false);
+        if (killsIcon != null) killsIcon.SetActive(false);
+        if (coinsIcon != null) coinsIcon.SetActive(false);
     }
 
     // The PlayFinishSound method is unchanged.
