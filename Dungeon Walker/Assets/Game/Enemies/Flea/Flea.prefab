@@ -6191,6 +6191,10 @@ MonoBehaviour:
   DeathMushroomParticules3: {fileID: 358045684082635524}
   DeathMushroomParticules4: {fileID: 5432461156978457752}
   DeathMushroomParticules5: {fileID: 7487004696747460218}
+  deathSounds:
+  - {fileID: 8300000, guid: 46ac957e7a54d934694816ee3b9ceabe, type: 3}
+  - {fileID: 8300000, guid: 108d7f9142a1f7e4ca554a7695671346, type: 3}
+  - {fileID: 8300000, guid: 546d9b7f85f519144a961d47a954bbdc, type: 3}
   DeathMushroomSpawn: {fileID: 3077874899055086445}
   DeathMushroomSpawn2: {fileID: 4035408116939213891}
   DeathMushroomSpawn3: {fileID: 1513102286625556875}
@@ -6207,7 +6211,7 @@ MonoBehaviour:
   - {fileID: 7940781870790749240}
   - {fileID: 2490857718690721670}
   damageSound: {fileID: 0}
-  damageSoundVolume: 0.7
+  damageSoundVolume: 0.038
   weaponSwitchManager: {fileID: 0}
   OnDeath:
     m_PersistentCalls:

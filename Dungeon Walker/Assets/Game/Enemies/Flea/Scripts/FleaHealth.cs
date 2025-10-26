@@ -20,7 +20,7 @@ public class FleaHealth : MonoBehaviour, IPunObservable
     public ParticleSystem DeathMushroomParticules3;
     public ParticleSystem DeathMushroomParticules4;
     public ParticleSystem DeathMushroomParticules5;
-
+    public AudioClip[] deathSounds;
     public Transform DeathMushroomSpawn;
     public Transform DeathMushroomSpawn2;
     public Transform DeathMushroomSpawn3;
@@ -100,6 +100,30 @@ public class FleaHealth : MonoBehaviour, IPunObservable
                 }
             }
         }
+    }
+    private void PlayRandomSound(AudioClip[] clips)
+    {
+        if (clips == null || clips.Length == 0) return; // Don't do anything if there are no sounds
+
+        // 1. Choose a random sound from the array
+        int randomIndex = Random.Range(0, clips.Length);
+        AudioClip clipToPlay = clips[randomIndex];
+
+        if (clipToPlay == null) return;
+
+        // 2. Create a temporary GameObject to host the AudioSource
+        GameObject soundPlayerObject = new GameObject("TempSoundPlayer");
+        soundPlayerObject.transform.position = transform.position; // Play the sound at the enemy's position
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        // 3. Configure the AudioSource
+        tempAudioSource.clip = clipToPlay;
+        tempAudioSource.spatialBlend = 1.0f; // Make it a 3D sound
+        tempAudioSource.volume = damageSoundVolume; // You can use the same volume or add a new variable for it
+        tempAudioSource.Play();
+
+        // 4. Destroy the temporary object after the clip has finished playing
+        Destroy(soundPlayerObject, clipToPlay.length);
     }
     void Start()
     {
@@ -346,6 +370,7 @@ public class FleaHealth : MonoBehaviour, IPunObservable
     // This function contains your original death effect logic.
     private void PlayDeathEffects(Vector3 deathPosition)
     {
+        PlayRandomSound(deathSounds);
         if (DeathMushroomSpawn != null && DeathMushroomParticules != null)
         {
             InstantiateAndPlayParticleSystem(DeathMushroomParticules, DeathMushroomSpawn.position);

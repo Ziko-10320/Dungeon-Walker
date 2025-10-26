@@ -4428,9 +4428,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a82a65afa8c3b347a90565f995584c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scoreText: {fileID: 3507333846506830173}
-  killsText: {fileID: 1815125012697061001}
-  coinsText: {fileID: 9078414928082685486}
+  scoreLabelText: {fileID: 0}
+  scoreValueText: {fileID: 0}
+  killsLabelText: {fileID: 0}
+  killsValueText: {fileID: 0}
+  coinsLabelText: {fileID: 0}
+  coinsValueText: {fileID: 0}
+  scoreIcon: {fileID: 0}
+  killsIcon: {fileID: 0}
+  coinsIcon: {fileID: 0}
+  highScoreLabelText: {fileID: 0}
+  highScoreValueText: {fileID: 0}
+  mostKillsLabelText: {fileID: 0}
+  mostKillsValueText: {fileID: 0}
   countDuration: 0.75
   delayBetweenStats: 0
   tickSound: {fileID: 0}
