@@ -66,6 +66,7 @@ public class ExplosiveCoinsPowerUp : MonoBehaviour
 
     private void SpawnCoin(GameObject prefab, CoinType type, Vector3 pos)
     {
+        PlaySound(coinSpawnSound, coinSpawnVolume);
         if (prefab == null) return;
         if (coinSpawnSound != null)
         {
@@ -79,11 +80,7 @@ public class ExplosiveCoinsPowerUp : MonoBehaviour
 
     public void SpawnSplitCoins(GameObject prefab, CoinType type, Vector3 pos)
     {
-        if (prefab == null) return;
-        if (coinSpawnSound != null)
-        {
-            AudioSource.PlayClipAtPoint(coinSpawnSound, pos, coinSpawnVolume);
-        }
+        PlaySound(coinSpawnSound, coinSpawnVolume);
         for (int i = 0; i < 2; i++)
         {
             GameObject go = Instantiate(prefab, pos, Quaternion.identity);
@@ -93,7 +90,34 @@ public class ExplosiveCoinsPowerUp : MonoBehaviour
             cb.Initialize(this, type, force, bias);
         }
     }
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
 
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("PowerUp_FORCE_PLAY_SOUND");
+
+        // --- THIS IS THE CRITICAL FIX ---
+        // Position it directly on the camera to guarantee it's heard at full volume
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        tempAudioSource.clip = clip;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     public void DamageInArea(Vector2 pos, float radius, float damage)
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(pos, radius, enemyLayer | playerLayer);
@@ -234,10 +258,7 @@ public class ExplosiveCoinsPowerUp : MonoBehaviour
                 case CoinType.Bronze: parts = manager.bronzeExplosionParticles; explosionSound = manager.bronzeExplosionSound;
                     explosionVolume = manager.bronzeExplosionVolume; dmg = manager.bronzeDamage; break;
             }
-            if (explosionSound != null)
-            {
-                AudioSource.PlayClipAtPoint(explosionSound, transform.position, explosionVolume);
-            }
+            manager.PlaySound(explosionSound, explosionVolume);
             if (parts != null)
             {
                 foreach (var ps in parts)

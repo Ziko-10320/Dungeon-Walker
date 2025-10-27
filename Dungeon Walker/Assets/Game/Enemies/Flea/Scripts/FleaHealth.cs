@@ -103,26 +103,36 @@ public class FleaHealth : MonoBehaviour, IPunObservable
     }
     private void PlayRandomSound(AudioClip[] clips)
     {
-        if (clips == null || clips.Length == 0) return; // Don't do anything if there are no sounds
+        if (clips == null || clips.Length == 0) return;
 
-        // 1. Choose a random sound from the array
         int randomIndex = Random.Range(0, clips.Length);
         AudioClip clipToPlay = clips[randomIndex];
-
         if (clipToPlay == null) return;
 
-        // 2. Create a temporary GameObject to host the AudioSource
-        GameObject soundPlayerObject = new GameObject("TempSoundPlayer");
-        soundPlayerObject.transform.position = transform.position; // Play the sound at the enemy's position
+        // --- STEP 1: Create a clean, independent object for the sound ---
+        // We name it to make it easy to find in the Hierarchy if we need to debug it.
+        GameObject soundPlayerObject = new GameObject("FORCE_PLAY_DEATH_SOUND");
+
+        // --- STEP 2: Position it directly on the camera ---
+        // This completely eliminates 3D audio falloff. A sound playing from the listener's exact position
+        // will always be at maximum 3D volume.
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // --- STEP 3: Add and aggressively configure the AudioSource ---
         AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
 
-        // 3. Configure the AudioSource
         tempAudioSource.clip = clipToPlay;
-        tempAudioSource.spatialBlend = 1.0f; // Make it a 3D sound
-        tempAudioSource.volume = damageSoundVolume; // You can use the same volume or add a new variable for it
-        tempAudioSource.Play();
 
-        // 4. Destroy the temporary object after the clip has finished playing
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = 1.0f;                  // Force volume to 100%. We ignore the script's public variable for this test.
+        tempAudioSource.spatialBlend = 0.0f;              // Force it to be a 2D sound. This is the most important setting.
+        tempAudioSource.priority = 0;                     // Set to highest priority so Unity doesn't deprioritize or cull it.
+        tempAudioSource.bypassEffects = true;             // Ignore any Audio Mixer effects that might be reducing volume.
+        tempAudioSource.bypassListenerEffects = true;     // Ignore effects on the camera's Audio Listener.
+        tempAudioSource.bypassReverbZones = true;         // Ignore any reverb zones.
+
+        // --- STEP 4: Play the sound and schedule its destruction ---
+        tempAudioSource.Play();
         Destroy(soundPlayerObject, clipToPlay.length);
     }
     void Start()

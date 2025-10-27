@@ -11854,6 +11854,11 @@ MonoBehaviour:
   knockbackDuration: 0
   bloodSpawnPoint: {fileID: 3206954105282813643}
   bloodParticle: {fileID: 7512731309858294815}
+  deathSounds:
+  - {fileID: 8300000, guid: 108d7f9142a1f7e4ca554a7695671346, type: 3}
+  - {fileID: 8300000, guid: 546d9b7f85f519144a961d47a954bbdc, type: 3}
+  - {fileID: 8300000, guid: 46ac957e7a54d934694816ee3b9ceabe, type: 3}
+  deathSoundVolume: 1
   DeathMushroomParticules: {fileID: 2927383163600915649}
   DeathMushroomParticules2: {fileID: 4545986456458660128}
   DeathMushroomParticules3: {fileID: 8494107285830833978}

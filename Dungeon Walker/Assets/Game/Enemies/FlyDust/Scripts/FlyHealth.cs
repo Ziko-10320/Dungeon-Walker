@@ -12,7 +12,9 @@ public class FlyHealth : MonoBehaviour
     public float knockbackDuration = 0.2f; // Duration of the knockback effect
     public Transform bloodSpawnPoint; // Spawn point for blood particles
     public ParticleSystem bloodParticle; // Blood particle system
-
+    [Header("Death Audio")]
+    public AudioClip[] deathSounds; // Array for randomized death sounds
+    [Range(0f, 1f)] public float deathSoundVolume = 1.0f;
     public ParticleSystem DeathMushroomParticules;
     public ParticleSystem DeathMushroomParticules2;
     public ParticleSystem DeathMushroomParticules3;
@@ -86,6 +88,37 @@ public class FlyHealth : MonoBehaviour
         {
             FlyAttack.enabled = true;
         }
+    }
+    private void PlayRandomSound(AudioClip[] clips)
+    {
+        if (clips == null || clips.Length == 0 || Camera.main == null) return;
+
+        int randomIndex = Random.Range(0, clips.Length);
+        AudioClip clipToPlay = clips[randomIndex];
+        if (clipToPlay == null) return;
+
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("Fly_FORCE_PLAY_DEATH_SOUND");
+
+        // Position it directly on the camera to guarantee it's heard
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        tempAudioSource.clip = clipToPlay;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = this.deathSoundVolume;  // Use the public variable for control
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clipToPlay.length);
     }
     void Start()
     {
@@ -240,7 +273,8 @@ public class FlyHealth : MonoBehaviour
 
     public void Die()
     {
-       
+        PlayRandomSound(deathSounds);
+
         if (DeathMushroomSpawn != null && DeathMushroomParticules != null)
         {
             InstantiateAndPlayParticleSystem(DeathMushroomParticules, DeathMushroomSpawn.position);

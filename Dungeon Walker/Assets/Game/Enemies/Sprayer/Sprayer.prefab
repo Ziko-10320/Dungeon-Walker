@@ -15682,6 +15682,11 @@ MonoBehaviour:
   knockbackDuration: 0
   bloodSpawnPoint: {fileID: 6887314040794923926}
   bloodParticle: {fileID: 1441365472297043515}
+  deathSounds:
+  - {fileID: 8300000, guid: 108d7f9142a1f7e4ca554a7695671346, type: 3}
+  - {fileID: 8300000, guid: 546d9b7f85f519144a961d47a954bbdc, type: 3}
+  - {fileID: 8300000, guid: 46ac957e7a54d934694816ee3b9ceabe, type: 3}
+  deathSoundVolume: 1
   DeathMushroomParticules: {fileID: 2531850299380109093}
   DeathMushroomParticules2: {fileID: 3788725257520827076}
   DeathMushroomParticules3: {fileID: 7288908890754558543}
@@ -15714,6 +15719,7 @@ MonoBehaviour:
   dropTable: {fileID: 0}
   dropChance: 0.05
   powerUpPickupPrefab: {fileID: 0}
+  powerUpSpawnPoint: {fileID: 0}
 --- !u!114 &4969289257960167119
 MonoBehaviour:
   m_ObjectHideFlags: 0

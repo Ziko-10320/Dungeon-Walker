@@ -16,7 +16,9 @@ public class RatKingHealth : MonoBehaviour
     public ParticleSystem DeathMushroomParticules3;
     public ParticleSystem DeathMushroomParticules4;
     public ParticleSystem DeathMushroomParticules5;
-
+    [Header("Death Audio")]
+    public AudioClip deathSound; // A single clip for the death sound
+    [Range(0f, 1f)] public float deathSoundVolume = 1.0f;
     public Transform DeathMushroomSpawn;
     public Transform DeathMushroomSpawn2;
     public Transform DeathMushroomSpawn3;
@@ -91,7 +93,33 @@ public class RatKingHealth : MonoBehaviour
             ratKingAttack.Initialize(player); // We will add this method
         }
     }
+    private void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
 
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("RatKing_FORCE_PLAY_DEATH_SOUND");
+
+        // Position it directly on the camera to guarantee it's heard
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        tempAudioSource.clip = clip;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     void Start()
     {
 
@@ -207,6 +235,7 @@ public class RatKingHealth : MonoBehaviour
     // Method to handle death
     private void Die()
     {
+        PlaySound(deathSound, deathSoundVolume); 
         if (DeathMushroomSpawn != null && DeathMushroomParticules != null)
         {
             InstantiateAndPlayParticleSystem(DeathMushroomParticules, DeathMushroomSpawn.position);

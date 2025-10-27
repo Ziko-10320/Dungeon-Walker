@@ -37,7 +37,9 @@ public class InkHealth : MonoBehaviour
     public AudioClip damageSoundClip; // Audio clip to play when taking damage
     [Range(0f, 1f)]
     public float damageSoundVolume = 1f; // Volume slider for damage sound
-
+    [Header("Death Audio")]
+    public AudioClip[] deathSounds; // Array for randomized death sounds
+    [Range(0f, 1f)] public float deathSoundVolume = 1.0f;
     [Header("Invincibility System")]
     [Tooltip("Enable the invincibility system")]
     public bool enableInvincibilitySystem = true;
@@ -347,7 +349,37 @@ public class InkHealth : MonoBehaviour
         }
     }
 
+    private void PlayRandomSound(AudioClip[] clips)
+    {
+        if (clips == null || clips.Length == 0 || Camera.main == null) return;
 
+        int randomIndex = Random.Range(0, clips.Length);
+        AudioClip clipToPlay = clips[randomIndex];
+        if (clipToPlay == null) return;
+
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("Ink_FORCE_PLAY_DEATH_SOUND");
+
+        // Position it directly on the camera to guarantee it's heard
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        tempAudioSource.clip = clipToPlay;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = this.deathSoundVolume;  // Use the public variable for control
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clipToPlay.length);
+    }
     void Start()
     {
 
@@ -900,6 +932,7 @@ private IEnumerator DamageOverTimeRoutine()
     // Method to handle death
     public void Die()
     {
+        PlayRandomSound(deathSounds);
         if (activePuddleInstance != null && activePuddleInstance.activeInHierarchy)
         {
             // If it does, disable it immediately. This returns it to the object pool.

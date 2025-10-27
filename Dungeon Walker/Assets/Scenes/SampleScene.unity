@@ -81006,7 +81006,7 @@ PrefabInstance:
     - target: {fileID: 620592730903250469, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: trailSound
       value: 
-      objectReference: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+      objectReference: {fileID: 8300000, guid: d79293b4bee4ccf41beacdcac48423a2, type: 3}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: maxHealth
       value: 200
@@ -81154,19 +81154,31 @@ PrefabInstance:
     - target: {fileID: 2309832231095394448, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: coinSpawnSound
       value: 
-      objectReference: {fileID: 8300000, guid: 70eb062116e0bea47a84b6b12ca4cb63, type: 3}
+      objectReference: {fileID: 8300000, guid: cc7b4c1cda88e0846aef831030b89a1d, type: 3}
     - target: {fileID: 2309832231095394448, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: bronzeExplosionSound
       value: 
-      objectReference: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+      objectReference: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
     - target: {fileID: 2309832231095394448, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: goldenExplosionSound
       value: 
-      objectReference: {fileID: 8300000, guid: f765fbc2bf39a9941966ebb6bc0ad4f2, type: 3}
+      objectReference: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
     - target: {fileID: 2309832231095394448, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: silverExplosionSound
       value: 
-      objectReference: {fileID: 8300000, guid: 0a9e41efd2406c84ea5ea5dff4c22a9c, type: 3}
+      objectReference: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
+    - target: {fileID: 2309832231095394448, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: bronzeExplosionVolume
+      value: 0.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 2309832231095394448, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: goldenExplosionVolume
+      value: 0.61
+      objectReference: {fileID: 0}
+    - target: {fileID: 2309832231095394448, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: silverExplosionVolume
+      value: 0.59
+      objectReference: {fileID: 0}
     - target: {fileID: 2493920547019745464, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: arrowPointer
       value: 
@@ -83024,6 +83036,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2009317352812818580, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
+      propertyPath: waitingSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 238a4b2c07047104cbc08e37b0ea8933, type: 3}
+    - target: {fileID: 2009317352812818580, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
+      propertyPath: waitingSoundVolume
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2609867982273127384, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: m_Name
       value: Quest
@@ -83035,6 +83055,22 @@ PrefabInstance:
     - target: {fileID: 3567244727426795985, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: m_LocalPosition.y
       value: -34.67
+      objectReference: {fileID: 0}
+    - target: {fileID: 4756638473540226993, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
+      propertyPath: waitingSound
+      value: 
+      objectReference: {fileID: 8300000, guid: d79293b4bee4ccf41beacdcac48423a2, type: 3}
+    - target: {fileID: 4756638473540226993, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
+      propertyPath: waitingSoundVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4954343501837858821, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
+      propertyPath: waitingSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a821e95678ec4d74486bd67b739660ad, type: 3}
+    - target: {fileID: 4954343501837858821, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
+      propertyPath: waitingSoundVolume
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5949696933055207533, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: player
@@ -83051,6 +83087,14 @@ PrefabInstance:
     - target: {fileID: 5949696933055207533, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: circleRadius
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7441735867177664504, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
+      propertyPath: waitingSound
+      value: 
+      objectReference: {fileID: 8300000, guid: ea8cd9325f0c395458b7014c570068a8, type: 3}
+    - target: {fileID: 7441735867177664504, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
+      propertyPath: waitingSoundVolume
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7707369072187665132, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: m_LocalPosition.x

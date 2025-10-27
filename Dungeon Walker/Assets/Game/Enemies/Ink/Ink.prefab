@@ -2155,6 +2155,11 @@ MonoBehaviour:
   - {fileID: 8369018351694676266}
   damageSoundClip: {fileID: 0}
   damageSoundVolume: 1
+  deathSounds:
+  - {fileID: 8300000, guid: 108d7f9142a1f7e4ca554a7695671346, type: 3}
+  - {fileID: 8300000, guid: 546d9b7f85f519144a961d47a954bbdc, type: 3}
+  - {fileID: 8300000, guid: 46ac957e7a54d934694816ee3b9ceabe, type: 3}
+  deathSoundVolume: 1
   enableInvincibilitySystem: 1
   minInvincibilityInterval: 1
   maxInvincibilityInterval: 3
@@ -2215,6 +2220,9 @@ MonoBehaviour:
   dropTable: {fileID: 0}
   dropChance: 0.05
   powerUpPickupPrefab: {fileID: 0}
+  powerUpSpawnPoint: {fileID: 0}
+  invincibilityActivationRange: 20
+  playerTransform: {fileID: 0}
 --- !u!114 &8652883054127700324
 MonoBehaviour:
   m_ObjectHideFlags: 0

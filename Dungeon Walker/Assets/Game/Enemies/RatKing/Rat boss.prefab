@@ -11300,7 +11300,11 @@ MonoBehaviour:
   isV2SporeAttack: 0
   splitDelay: 0.4
   splitScaleMultiplier: 0.6
+  sporeFlashMaterial: {fileID: 0}
+  sporeFlashInterval: 0.2
+  sporeMineLifetime: 5
   splitForce: 5
+  maxStuckTime: 4
 --- !u!114 &1264289404633083085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11352,6 +11356,8 @@ MonoBehaviour:
   DeathMushroomParticules3: {fileID: 8403004249430277333}
   DeathMushroomParticules4: {fileID: 580472205846089318}
   DeathMushroomParticules5: {fileID: 8512385788130095368}
+  deathSound: {fileID: 8300000, guid: 517b86b2291c18644a0b893817dc481a, type: 3}
+  deathSoundVolume: 1
   DeathMushroomSpawn: {fileID: 6143731217495861919}
   DeathMushroomSpawn2: {fileID: 8911549034786350617}
   DeathMushroomSpawn3: {fileID: 5262161143852932665}
@@ -11383,6 +11389,7 @@ MonoBehaviour:
   dropTable: {fileID: 0}
   dropChance: 0.05
   powerUpPickupPrefab: {fileID: 0}
+  powerUpSpawnPoint: {fileID: 0}
 --- !u!114 &4484414899429158999
 MonoBehaviour:
   m_ObjectHideFlags: 0
