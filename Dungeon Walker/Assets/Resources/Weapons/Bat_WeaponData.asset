@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Bat
   weaponIcon: {fileID: 21300000, guid: 82143afdaa6986149bbda9f5c9bb22e7, type: 3}
   upgradeLevels:
-  - upgradeCost: 10
+  - upgradeCost: 15
     pistolStats:
       pistolDamage: 0
       pistolFireRate: 0
@@ -23,10 +23,10 @@ MonoBehaviour:
       pistolAmmoCapacity: 0
       pistolReloadSpeed: 0
     batStats:
-      meleeAnticipation: 0.6
-      meleeDamage: 80
-      throwSpeed: 22.5
-      throwDamage: 80
+      meleeAnticipation: 0.3
+      meleeDamage: 100
+      throwSpeed: 30
+      throwDamage: 100
     bowStats:
       bowChargeTime: 0
       bowMinDamage: 0
@@ -35,7 +35,7 @@ MonoBehaviour:
       launcherDamage: 0
       launcherFireRate: 0
       launcherRadius: 0
-  - upgradeCost: 20
+  - upgradeCost: 30
     pistolStats:
       pistolDamage: 0
       pistolFireRate: 0
@@ -43,10 +43,10 @@ MonoBehaviour:
       pistolAmmoCapacity: 0
       pistolReloadSpeed: 0
     batStats:
-      meleeAnticipation: 0.5
-      meleeDamage: 90
-      throwSpeed: 25
-      throwDamage: 90
+      meleeAnticipation: 0.1
+      meleeDamage: 150
+      throwSpeed: 40
+      throwDamage: 150
     bowStats:
       bowChargeTime: 0
       bowMinDamage: 0

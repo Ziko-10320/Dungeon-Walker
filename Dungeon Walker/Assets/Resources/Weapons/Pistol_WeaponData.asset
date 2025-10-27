@@ -17,10 +17,10 @@ MonoBehaviour:
   upgradeLevels:
   - upgradeCost: 10
     pistolStats:
-      pistolDamage: 12
-      pistolFireRate: 0.28
-      pistolBulletSpeed: 25
-      pistolAmmoCapacity: 12
+      pistolDamage: 20
+      pistolFireRate: 0.2
+      pistolBulletSpeed: 30
+      pistolAmmoCapacity: 18
       pistolReloadSpeed: 1.4
     batStats:
       meleeAnticipation: 0
@@ -37,11 +37,11 @@ MonoBehaviour:
       launcherRadius: 0
   - upgradeCost: 20
     pistolStats:
-      pistolDamage: 15
-      pistolFireRate: 0.25
-      pistolBulletSpeed: 30
-      pistolAmmoCapacity: 14
-      pistolReloadSpeed: 1.2
+      pistolDamage: 30
+      pistolFireRate: 0.1
+      pistolBulletSpeed: 40
+      pistolAmmoCapacity: 24
+      pistolReloadSpeed: 0.8
     batStats:
       meleeAnticipation: 0
       meleeDamage: 0

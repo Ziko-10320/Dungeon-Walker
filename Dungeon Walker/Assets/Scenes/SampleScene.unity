@@ -80920,17 +80920,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7796940568639449547, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
   m_PrefabInstance: {fileID: 5869509796292021625}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2422467351052468314 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
-  m_PrefabInstance: {fileID: 2741814453123183690}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4051448195775605368}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31e8491dc4a30cc4a95adf10e1db646c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2524879497095913324 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1418926758135652019, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
@@ -81057,15 +81046,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: maxAmmo
-      value: 10
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: fireRate
-      value: 0.32
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: reloadTime
-      value: 1.6
+      value: 1.7
       objectReference: {fileID: 0}
     - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: weaponData
@@ -81077,11 +81066,11 @@ PrefabInstance:
       objectReference: {fileID: 490707551240320423}
     - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: bulletSpeed
-      value: 22
+      value: 26
       objectReference: {fileID: 0}
     - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: bulletDamage
-      value: 10
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: bulletPoolSize
@@ -81142,6 +81131,10 @@ PrefabInstance:
     - target: {fileID: 1000888707120661668, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0.50464
+      objectReference: {fileID: 0}
+    - target: {fileID: 1208478156964909872, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1322426456295993298, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: trailSound
@@ -81224,6 +81217,10 @@ PrefabInstance:
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: bulletPrefab
+      value: 
+      objectReference: {fileID: 4727414575758128179, guid: 1fc69eb5c2f04cc408d7a01a8c9bf64b, type: 3}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: maxOverheatTime
       value: 10
       objectReference: {fileID: 0}
@@ -81273,7 +81270,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: shootCooldown
-      value: 2
+      value: 1.8
       objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enemyLayers.m_Bits
@@ -81281,7 +81278,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: explosionDamageRadius
-      value: 0.9
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: destructionLayers.m_Bits
@@ -81290,6 +81287,10 @@ PrefabInstance:
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: explosionDamageMultiplier
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3638036865984811249, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3945908735703952342, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: becomeVisibleSound
@@ -81357,11 +81358,11 @@ PrefabInstance:
       objectReference: {fileID: 9183276878537282167}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: maxChargeTime
-      value: 2.2
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: maxArrowDamage
-      value: 70
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: minArrowDamage
@@ -81407,6 +81408,10 @@ PrefabInstance:
       propertyPath: runningSoundClip
       value: 
       objectReference: {fileID: 8300000, guid: b02fc2b5ddbcb9448a43dc7e2250e061, type: 3}
+    - target: {fileID: 5333788681294591354, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5655835730392218243, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.013
@@ -81457,7 +81462,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: damage
-      value: 70
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: joystickUI
@@ -81488,6 +81493,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2311707432988319596}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: throwSlashSpeed
+      value: 28
+      objectReference: {fileID: 0}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: attackButtonRect
       value: 
       objectReference: {fileID: 4203659889669267634}
@@ -81497,7 +81506,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 42decd80c88abe546a877eafefc4344b, type: 3}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: throwSlashDamage
-      value: 100
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: attackButtonImage
@@ -81517,7 +81526,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: anticipationDuration
-      value: 0.7
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: uiCanvasRectTransform
@@ -81542,6 +81551,10 @@ PrefabInstance:
     - target: {fileID: 6790693189779611674, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Name
       value: Kritina
+      objectReference: {fileID: 0}
+    - target: {fileID: 6968400546862801597, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7265038887234651254, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: uiSlot1
@@ -81762,7 +81775,7 @@ PrefabInstance:
     - target: {fileID: 60301353551192779, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2422467351052468314}
+      objectReference: {fileID: 0}
     - target: {fileID: 60301353551192779, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
@@ -81997,6 +82010,10 @@ PrefabInstance:
     - target: {fileID: 1953777083123781544, guid: a3823dbd8faa0fe4fa1715d9de2f205e, type: 3}
       propertyPath: m_Name
       value: WaveManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 1953777083123781544, guid: a3823dbd8faa0fe4fa1715d9de2f205e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4731072023636552940, guid: a3823dbd8faa0fe4fa1715d9de2f205e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -82713,7 +82730,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7796940568639449547, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: aimJoystick
@@ -82817,7 +82834,7 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: ab29bac5ad85a994eb12ee6adeba3872, type: 3}
     - target: {fileID: 9006167878275002792, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -67.15
+      value: -84
       objectReference: {fileID: 0}
     - target: {fileID: 9006167878275002792, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: m_LocalPosition.y
