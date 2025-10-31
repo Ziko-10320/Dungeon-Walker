@@ -1,5 +1,6 @@
 ﻿using FirstGearGames.SmoothCameraShaker;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -13,17 +14,11 @@ public class InkHealth : MonoBehaviour
     public Transform bloodSpawnPoint; // Spawn point for blood particles
     public ParticleSystem bloodParticle; // Blood particle system
 
-    public ParticleSystem DeathInkParticules;
-    public ParticleSystem DeathInkParticules2;
-    public ParticleSystem DeathInkParticules3;
-    public ParticleSystem DeathInkParticules4;
-    public ParticleSystem DeathInkParticules5;
+    public List<string> deathEffectNames;
 
-    public Transform DeathInkSpawn;
-    public Transform DeathInkSpawn2;
-    public Transform DeathInkSpawn3;
-    public Transform DeathInkSpawn4;
-    public Transform DeathInkSpawn5;
+
+    public Transform DeathMushroomSpawn;
+    public Transform DeathMushroomSpawn2;
 
     // Flash Damage Variables
     public Material flashMaterial; // Material with the flash shader
@@ -519,29 +514,7 @@ private IEnumerator DamageOverTimeRoutine()
 
     while (true)
     {
-        // --- AI LOD LOGIC ---
-        // First, determine our thinking speed based on distance.
-        if (playerTransform != null && AI_LOD_Manager.Instance != null)
-        {
-            float dist = Vector2.Distance(transform.position, playerTransform.position);
-            if (dist > AI_LOD_Manager.Instance.lowPriorityRange)
-            {
-                updateRate = AI_LOD_Manager.Instance.lowPriorityUpdateRate;
-            }
-            else if (dist > AI_LOD_Manager.Instance.midPriorityRange)
-            {
-                updateRate = AI_LOD_Manager.Instance.midPriorityUpdateRate;
-            }
-            else
-            {
-                updateRate = 1;
-            }
-        }
-        else
-        {
-            updateRate = 1; // Default to high priority if something is missing
-        }
-        // --- END OF AI LOD LOGIC ---
+       
 
         // The rest of the logic is the same as before...
         if (currentState == AIState.Idle)
@@ -949,29 +922,21 @@ private IEnumerator DamageOverTimeRoutine()
             StopCoroutine(invincibilityTimerCoroutine);
         }
 
-        if (DeathInkSpawn != null && DeathInkParticules != null)
+        if (VFX_Director.Instance != null && deathEffectNames.Count > 0)
         {
-            InstantiateAndPlayParticleSystem(DeathInkParticules, DeathInkSpawn.position);
-        }
+            // We will use the existing spawn point transforms to position the effects.
+            Transform[] spawns = { DeathMushroomSpawn, DeathMushroomSpawn2 };
 
-        if (DeathInkSpawn2 != null && DeathInkParticules2 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathInkParticules2, DeathInkSpawn2.position);
-        }
-
-        if (DeathInkSpawn3 != null && DeathInkParticules3 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathInkParticules3, DeathInkSpawn3.position);
-        }
-
-        if (DeathInkSpawn4 != null && DeathInkParticules4 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathInkParticules4, DeathInkSpawn4.position);
-        }
-
-        if (DeathInkSpawn5 != null && DeathInkParticules5 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathInkParticules5, DeathInkSpawn5.position);
+            // Loop through the effect names and spawn points.
+            for (int i = 0; i < deathEffectNames.Count; i++)
+            {
+                // Make sure we have a valid name and a valid spawn point.
+                if (!string.IsNullOrEmpty(deathEffectNames[i]) && i < spawns.Length && spawns[i] != null)
+                {
+                    // Tell the Director to play the effect at the correct spawn point.
+                    VFX_Director.Instance.PlayEffect(deathEffectNames[i], spawns[i].position);
+                }
+            }
         }
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);

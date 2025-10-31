@@ -45,7 +45,21 @@ public class CheckpointManager : MonoBehaviour
     [Header("Player References")]
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private L3antixHealth l3antixHealth;
+    private static List<CheckpointManager> allManagers = new List<CheckpointManager>();
 
+    void OnEnable()
+    {
+        if (!allManagers.Contains(this))
+        {
+            allManagers.Add(this);
+        }
+    }
+
+    // ---- NEW METHOD TO ADD ----
+    void OnDisable()
+    {
+        allManagers.Remove(this);
+    }
     void Start()
     {
         if (interactButton != null)
@@ -225,7 +239,7 @@ public class CheckpointManager : MonoBehaviour
             currentCheckpoint.EndTimer();
             isTimerRunning = false;
 
-            foreach (CheckpointManager mgr in FindObjectsOfType<CheckpointManager>())
+            foreach (CheckpointManager mgr in allManagers)
             {
                 if (mgr != null)
                 {

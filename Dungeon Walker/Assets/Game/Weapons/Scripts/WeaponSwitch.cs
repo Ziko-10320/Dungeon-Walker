@@ -33,7 +33,9 @@ public class WeaponSwitchManager : MonoBehaviour
     private WeaponConfig currentWeapon;
     private SpriteRenderer currentArmSpriteRenderer;
     private bool isSwitchingWeapon = false;
-
+    private List<GameObject> activeGhosts = new List<GameObject>();
+    private List<GameObject> activeBat2Objects = new List<GameObject>();
+    private List<GameObject> activeThrowSlashObjects = new List<GameObject>();
     void Start()
     {
         InitializeWeapons();
@@ -149,7 +151,21 @@ public class WeaponSwitchManager : MonoBehaviour
         Debug.Log($"Switched to weapon: {currentWeapon.weaponName}");
         isSwitchingWeapon = false;
     }
-
+    public void RegisterSpawnedObject(GameObject obj)
+    {
+        if (obj.CompareTag("Ghost"))
+        {
+            activeGhosts.Add(obj);
+        }
+        else if (obj.name.Contains("Bat2"))
+        {
+            activeBat2Objects.Add(obj);
+        }
+        else if (obj.name.Contains("ThrowSlash"))
+        {
+            activeThrowSlashObjects.Add(obj);
+        }
+    }
     WeaponConfig GetRandomWeapon()
     {
         float totalChance = weaponConfigs.Sum(config => config.dropChance);
@@ -278,70 +294,47 @@ public class WeaponSwitchManager : MonoBehaviour
             CleanupWeaponArtifacts();
         }
     }
+    // In WeaponSwitchManager.cs, replace your entire CleanupWeaponArtifacts method with this new version
+
     void CleanupWeaponArtifacts()
     {
-        // Clean up ghost objects
-        GameObject[] ghosts = GameObject.FindGameObjectsWithTag("Ghost");
-        foreach (GameObject ghost in ghosts)
+        // Clean up ghost objects from our list
+        foreach (GameObject ghost in activeGhosts)
         {
-            Destroy(ghost);
-        }
-        if (ghosts.Length > 0)
-        {
-            Debug.Log($"Cleaned up {ghosts.Length} ghost objects during weapon switch");
-        }
-
-        // Clean up any Bat2 objects that might be left in the scene
-        // BUT EXCLUDE the player's current weapon bat
-        GameObject[] bat2Objects = GameObject.FindObjectsOfType<GameObject>()
-            .Where(go => go.name.Contains("Bat2") && go.GetComponent<Rigidbody2D>() != null)
-            .ToArray();
-
-        foreach (GameObject bat2 in bat2Objects)
-        {
-            // Check if this bat2 is part of the current weapon - if so, DON'T destroy it
-            // This assumes 'currentWeapon' is correctly set and 'weaponGameObjects' contains the bat's GameObject.
-            bool isCurrentWeaponBat = false;
-            if (currentWeapon != null && currentWeapon.weaponGameObjects != null)
+            if (ghost != null)
             {
-                foreach (GameObject weaponGO in currentWeapon.weaponGameObjects)
-                {
-                    if (weaponGO == bat2)
-                    {
-                        isCurrentWeaponBat = true;
-                        break;
-                    }
-                }
+                Destroy(ghost);
             }
+        }
+        activeGhosts.Clear(); // Clear the list for the next cycle
+        Debug.Log("Cleaned up ghost objects during weapon switch");
 
-            if (!isCurrentWeaponBat)
+        // Clean up Bat2 objects from our list
+        foreach (GameObject bat2 in activeBat2Objects)
+        {
+            if (bat2 != null)
             {
+                // The check to avoid destroying the current weapon is no longer needed
+                // if you only register projectiles/temporary bats.
                 Destroy(bat2);
             }
-            else
+        }
+        activeBat2Objects.Clear();
+        Debug.Log("Cleaned up Bat2 objects during weapon switch");
+
+        // Clean up ThrowSlash objects from our list
+        foreach (GameObject throwSlash in activeThrowSlashObjects)
+        {
+            if (throwSlash != null)
             {
-                Debug.Log($"Skipping destruction of current weapon bat: {bat2.name}");
+                Destroy(throwSlash);
             }
         }
-        if (bat2Objects.Length > 0)
-        {
-            Debug.Log($"Cleaned up Bat2 objects during weapon switch (excluding current weapon)");
-        }
-
-        // Clean up any ThrowSlash objects that might be left in the scene
-        GameObject[] throwSlashObjects = GameObject.FindObjectsOfType<GameObject>()
-            .Where(go => go.name.Contains("ThrowSlash"))
-            .ToArray();
-        foreach (GameObject throwSlash in throwSlashObjects)
-        {
-            Destroy(throwSlash);
-        }
-        if (throwSlashObjects.Length > 0)
-        {
-            Debug.Log($"Cleaned up {throwSlashObjects.Length} ThrowSlash objects during weapon switch");
-        }
+        activeThrowSlashObjects.Clear();
+        Debug.Log("Cleaned up ThrowSlash objects during weapon switch");
     }
-  
+
+
     public string GetCurrentWeaponName()
     {
         return currentWeapon?.weaponName ?? "None";

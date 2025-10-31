@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6108085663263090329
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2197058651429096072}
+  - component: {fileID: 229555521790665301}
+  m_Layer: 0
+  m_Name: VFX Director
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2197058651429096072
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6108085663263090329}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -71.87275, y: 4.7054954, z: -2.4250386}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &229555521790665301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6108085663263090329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0de047d84e5fa814db7fb10627191dc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vfxLibrary:
+  - effectName: BloodExplooosion Flea
+    effectPrefab: {fileID: 2025055031783617366, guid: 62b5d7a74d95a824bab4fff0f1191be8, type: 3}
+  - effectName: DeathParticulesMushroomFlea
+    effectPrefab: {fileID: 3892687707521552885, guid: e2834abeabd929b44845f5fae15445af, type: 3}
+  - effectName: BloodExplooosion FleaV2
+    effectPrefab: {fileID: 5754941114749251010, guid: fb26826dbe912cf468105dc63f1808e5, type: 3}
+  - effectName: DeathParticulesMushroomV2
+    effectPrefab: {fileID: 6414794549993045919, guid: a752ae65756376440b31ba7bc903ce00, type: 3}
+  - effectName: BloodExplooosion Fly
+    effectPrefab: {fileID: 7711343821597991781, guid: 96ca23a18ebabe4448981ff46eab59ae, type: 3}
+  - effectName: DeathParticulesMushroomFly
+    effectPrefab: {fileID: 6163385454656236232, guid: dcb2063283000b041a26dff929d2135d, type: 3}
+  - effectName: BloodExplooosion FlyV2
+    effectPrefab: {fileID: 6044275179544077298, guid: 7dcdff46928f437419ecc6b4aee48f97, type: 3}
+  - effectName: DeathParticulesMushroomFlyV2
+    effectPrefab: {fileID: 271730678093842806, guid: 71b8635e9a0120d4493fdcdb133bc90f, type: 3}
+  - effectName: BloodExplooosion Ink
+    effectPrefab: {fileID: 663760149454233381, guid: aaddf5f76c1925a40ab7ea5691fbc37e, type: 3}
+  - effectName: DeathParticulesMushroomInk
+    effectPrefab: {fileID: 7177244827744715846, guid: a0d435a3d6bfdea4599251088aa1e12d, type: 3}
+  - effectName: BloodExplooosion InkV2
+    effectPrefab: {fileID: 57958243615454095, guid: 5fffe277c5f6889449c470f2f8c95d62, type: 3}
+  - effectName: DeathParticulesMushroom
+    effectPrefab: {fileID: 7470390389228866754, guid: c747591fc77864846b603f19e99e572d, type: 3}
+  - effectName: BloodExplooosionRat
+    effectPrefab: {fileID: 3616217612380112247, guid: 36b6f8b200bf5ca42b0b8bd711387157, type: 3}
+  - effectName: DeathParticulesMushroomRat
+    effectPrefab: {fileID: 6167579225371308775, guid: 6f82153759d91ac41bb3ff37fa8e8d3a, type: 3}
+  - effectName: BloodExplooosionRatV2
+    effectPrefab: {fileID: 3387819392836343314, guid: 0557ed99fb1fad240b65d34a87c62cbd, type: 3}
+  - effectName: DeathParticulesMushroomRatV2
+    effectPrefab: {fileID: 4251943691467051308, guid: 2e56d0aaea3fe6641b1b2f011175f790, type: 3}
+  - effectName: BloodExplooosionSprayer
+    effectPrefab: {fileID: 9222891573576571310, guid: 7d4244f82f9337148b1043570ad65b4e, type: 3}
+  - effectName: DeathParticulesMushroomSprayer
+    effectPrefab: {fileID: 662025979375524542, guid: 86f02c1c37d70984192b8c050bc0171b, type: 3}
+  - effectName: BloodExplooosionSprayerV2
+    effectPrefab: {fileID: 3817302197555085630, guid: 827968182a3e534488a854a7a17f8658, type: 3}
+  - effectName: DeathParticulesMushroomSprayerV2
+    effectPrefab: {fileID: 5198117568373495992, guid: bfd808787d383374ca0fefe13e25b3c0, type: 3}
+  defaultPoolSize: 10

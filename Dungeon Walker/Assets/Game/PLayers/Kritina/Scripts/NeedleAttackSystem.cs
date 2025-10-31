@@ -161,6 +161,7 @@ public class BatAttackSystem : MonoBehaviour
     private static List<GameObject> activeGhostObjects = new List<GameObject>();
 
     private PlayerSuperMeter superMeter;
+    private WeaponSwitchManager weaponSwitchManager;
     void OnDisable()
     {
         Debug.Log("BatAttackSystem OnDisable called - performing comprehensive cleanup");
@@ -171,8 +172,7 @@ public class BatAttackSystem : MonoBehaviour
         // Clean up all active Bat2 objects
         CleanupAllBat2Objects();
 
-        // Clean up all ghost objects
-        CleanupAllGhostObjects();
+      
 
         // Stop all coroutines to prevent MissingReferenceException
         StopAllCoroutines();
@@ -225,6 +225,7 @@ public class BatAttackSystem : MonoBehaviour
 
     void Awake()
     {
+        weaponSwitchManager = FindObjectOfType<WeaponSwitchManager>();
         throwLoopAudioSource = gameObject.AddComponent<AudioSource>();
         throwLoopAudioSource.clip = throwBatSound;      // Assign the clip you already have
         throwLoopAudioSource.volume = throwBatVolume;   // Use the new volume variable
@@ -1204,7 +1205,10 @@ public class BatAttackSystem : MonoBehaviour
 
         GameObject ghostObject = new GameObject("Ghost_" + originalRenderer.name);
         ghostObject.tag = "Ghost";
-        activeGhostObjects.Add(ghostObject);
+        if (weaponSwitchManager != null)
+        {
+            weaponSwitchManager.RegisterSpawnedObject(ghostObject);
+        }
 
         SpriteRenderer ghostRenderer = ghostObject.AddComponent<SpriteRenderer>();
 
@@ -1383,7 +1387,7 @@ public class BatAttackSystem : MonoBehaviour
             // Add null checks before calling TryGetComponent
             if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth) && fleaHealth != null)
             {
-                fleaHealth.TakeDamage(damage, knockbackDirection, fleaKnockbackForce, null);
+                fleaHealth.TakeDamage(damage, knockbackDirection, fleaKnockbackForce);
                 if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                     L3antixSuperMeter.Instance.AddDamage(damage);
 

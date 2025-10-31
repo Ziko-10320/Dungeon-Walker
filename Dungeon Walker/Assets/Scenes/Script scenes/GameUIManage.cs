@@ -216,6 +216,10 @@ public class GameUIManager : MonoBehaviour
 
     private IEnumerator FadeAndLoadScene(int sceneIndex)
     {
+        if (VFX_Director.Instance != null)
+        {
+            VFX_Director.Instance.ResetInitializationFlag();
+        }
         Time.timeScale = 1f; // Ensure time is running before we fade
         isGamePaused = false;
         if (PlayerStatsManager.Instance != null)
@@ -237,6 +241,10 @@ public class GameUIManager : MonoBehaviour
 
     private IEnumerator FadeAndRestart()
     {
+        if (VFX_Director.Instance != null)
+        {
+            VFX_Director.Instance.ResetInitializationFlag();
+        }
         Time.timeScale = 1f;
         isGamePaused = false;
 

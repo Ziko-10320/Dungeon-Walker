@@ -2,6 +2,7 @@
 using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,19 +15,12 @@ public class FleaHealth : MonoBehaviour, IPunObservable
     public float knockbackDuration = 0.2f; // Duration of the knockback effect
     public Transform bloodSpawnPoint; // Spawn point for blood particles
     public ParticleSystem bloodParticle; // Blood particle system
+    public List<string> deathEffectNames;
 
-    public ParticleSystem DeathMushroomParticules;
-    public ParticleSystem DeathMushroomParticules2;
-    public ParticleSystem DeathMushroomParticules3;
-    public ParticleSystem DeathMushroomParticules4;
-    public ParticleSystem DeathMushroomParticules5;
     public AudioClip[] deathSounds;
     public Transform DeathMushroomSpawn;
     public Transform DeathMushroomSpawn2;
-    public Transform DeathMushroomSpawn3;
-    public Transform DeathMushroomSpawn4;
-    public Transform DeathMushroomSpawn5;
-
+   
     // Flash Damage Variables
     public Material flashMaterial; // Material with the flash shader
     public string flashAmountProperty = "_FlashAmount"; // Name of the Flash Amount property in the shader
@@ -175,7 +169,7 @@ public class FleaHealth : MonoBehaviour, IPunObservable
         }
     }
 
-    public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 1f, GameObject attacker = null)
+    public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 1f)
     {
         // If we are online, send a request to the Master Client to deal the damage.
         if (view != null && PhotonNetwork.IsConnected)
@@ -381,29 +375,21 @@ public class FleaHealth : MonoBehaviour, IPunObservable
     private void PlayDeathEffects(Vector3 deathPosition)
     {
         PlayRandomSound(deathSounds);
-        if (DeathMushroomSpawn != null && DeathMushroomParticules != null)
+        if (VFX_Director.Instance != null && deathEffectNames.Count > 0)
         {
-            InstantiateAndPlayParticleSystem(DeathMushroomParticules, DeathMushroomSpawn.position);
-        }
+            // We will use the existing spawn point transforms to position the effects.
+            Transform[] spawns = { DeathMushroomSpawn, DeathMushroomSpawn2 };
 
-        if (DeathMushroomSpawn2 != null && DeathMushroomParticules2 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathMushroomParticules2, DeathMushroomSpawn2.position);
-        }
-
-        if (DeathMushroomSpawn3 != null && DeathMushroomParticules3 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathMushroomParticules3, DeathMushroomSpawn3.position);
-        }
-
-        if (DeathMushroomSpawn4 != null && DeathMushroomParticules4 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathMushroomParticules4, DeathMushroomSpawn4.position);
-        }
-
-        if (DeathMushroomSpawn5 != null && DeathMushroomParticules5 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathMushroomParticules5, DeathMushroomSpawn5.position);
+            // Loop through the effect names and spawn points.
+            for (int i = 0; i < deathEffectNames.Count; i++)
+            {
+                // Make sure we have a valid name and a valid spawn point.
+                if (!string.IsNullOrEmpty(deathEffectNames[i]) && i < spawns.Length && spawns[i] != null)
+                {
+                    // Tell the Director to play the effect at the correct spawn point.
+                    VFX_Director.Instance.PlayEffect(deathEffectNames[i], spawns[i].position);
+                }
+            }
         }
         // Camera shake should only happen on the local player's camera.
         // A simple way is to check the distance to the main camera.

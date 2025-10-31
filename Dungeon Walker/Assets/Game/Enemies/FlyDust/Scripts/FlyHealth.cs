@@ -1,6 +1,7 @@
-﻿using System.Collections;
+﻿using FirstGearGames.SmoothCameraShaker;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using FirstGearGames.SmoothCameraShaker;
 using UnityEngine.Events;
 
 public class FlyHealth : MonoBehaviour
@@ -15,17 +16,11 @@ public class FlyHealth : MonoBehaviour
     [Header("Death Audio")]
     public AudioClip[] deathSounds; // Array for randomized death sounds
     [Range(0f, 1f)] public float deathSoundVolume = 1.0f;
-    public ParticleSystem DeathMushroomParticules;
-    public ParticleSystem DeathMushroomParticules2;
-    public ParticleSystem DeathMushroomParticules3;
-    public ParticleSystem DeathMushroomParticules4;
-    public ParticleSystem DeathMushroomParticules5;
+    public List<string> deathEffectNames;
 
     public Transform DeathMushroomSpawn;
     public Transform DeathMushroomSpawn2;
-    public Transform DeathMushroomSpawn3;
-    public Transform DeathMushroomSpawn4;
-    public Transform DeathMushroomSpawn5;
+  
 
     // Flash Damage Variables
     public Material flashMaterial; // Material with the flash shader
@@ -275,29 +270,21 @@ public class FlyHealth : MonoBehaviour
     {
         PlayRandomSound(deathSounds);
 
-        if (DeathMushroomSpawn != null && DeathMushroomParticules != null)
+        if (VFX_Director.Instance != null && deathEffectNames.Count > 0)
         {
-            InstantiateAndPlayParticleSystem(DeathMushroomParticules, DeathMushroomSpawn.position);
-        }
+            // We will use the existing spawn point transforms to position the effects.
+            Transform[] spawns = { DeathMushroomSpawn, DeathMushroomSpawn2 };
 
-        if (DeathMushroomSpawn2 != null && DeathMushroomParticules2 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathMushroomParticules2, DeathMushroomSpawn2.position);
-        }
-
-        if (DeathMushroomSpawn3 != null && DeathMushroomParticules3 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathMushroomParticules3, DeathMushroomSpawn3.position);
-        }
-
-        if (DeathMushroomSpawn4 != null && DeathMushroomParticules4 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathMushroomParticules4, DeathMushroomSpawn4.position);
-        }
-
-        if (DeathMushroomSpawn5 != null && DeathMushroomParticules5 != null)
-        {
-            InstantiateAndPlayParticleSystem(DeathMushroomParticules5, DeathMushroomSpawn5.position);
+            // Loop through the effect names and spawn points.
+            for (int i = 0; i < deathEffectNames.Count; i++)
+            {
+                // Make sure we have a valid name and a valid spawn point.
+                if (!string.IsNullOrEmpty(deathEffectNames[i]) && i < spawns.Length && spawns[i] != null)
+                {
+                    // Tell the Director to play the effect at the correct spawn point.
+                    VFX_Director.Instance.PlayEffect(deathEffectNames[i], spawns[i].position);
+                }
+            }
         }
 
         // Trigger camera shake
