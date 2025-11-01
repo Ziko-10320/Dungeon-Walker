@@ -50,7 +50,7 @@ Material:
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0.071576595}
+        m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -66,20 +66,20 @@ Material:
     m_Ints: []
     m_Floats:
     - _BorderInnerDarkerAmount: 1
-    - _BorderInnerSharpness: 0.066
-    - _BorderInnerSizeX: 0.104
+    - _BorderInnerSharpness: 0.19
+    - _BorderInnerSizeX: 0.072
     - _BorderInnerSizeY: 0.094
     - _BorderOutterRound: 0.017
-    - _BorderOutterSharpness: 0.33
-    - _BorderOutterSizeX: 0.16
-    - _BorderOutterSizeY: 0.075
+    - _BorderOutterSharpness: 0.6
+    - _BorderOutterSizeX: 0.289
+    - _BorderOutterSizeY: 0.333
     - _BorderZoom: 1.05
     - _BottomStaticOpt: 0
     - _BumpScale: 1
-    - _CrtGlowAmount: 0.134
+    - _CrtGlowAmount: 0.121
     - _CrtReflectionCurve: 3.39
     - _CrtReflectionFalloff: 0.623
-    - _CrtReflectionRadius: -0.049
+    - _CrtReflectionRadius: -0.048
     - _Curvature: 0
     - _Curvature2: 0.082
     - _Cutoff: 0.5
@@ -102,8 +102,8 @@ Material:
     - _ScanlinesOpt: 0.4
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _Spread: 1
-    - _Spread8: 1
+    - _Spread: 0.6
+    - _Spread8: 0.66
     - _SrcBlend: 1
     - _UVSec: 0
     - _VertJerkOpt: 1

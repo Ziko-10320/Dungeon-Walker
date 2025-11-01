@@ -70,7 +70,8 @@ public class BatAttackSystem : MonoBehaviour
     [SerializeField] private AudioClip throwBatSound; // Sound played when throwing the bat
     [SerializeField] private AudioClip throwSlashHitEnemySound; // Sound played when ThrowSlash hits an enemy
     [SerializeField] private AudioClip batHitEnemySound; // New: Sound played when bat hits an enemy
-
+    [SerializeField] private AudioClip batWallImpactSound; // The new sound slot
+    [SerializeField, Range(0f, 1f)] private float batWallImpactVolume = 0.8f;
     [Header("Visual Settings")]
     [SerializeField] private GameObject playerBatVisual; // Visual representation of the bat on the player (to hide when thrown)
     [SerializeField] private SpriteRenderer playerBatSpriteRenderer;
@@ -813,6 +814,7 @@ public class BatAttackSystem : MonoBehaviour
     private void HandleThrowSlashHit(Vector3 hitPosition)
     {
         if (activeThrowSlash == null) return;
+        PlaySound(batWallImpactSound, batWallImpactVolume);
         if (throwLoopAudioSource != null && throwLoopAudioSource.isPlaying)
         {
             throwLoopAudioSource.Stop();
@@ -1567,7 +1569,34 @@ public class BatAttackSystem : MonoBehaviour
         if (masterMixer != null) masterMixer.SetFloat("MasterVolume", volume);
         PlayerPrefs.SetFloat(MASTER_VOLUME_KEY, volume);
     }
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
 
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("Bat_FORCE_PLAY_SOUND");
+
+        // --- THIS IS THE CRITICAL FIX for volume issues ---
+        // Position it directly on the camera to guarantee it's heard at full volume
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        tempAudioSource.clip = clip;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     public void SetMusicVolume(float volume)
     {
         if (masterMixer != null) masterMixer.SetFloat("MusicVolume", volume);

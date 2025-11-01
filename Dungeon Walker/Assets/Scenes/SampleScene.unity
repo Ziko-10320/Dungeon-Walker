@@ -81280,7 +81280,11 @@ PrefabInstance:
     - target: {fileID: 1322426456295993298, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: trailSound
       value: 
-      objectReference: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+      objectReference: {fileID: 8300000, guid: 5f358d554ae7a624ab7ef0e02f06a87e, type: 3}
+    - target: {fileID: 1322426456295993298, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: trailVolume
+      value: 0.6
+      objectReference: {fileID: 0}
     - target: {fileID: 1783951101622570136, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -81350,6 +81354,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: shootSound
+      value: 
+      objectReference: {fileID: 8300000, guid: dd911e8ba488de942ae0829353fd8532, type: 3}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 490707551240320423}
@@ -81364,6 +81372,26 @@ PrefabInstance:
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: maxOverheatTime
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: wallImpactSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 5a2d546e99f64654f86b155b8108f5ae, type: 3}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: enemyImpactSound
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: shootSoundVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: wallImpactVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: enemyImpactVolume
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: overheatAudioClip
@@ -81414,6 +81442,10 @@ PrefabInstance:
       value: 1.8
       objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: explosionVolume
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enemyLayers.m_Bits
       value: 1728
       objectReference: {fileID: 0}
@@ -81429,6 +81461,14 @@ PrefabInstance:
       propertyPath: explosionDamageMultiplier
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: additionalExplosionSounds.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: additionalExplosionSounds.Array.data[0]
+      value: 
+      objectReference: {fileID: 8300000, guid: dd911e8ba488de942ae0829353fd8532, type: 3}
     - target: {fileID: 3638036865984811249, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_CollisionDetection
       value: 0
@@ -81486,6 +81526,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 6624921355026274658}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: shootSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a09539e22e171be418a052af0ad0b4a3, type: 3}
+    - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: weaponData
       value: 
       objectReference: {fileID: 11400000, guid: f78a651e8f2921f43850ce99e92ac268, type: 2}
@@ -81512,11 +81556,11 @@ PrefabInstance:
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: wallImpactSound
       value: 
-      objectReference: {fileID: 8300000, guid: 5a2d546e99f64654f86b155b8108f5ae, type: 3}
+      objectReference: {fileID: 8300000, guid: efa2d377aecd3a3448c33093d2947c2c, type: 3}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enemyImpactSound
       value: 
-      objectReference: {fileID: 8300000, guid: f765fbc2bf39a9941966ebb6bc0ad4f2, type: 3}
+      objectReference: {fileID: 8300000, guid: 959266612cea76d428985f73559c0c32, type: 3}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enemyLayers.m_Bits
       value: 1664
@@ -81525,6 +81569,10 @@ PrefabInstance:
       propertyPath: fullyChargedIndicator
       value: 
       objectReference: {fileID: 2833191139351611861}
+    - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: wallImpactSoundVolume
+      value: 0.24
+      objectReference: {fileID: 0}
     - target: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: joystick
       value: 
@@ -81658,12 +81706,20 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 3646306793151808266}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: batWallImpactSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 5162112e01137d54ea379c55c5e3bace, type: 3}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enemyLayers.m_Bits
       value: 1664
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: groundLayer.m_Bits
       value: 1736
+      objectReference: {fileID: 0}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: batWallImpactVolume
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: anticipationDuration
@@ -81708,7 +81764,7 @@ PrefabInstance:
     - target: {fileID: 8044999676915526635, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: reviveSound
       value: 
-      objectReference: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+      objectReference: {fileID: 8300000, guid: abdbd38e94d4b094eac5bcafce6d4a91, type: 3}
     - target: {fileID: 8044999676915526635, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: heartAnimator
       value: 
@@ -83231,7 +83287,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 238a4b2c07047104cbc08e37b0ea8933, type: 3}
     - target: {fileID: 2009317352812818580, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSoundVolume
-      value: 1
+      value: 0.58
       objectReference: {fileID: 0}
     - target: {fileID: 2609867982273127384, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: m_Name
@@ -83248,7 +83304,7 @@ PrefabInstance:
     - target: {fileID: 4756638473540226993, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSound
       value: 
-      objectReference: {fileID: 8300000, guid: d79293b4bee4ccf41beacdcac48423a2, type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 4756638473540226993, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSoundVolume
       value: 1
@@ -83259,7 +83315,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: a821e95678ec4d74486bd67b739660ad, type: 3}
     - target: {fileID: 4954343501837858821, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSoundVolume
-      value: 1
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 5949696933055207533, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: player
@@ -83283,7 +83339,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: ea8cd9325f0c395458b7014c570068a8, type: 3}
     - target: {fileID: 7441735867177664504, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSoundVolume
-      value: 1
+      value: 0.52
       objectReference: {fileID: 0}
     - target: {fileID: 7707369072187665132, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: m_LocalPosition.x

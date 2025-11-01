@@ -536,7 +536,7 @@ public class BowSystems : MonoBehaviour, IPunObservable, IPoolable
         // Play the shoot sound ONCE per shot, not per arrow.
         if (enableSoundEffects && shootSound != null)
         {
-            PlaySoundAtPosition(shootSound, arrowSpawnPoint.position, shootSoundVolume);
+            PlaySound(shootSound, shootSoundVolume);
         }
 
         // --- THE SHOTGUN LOOP ---
@@ -830,7 +830,34 @@ public class BowSystems : MonoBehaviour, IPunObservable, IPoolable
             Debug.Log($"Calibration complete - Ready for bow system!");
         }
     }
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
 
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("Bow_FORCE_PLAY_SOUND");
+
+        // --- THIS IS THE CRITICAL FIX for volume issues ---
+        // Position it directly on the camera to guarantee it's heard at full volume
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        tempAudioSource.clip = clip;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     [ContextMenu("Calibrate Aiming")]
     public void ManualCalibrate()
     {
@@ -1055,7 +1082,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                     if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                         PlayerSuperMeter.Instance.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Flea {target.name} at {impactPoint}");
-                    if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    if (enableSoundEffects && enemyImpactSound != null) PlaySound(enemyImpactSound, enemyImpactSoundVolume);
                     return;
                 }
 
@@ -1068,7 +1095,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                     if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                         PlayerSuperMeter.Instance.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Sprayer {target.name} at {impactPoint}");
-                    if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    if (enableSoundEffects && enemyImpactSound != null) PlaySound(enemyImpactSound, enemyImpactSoundVolume);
                     return;
                 }
 
@@ -1081,7 +1108,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                     if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                         PlayerSuperMeter.Instance.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Sprayer {target.name} at {impactPoint}");
-                    if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    if (enableSoundEffects && enemyImpactSound != null) PlaySound(enemyImpactSound, enemyImpactSoundVolume);
                     return;
                 }
 
@@ -1094,7 +1121,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                     if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                         PlayerSuperMeter.Instance.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Fly {target.name} at {impactPoint}");
-                    if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    if (enableSoundEffects && enemyImpactSound != null) PlaySound(enemyImpactSound, enemyImpactSoundVolume);
                     return;
                 }
 
@@ -1107,7 +1134,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                     if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                         PlayerSuperMeter.Instance.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to Ink {target.name} at {impactPoint}");
-                    if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    if (enableSoundEffects && enemyImpactSound != null) PlaySound(enemyImpactSound, enemyImpactSoundVolume);
                     return;
                 }
 
@@ -1120,7 +1147,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
                     if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
                         PlayerSuperMeter.Instance.AddDamage((int)damageToDeal);
                     if (showDamageDebug) Debug.Log($"Arrow dealt {damageToDeal} damage to RatKing {target.name} at {impactPoint}");
-                    if (enableSoundEffects && enemyImpactSound != null) PlaySoundAtPosition(enemyImpactSound, impactPoint, enemyImpactSoundVolume);
+                    if (enableSoundEffects && enemyImpactSound != null) PlaySound(enemyImpactSound, enemyImpactSoundVolume);
                     return;
                 }
               
@@ -1153,10 +1180,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
         }
     }
 
-    public void PlaySoundAtPosition(AudioClip clip, Vector3 position, float volume)
-    {
-        if (clip != null) AudioSource.PlayClipAtPoint(clip, position, volume);
-    }
+    
 
     private void OnDrawGizmos()
     {
@@ -1234,7 +1258,7 @@ public class ArrowLifecycleController : MonoBehaviour
                 if (bowSystem.enableSoundEffects && bowSystem.wallImpactSound != null)
                 {
                     // Use the helper function from the main BowSystems script
-                    bowSystem.PlaySoundAtPosition(bowSystem.wallImpactSound, transform.position, bowSystem.wallImpactSoundVolume);
+                    bowSystem.PlaySound(bowSystem.wallImpactSound, bowSystem.wallImpactSoundVolume);
                 }
 
                 // 2. TRIGGER THE VISUAL PARTICLE EFFECT
