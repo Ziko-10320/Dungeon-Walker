@@ -1398,7 +1398,6 @@ MonoBehaviour:
   deathEffectNames:
   - BloodExplooosionSprayerV2
   - DeathParticulesMushroomSprayerV2
-  damageEffectName: SprayerBloodV2
   DeathMushroomSpawn: {fileID: 5779158238054543535}
   DeathMushroomSpawn2: {fileID: 3360400410138837293}
   flashMaterial: {fileID: 2100000, guid: 50ac647e8f9605d4d881ccbab0eeaf96, type: 2}
@@ -1492,6 +1491,8 @@ MonoBehaviour:
   maxLinkEnemies: 4
   lineSpeed: 60
   deathDelay: 0.25
+  chainStartSound: {fileID: 8300000, guid: 1c7a4f78818ce094383296beeaaa205f, type: 3}
+  chainStartVolume: 1
   linePrefab: {fileID: 4943147264204026684, guid: 0ef561181d9b49349877ecdd30bdca09, type: 3}
   outlineMaterial: {fileID: 2100000, guid: bdb5ccad587a88241a08541810999e61, type: 2}
   linePoint: {fileID: 6582116681831121868}

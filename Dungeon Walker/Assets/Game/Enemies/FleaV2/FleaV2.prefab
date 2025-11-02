@@ -1604,6 +1604,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 120
+  deathEffect: {fileID: 0}
   knockbackDistance: 0
   knockbackDuration: 0
   bloodSpawnPoint: {fileID: 3986929835973374505}
@@ -1616,7 +1617,6 @@ MonoBehaviour:
   deathEffectNames:
   - BloodExplooosion FleaV2
   - DeathParticulesMushroomV2
-  damageEffectName: FleaBloodV2
   DeathMushroomSpawn: {fileID: 8856921565325964914}
   DeathMushroomSpawn2: {fileID: 8153595037432526988}
   flashMaterial: {fileID: 2100000, guid: 58be4ad718d676e448b928e71f7e309a, type: 2}
@@ -1729,6 +1729,8 @@ MonoBehaviour:
   maxLinkEnemies: 4
   lineSpeed: 60
   deathDelay: 1.3
+  chainStartSound: {fileID: 8300000, guid: 1c7a4f78818ce094383296beeaaa205f, type: 3}
+  chainStartVolume: 1
   linePrefab: {fileID: 4943147264204026684, guid: 0ef561181d9b49349877ecdd30bdca09, type: 3}
   outlineMaterial: {fileID: 2100000, guid: 6d3e1f7b8af0c744396e8a79cb9887f8, type: 2}
   linePoint: {fileID: 8540286110508570705}

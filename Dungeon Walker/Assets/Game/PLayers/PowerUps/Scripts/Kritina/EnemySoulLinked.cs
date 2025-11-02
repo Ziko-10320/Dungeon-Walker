@@ -16,6 +16,10 @@ public class SoulLinkEnemy : MonoBehaviour
     public int maxLinkEnemies = 3;
     public float lineSpeed = 12f;
     public float deathDelay = 0.25f;
+    [Header("Soul Link Audio")]
+    [Tooltip("Sound to play when a soul link chain starts forming.")]
+    public AudioClip chainStartSound;
+    [Range(0f, 1f)] public float chainStartVolume = 0.8f;
 
     [Header("Visuals & references")]
     public LineRenderer linePrefab;         // assign a prefab with a LineRenderer

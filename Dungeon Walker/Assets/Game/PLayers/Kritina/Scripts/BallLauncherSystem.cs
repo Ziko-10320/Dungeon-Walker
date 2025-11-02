@@ -122,7 +122,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
     [SerializeField] private AudioClip shootSound;
     [Tooltip("Volume for explosion sounds")]
     [Range(0f, 1f)]
-    public float explosionVolume = 1f;
+    public float explosionVolume = 1f; 
     [Tooltip("Delay between main and additional explosion sounds")]
     public float soundExplosionDelay = 0.1f;
     [Tooltip("Enable sound effects")]
@@ -143,7 +143,9 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
     public float maxTrajectoryDistance = 10f;
     [Tooltip("Show curved trajectory debug")]
     public bool showTrajectoryDebug = false;
-
+    [Tooltip("Volume for the shoot sound")]
+    [Range(0f, 1f)]
+    public float shootVolume = 1f;
     [Header("Dynamic Launch Force Settings")]
     [Tooltip("Enable dynamic launch force based on aiming distance")]
     public bool useDynamicForce = true;
@@ -702,7 +704,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
         // Play sound locally for the shooter
         if (enableSoundEffects && shootSound != null)
         {
-            AudioSource.PlayClipAtPoint(shootSound, projectileSpawnPoint.position, explosionVolume);
+            PlaySound(shootSound, shootVolume);
         }
 
         PrepareNextBall();
@@ -1047,7 +1049,34 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
             Debug.Log($"Min launch force set to: {force}");
         }
     }
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
 
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("Launcher_FORCE_PLAY_SOUND");
+
+        // --- THIS IS THE CRITICAL FIX for volume issues ---
+        // Position it directly on the camera to guarantee it's heard at full volume
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        tempAudioSource.clip = clip;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     public void SetMaxLaunchForce(float force)
     {
         maxLaunchForce = force;
@@ -1294,7 +1323,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
         // Play main explosion sound
         if (explosionSound != null)
         {
-            PlaySoundAtPosition(explosionSound, explosionPosition, 0f, explosionVolume);
+            PlaySound(explosionSound, explosionVolume);
         }
 
         // Play additional explosion sounds with delays
@@ -1305,42 +1334,19 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
                 if (additionalExplosionSounds[i] != null)
                 {
                     float soundDelay = soundExplosionDelay * (i + 1);
-                    StartCoroutine(PlayDelayedSound(additionalExplosionSounds[i], explosionPosition, soundDelay, explosionVolume));
+                    StartCoroutine(PlayDelayedSound(additionalExplosionSounds[i], soundDelay, explosionVolume));
                 }
             }
         }
     }
 
-    private void PlaySoundAtPosition(AudioClip clip, Vector2 position, float delay, float volume)
-    {
-        if (clip == null)
-        {
-            return;
-        }
 
-        // Create temporary audio source
-        GameObject audioObject = new GameObject("TempAudio");
-        audioObject.transform.position = position;
 
-        AudioSource audioSource = audioObject.AddComponent<AudioSource>();
-        audioSource.clip = clip;
-        audioSource.volume = volume;
-        audioSource.spatialBlend = 1f; // 3D sound
-        audioSource.Play();
-
-        // Destroy audio object after clip finishes
-        Destroy(audioObject, clip.length + 0.1f);
-
-        if (showDestructionDebug)
-        {
-            Debug.Log($"Playing sound {clip.name} at {position}");
-        }
-    }
-
-    private IEnumerator PlayDelayedSound(AudioClip clip, Vector2 position, float delay, float volume)
+    private IEnumerator PlayDelayedSound(AudioClip clip, float delay, float volume)
     {
         yield return new WaitForSeconds(delay);
-        PlaySoundAtPosition(clip, position, delay, volume);
+        // It now calls our main, reliable PlaySound method. The position is no longer needed.
+        PlaySound(clip, volume);
     }
 
     // Damage handling methods - FIXED FOR EXACT DAMAGE

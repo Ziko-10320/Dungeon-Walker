@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 public class SuperMoveController : MonoBehaviour
 {
+    public SuperMoveController superMoveController;
     [Header("Activation")]
     public KeyCode activationKey = KeyCode.F;
     private bool isSuperMoveActive = false;
@@ -21,7 +22,13 @@ public class SuperMoveController : MonoBehaviour
     [Header("Enemy Detection")]
     public string[] enemyTags;
     public GameObject clawEffectPrefab;
-
+    [Header("Audio")]
+    [Tooltip("Sound that plays once when the super move is activated.")]
+    public AudioClip superActivationSound;
+    [Tooltip("A list of random sounds to play for each claw impact.")]
+    public AudioClip[] clawImpactSounds;
+    [Range(0f, 1f)] public float clawImpactVolume = 0.8f;
+    [Range(0f, 1f)] public float superActivationVolume = 1.0f;
     [Header("Timing")]
     public float enemyRevealDelay = 0.2f;
     public float superMoveEndDelay = 1.0f;
@@ -75,7 +82,11 @@ public class SuperMoveController : MonoBehaviour
         playerRb = GetComponent<Rigidbody2D>();
         playerAnimator = GetComponent<Animator>();
         playerCollider = GetComponent<Collider2D>();
-      
+        if (superMoveController == null)
+        {
+            // This finds the active SuperMoveController in your scene.
+            superMoveController = FindObjectOfType<SuperMoveController>();
+        }
 
         superMeter = FindObjectOfType<PlayerSuperMeter>();
         if (superButton != null)
@@ -180,7 +191,34 @@ public class SuperMoveController : MonoBehaviour
                 superBarText.text = Mathf.RoundToInt(superMeter.GetProgressNormalized() * 100f) + "%";
         }
     }
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
 
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("SuperMove_FORCE_PLAY_SOUND");
+
+        // --- THIS IS THE CRITICAL FIX for volume issues ---
+        // Position it directly on the camera to guarantee it's heard at full volume
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        tempAudioSource.clip = clip;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     private void TryActivateSuper()
     {
         if (isSuperMoveActive) return;
@@ -198,6 +236,13 @@ public class SuperMoveController : MonoBehaviour
 
     private IEnumerator ExecuteSuperMove()
     {
+        BeePowerUp beePowerUp = GetComponent<BeePowerUp>();
+        if (beePowerUp != null)
+        {
+            // If it exists, tell it to be quiet.
+            beePowerUp.SetSilenced(true);
+        }
+        PlaySound(superActivationSound, superActivationVolume);
         playerHealth.CancelDeathState();
         playerHealth.isInvincible = true;
         isSuperMoveActive = true;
@@ -273,6 +318,11 @@ public class SuperMoveController : MonoBehaviour
         }
         finally
         {
+            if (beePowerUp != null)
+            {
+                // Tell the bee power-up it can make noise again.
+                beePowerUp.SetSilenced(false);
+            }
             if (playerRb != null) playerRb.gravityScale = originalPlayerGravityScale;
             if (playerCollider != null) playerCollider.isTrigger = originalIsTrigger;
             if (playerRb != null) playerRb.bodyType = originalPlayerBodyType;
@@ -297,16 +347,33 @@ public class SuperMoveController : MonoBehaviour
         {
             if (enemy != null && !processedEnemies.Contains(enemy))
             {
+                // --- ADD THE AUDIO LOGIC BACK HERE ---
+                if (clawImpactSounds != null && clawImpactSounds.Length > 0)
+                {
+                    int randomIndex = Random.Range(0, clawImpactSounds.Length);
+                    AudioClip clipToPlay = clawImpactSounds[randomIndex];
+                    PlaySound(clipToPlay, clawImpactVolume);
+                }
+                // --- END OF AUDIO LOGIC ---
+
                 processedEnemies.Add(enemy);
                 enemy.StartFlash();
                 if (clawEffectPrefab != null && enemy.clawSpawnPoint != null)
-                    Instantiate(clawEffectPrefab, enemy.clawSpawnPoint.position, Quaternion.identity);
+                {
+                    // Your existing Instantiate logic is here
+                    GameObject clawInstance = Instantiate(clawEffectPrefab, enemy.clawSpawnPoint.position, Quaternion.identity);
+                    DelayedDamageClaw clawScript = clawInstance.GetComponent<DelayedDamageClaw>();
+                    if (clawScript != null)
+                    {
+                        clawScript.superMoveController = this;
+                    }
+                }
             }
             yield return new WaitForSeconds(0.1f);
         }
     }
 
-    // ✅ keeps scanning for new enemies during the super
+    // In MonitorNewEnemiesDuringSuper:
     private IEnumerator MonitorNewEnemiesDuringSuper()
     {
         while (isSuperMoveActive)
@@ -316,11 +383,17 @@ public class SuperMoveController : MonoBehaviour
             {
                 if (enemy != null && !processedEnemies.Contains(enemy))
                 {
-                    enemy.Stun(true);
-                    processedEnemies.Add(enemy);
-                    enemy.StartFlash();
-                    if (clawEffectPrefab != null && enemy.clawSpawnPoint != null)
-                        Instantiate(clawEffectPrefab, enemy.clawSpawnPoint.position, Quaternion.identity);
+                    // --- ADD THE SAME AUDIO LOGIC HERE ---
+                    if (clawImpactSounds != null && clawImpactSounds.Length > 0)
+                    {
+                        int randomIndex = Random.Range(0, clawImpactSounds.Length);
+                        AudioClip clipToPlay = clawImpactSounds[randomIndex];
+                        PlaySound(clipToPlay, clawImpactVolume);
+                    }
+                    // --- END OF AUDIO LOGIC ---
+
+                    // Your existing logic to stun, flash, and instantiate the claw
+                    // ...
                 }
             }
             yield return new WaitForSeconds(0.1f);

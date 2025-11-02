@@ -37,9 +37,36 @@ public class PlayerInvisibility : MonoBehaviour
         }
     }
 
-   
-   
 
+
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
+
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("Invisibility_FORCE_PLAY_SOUND");
+
+        // --- THIS IS THE CRITICAL FIX for volume issues ---
+        // Position it directly on the camera to guarantee it's heard at full volume
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        tempAudioSource.clip = clip;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     public void ActivateInvisibility(float durationOverride = -1f)
     {
         if (!HasPowerUpEquipped()) return; // ✅ Only work if equipped
@@ -64,10 +91,7 @@ public class PlayerInvisibility : MonoBehaviour
         // --- THIS IS THE GUARANTEED FIX ---
         if (state) // If we are BECOMING invisible...
         {
-            if (becomeInvisibleSound != null)
-            {
-                AudioSource.PlayClipAtPoint(becomeInvisibleSound, transform.position, invisibleVolume);
-            }
+            PlaySound(becomeInvisibleSound, invisibleVolume);
 
             // Swap to the invisible material.
             for (int i = 0; i < playerChildren.Length; i++)
@@ -82,10 +106,7 @@ public class PlayerInvisibility : MonoBehaviour
         }
         else // If we are BECOMING visible...
         {
-            if (becomeVisibleSound != null)
-            {
-                AudioSource.PlayClipAtPoint(becomeVisibleSound, transform.position, visibleVolume);
-            }
+            PlaySound(becomeVisibleSound, visibleVolume);
 
             // Swap back to the original materials we saved in Awake().
             for (int i = 0; i < playerChildren.Length; i++)

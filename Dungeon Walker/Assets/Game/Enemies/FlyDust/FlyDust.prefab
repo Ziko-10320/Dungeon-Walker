@@ -5695,6 +5695,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 80
+  deathEffect: {fileID: 0}
   knockbackDistance: 0
   knockbackDuration: 0
   bloodSpawnPoint: {fileID: 7509101114178256049}
@@ -5707,7 +5708,6 @@ MonoBehaviour:
   deathEffectNames:
   - BloodExplooosion Fly
   - DeathParticulesMushroomFly
-  damageEffectName: DustBlood
   DeathMushroomSpawn: {fileID: 7562508921823540304}
   DeathMushroomSpawn2: {fileID: 4974858656968258130}
   flashMaterial: {fileID: 2100000, guid: e55bc08426ddc374ab56920d36c8efbd, type: 2}
@@ -5779,6 +5779,8 @@ MonoBehaviour:
   maxLinkEnemies: 4
   lineSpeed: 60
   deathDelay: 0.25
+  chainStartSound: {fileID: 8300000, guid: 1c7a4f78818ce094383296beeaaa205f, type: 3}
+  chainStartVolume: 1
   linePrefab: {fileID: 4943147264204026684, guid: 0ef561181d9b49349877ecdd30bdca09, type: 3}
   outlineMaterial: {fileID: 2100000, guid: 0161be01e6f89b1458ee43d143911013, type: 2}
   linePoint: {fileID: 8061499628064342910}

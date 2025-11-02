@@ -173,6 +173,7 @@ public class PlayerHealth : MonoBehaviour
         // 🔹 Second: check shield
         if (HasShield)
         {
+
             DamageShield(damage);
             return; // damage absorbed by shield, no health loss
         }
@@ -521,6 +522,19 @@ public class PlayerHealth : MonoBehaviour
     // METHOD 4: A new helper method containing YOUR destruction logic.
     private void TriggerShieldDestructionVisuals(PowerUpType brokenShieldType)
     {
+        if (powerUpManager != null)
+        {
+            if (brokenShieldType == PowerUpType.ShieldUpgraded)
+            {
+                // If the upgraded shield broke, play its sound.
+                powerUpManager.PlayBoxShieldDestroySound();
+            }
+            else // It was a normal shield
+            {
+                // If the normal shield broke, play its sound.
+                powerUpManager.PlayBubbleWrapDestroySound();
+            }
+        }
         PowerUpManager pm = FindObjectOfType<PowerUpManager>();
         if (pm == null) return;
 

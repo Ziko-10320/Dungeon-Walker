@@ -3,16 +3,15 @@ using System.Collections;
 
 public class DelayedDamageClaw : MonoBehaviour
 {
+    [HideInInspector] public SuperMoveController superMoveController; // This is our link to the main script
+
     [Header("Damage Settings")]
     [Tooltip("The amount of damage to apply.")]
     public float damageAmount = 50f;
-
     [Tooltip("The radius of the damage area from the attack point.")]
     public float attackRadius = 1.5f;
-
     [Tooltip("The layer(s) that contain the enemies to be damaged.")]
     public LayerMask enemyLayer;
-
     [Tooltip("The transform representing the center of the attack. If null, this object's transform is used.")]
     public Transform attackPoint;
 
@@ -22,76 +21,59 @@ public class DelayedDamageClaw : MonoBehaviour
 
     void Start()
     {
-        // If no attack point is assigned, use this object's transform
         if (attackPoint == null)
         {
             attackPoint = transform;
         }
-
-        // Start the coroutine to apply damage after a delay
         StartCoroutine(ApplyDamageAfterDelay());
     }
 
     private IEnumerator ApplyDamageAfterDelay()
     {
-        // Wait for the specified delay
+        // Wait for the damage delay
         yield return new WaitForSeconds(damageDelay);
 
-        // Find all colliders within the attack radius on the enemy layer
+        // Find all enemies within the attack radius
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, enemyLayer);
 
+        // --- THIS IS THE COMPLETE AND CORRECTED DAMAGE LOGIC ---
         // Apply damage to each enemy found
         foreach (Collider2D enemy in hitEnemies)
         {
-            // We get the FleaHealth component to apply damage.
-            // This makes it compatible with your existing health system.
-            FleaHealth healthComponent = enemy.GetComponent<FleaHealth>();
-            if (healthComponent != null)
+            // We use TryGetComponent for safety and performance.
+
+            if (enemy.TryGetComponent<FleaHealth>(out var fleaHealth))
             {
-                // We can pass a zero vector for knockback since this is a special attack
-                healthComponent.TakeDamage(damageAmount, Vector2.zero, 0f);
+                fleaHealth.TakeDamage(damageAmount, Vector2.zero, 0f);
             }
-            FleaHealthV2 healthComponentV2 = enemy.GetComponent<FleaHealthV2>();
-            if (healthComponentV2 != null)
+            else if (enemy.TryGetComponent<FleaHealthV2>(out var fleaHealthV2))
             {
-                // We can pass a zero vector for knockback since this is a special attack
-                healthComponentV2.TakeDamage(damageAmount, Vector2.zero, 0f);
+                fleaHealthV2.TakeDamage(damageAmount, Vector2.zero, 0f);
             }
-            FlyHealth flyhealthComponent = enemy.GetComponent<FlyHealth>();
-            if (flyhealthComponent != null)
+            else if (enemy.TryGetComponent<FlyHealth>(out var flyHealth))
             {
-                // We can pass a zero vector for knockback since this is a special attack
-                flyhealthComponent.TakeDamage(damageAmount, Vector2.zero, 0f);
+                flyHealth.TakeDamage(damageAmount, Vector2.zero, 0f);
             }
-            InkHealth inkHealth = enemy.GetComponent<InkHealth>();
-            if (inkHealth != null)
+            else if (enemy.TryGetComponent<InkHealth>(out var inkHealth))
             {
-                // We can pass a zero vector for knockback since this is a special attack
                 inkHealth.TakeDamage(damageAmount, Vector2.zero, 0f);
             }
-            SprayerHealth sprayerHealth = enemy.GetComponent<SprayerHealth>();
-            if (sprayerHealth != null)
+            else if (enemy.TryGetComponent<SprayerHealth>(out var sprayerHealth))
             {
-               // We can pass a zero vector for knockback since this is a special attack
                 sprayerHealth.TakeDamage(damageAmount, Vector2.zero, 0f);
             }
-            RatKingHealth ratKingHealth = enemy.GetComponent<RatKingHealth>();
-            if (ratKingHealth != null)
+            else if (enemy.TryGetComponent<RatKingHealth>(out var ratKingHealth))
             {
-                // We can pass a zero vector for knockback since this is a special attack
                 ratKingHealth.TakeDamage(damageAmount);
             }
-
-
         }
+        // --- END OF DAMAGE LOGIC ---
 
-        // Optional: Destroy the claw effect after it has done its job
-        // You might want to wait for the animation to finish first.
-        // For now, we'll destroy it after a short duration.
+        // Destroy the claw effect after a short duration
         Destroy(gameObject, 2f);
     }
 
-    // Visualize the attack radius in the editor for easy setup
+    // Visualize the attack radius in the editor
     void OnDrawGizmosSelected()
     {
         Transform point = (attackPoint == null) ? transform : attackPoint;

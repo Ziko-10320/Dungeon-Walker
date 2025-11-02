@@ -15,7 +15,18 @@ public class PowerUpManagerL3antix : BasePowerUpManager
     private PlayerSuperMeter superMeter;
 
     private float originalMoveSpeed;
+    [Header("Power-Up Audio")]
+    [Tooltip("Sound for SpeedBoost and SpeedBoost2 activation.")]
+    public AudioClip speedBoostSound;
+    [Range(0f, 1f)] public float speedBoostVolume = 1.0f;
 
+    [Tooltip("Sound for when the normal Bubble Wrap shield is destroyed.")]
+    public AudioClip bubbleWrapDestroySound;
+    [Range(0f, 1f)] public float bubbleWrapDestroyVolume = 1.0f;
+
+    [Tooltip("Sound for when the upgraded Box Shield is destroyed.")]
+    public AudioClip boxShieldDestroySound;
+    [Range(0f, 1f)] public float boxShieldDestroyVolume = 1.0f;
     [Header("Particle Systems")]
     public ParticleSystem speedBoostParticles;
     public ParticleSystem speedBoostParticles2;
@@ -69,7 +80,26 @@ public class PowerUpManagerL3antix : BasePowerUpManager
         ReviveSystemL3antix = FindObjectOfType<ReviveSystemL3antix>();
         tempManager = GetComponent<InGamePowerUpManager>();
     }
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
 
+        GameObject soundPlayerObject = new GameObject("L3antix_PowerUp_FORCE_PLAY_SOUND");
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+        tempAudioSource.clip = clip;
+
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;
+        tempAudioSource.priority = 0;
+        tempAudioSource.bypassEffects = true;
+        tempAudioSource.bypassListenerEffects = true;
+        tempAudioSource.bypassReverbZones = true;
+
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     IEnumerator Start()
     {
         yield return new WaitForEndOfFrame();
@@ -128,7 +158,21 @@ public class PowerUpManagerL3antix : BasePowerUpManager
             Debug.Log("SoulLink not equipped. Enemies cannot link.");
         }
     }
+    public void PlayBubbleWrapDestroySound()
+    {
+        if (bubbleWrapDestroySound != null)
+        {
+            PlaySound(bubbleWrapDestroySound, bubbleWrapDestroyVolume);
+        }
+    }
 
+    public void PlayBoxShieldDestroySound()
+    {
+        if (boxShieldDestroySound != null)
+        {
+            PlaySound(boxShieldDestroySound, boxShieldDestroyVolume);
+        }
+    }
     public override void ApplyPersistentEffect(PowerUpData data)
     {
         switch (data.type)
@@ -136,6 +180,10 @@ public class PowerUpManagerL3antix : BasePowerUpManager
             // --- UPDATED: Stacking Speed Boost Logic ---
             case PowerUpType.SpeedBoost:
             case PowerUpType.SpeedBoost2:
+                if (speedBoostSound != null)
+                {
+                    PlaySound(speedBoostSound, speedBoostVolume);
+                }
                 RecalculateSpeed();
                 break;
 

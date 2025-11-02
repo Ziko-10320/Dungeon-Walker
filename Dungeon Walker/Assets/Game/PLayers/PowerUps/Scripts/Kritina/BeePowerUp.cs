@@ -15,7 +15,7 @@ public class BeePowerUp : MonoBehaviour
     public float damageRadius = 2f;
     public float damage = 5f;
     public float damageTickInterval = 0.5f;
-
+    private bool isSilencedBySuper = false;
     [Header("Layers")]
     public LayerMask enemyLayer;
 
@@ -34,28 +34,27 @@ public class BeePowerUp : MonoBehaviour
     }
     void Update()
     {
-        // If the swarm audio source doesn't exist, do nothing.
         if (swarmAudioSource == null) return;
 
-        // Condition 1: Is the game paused?
         bool isGamePaused = Time.timeScale == 0f;
 
-        // Condition 2: Is the power-up supposed to be active and playing sound?
-        bool shouldBePlaying = isActive && !isGamePaused;
+        // --- MODIFY THIS LINE ---
+        // The sound should only play if the power-up is active, the game isn't paused, AND it's not silenced by the super.
+        bool shouldBePlaying = isActive && !isGamePaused && !isSilencedBySuper;
 
-        // Now, we sync the audio source state with our desired state.
+        // The rest of your Update logic is perfect and remains the same
         if (shouldBePlaying && !swarmAudioSource.isPlaying)
         {
-            // If it SHOULD be playing but ISN'T, play it.
-            // This handles unpausing the game.
             swarmAudioSource.Play();
         }
         else if (!shouldBePlaying && swarmAudioSource.isPlaying)
         {
-            // If it SHOULD NOT be playing but IS, pause it.
-            // This handles pausing the game or the power-up ending.
-            swarmAudioSource.Pause(); // Using Pause() is better here than Stop()
+            swarmAudioSource.Pause();
         }
+    }
+    public void SetSilenced(bool silenced)
+    {
+        isSilencedBySuper = silenced;
     }
     public void EnableBeePowerUp()
     {

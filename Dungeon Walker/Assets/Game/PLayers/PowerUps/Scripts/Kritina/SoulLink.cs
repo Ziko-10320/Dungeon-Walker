@@ -60,9 +60,32 @@ public class SoulLinkChain : MonoBehaviour
         chain.StartCoroutine(chain.BuildChainAndAnimate(startEnemy, minLinks, maxLinks, maxLinkDistance));
         return chain;
     }
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
 
+        GameObject soundPlayerObject = new GameObject("SoulLink_FORCE_PLAY_SOUND");
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+        tempAudioSource.clip = clip;
+
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;
+        tempAudioSource.priority = 0;
+        tempAudioSource.bypassEffects = true;
+        tempAudioSource.bypassListenerEffects = true;
+        tempAudioSource.bypassReverbZones = true;
+
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     private IEnumerator BuildChainAndAnimate(SoulLinkEnemy startEnemy, int minLinks, int maxLinks, float maxLinkDistance)
     {
+        if (startEnemy != null && startEnemy.chainStartSound != null)
+        {
+            PlaySound(startEnemy.chainStartSound, startEnemy.chainStartVolume);
+        }
         // Prepare lists
         members = new List<SoulLinkEnemy>();
         segments = new List<LineRenderer>();

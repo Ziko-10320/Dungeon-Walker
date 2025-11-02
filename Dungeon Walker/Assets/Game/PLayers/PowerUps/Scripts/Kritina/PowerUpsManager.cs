@@ -11,7 +11,18 @@ public class PowerUpManager : BasePowerUpManager
     private PlayerSuperMeter superMeter;
 
     private float originalMoveSpeed;
+    [Header("Power-Up Audio")]
+    [Tooltip("Sound for SpeedBoost and SpeedBoost2 activation.")]
+    public AudioClip speedBoostSound;
+    [Range(0f, 1f)] public float speedBoostVolume = 1.0f;
 
+    [Tooltip("Sound for when the normal Bubble Wrap shield is destroyed.")]
+    public AudioClip bubbleWrapDestroySound;
+    [Range(0f, 1f)] public float bubbleWrapDestroyVolume = 1.0f;
+
+    [Tooltip("Sound for when the upgraded Box Shield is destroyed.")]
+    public AudioClip boxShieldDestroySound;
+    [Range(0f, 1f)] public float boxShieldDestroyVolume = 1.0f;
     [Header("Particle Systems")]
     public ParticleSystem speedBoostParticles;
     public ParticleSystem speedBoostParticles2;
@@ -118,8 +129,47 @@ public class PowerUpManager : BasePowerUpManager
             Debug.Log("SoulLink not equipped. Enemies cannot link.");
         }
     }
+    public void PlayBubbleWrapDestroySound()
+    {
+        if (bubbleWrapDestroySound != null)
+        {
+            PlaySound(bubbleWrapDestroySound, bubbleWrapDestroyVolume);
+        }
+    }
 
+    public void PlayBoxShieldDestroySound()
+    {
+        if (boxShieldDestroySound != null)
+        {
+            PlaySound(boxShieldDestroySound, boxShieldDestroyVolume);
+        }
+    }
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
 
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("PowerUp_FORCE_PLAY_SOUND");
+
+        // Position it directly on the camera to guarantee it's heard at full volume
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+        tempAudioSource.clip = clip;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     public override void ApplyPersistentEffect(PowerUpData data)
     {
         
@@ -127,6 +177,10 @@ public class PowerUpManager : BasePowerUpManager
         {
             case PowerUpType.SpeedBoost:
             case PowerUpType.SpeedBoost2:
+                if (speedBoostSound != null)
+                {
+                    PlaySound(speedBoostSound, speedBoostVolume);
+                }
                 RecalculateSpeed();
                 break;
 

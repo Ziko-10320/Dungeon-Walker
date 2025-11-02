@@ -81113,6 +81113,18 @@ PrefabInstance:
       propertyPath: timerImageUI
       value: 
       objectReference: {fileID: 8455070525341567712}
+    - target: {fileID: 556636709978226019, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: speedBoostSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 352625c76d37b9246b770bbeb1e54d27, type: 3}
+    - target: {fileID: 556636709978226019, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: boxShieldDestroySound
+      value: 
+      objectReference: {fileID: 8300000, guid: 367af0d489d0e4d419e59edc46cd14e5, type: 3}
+    - target: {fileID: 556636709978226019, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: bubbleWrapDestroySound
+      value: 
+      objectReference: {fileID: 8300000, guid: a2a875f0da56f7e45b037c53b12971d6, type: 3}
     - target: {fileID: 569016522605348105, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: damage
       value: 25
@@ -81124,10 +81136,14 @@ PrefabInstance:
     - target: {fileID: 569016522605348105, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: beeSwarmSound
       value: 
-      objectReference: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+      objectReference: {fileID: 8300000, guid: 0b6a70ede774f4b419f9824ce8bdcd30, type: 3}
+    - target: {fileID: 569016522605348105, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: beeSwarmVolume
+      value: 0.47
+      objectReference: {fileID: 0}
     - target: {fileID: 569016522605348105, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: beeSwarms.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 569016522605348105, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: beeSwarms.Array.data[1]
@@ -81476,11 +81492,11 @@ PrefabInstance:
     - target: {fileID: 3945908735703952342, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: becomeVisibleSound
       value: 
-      objectReference: {fileID: 8300000, guid: 60dd2182b31962c4ba65e277af046eee, type: 3}
+      objectReference: {fileID: 8300000, guid: f6a2a67f56b4c7b4792e0b4dea12f834, type: 3}
     - target: {fileID: 3945908735703952342, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: becomeInvisibleSound
       value: 
-      objectReference: {fileID: 8300000, guid: b77eaf947b8484745b390ddbfdb94764, type: 3}
+      objectReference: {fileID: 8300000, guid: 93913c3a762034943aea63e7664db3cc, type: 3}
     - target: {fileID: 4263109833319814150, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: damage
       value: 500
@@ -81522,9 +81538,41 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5380978611488880520}
     - target: {fileID: 4745970531061244357, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: clawImpactVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745970531061244357, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: superMoveController
+      value: 
+      objectReference: {fileID: 4464427790814270239}
+    - target: {fileID: 4745970531061244357, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: superReadyIndicator
       value: 
       objectReference: {fileID: 6624921355026274658}
+    - target: {fileID: 4745970531061244357, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: superActivationSound
+      value: 
+      objectReference: {fileID: 8300000, guid: e79941e8a705f0642a7010cf2b47b1d6, type: 3}
+    - target: {fileID: 4745970531061244357, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: superActivationVolume
+      value: 0.67
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745970531061244357, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: clawImpactSounds.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745970531061244357, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: clawImpactSounds.Array.data[0]
+      value: 
+      objectReference: {fileID: 8300000, guid: 42decd80c88abe546a877eafefc4344b, type: 3}
+    - target: {fileID: 4745970531061244357, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: clawImpactSounds.Array.data[1]
+      value: 
+      objectReference: {fileID: 8300000, guid: f765fbc2bf39a9941966ebb6bc0ad4f2, type: 3}
+    - target: {fileID: 4745970531061244357, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: clawImpactSounds.Array.data[2]
+      value: 
+      objectReference: {fileID: 8300000, guid: 66b3c034a3db90546830e1b9fe566390, type: 3}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: shootSound
       value: 
@@ -82211,6 +82259,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31e8491dc4a30cc4a95adf10e1db646c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4464427790814270239 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4745970531061244357, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+  m_PrefabInstance: {fileID: 2741814453123183690}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4051448195775605368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0903946fde3ec1a4d8fface0fb6748ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4506617360713787719 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4793119590977025792, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
@@ -82657,6 +82716,10 @@ PrefabInstance:
       propertyPath: uiSlot2
       value: 
       objectReference: {fileID: 1032993835}
+    - target: {fileID: 2231346615678134235, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: trailSound
+      value: 
+      objectReference: {fileID: 8300000, guid: d79293b4bee4ccf41beacdcac48423a2, type: 3}
     - target: {fileID: 2367989933162419796, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: damage
       value: 500
@@ -82669,6 +82732,18 @@ PrefabInstance:
       propertyPath: reviveHeartUI
       value: 
       objectReference: {fileID: 1463747340}
+    - target: {fileID: 2700375173775469184, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: speedBoostSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 352625c76d37b9246b770bbeb1e54d27, type: 3}
+    - target: {fileID: 2700375173775469184, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: boxShieldDestroySound
+      value: 
+      objectReference: {fileID: 8300000, guid: 367af0d489d0e4d419e59edc46cd14e5, type: 3}
+    - target: {fileID: 2700375173775469184, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: bubbleWrapDestroySound
+      value: 
+      objectReference: {fileID: 8300000, guid: a2a875f0da56f7e45b037c53b12971d6, type: 3}
     - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: ballDamage
       value: 80
@@ -82729,6 +82804,22 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 1.37
       objectReference: {fileID: 0}
+    - target: {fileID: 4224530812679095388, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: coinSpawnSound
+      value: 
+      objectReference: {fileID: 8300000, guid: cc7b4c1cda88e0846aef831030b89a1d, type: 3}
+    - target: {fileID: 4224530812679095388, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: bronzeExplosionSound
+      value: 
+      objectReference: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
+    - target: {fileID: 4224530812679095388, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: goldenExplosionSound
+      value: 
+      objectReference: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
+    - target: {fileID: 4224530812679095388, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: silverExplosionSound
+      value: 
+      objectReference: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
     - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: maxAmmo
       value: 10
@@ -82778,6 +82869,10 @@ PrefabInstance:
       value: 5.64
       objectReference: {fileID: 0}
     - target: {fileID: 5217040170062689098, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: beeSwarmSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 0b6a70ede774f4b419f9824ce8bdcd30, type: 3}
+    - target: {fileID: 5217040170062689098, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: beeSwarms.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -82821,6 +82916,10 @@ PrefabInstance:
       propertyPath: fullyChargedIndicator
       value: 
       objectReference: {fileID: 2833191139351611861}
+    - target: {fileID: 6238943551659897314, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: trailSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 5f358d554ae7a624ab7ef0e02f06a87e, type: 3}
     - target: {fileID: 6734370145734748242, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: maxHealth
       value: 300
@@ -82949,6 +83048,14 @@ PrefabInstance:
       propertyPath: spawnPoints.Array.data[3]
       value: 
       objectReference: {fileID: 6023458747045393005}
+    - target: {fileID: 7481536329242542935, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: becomeVisibleSound
+      value: 
+      objectReference: {fileID: 8300000, guid: f6a2a67f56b4c7b4792e0b4dea12f834, type: 3}
+    - target: {fileID: 7481536329242542935, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: becomeInvisibleSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 93913c3a762034943aea63e7664db3cc, type: 3}
     - target: {fileID: 7796940568639449547, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: m_Name
       value: L3antix
@@ -83097,6 +83204,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9086724144951122512, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: reviveSound
+      value: 
+      objectReference: {fileID: 8300000, guid: abdbd38e94d4b094eac5bcafce6d4a91, type: 3}
     - target: {fileID: 9086724144951122512, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: heartAnimator
       value: 
@@ -83507,6 +83618,10 @@ PrefabInstance:
       propertyPath: pausePanel
       value: 
       objectReference: {fileID: 2075766089836948692}
+    - target: {fileID: 7964776775096355389, guid: 6c1bb819b04484f4fb56171c9f5858a6, type: 3}
+      propertyPath: fadeDuration
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 7964776775096355389, guid: 6c1bb819b04484f4fb56171c9f5858a6, type: 3}
       propertyPath: statAnimation
       value: 

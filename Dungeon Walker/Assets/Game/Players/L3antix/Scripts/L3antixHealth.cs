@@ -519,6 +519,19 @@ public class L3antixHealth : MonoBehaviour
     // METHOD 4: A new helper method containing YOUR destruction logic.
     private void TriggerShieldDestructionVisuals(PowerUpType brokenShieldType)
     {
+        if (PowerUpManagerL3antix != null)
+        {
+            if (brokenShieldType == PowerUpType.ShieldUpgraded)
+            {
+                // If the upgraded shield broke, play its sound.
+                PowerUpManagerL3antix.PlayBoxShieldDestroySound();
+            }
+            else // It was a normal shield
+            {
+                // If the normal shield broke, play its sound.
+                PowerUpManagerL3antix.PlayBubbleWrapDestroySound();
+            }
+        }
         PowerUpManagerL3antix pm = FindObjectOfType<PowerUpManagerL3antix>();
         if (pm == null) return;
 
