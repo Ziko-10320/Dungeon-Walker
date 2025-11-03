@@ -1043,9 +1043,9 @@ MonoBehaviour:
   rb: {fileID: 8602618842035117712}
   playerTransform: {fileID: 0}
   attackRange: 7.32
-  minTimeBeforeAttack: 0.2
-  maxTimeBeforeAttack: 0.7
-  attackCooldown: 0.7
+  minTimeBeforeAttack: 0.04
+  maxTimeBeforeAttack: 0.5
+  attackCooldown: 0.2
   chargeDistance: 6
   anticipationDuration: 0.1
   chargeForce: 45

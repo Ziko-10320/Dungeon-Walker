@@ -375,7 +375,7 @@ public class L3antixHealth : MonoBehaviour
         }
         L3antixSkinController skinController = GetComponent<L3antixSkinController>();
         string currentSkinName = (skinController != null) ? skinController.GetCurrentSkinName() : "Default";
-        Sprite skinSprite = spriteLibrary.spriteLibraryAsset.GetSprite("Head", currentSkinName);
+        Sprite skinSprite = spriteLibrary.spriteLibraryAsset.GetSprite("Body", currentSkinName);
         if (skinSprite == null)
         {
             Debug.LogError($"FlashEffect Error: Could not find a sprite in the library with Category 'Head' and Label '{currentSkinName}'. Check your Sprite Library Asset!", this);

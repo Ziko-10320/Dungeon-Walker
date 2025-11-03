@@ -109,13 +109,5 @@ public class L3antixSkinController : MonoBehaviour
         ApplySkin(skinName);
     }
 
-    // Add more functions here for your other skins. Just copy, paste, and change the name.
-    // For example:
-    // [ContextMenu("Select Skin: Ninja")]
-    // private void SelectSkin_Ninja()
-    // {
-    //     string skinName = "Ninja";
-    //     PlayerPrefs.SetString("SelectedSkinName", skinName);
-    //     ApplySkin(skinName);
-    // }
+    
 }

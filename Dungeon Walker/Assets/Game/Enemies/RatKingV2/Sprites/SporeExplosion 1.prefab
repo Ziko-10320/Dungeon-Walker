@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3761878024517230199}
   - component: {fileID: 8495259824518983192}
   - component: {fileID: 6971340991787779828}
+  - component: {fileID: -7665475171552195602}
   m_Layer: 0
   m_Name: SporeExplosion 1
   m_TagString: Flea
@@ -43,7 +44,7 @@ ParticleSystem:
   serializedVersion: 8
   lengthInSec: 1
   simulationSpeed: 1
-  stopAction: 2
+  stopAction: 1
   cullingMode: 0
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
@@ -4897,3 +4898,15 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &-7665475171552195602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3913917359439539035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4c2376c7d9c73141b27861e00d2e956, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

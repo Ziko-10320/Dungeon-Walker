@@ -6678,11 +6678,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -106.9
+      value: -73.444176
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1
+      value: -0.61096334
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7068,7 +7068,7 @@ MonoBehaviour:
   jumpAttackRange: 23.7
   jumpForceY: 30
   jumpCooldown: 3
-  jumpProbability: 0.51
+  jumpProbability: 0.5
   jumpAnticipationDuration: 0.3
   cameraShakeImpact: {fileID: 11400000, guid: c09a47171b56bb94b910790a6bd8c684, type: 2}
   horizontalSpeedMultiplier: 9
@@ -7081,7 +7081,7 @@ MonoBehaviour:
     m_Bits: 256
   knockbackForce: 25
   knockbackDuration: 0.2
-  consecutiveJumpChance: 0.661
+  consecutiveJumpChance: 0.632
   consecutiveJumpDelay: 0.4
   throwAttackRange: 22.6
   cheesePrefab: {fileID: 4809819129619181200, guid: 544ac47dafa89594a81961637c36086b, type: 3}
@@ -7095,7 +7095,7 @@ MonoBehaviour:
   cheeseImpactParticlesPrefab2: {fileID: 1030092886350179633, guid: 7719eae8fcfd52f43adb947ff57e5bf4, type: 3}
   cheeseImpactParticlesPrefab3: {fileID: 5989248871805962395, guid: 42fc002353319184a9f45737980de158, type: 3}
   throwCooldown: 1.5
-  throwProbability: 0.829
+  throwProbability: 0.897
   cheeseDamageAmount: 45
   cheeseExplosionRadius: 4.8
   cheeseKnockbackForce: 10
@@ -7150,12 +7150,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 800
+  deathEffect: {fileID: 0}
   bloodSpawnPoint: {fileID: 9132003264305942687}
   bloodParticle: {fileID: 1628141723121463355, guid: ed4df16cf8677ce4ca26f2cbe14faa56, type: 3}
   deathEffectNames:
   - BloodExplooosionRatV2
   - DeathParticulesMushroomRatV2
-  damageEffectName: RatBloodV2
   deathSound: {fileID: 8300000, guid: 517b86b2291c18644a0b893817dc481a, type: 3}
   deathSoundVolume: 1
   DeathMushroomSpawn: {fileID: 8379097812206060078}

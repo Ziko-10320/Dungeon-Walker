@@ -71,21 +71,33 @@ public class FlyAttack : MonoBehaviour
     private float nextAttackTime;
     private Vector2 lastKnownPlayerPosition;
 
-    public int projectilePoolSize = 5; // How many projectiles this fly keeps ready
-    private Queue<GameObject> projectilePool;
-    private GameObject projectilePoolParent;
-    private List<GameObject> activeProjectiles = new List<GameObject>();
 
     private WaitForSeconds delayBetweenProjectilesWait;
     private WaitForSeconds projectileLifetimeWait;
-    private Queue<GameObject> chargedProjectilePool;
-    private Queue<GameObject> chargedExplosionPool;
-    private Queue<GameObject> anticipationParticlesPool;
+  
     private PlayerInvisibility playerInvisibility;
     private PlayerInvisibility3antix playerInvisibility3antix;
     private int frameCounter = 0;
     private int updateRate = 1;
 
+    [Header("Local Pooling Settings")]
+    [Tooltip("How many normal projectiles to keep ready.")]
+    public int normalProjectilePoolSize = 10;
+    [Tooltip("How many normal destruction effects to keep ready.")]
+    public int destructionEffectPoolSize = 10;
+    [Tooltip("How many charged projectiles to keep ready (if V2).")]
+    public int chargedProjectilePoolSize = 3;
+    [Tooltip("How many charged destruction effects to keep ready (if V2).")]
+    public int chargedEffectPoolSize = 3;
+
+    // The queues for our local pools
+    private Queue<GameObject> normalProjectilePool;
+    private Queue<GameObject> destructionEffectPool;
+    private Queue<GameObject> chargedProjectilePool;
+    private Queue<GameObject> chargedEffectPool;
+    private Queue<GameObject> anticipationParticlesPool;
+    // A parent object to keep the hierarchy clean
+    private Transform poolParent;
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -116,7 +128,7 @@ public class FlyAttack : MonoBehaviour
 
         animator = GetComponent<Animator>();
         SetNextAttackTime();
-        activeProjectiles.Clear();
+     
         StopAllCoroutines();
         StartCoroutine(UpdateAI_LOD_Routine());
     }
@@ -124,54 +136,20 @@ public class FlyAttack : MonoBehaviour
     void Start()
     {
 
-        projectilePool = new Queue<GameObject>();
-        // Create a clean parent object for this fly's projectiles
-        projectilePoolParent = new GameObject(gameObject.name + " Projectile Pool");
-        projectilePoolParent.transform.SetParent(this.transform); // Parent it to the fly itself
+        poolParent = new GameObject(gameObject.name + "_Pool").transform;
+        poolParent.SetParent(this.transform);
 
-        for (int i = 0; i < projectilePoolSize; i++)
-        {
-            GameObject projectile = Instantiate(dustProjectilePrefab);
-            projectile.transform.SetParent(projectilePoolParent.transform);
-            projectile.SetActive(false);
-            projectilePool.Enqueue(projectile);
-        }
+        // Initialize all the pools
+        normalProjectilePool = CreatePool(dustProjectilePrefab, normalProjectilePoolSize);
+        destructionEffectPool = CreatePool(dustExplosionEffect, destructionEffectPoolSize);
+
         if (canPerformChargedAttack)
         {
-            // Pool for Charged Projectiles
-            if (chargedProjectilePrefab != null)
-            {
-                chargedProjectilePool = new Queue<GameObject>();
-                for (int i = 0; i < 5; i++) // Create a small pool of 5
-                {
-                    GameObject obj = Instantiate(chargedProjectilePrefab, projectilePoolParent.transform);
-                    obj.SetActive(false);
-                    chargedProjectilePool.Enqueue(obj);
-                }
-            }
-
-            // Pool for Charged Explosions
-            if (chargedExplosionEffect != null)
-            {
-                chargedExplosionPool = new Queue<GameObject>();
-                for (int i = 0; i < 5; i++)
-                {
-                    GameObject obj = Instantiate(chargedExplosionEffect, projectilePoolParent.transform);
-                    obj.SetActive(false);
-                    chargedExplosionPool.Enqueue(obj);
-                }
-            }
-
-            // Pool for Anticipation Particles
+            chargedProjectilePool = CreatePool(chargedProjectilePrefab, chargedProjectilePoolSize);
+            chargedEffectPool = CreatePool(chargedExplosionEffect, chargedEffectPoolSize);
             if (anticipationParticles != null)
             {
-                anticipationParticlesPool = new Queue<GameObject>();
-                for (int i = 0; i < 2; i++)
-                {
-                    GameObject obj = Instantiate(anticipationParticles.gameObject, projectilePoolParent.transform);
-                    obj.SetActive(false);
-                    anticipationParticlesPool.Enqueue(obj);
-                }
+                anticipationParticlesPool = CreatePool(anticipationParticles.gameObject, 2); // A small pool of 2 is enough
             }
         }
         animator = GetComponent<Animator>();
@@ -193,7 +171,19 @@ public class FlyAttack : MonoBehaviour
         }
 
     }
+    private Queue<GameObject> CreatePool(GameObject prefab, int size)
+    {
+        if (prefab == null) return null; // Safety check
 
+        Queue<GameObject> newPool = new Queue<GameObject>();
+        for (int i = 0; i < size; i++)
+        {
+            GameObject obj = Instantiate(prefab, poolParent);
+            obj.SetActive(false);
+            newPool.Enqueue(obj);
+        }
+        return newPool;
+    }
     void Update()
     {
         frameCounter++;
@@ -228,86 +218,7 @@ public class FlyAttack : MonoBehaviour
             // If player is not in range, we simply do nothing and wait for the next attack check.
         }
 
-        for (int i = activeProjectiles.Count - 1; i >= 0; i--)
-        {
-            GameObject projectile = activeProjectiles[i];
-            if (projectile == null || !projectile.activeInHierarchy)
-            {
-                activeProjectiles.RemoveAt(i);
-                continue;
-            }
-
-            // --- THE CRITICAL FIX: HOW WE IDENTIFY A CHARGED PROJECTILE ---
-            // We check if the projectile's NAME contains the name of the charged prefab.
-            // This is a reliable way to know which type it is.
-            bool isCharged = false;
-            if (canPerformChargedAttack && chargedProjectilePrefab != null)
-            {
-                isCharged = projectile.name.Contains(chargedProjectilePrefab.name);
-            }
-            // --- END OF CRITICAL FIX ---
-
-            // Use the collider's bounds to check for collision. This respects the scale.
-            Collider2D projCollider = projectile.GetComponent<Collider2D>();
-            if (projCollider == null) continue;
-            Collider2D playerHit = Physics2D.OverlapBox(projCollider.bounds.center, projCollider.bounds.size, 0f, playerLayer);
-            Collider2D groundHit = Physics2D.OverlapBox(projCollider.bounds.center, projCollider.bounds.size, 0f, groundLayer);
-
-            bool hasCollided = (playerHit != null) || (groundHit != null);
-
-            if (hasCollided)
-            {
-                // --- APPLY THE CORRECT STATS BASED ON 'isCharged' ---
-                int directDamage = isCharged ? chargedProjectileDamage : projectileDamage;
-                int explosionDmg = isCharged ? chargedProjectileDamage : explosionDamage; // Use charged damage for AoE
-                float explosionRad = isCharged ? chargedExplosionRadius : explosionRadius;
-                if (isCharged)
-                {
-                    // Use the LOCAL charged explosion pool
-                    if (chargedExplosionPool != null && chargedExplosionPool.Count > 0)
-                    {
-                        GameObject explosion = chargedExplosionPool.Dequeue();
-                        chargedExplosionPool.Enqueue(explosion);
-                        explosion.transform.position = projectile.transform.position;
-                        explosion.SetActive(true);
-                    }
-                }
-                else
-                {
-                    // Use the GLOBAL normal explosion pool (your original logic)
-                    if (dustExplosionEffect != null)
-                    {
-                        ObjectPoolManager.Instance.SpawnFromPool(dustExplosionEffect, projectile.transform.position, Quaternion.identity);
-                    }
-                }
-
-                // --- 1. Apply DIRECT damage if we hit a player ---
-                if (playerHit != null)
-                {
-                    PlayerHealth ph = playerHit.GetComponent<PlayerHealth>();
-                    if (ph != null) ph.TakeDamage(directDamage, playerKnockbackForce, playerKnockbackDirection);
-                    L3antixHealth lh = playerHit.GetComponent<L3antixHealth>();
-                    if (lh != null) lh.TakeDamage(directDamage, playerKnockbackForce, playerKnockbackDirection);
-                }
-
-
-
-                // --- 3. Apply AREA damage with the CORRECT radius and damage ---
-                Collider2D[] playersInExplosion = Physics2D.OverlapCircleAll(projectile.transform.position, explosionRad, playerLayer);
-                foreach (var player in playersInExplosion)
-                {
-                    if (player == playerHit) continue; // Don't double-damage
-                    PlayerHealth pHealth = player.GetComponent<PlayerHealth>();
-                    if (pHealth != null) pHealth.TakeDamage(explosionDmg, playerKnockbackForce, playerKnockbackDirection);
-                    L3antixHealth lHealth = player.GetComponent<L3antixHealth>();
-                    if (lHealth != null) lHealth.TakeDamage(explosionDmg, playerKnockbackForce, playerKnockbackDirection);
-                }
-
-                // --- 4. Return the projectile to the pool ---
-                projectile.SetActive(false);
-                activeProjectiles.RemoveAt(i);
-            }
-        }
+       
 
     }
 
@@ -477,42 +388,62 @@ public class FlyAttack : MonoBehaviour
             projRb.AddTorque(Random.Range(-200f, 200f));
         }
 
-        activeProjectiles.Add(projectileToScale);
-        StartCoroutine(LifetimeCountdown(projectileToScale, chargedProjectileLifetime));
+        SpawnProjectile(true, lastKnownPlayerPosition, projectileToScale);
     }
 
 
     private IEnumerator ThrowDustCoroutine()
     {
-        InstantiateAndInitializeProjectile(lastKnownPlayerPosition);
+        // Spawn the first projectile
+        SpawnProjectile(false, lastKnownPlayerPosition);
+
+        // Check for a double attack
         if (Random.value < doubleAttackChance)
         {
             yield return delayBetweenProjectilesWait;
-            InstantiateAndInitializeProjectile(lastKnownPlayerPosition + secondProjectileOffset);
+            SpawnProjectile(false, lastKnownPlayerPosition + secondProjectileOffset);
         }
     }
 
 
-    private void InstantiateAndInitializeProjectile(Vector2 targetPlayerPosition)
+    private void SpawnProjectile(bool isCharged, Vector2 targetPosition, GameObject preSpawnedChargedProjectile = null)
     {
-        // This method now ONLY handles the normal projectile.
-        if (projectilePool == null || projectilePool.Count == 0) return;
-        GameObject projectileToSpawn = projectilePool.Dequeue();
-        projectilePool.Enqueue(projectileToSpawn);
+        GameObject projectile;
+        Queue<GameObject> sourcePool;
+        float speed;    // Declared once here
+        float lifetime; // Declared once here
 
-        projectileToSpawn.transform.position = projectileSpawnPoint.position;
-        projectileToSpawn.SetActive(true);
-
-        activeProjectiles.Add(projectileToSpawn);
-
-        Rigidbody2D projRb = projectileToSpawn.GetComponent<Rigidbody2D>();
-        if (projRb != null)
+        if (isCharged)
         {
-            Vector2 direction = (targetPlayerPosition - (Vector2)projectileToSpawn.transform.position).normalized;
-            projRb.velocity = direction * projectileSpeed;
+            projectile = preSpawnedChargedProjectile;
+            sourcePool = chargedProjectilePool;
+
+            // THE FIX: No "float" here. We are ASSIGNING to the variables from above.
+            speed = this.chargedProjectileSpeed;
+            lifetime = this.chargedProjectileLifetime;
+        }
+        else
+        {
+            sourcePool = normalProjectilePool;
+            if (sourcePool == null || sourcePool.Count == 0) return;
+            projectile = sourcePool.Dequeue();
+            projectile.transform.position = projectileSpawnPoint.position;
+
+            // THE FIX: No "float" here either.
+            speed = this.projectileSpeed;
+            lifetime = this.projectileLifetime;
         }
 
-        StartCoroutine(LifetimeCountdown(projectileToSpawn, projectileLifetime));
+        if (projectile == null) return;
+
+        projectile.SetActive(true);
+
+        var controller = projectile.GetComponent<PooledProjectileController>() ?? projectile.AddComponent<PooledProjectileController>();
+
+        // Now this line can see the 'speed' and 'lifetime' variables correctly.
+        controller.Initialize(this, isCharged, targetPosition, speed, lifetime);
+
+        sourcePool.Enqueue(projectile);
     }
 
 
@@ -527,7 +458,45 @@ public class FlyAttack : MonoBehaviour
         }
     }
 
+    public void HandleProjectileCollision(GameObject projectile, GameObject hitObject, bool isCharged)
+    {
+        // Stop the coroutine and disable the projectile immediately to return it to the pool
+        projectile.GetComponent<PooledProjectileController>().StopAllCoroutines();
+        projectile.SetActive(false);
 
+        // Determine which explosion effect and stats to use
+        Queue<GameObject> effectPool = isCharged ? chargedEffectPool : destructionEffectPool;
+        int directDamage = isCharged ? chargedProjectileDamage : projectileDamage;
+        int areaDamage = isCharged ? chargedProjectileDamage : explosionDamage;
+        float explosionRadius = isCharged ? chargedExplosionRadius : this.explosionRadius;
+
+        // Spawn the visual explosion from the correct pool
+        if (effectPool != null && effectPool.Count > 0)
+        {
+            GameObject explosion = effectPool.Dequeue();
+            explosion.transform.position = projectile.transform.position;
+            explosion.SetActive(true);
+            effectPool.Enqueue(explosion);
+        }
+
+        // Apply direct damage if we hit a player
+        if (hitObject != null && ((1 << hitObject.layer) & playerLayer) != 0)
+        {
+            if (hitObject.TryGetComponent<PlayerHealth>(out var ph)) ph.TakeDamage(directDamage, playerKnockbackForce, playerKnockbackDirection);
+            if (hitObject.TryGetComponent<L3antixHealth>(out var lh)) lh.TakeDamage(directDamage, playerKnockbackForce, playerKnockbackDirection);
+        }
+
+        // Apply area of effect (AoE) damage
+        Collider2D[] playersInExplosion = Physics2D.OverlapCircleAll(projectile.transform.position, explosionRadius, playerLayer);
+        foreach (var player in playersInExplosion)
+        {
+            // Don't apply AoE damage to the player who was directly hit
+            if (player.gameObject == hitObject) continue;
+
+            if (player.TryGetComponent<PlayerHealth>(out var pHealth)) pHealth.TakeDamage(areaDamage, playerKnockbackForce, playerKnockbackDirection);
+            if (player.TryGetComponent<L3antixHealth>(out var lHealth)) lHealth.TakeDamage(areaDamage, playerKnockbackForce, playerKnockbackDirection);
+        }
+    }
     private IEnumerator LifetimeCountdown(GameObject projectile)
     {
         yield return projectileLifetimeWait;

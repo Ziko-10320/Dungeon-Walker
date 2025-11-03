@@ -6674,7 +6674,10 @@ MonoBehaviour:
   chargedAttackSound: {fileID: 0}
   attackSoundClip: {fileID: 0}
   attackSoundVolume: 0.079
-  projectilePoolSize: 5
+  normalProjectilePoolSize: 3
+  destructionEffectPoolSize: 3
+  chargedProjectilePoolSize: 2
+  chargedEffectPoolSize: 2
 --- !u!114 &4312947389679521180
 MonoBehaviour:
   m_ObjectHideFlags: 0

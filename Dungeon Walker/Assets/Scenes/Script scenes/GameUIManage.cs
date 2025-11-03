@@ -203,6 +203,11 @@ public class GameUIManager : MonoBehaviour
     }
     private IEnumerator FadeIn()
     {
+
+        if (VFX_Director.Instance != null)
+        {
+            VFX_Director.Instance.ResetInitializationFlag();
+        }
         fadeCanvasGroup.alpha = 1;
         float timer = 0f;
         while (timer < fadeDuration)

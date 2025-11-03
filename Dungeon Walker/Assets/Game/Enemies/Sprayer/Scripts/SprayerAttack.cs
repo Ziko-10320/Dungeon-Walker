@@ -1,5 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class SprayerAttack : MonoBehaviour
 {
@@ -10,7 +11,10 @@ public class SprayerAttack : MonoBehaviour
     [SerializeField] private float damageDuration = 1f;
     [SerializeField] private float damageDelay = 0.3f;
     [SerializeField] private float damageInterval = 0.5f;
-    [SerializeField] private ParticleSystem sprayParticles;
+    [Header("VFX Settings")]
+    [SerializeField] private GameObject sprayEffectPrefab;
+    [Tooltip("Assign a child GameObject where the spray VFX should spawn.")]
+    [SerializeField] private Transform sprayEffectSpawnPoint;
 
     [Header("Damage Zone Settings")]
     [SerializeField] private Vector2 damageZoneSize = new Vector2(2f, 1f);
@@ -35,7 +39,12 @@ public class SprayerAttack : MonoBehaviour
     private bool isAttacking = false;
     private float attackDirection; // Stores the direction (1 or -1) when attack starts
     private Transform playerTransform;
+  
+    [SerializeField] private int effectPoolSize = 3;
 
+    // The local pool and active effect reference
+    private Queue<ParticleSystem> effectPool;
+    private ParticleSystem activeSprayVFX;
     private int frameCounter = 0;
     private int updateRate = 1;
     void Awake()
@@ -46,16 +55,27 @@ public class SprayerAttack : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
         audioSource.playOnAwake = false;
+        CreateLocalVFXPool();
     }
-
+    private void CreateLocalVFXPool()
+    {
+        effectPool = new Queue<ParticleSystem>();
+        for (int i = 0; i < effectPoolSize; i++)
+        {
+            GameObject obj = Instantiate(sprayEffectPrefab, sprayEffectSpawnPoint);
+            ParticleSystem ps = obj.GetComponent<ParticleSystem>();
+            obj.SetActive(false);
+            effectPool.Enqueue(ps);
+        }
+    }
     void Start()
     {
         sprayerAnimator = GetComponent<Animator>();
         lastAttackTime = -attackCooldown;
 
-        if (sprayParticles == null)
+        if (sprayEffectSpawnPoint == null)
         {
-            Debug.LogError("SprayerAttack: Spray Particles not assigned!", this);
+            Debug.LogError("SprayerAttack: Spray Effect Spawn Point is not assigned! The VFX needs a location to spawn.", this);
             enabled = false;
         }
 
@@ -104,15 +124,13 @@ public class SprayerAttack : MonoBehaviour
             PlayerInvisibility3antix invis3antix = playerObj.GetComponent<PlayerInvisibility3antix>();
             if (invis != null && invis.IsInvisible())
             {
-                // Stop particles & disable movement
-                if (sprayParticles != null && sprayParticles.isPlaying) sprayParticles.Stop();
+               
                 EnableMovement(); // Ensure enemy can move
                 return;
             }
             if (invis3antix != null && invis3antix.IsInvisible())
             {
-                // Stop particles & disable movement
-                if (sprayParticles != null && sprayParticles.isPlaying) sprayParticles.Stop();
+                
                 EnableMovement(); // Ensure enemy can move
                 return;
             }
@@ -187,9 +205,11 @@ public class SprayerAttack : MonoBehaviour
 
         DisableMovement();
 
-        if (sprayParticles != null)
+        if (effectPool.Count > 0)
         {
-            sprayParticles.Play();
+            activeSprayVFX = effectPool.Dequeue();
+            activeSprayVFX.gameObject.SetActive(true);
+            activeSprayVFX.Play();
         }
 
         if (attackSoundClip != null && audioSource != null)
@@ -210,14 +230,24 @@ public class SprayerAttack : MonoBehaviour
         {
             if (IsPlayerInvisible())
             {
-                // Stop particles immediately
-                if (sprayParticles != null) sprayParticles.Stop();
+                if (activeSprayVFX != null)
+                {
+                    activeSprayVFX.Stop();
+                    activeSprayVFX.gameObject.SetActive(false);
+                    effectPool.Enqueue(activeSprayVFX);
+                    activeSprayVFX = null;
+                }
                 break; // exit attack loop
             }
             if (IsPlayerInvisible3antix())
             {
-                // Stop particles immediately
-                if (sprayParticles != null) sprayParticles.Stop();
+                if (activeSprayVFX != null)
+                {
+                    activeSprayVFX.Stop();
+                    activeSprayVFX.gameObject.SetActive(false);
+                    effectPool.Enqueue(activeSprayVFX);
+                    activeSprayVFX = null;
+                }
                 break; // exit attack loop
             }
             ApplyDamageTick();
@@ -289,13 +319,17 @@ public class SprayerAttack : MonoBehaviour
     private void EndAttack()
     {
         isAttacking = false;
-        if (sprayParticles != null)
+        if (activeSprayVFX != null)
         {
-            sprayParticles.Stop();
+            activeSprayVFX.Stop();
+            activeSprayVFX.gameObject.SetActive(false);
+            effectPool.Enqueue(activeSprayVFX);
+            activeSprayVFX = null;
         }
+
         EnableMovement();
     }
-
+   
     private void DisableMovement()
     {
         if (sprayerFollowScript != null)

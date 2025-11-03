@@ -5785,7 +5785,7 @@ MonoBehaviour:
   jumpAttackRange: 14.7
   jumpForceY: 21
   jumpCooldown: 4.5
-  jumpProbability: 0.51
+  jumpProbability: 0.869
   jumpAnticipationDuration: 0.3
   cameraShakeImpact: {fileID: 11400000, guid: c09a47171b56bb94b910790a6bd8c684, type: 2}
   horizontalSpeedMultiplier: 5.5
@@ -5867,12 +5867,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 500
+  deathEffect: {fileID: 0}
   bloodSpawnPoint: {fileID: 4506034669272728072}
   bloodParticle: {fileID: 1172977887767284121, guid: e82faebe2a960314cb5cc8e1d4787137, type: 3}
   deathEffectNames:
   - BloodExplooosionRat
   - DeathParticulesMushroomRat
-  damageEffectName: RatBlood
   deathSound: {fileID: 8300000, guid: 517b86b2291c18644a0b893817dc481a, type: 3}
   deathSoundVolume: 1
   DeathMushroomSpawn: {fileID: 6143731217495861919}

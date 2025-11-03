@@ -45,22 +45,64 @@ public class InkAttack : MonoBehaviour
     private InkHealth inkHealthComponent; // Reference to InkHealth component
     private Vector3[] originalUnflippableSpriteScales; // Store original scales of unflippable sprites
 
+    [Header("Local Pooling Settings")]
+    [Tooltip("How many ink balls to keep ready in the pool.")]
+    public int inkBallPoolSize = 10;
+    [Tooltip("How many explosion effects to keep ready.")]
+    public int explosionPoolSize = 5;
+
+    private Queue<GameObject> inkBallPool;
+    private Queue<GameObject> explosionPool;
+    private Transform poolParent;
+
+    private static Transform sharedPlayerTransform;
     private void OnEnable()
     {
         ResetAttackState();
     }
     void Start()
     {
-        // Find the player in the scene. Make sure your player GameObject has the tag "Player"
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
+        poolParent = new GameObject(gameObject.name + "_Pool").transform;
+        poolParent.SetParent(this.transform);
+
+        inkBallPool = new Queue<GameObject>();
+        for (int i = 0; i < inkBallPoolSize; i++)
         {
-            playerTransform = player.transform;
+            GameObject obj = Instantiate(inkBallPrefab, poolParent);
+            obj.SetActive(false);
+            inkBallPool.Enqueue(obj);
         }
-        else
+
+        explosionPool = new Queue<GameObject>();
+        if (explosionParticleSystemPrefab != null)
         {
-            Debug.LogError("Player GameObject not found! Make sure it's tagged as \"Player\".");
-            enabled = false; // Disable script if player not found
+            for (int i = 0; i < explosionPoolSize; i++)
+            {
+                GameObject obj = Instantiate(explosionParticleSystemPrefab, poolParent);
+                obj.SetActive(false);
+                explosionPool.Enqueue(obj);
+            }
+        }
+
+        if (sharedPlayerTransform == null)
+        {
+            // If this is the FIRST InkAttack to run, do the slow find ONCE.
+            GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+            if (playerObject != null)
+            {
+                // Store the result in the shared variable for everyone else.
+                sharedPlayerTransform = playerObject.transform;
+            }
+        }
+
+        // Now, everyone (including the first one) gets the reference instantly from the shared variable.
+        this.playerTransform = sharedPlayerTransform;
+
+        if (this.playerTransform == null)
+        {
+            Debug.LogError("InkAttack could not find the Player! Disabling script.");
+            enabled = false;
+            return; // Stop here if no player was ever found.
         }
 
         // Get InkHealth component reference
@@ -210,34 +252,30 @@ public class InkAttack : MonoBehaviour
         // This avoids duplicating code.
         void FireOneProjectile(Vector3 targetAimPosition)
         {
-            Vector2 direction = (targetAimPosition - spawnPoint.position).normalized;
-            GameObject inkBall = Instantiate(inkBallPrefab, spawnPoint.position, Quaternion.identity);
+            // --- THIS IS THE REPLACEMENT ---
+            if (inkBallPool.Count == 0) return; // Pool is empty, can't fire
+
+            GameObject inkBall = inkBallPool.Dequeue();
+            inkBall.transform.position = spawnPoint.position;
+            inkBall.SetActive(true);
 
             Rigidbody2D rb = inkBall.GetComponent<Rigidbody2D>();
             if (rb == null) rb = inkBall.AddComponent<Rigidbody2D>();
             rb.gravityScale = 0;
+            Vector2 direction = (targetAimPosition - spawnPoint.position).normalized;
             rb.velocity = direction * projectileSpeed;
 
-            Collider2D inkBallCollider = inkBall.GetComponent<Collider2D>();
-            if (inkBallCollider == null)
-            {
-                CircleCollider2D circle = inkBall.AddComponent<CircleCollider2D>();
-                circle.isTrigger = true;
-            }
-            else
-            {
-                inkBallCollider.isTrigger = true;
-            }
-
-            InkBallBehavior inkBallBehavior = inkBall.AddComponent<InkBallBehavior>();
+            // Get or add the behavior script and initialize it
+            InkBallBehavior inkBallBehavior = inkBall.GetComponent<InkBallBehavior>() ?? inkBall.AddComponent<InkBallBehavior>();
             inkBallBehavior.Initialize(
+                this, // Pass a reference to this InkAttack script
                 inkBallDamage,
                 inkBallKnockbackForce,
                 playerLayer,
-                explosionParticleSystemPrefab,
                 inkBallLifetime,
                 gameObject
             );
+            // --- END OF REPLACEMENT ---
         }
 
         // Get the correct aim positions based on facing direction.
@@ -275,11 +313,44 @@ public class InkAttack : MonoBehaviour
         StartCoroutine(ResetAttackCooldown());
     }
 
-
+    public void ReturnToPool(GameObject obj, bool isExplosion)
+    {
+        obj.SetActive(false);
+        if (isExplosion)
+        {
+            if (explosionPool != null) explosionPool.Enqueue(obj);
+        }
+        else
+        {
+            if (inkBallPool != null) inkBallPool.Enqueue(obj);
+        }
+    }
     IEnumerator ResetAttackCooldown()
     {
         yield return new WaitForSeconds(attackCooldown);
         canAttack = true;
+    }
+
+    public void SpawnExplosion(Vector3 position)
+    {
+        if (explosionPool == null || explosionPool.Count == 0) return;
+
+        GameObject explosion = explosionPool.Dequeue();
+        explosion.transform.position = position;
+        explosion.SetActive(true);
+
+        // Start a coroutine to return the explosion to the pool after it's done
+        StartCoroutine(ReturnExplosionAfterDelay(explosion));
+    }
+
+    private IEnumerator ReturnExplosionAfterDelay(GameObject explosionInstance)
+    {
+        ParticleSystem ps = explosionInstance.GetComponent<ParticleSystem>();
+        float duration = ps != null ? ps.main.duration : 2f; // Use particle duration or a 2-second fallback
+
+        yield return new WaitForSeconds(duration);
+
+        ReturnToPool(explosionInstance, true);
     }
 
     // Draw gizmos in editor to visualize aim lines and detection zone
@@ -329,31 +400,26 @@ public class InkAttack : MonoBehaviour
 // and handle its collision events, calling back to the parent InkAttack script.
 public class InkBallBehavior : MonoBehaviour
 {
+    private InkAttack owner; // The InkAttack script that owns this projectile's pool
     private int damageAmount;
     private float knockbackForce;
     private LayerMask playerLayer;
-    private GameObject explosionEffect;
     private float lifetime;
-    private GameObject spawnerObject; // Reference to the object that spawned this InkBall
+    private GameObject spawnerObject;
 
     private bool hasBeenDestroyed = false; // Flag to prevent multiple destructions
 
-    public void Initialize(
-        int damage,
-        float knockback,
-        LayerMask pLayer,
-        GameObject expEffect,
-        float projLifetime,
-        GameObject spawner)
+    public void Initialize(InkAttack ownerScript, int damage, float knockback, LayerMask pLayer, float projLifetime, GameObject spawner)
     {
+        this.owner = ownerScript; // Store the owner
+                                  // ... (the rest of the method is the same)
         damageAmount = damage;
         knockbackForce = knockback;
         playerLayer = pLayer;
-        explosionEffect = expEffect;
         lifetime = projLifetime;
-        spawnerObject = spawner;
 
-        // Start lifetime countdown
+        hasBeenDestroyed = false; // Reset the flag
+        StopAllCoroutines(); // Stop any old routines
         StartCoroutine(LifetimeCountdown());
     }
 
@@ -402,20 +468,20 @@ public class InkBallBehavior : MonoBehaviour
         if (hasBeenDestroyed) return;
         hasBeenDestroyed = true;
 
-        if (explosionEffect != null)
+        // --- THIS IS THE REPLACEMENT ---
+        if (owner != null)
         {
-            GameObject explosionInstance = Instantiate(explosionEffect, transform.position, Quaternion.identity);
-            ParticleSystem ps = explosionInstance.GetComponent<ParticleSystem>();
-            if (ps != null)
-            {
-                Destroy(explosionInstance, ps.main.duration);
-            }
-            else
-            {
-                Destroy(explosionInstance, 3f);
-            }
+            // Tell the owner to spawn an explosion from its pool
+            owner.SpawnExplosion(transform.position);
+            // Tell the owner to return THIS ink ball to its pool
+            owner.ReturnToPool(this.gameObject, false);
         }
-        Destroy(gameObject);
+        else
+        {
+            // Fallback if owner is lost, just destroy self
+            Destroy(gameObject);
+        }
+        // --- END OF REPLACEMENT ---
     }
 }
 
