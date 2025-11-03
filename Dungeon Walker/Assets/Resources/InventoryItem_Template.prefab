@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8120714834432624984}
   - component: {fileID: 7796980222057357683}
   - component: {fileID: 4070598212081444348}
+  - component: {fileID: 1394735130555303212}
   m_Layer: 5
   m_Name: InventoryItem_Template
   m_TagString: Untagged
@@ -148,3 +149,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pressedScale: 0.9
   scaleSpeed: 15
+--- !u!114 &1394735130555303212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7177998601240276250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66493ce850e393042992a1be4dfb509a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickSound: {fileID: 8300000, guid: 9042f10aeaa5d604e91d02b65590148f, type: 3}
