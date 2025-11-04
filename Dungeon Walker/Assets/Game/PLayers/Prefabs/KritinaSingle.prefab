@@ -193639,6 +193639,7 @@ GameObject:
   - component: {fileID: 5995433077679790132}
   - component: {fileID: 7320067433327306476}
   - component: {fileID: 7265038887234651254}
+  - component: {fileID: 6174040629034708606}
   m_Layer: 8
   m_Name: KritinaSingle
   m_TagString: Player
@@ -193845,9 +193846,9 @@ MonoBehaviour:
   attackTriggerName: NeedleAttack
   upwardAttackTriggerName: UpwardAttack
   throwBatTriggerName: ThrowBat
-  anticipationDuration: 0.7
+  anticipationDuration: 0.4
   attackCooldown: 0.3
-  damage: 70
+  damage: 80
   MobileInput: 1
   PcInput: 0
   attackJoystick: {fileID: 0}
@@ -193858,8 +193859,8 @@ MonoBehaviour:
   throwSlashPrefab: {fileID: 3818423424508464440, guid: 79056eab70b269f4d96c8c6a6b9a0e3f, type: 3}
   throwSlashSpawnPointRight: {fileID: 6242363347665091444}
   throwSlashSpawnPointLeft: {fileID: 2167278582721315771}
-  throwSlashSpeed: 30
-  throwSlashDamage: 100
+  throwSlashSpeed: 28
+  throwSlashDamage: 80
   bat2Prefab: {fileID: 4137591446552491165, guid: 699597140ecb62e4b993612cdd07b101, type: 3}
   aimVerticalOffsetRightCursor: -1.77
   aimVerticalOffsetLeftCursor: 1.6
@@ -193884,6 +193885,8 @@ MonoBehaviour:
   throwBatSound: {fileID: 8300000, guid: f4e172c79fea11c40810fa6b2f9aa5bd, type: 3}
   throwSlashHitEnemySound: {fileID: 8300000, guid: 9bbd88d9f1096f44ba918dabe6073eb3, type: 3}
   batHitEnemySound: {fileID: 8300000, guid: 42decd80c88abe546a877eafefc4344b, type: 3}
+  batWallImpactSound: {fileID: 8300000, guid: 5162112e01137d54ea379c55c5e3bace, type: 3}
+  batWallImpactVolume: 1
   playerBatVisual: {fileID: 1208478156964909872}
   playerBatSpriteRenderer: {fileID: 8545762253052663629}
   batParent: {fileID: 5757028011882142642}
@@ -193961,24 +193964,24 @@ MonoBehaviour:
   arrowDestroyParticleSystem: {fileID: 6363118879716444431}
   weaponData: {fileID: 11400000, guid: f78a651e8f2921f43850ce99e92ac268, type: 2}
   minArrowDamage: 5
-  maxArrowDamage: 70
+  maxArrowDamage: 80
   enemyLayers:
     serializedVersion: 2
     m_Bits: 1664
   enableDamageSystem: 1
   damageOnCollision: 1
   showDamageDebug: 0
-  maxChargeTime: 2.2
+  maxChargeTime: 2
   minArrowSpeed: 40
   maxArrowSpeed: 100
   minGravityScale: 1
   maxGravityScale: 0.1
   enableSoundEffects: 1
-  shootSound: {fileID: 8300000, guid: db0d52d46e598524c8bf5ed81118429a, type: 3}
+  shootSound: {fileID: 8300000, guid: a09539e22e171be418a052af0ad0b4a3, type: 3}
   shootSoundVolume: 1
-  wallImpactSound: {fileID: 8300000, guid: 5a2d546e99f64654f86b155b8108f5ae, type: 3}
-  wallImpactSoundVolume: 1
-  enemyImpactSound: {fileID: 8300000, guid: f765fbc2bf39a9941966ebb6bc0ad4f2, type: 3}
+  wallImpactSound: {fileID: 8300000, guid: efa2d377aecd3a3448c33093d2947c2c, type: 3}
+  wallImpactSoundVolume: 0.24
+  enemyImpactSound: {fileID: 8300000, guid: 959266612cea76d428985f73559c0c32, type: 3}
   enemyImpactSoundVolume: 1
   gravityForce: -9.81
   shootCooldown: 0.3
@@ -194077,7 +194080,7 @@ MonoBehaviour:
   overheatAudioClip: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
   overheatAudioVolume: 0.376
   cameraShakeOver: {fileID: 11400000, guid: 91161cc12ac12444280a59edf89a180b, type: 2}
-  shootSound: {fileID: 8300000, guid: 897b8eb2c0684cd4fa0d717979e4227d, type: 3}
+  shootSound: {fileID: 8300000, guid: dd911e8ba488de942ae0829353fd8532, type: 3}
   shootSoundVolume: 1
   bulletCollisionSound: {fileID: 8300000, guid: 5a2d546e99f64654f86b155b8108f5ae, type: 3}
   bulletCollisionSoundVolume: 1
@@ -194143,15 +194146,16 @@ MonoBehaviour:
   enableDamageSystem: 1
   damageOnCollision: 1
   damageOnExplosion: 1
-  explosionDamageRadius: 0.9
+  explosionDamageRadius: 1.2
   explosionDamageMultiplier: 1
   showDamageDebug: 1
   PcInput: 0
   MobileInput: 1
   explosionSound: {fileID: 8300000, guid: 848490b6a7eab29479a25f8f70b23d32, type: 3}
-  additionalExplosionSounds: []
+  additionalExplosionSounds:
+  - {fileID: 8300000, guid: dd911e8ba488de942ae0829353fd8532, type: 3}
   shootSound: {fileID: 8300000, guid: 70eb062116e0bea47a84b6b12ca4cb63, type: 3}
-  explosionVolume: 1
+  explosionVolume: 0.8
   soundExplosionDelay: 0.1
   enableSoundEffects: 1
   useCurvedTrajectory: 1
@@ -194160,6 +194164,7 @@ MonoBehaviour:
   trajectoryTimeStep: 0.1
   maxTrajectoryDistance: 10
   showTrajectoryDebug: 0
+  shootVolume: 1
   useDynamicForce: 1
   minLaunchForce: 8
   maxLaunchForce: 30
@@ -194168,7 +194173,7 @@ MonoBehaviour:
   forceCurve: 2
   showForceDebug: 0
   launchForce: 10
-  shootCooldown: 2
+  shootCooldown: 1.8
   randomSpread: 0
   showBallDebug: 0
   maxUpwardAngle: 180
@@ -194210,9 +194215,9 @@ MonoBehaviour:
   bulletPrefab: {fileID: 4834404838286360832, guid: 9fb3d00f02457c348ac143efdfecd06f, type: 3}
   destructionEffectPrefab: {fileID: 6619945100955572787, guid: e5b9d31208f75c348a2b64794e1dfd02, type: 3}
   muzzleFlashEffect: {fileID: 7747676623657136492}
-  bulletSpeed: 22
+  bulletSpeed: 26
   bulletLifetime: 1
-  bulletDamage: 10
+  bulletDamage: 15
   damageableLayers:
     serializedVersion: 2
     m_Bits: 1664
@@ -194229,9 +194234,9 @@ MonoBehaviour:
   launcherRotationOffsetLeft: 180
   trajectoryRotationOffsetRight: 0
   trajectoryRotationOffsetLeft: 0
-  fireRate: 0.32
-  maxAmmo: 10
-  reloadTime: 1.6
+  fireRate: 0.3
+  maxAmmo: 12
+  reloadTime: 1.7
   shootSound: {fileID: 8300000, guid: 36267c8f0a93a4640a33e0f46fe37d6e, type: 3}
   shootSoundVolume: 1
   bulletCollisionSound: {fileID: 8300000, guid: 0a9e41efd2406c84ea5ea5dff4c22a9c, type: 3}
@@ -194426,6 +194431,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0903946fde3ec1a4d8fface0fb6748ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  superMoveController: {fileID: 4745970531061244357}
   activationKey: 102
   playerSuperColor: {r: 0, g: 0.6313726, b: 1, a: 1}
   playerFadeDuration: 0.25
@@ -194438,6 +194444,13 @@ MonoBehaviour:
   - Fly
   - Sprayer
   clawEffectPrefab: {fileID: 1529471627087468911, guid: 98299480242427945a78190cdde66471, type: 3}
+  superActivationSound: {fileID: 8300000, guid: e79941e8a705f0642a7010cf2b47b1d6, type: 3}
+  clawImpactSounds:
+  - {fileID: 8300000, guid: 42decd80c88abe546a877eafefc4344b, type: 3}
+  - {fileID: 8300000, guid: f765fbc2bf39a9941966ebb6bc0ad4f2, type: 3}
+  - {fileID: 8300000, guid: 66b3c034a3db90546830e1b9fe566390, type: 3}
+  clawImpactVolume: 1
+  superActivationVolume: 0.67
   enemyRevealDelay: 0.12
   superMoveEndDelay: 1.28
   playerScriptsToDisable:
@@ -194472,6 +194485,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerMovement: {fileID: 5159600053955234360}
   playerHealth: {fileID: 704909933309968761}
+  speedBoostSound: {fileID: 8300000, guid: 352625c76d37b9246b770bbeb1e54d27, type: 3}
+  speedBoostVolume: 1
+  bubbleWrapDestroySound: {fileID: 8300000, guid: a2a875f0da56f7e45b037c53b12971d6, type: 3}
+  bubbleWrapDestroyVolume: 1
+  boxShieldDestroySound: {fileID: 8300000, guid: 367af0d489d0e4d419e59edc46cd14e5, type: 3}
+  boxShieldDestroyVolume: 1
   speedBoostParticles: {fileID: 5764499391975148318}
   speedBoostParticles2: {fileID: 8132899060025231056}
   shieldAnimator: {fileID: 2239579227606807358}
@@ -194522,7 +194541,7 @@ MonoBehaviour:
     m_Bits: 640
   damage: 5
   damageInterval: 0.5
-  trailSound: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+  trailSound: {fileID: 8300000, guid: d79293b4bee4ccf41beacdcac48423a2, type: 3}
   trailVolume: 1
   hitsBeforeStun: 2
   stunDuration: 2
@@ -194553,8 +194572,8 @@ MonoBehaviour:
     m_Bits: 640
   damage: 10
   damageInterval: 0.6
-  trailSound: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
-  trailVolume: 1
+  trailSound: {fileID: 8300000, guid: 5f358d554ae7a624ab7ef0e02f06a87e, type: 3}
+  trailVolume: 0.6
   player: {fileID: 0}
 --- !u!114 &8044999676915526635
 MonoBehaviour:
@@ -194581,7 +194600,7 @@ MonoBehaviour:
   - {fileID: 8917108678992454185}
   revivePauseDuration: 2.2
   postReviveInvincibility: 1.5
-  reviveSound: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
+  reviveSound: {fileID: 8300000, guid: abdbd38e94d4b094eac5bcafce6d4a91, type: 3}
   reviveVolume: 1
 --- !u!114 &4263109833319814150
 MonoBehaviour:
@@ -194661,9 +194680,9 @@ MonoBehaviour:
   - {fileID: 1220082075272087002}
   invisibleMaterial: {fileID: 2100000, guid: 3c3b9c3c813cda240982ab433631c19b, type: 2}
   invisibilityDuration: 10
-  becomeInvisibleSound: {fileID: 8300000, guid: b77eaf947b8484745b390ddbfdb94764, type: 3}
+  becomeInvisibleSound: {fileID: 8300000, guid: 93913c3a762034943aea63e7664db3cc, type: 3}
   invisibleVolume: 1
-  becomeVisibleSound: {fileID: 8300000, guid: 60dd2182b31962c4ba65e277af046eee, type: 3}
+  becomeVisibleSound: {fileID: 8300000, guid: f6a2a67f56b4c7b4792e0b4dea12f834, type: 3}
   visibleVolume: 1
 --- !u!114 &2309832231095394448
 MonoBehaviour:
@@ -194679,14 +194698,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnChance: 0.8
   spawnPoint: {fileID: 6163936903288431681}
-  coinSpawnSound: {fileID: 8300000, guid: 70eb062116e0bea47a84b6b12ca4cb63, type: 3}
+  coinSpawnSound: {fileID: 8300000, guid: cc7b4c1cda88e0846aef831030b89a1d, type: 3}
   coinSpawnVolume: 1
-  goldenExplosionSound: {fileID: 8300000, guid: f765fbc2bf39a9941966ebb6bc0ad4f2, type: 3}
-  goldenExplosionVolume: 1
-  silverExplosionSound: {fileID: 8300000, guid: 0a9e41efd2406c84ea5ea5dff4c22a9c, type: 3}
-  silverExplosionVolume: 1
-  bronzeExplosionSound: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
-  bronzeExplosionVolume: 1
+  goldenExplosionSound: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
+  goldenExplosionVolume: 0.61
+  silverExplosionSound: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
+  silverExplosionVolume: 0.59
+  bronzeExplosionSound: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
+  bronzeExplosionVolume: 0.63
   launchForce: 14
   splitForceMultiplier: 0.5
   splitDelay: 0.2
@@ -194732,9 +194751,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   beeSwarms:
   - {fileID: 9078075540027060496}
-  - {fileID: 7309749716689806138}
-  beeSwarmSound: {fileID: 8300000, guid: f837e9615d44c55498cd26e798c9d9b9, type: 3}
-  beeSwarmVolume: 1
+  beeSwarmSound: {fileID: 8300000, guid: 0b6a70ede774f4b419f9824ce8bdcd30, type: 3}
+  beeSwarmVolume: 0.47
   damagePoint: {fileID: 5655835730392218243}
   damageRadius: 5.24
   damage: 25
@@ -194811,6 +194829,20 @@ MonoBehaviour:
   - {fileID: 0}
   uiSlot1: {fileID: 0}
   uiSlot2: {fileID: 0}
+--- !u!114 &6174040629034708606
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6790693189779611674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab4dd5b4a20d71244aee7f447f6d6124, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arrowCircleRadius: 3
+  arrowCenterOffset: {x: -0.1, y: 1.3}
 --- !u!1 &6950290840085827452
 GameObject:
   m_ObjectHideFlags: 0

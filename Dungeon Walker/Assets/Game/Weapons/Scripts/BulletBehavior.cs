@@ -53,15 +53,39 @@ public class BulletBehavior : MonoBehaviour
             HandleImpact(collision.gameObject, collision.contacts[0].point);
         }
     }
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
 
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("BulletImpact_FORCE_PLAY_SOUND");
+
+        // --- THIS IS THE CRITICAL FIX for volume issues ---
+        // Position it directly on the camera to guarantee it's heard at full volume
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+
+        tempAudioSource.clip = clip;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
+    }
     private void HandleImpact(GameObject hitObject, Vector2 impactPoint)
     {
         // 1. LOCK: Immediately prevent any other collision calls.
         canCollide = false;
-        if (collisionSound != null)
-        {
-            AudioSource.PlayClipAtPoint(collisionSound, impactPoint, collisionVolume);
-        }
+        PlaySound(collisionSound, collisionVolume);
         FleaHealth enemyHealth = hitObject.GetComponent<FleaHealth>();
         if (enemyHealth != null)
         {

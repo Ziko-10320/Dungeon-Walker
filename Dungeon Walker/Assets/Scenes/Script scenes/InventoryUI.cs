@@ -22,7 +22,10 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI equippedSkinName;
     [Header("Weapon Data References")]
     [SerializeField] private List<WeaponData> allWeapons;
-    
+    [Header("Inventory Sounds")]
+    [SerializeField] private AudioClip purchaseSuccessSound;
+    [SerializeField] private AudioClip purchaseFailSound;
+    private AudioSource uiAudioSource;
     private int currentWeaponIndex = 0;
     [Header("Main Panel")]
     [SerializeField] private GameObject inventoryPanel;
@@ -76,6 +79,12 @@ public class InventoryUI : MonoBehaviour
 
     private void Awake()
     {
+        uiAudioSource = gameObject.AddComponent<AudioSource>();
+        uiAudioSource.playOnAwake = false;
+        uiAudioSource.loop = false;
+        uiAudioSource.bypassEffects = true;
+        uiAudioSource.bypassListenerEffects = true;
+        uiAudioSource.bypassReverbZones = true;
         unequipSkinButton.onClick.AddListener(OnUnequipSkin);
         powerUpsTabButton.onClick.AddListener(ShowPowerUpsCategory);
         skinsTabButton.onClick.AddListener(ShowSkinsCategory);
@@ -164,11 +173,13 @@ public class InventoryUI : MonoBehaviour
     {
         if (WalletManager.Instance.SpendCoins(secondSlotPrice))
         {
+            if (purchaseSuccessSound != null) uiAudioSource.PlayOneShot(purchaseSuccessSound);
             InventoryManager.Instance.UnlockSecondSlot();
             RefreshAllDisplays();
         }
         else
         {
+            if (purchaseFailSound != null) uiAudioSource.PlayOneShot(purchaseFailSound);
             Debug.Log("Not enough coins to unlock the second slot!");
         }
     }
@@ -177,6 +188,7 @@ public class InventoryUI : MonoBehaviour
         // Try to spend the coins
         if (WalletManager.Instance.SpendCoins(thirdSlotPrice))
         {
+            if (purchaseSuccessSound != null) uiAudioSource.PlayOneShot(purchaseSuccessSound);
             // If successful, tell the InventoryManager to unlock the slot
             InventoryManager.Instance.UnlockThirdSlot();
             // Refresh the entire display to show the newly unlocked slot
@@ -184,6 +196,7 @@ public class InventoryUI : MonoBehaviour
         }
         else
         {
+            if (purchaseFailSound != null) uiAudioSource.PlayOneShot(purchaseFailSound);
             // Not enough coins! You can add a sound effect or visual feedback here.
             Debug.Log("Not enough coins to unlock the third slot!");
         }
@@ -316,12 +329,14 @@ public class InventoryUI : MonoBehaviour
             int upgradeCost = currentWeapon.upgradeLevels[currentLevel].upgradeCost;
             if (WalletManager.Instance.SpendCoins(upgradeCost))
             {
+                if (purchaseSuccessSound != null) uiAudioSource.PlayOneShot(purchaseSuccessSound);
                 InventoryManager.Instance.UpgradeWeapon(currentWeapon.name);
                 RefreshWeaponDisplay();
                 UpdateCoinCount();
             }
             else
             {
+                if (purchaseFailSound != null) uiAudioSource.PlayOneShot(purchaseFailSound);
                 Debug.Log("Not enough coins to upgrade!");
             }
         }

@@ -70470,6 +70470,90 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &2993622978390491369
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3418261522954873600}
+  - component: {fileID: 7134985503636207042}
+  m_Layer: 0
+  m_Name: GlowImpacto
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &3418261522954873600
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2993622978390491369}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -6.9293594, y: -2.394019, z: 0.9142734}
+  m_LocalScale: {x: 0.73089474, y: 0.7308947, z: 0.7308947}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9006167878275002792}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &7134985503636207042
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2993622978390491369}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: f3849805a6cf9ed42b64886d16aa24c0, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 21300000, guid: f466a2770d4c78445899ea103c5a89c4, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 10, y: 10}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &3126716608728773858
 GameObject:
   m_ObjectHideFlags: 0
@@ -219180,6 +219264,8 @@ GameObject:
   - component: {fileID: 3673721746919271591}
   - component: {fileID: 6487877941055365523}
   - component: {fileID: 1861439298138643364}
+  - component: {fileID: 6035619277424363110}
+  - component: {fileID: 3266915616219203570}
   m_Layer: 8
   m_Name: L3antixSingle
   m_TagString: Player
@@ -219225,6 +219311,7 @@ Transform:
   - {fileID: 8729440748545523501}
   - {fileID: 4402927134927661949}
   - {fileID: 1213992910618067592}
+  - {fileID: 3418261522954873600}
   - {fileID: 3658285548033197230}
   - {fileID: 3733179032511033224}
   - {fileID: 3176187350118949786}
@@ -219406,9 +219493,9 @@ MonoBehaviour:
   showDamageDebug: 0
   PcInput: 0
   MobileInput: 1
-  explosionSound: {fileID: 0}
+  explosionSound: {fileID: 8300000, guid: dd911e8ba488de942ae0829353fd8532, type: 3}
   additionalExplosionSounds: []
-  shootSound: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: 70eb062116e0bea47a84b6b12ca4cb63, type: 3}
   explosionVolume: 1
   soundExplosionDelay: 0.1
   enableSoundEffects: 1
@@ -219418,6 +219505,7 @@ MonoBehaviour:
   trajectoryTimeStep: 0.1
   maxTrajectoryDistance: 10
   showTrajectoryDebug: 0
+  shootVolume: 1
   useDynamicForce: 1
   minLaunchForce: 8
   maxLaunchForce: 30
@@ -219495,7 +219583,7 @@ MonoBehaviour:
   minGravityScale: 1
   maxGravityScale: 0.1
   enableSoundEffects: 1
-  shootSound: {fileID: 8300000, guid: db0d52d46e598524c8bf5ed81118429a, type: 3}
+  shootSound: {fileID: 8300000, guid: a09539e22e171be418a052af0ad0b4a3, type: 3}
   shootSoundVolume: 0.724
   wallImpactSound: {fileID: 8300000, guid: 5db3d1167d7ee86448ee1c1f5661be2b, type: 3}
   wallImpactSoundVolume: 1
@@ -219582,12 +219670,14 @@ MonoBehaviour:
   upwardZoneMaxY: 10.9
   normalZoneMaxY: 2.97
   showDirectionDebug: 0
-  audioSource: {fileID: 0}
+  audioSource: {fileID: 6035619277424363110}
   attackSound: {fileID: 8300000, guid: 7c8731b8c79305b448e8d3294149678d, type: 3}
   upwardAttackSound: {fileID: 8300000, guid: 7c8731b8c79305b448e8d3294149678d, type: 3}
-  throwBatSound: {fileID: 0}
+  throwBatSound: {fileID: 8300000, guid: f4e172c79fea11c40810fa6b2f9aa5bd, type: 3}
   throwSlashHitEnemySound: {fileID: 8300000, guid: 9bbd88d9f1096f44ba918dabe6073eb3, type: 3}
   batHitEnemySound: {fileID: 0}
+  batWallImpactSound: {fileID: 8300000, guid: 5162112e01137d54ea379c55c5e3bace, type: 3}
+  batWallImpactVolume: 0.8
   playerBatVisual: {fileID: 4425494075282511855}
   playerBatSpriteRenderer: {fileID: 7984387711765867595}
   batParent: {fileID: 9177275139858828283}
@@ -219673,7 +219763,7 @@ MonoBehaviour:
   fireRate: 0.32
   maxAmmo: 10
   reloadTime: 1.6
-  shootSound: {fileID: 8300000, guid: e30dc5a02c3d0774aaec25404e0cd17e, type: 3}
+  shootSound: {fileID: 8300000, guid: 36267c8f0a93a4640a33e0f46fe37d6e, type: 3}
   shootSoundVolume: 1
   bulletCollisionSound: {fileID: 8300000, guid: 0a9e41efd2406c84ea5ea5dff4c22a9c, type: 3}
   bulletCollisionSoundVolume: 1
@@ -219714,7 +219804,7 @@ MonoBehaviour:
     m_Bits: 1664
   collisionLayers:
     serializedVersion: 2
-    m_Bits: 1736
+    m_Bits: 1224
   enemyLayers:
     serializedVersion: 2
     m_Bits: 1728
@@ -219742,10 +219832,10 @@ MonoBehaviour:
   overheatCoolDownTime: 6
   overheatColorThreshold: 0.6
   smokeParticleSystem: {fileID: 0}
-  overheatAudioClip: {fileID: 0}
+  overheatAudioClip: {fileID: 8300000, guid: 5f358d554ae7a624ab7ef0e02f06a87e, type: 3}
   overheatAudioVolume: 1
   cameraShakeOver: {fileID: 11400000, guid: 91161cc12ac12444280a59edf89a180b, type: 2}
-  shootSound: {fileID: 8300000, guid: 1866bf20609ba7e4790591df9d5f37c9, type: 3}
+  shootSound: {fileID: 8300000, guid: 1c7a4f78818ce094383296beeaaa205f, type: 3}
   shootSoundVolume: 1
   bulletCollisionSound: {fileID: 0}
   bulletCollisionSoundVolume: 1
@@ -219940,6 +220030,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   L3antixMovement: {fileID: 6796231500301844375}
   L3antixHealth: {fileID: 6734370145734748242}
+  speedBoostSound: {fileID: 8300000, guid: 352625c76d37b9246b770bbeb1e54d27, type: 3}
+  speedBoostVolume: 1
+  bubbleWrapDestroySound: {fileID: 8300000, guid: a2a875f0da56f7e45b037c53b12971d6, type: 3}
+  bubbleWrapDestroyVolume: 1
+  boxShieldDestroySound: {fileID: 8300000, guid: 367af0d489d0e4d419e59edc46cd14e5, type: 3}
+  boxShieldDestroyVolume: 1
   speedBoostParticles: {fileID: 4208472700708661764}
   speedBoostParticles2: {fileID: 1703202343702320873}
   shieldAnimator: {fileID: 4856887635600406049}
@@ -219989,7 +220085,7 @@ MonoBehaviour:
     m_Bits: 640
   damage: 5
   damageInterval: 0.5
-  trailSound: {fileID: 0}
+  trailSound: {fileID: 8300000, guid: d79293b4bee4ccf41beacdcac48423a2, type: 3}
   trailVolume: 1
   hitsBeforeStun: 2
   stunDuration: 2
@@ -220020,7 +220116,7 @@ MonoBehaviour:
     m_Bits: 640
   damage: 10
   damageInterval: 0.6
-  trailSound: {fileID: 0}
+  trailSound: {fileID: 8300000, guid: 5f358d554ae7a624ab7ef0e02f06a87e, type: 3}
   trailVolume: 1
   player: {fileID: 0}
 --- !u!114 &9086724144951122512
@@ -220048,7 +220144,7 @@ MonoBehaviour:
   - {fileID: 5861366033599340391}
   revivePauseDuration: 2.2
   postReviveInvincibility: 1.5
-  reviveSound: {fileID: 0}
+  reviveSound: {fileID: 8300000, guid: abdbd38e94d4b094eac5bcafce6d4a91, type: 3}
   reviveVolume: 1
 --- !u!114 &2367989933162419796
 MonoBehaviour:
@@ -220128,9 +220224,9 @@ MonoBehaviour:
   - {fileID: 121951730308524707}
   invisibleMaterial: {fileID: 2100000, guid: f3ccae55d69c05c43a8e6e2146420eaf, type: 2}
   invisibilityDuration: 10
-  becomeInvisibleSound: {fileID: 0}
+  becomeInvisibleSound: {fileID: 8300000, guid: 93913c3a762034943aea63e7664db3cc, type: 3}
   invisibleVolume: 1
-  becomeVisibleSound: {fileID: 0}
+  becomeVisibleSound: {fileID: 8300000, guid: f6a2a67f56b4c7b4792e0b4dea12f834, type: 3}
   visibleVolume: 1
 --- !u!114 &5217040170062689098
 MonoBehaviour:
@@ -220147,7 +220243,7 @@ MonoBehaviour:
   beeSwarms:
   - {fileID: 1267550171789032839}
   - {fileID: 3061071017553072481}
-  beeSwarmSound: {fileID: 0}
+  beeSwarmSound: {fileID: 8300000, guid: 0b6a70ede774f4b419f9824ce8bdcd30, type: 3}
   beeSwarmVolume: 1
   damagePoint: {fileID: 3510942078707517890}
   damageRadius: 5.64
@@ -220170,13 +220266,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnChance: 0.8
   spawnPoint: {fileID: 2484036269769512711}
-  coinSpawnSound: {fileID: 0}
+  coinSpawnSound: {fileID: 8300000, guid: cc7b4c1cda88e0846aef831030b89a1d, type: 3}
   coinSpawnVolume: 1
-  goldenExplosionSound: {fileID: 0}
+  goldenExplosionSound: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
   goldenExplosionVolume: 1
-  silverExplosionSound: {fileID: 0}
+  silverExplosionSound: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
   silverExplosionVolume: 1
-  bronzeExplosionSound: {fileID: 0}
+  bronzeExplosionSound: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
   bronzeExplosionVolume: 1
   launchForce: 14
   splitForceMultiplier: 0.5
@@ -220278,6 +220374,116 @@ MonoBehaviour:
   - {fileID: 0}
   uiSlot1: {fileID: 0}
   uiSlot2: {fileID: 0}
+--- !u!82 &6035619277424363110
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796940568639449547}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &3266915616219203570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7796940568639449547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab4dd5b4a20d71244aee7f447f6d6124, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arrowCircleRadius: 3.5
+  arrowCenterOffset: {x: 0.2, y: 1.7}
 --- !u!1 &7818301228350883554
 GameObject:
   m_ObjectHideFlags: 0

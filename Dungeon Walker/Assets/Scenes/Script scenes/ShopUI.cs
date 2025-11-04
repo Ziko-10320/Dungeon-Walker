@@ -24,7 +24,10 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private Button skinsTabButton;
     [SerializeField] private GameObject powerUpsContent;
     [SerializeField] private GameObject skinsContent;
-
+    [Header("Shop Sounds")]
+    [SerializeField] private AudioClip purchaseSuccessSound;
+    [SerializeField] private AudioClip purchaseFailSound;
+    private AudioSource uiAudioSource;
     [Header("Skin Shop Specifics")]
     [SerializeField] private Button selectCatButton;
     [SerializeField] private Button selectManButton;
@@ -56,6 +59,12 @@ public class ShopUI : MonoBehaviour
         // --- Automatically set up all buttons ---
         SetupButtons();
         selectedItemBuyButton.onClick.AddListener(OnBuyButtonPressed);
+        uiAudioSource = gameObject.AddComponent<AudioSource>();
+        uiAudioSource.playOnAwake = false;
+        uiAudioSource.loop = false;
+        uiAudioSource.bypassEffects = true; // This group of settings helps ignore mixers
+        uiAudioSource.bypassListenerEffects = true;
+        uiAudioSource.bypassReverbZones = true;
     }
     private void Start()
     {
@@ -232,6 +241,7 @@ public class ShopUI : MonoBehaviour
 
         if (purchaseSuccessful)
         {
+            if (purchaseSuccessSound != null) uiAudioSource.PlayOneShot(purchaseSuccessSound);
             Debug.Log("Purchase successful: " + item.powerUpName);
             InventoryManager.Instance.AddOwnedPowerUp(item);
             UpdateCoinCount();
@@ -243,6 +253,7 @@ public class ShopUI : MonoBehaviour
         }
         else
         {
+            if (purchaseFailSound != null) uiAudioSource.PlayOneShot(purchaseFailSound);
             Debug.Log("Purchase failed. Not enough coins.");
             // You could add a visual/sound effect here for failure
         }
@@ -269,6 +280,7 @@ public class ShopUI : MonoBehaviour
     {
         if (WalletManager.Instance.SpendCoins(item.price))
         {
+            if (purchaseSuccessSound != null) uiAudioSource.PlayOneShot(purchaseSuccessSound);
             // We must use the UNIQUE ID here, not the label.
             InventoryManager.Instance.AddOwnedSkin(item.GetUniqueID()); // <--- THIS IS THE FIX
             OnItemSelected(item); // Refresh the UI
@@ -276,6 +288,7 @@ public class ShopUI : MonoBehaviour
         }
         else
         {
+            if (purchaseFailSound != null) uiAudioSource.PlayOneShot(purchaseFailSound);
             Debug.Log("Purchase failed. Not enough coins.");
         }
     }

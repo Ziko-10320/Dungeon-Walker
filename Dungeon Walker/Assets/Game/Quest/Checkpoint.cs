@@ -69,7 +69,8 @@ public class Checkpoint : MonoBehaviour
     [Tooltip("ParticleSystem to play while washing (loop will be controlled in script).")]
     public ParticleSystem washParticles;
     private Coroutine washCoroutine;
-
+    [Tooltip("The vertical (Y-axis) offset for the arrow pointer when it's on-screen at this checkpoint.")]
+    public float arrowYOffset = 1.0f; // Default value, you can change this
     // ------------------ C3 (Dry) ------------------
     [Header("C3 - Dry (random sprites)")]
     [Tooltip("SpriteRenderers representing dry clothes visuals. Script will disable them on Start.")]
@@ -117,7 +118,40 @@ public class Checkpoint : MonoBehaviour
         if (boxTransform != null)
             boxOriginalPosition = boxTransform.position;
     }
+    void Update()
+    {
+        // Failsafe: If the waiting audio source doesn't exist, do nothing.
+        if (waitingAudioSource == null) return;
 
+        // Condition 1: Is the game currently paused?
+        bool isGamePaused = Time.timeScale == 0f;
+
+        // Condition 2: Is the quest active and the sound supposed to be playing?
+        // The sound should only play if the quest has started AND the timer hasn't ended yet.
+        bool shouldBePlaying = questStarted && !timerEnded;
+
+        // Now, we sync the audio source's state with our desired state.
+        if (shouldBePlaying && !isGamePaused)
+        {
+            // If it SHOULD be playing and the game is NOT paused...
+            if (!waitingAudioSource.isPlaying)
+            {
+                // ...and it's not already playing, then play it.
+                // This handles starting the sound and unpausing.
+                waitingAudioSource.Play();
+            }
+        }
+        else
+        {
+            // If it SHOULD NOT be playing (or the game is paused)...
+            if (waitingAudioSource.isPlaying)
+            {
+                // ...and it IS currently playing, then pause it.
+                // Using Pause() is better than Stop() because it will resume from the same spot.
+                waitingAudioSource.Pause();
+            }
+        }
+    }
     void Start()
     {
         // Ensure dry sprites are disabled on start so script controls them
@@ -230,18 +264,22 @@ public class Checkpoint : MonoBehaviour
 
     public void StartWaitingSound()
     {
-        if (waitingSound != null && waitingAudioSource != null && !waitingAudioSource.isPlaying)
+        // We don't need to do anything here anymore.
+        // The 'questStarted' flag is set in StartQuest(), and our new Update() method will see that
+        // and automatically start the sound on the next frame.
+        // You can leave this method empty or remove the old code.
+        if (waitingSound != null && waitingAudioSource != null)
         {
             waitingAudioSource.clip = waitingSound;
             waitingAudioSource.volume = waitingSoundVolume;
-            waitingAudioSource.Play();
         }
     }
 
     public void StopWaitingSound()
     {
-        if (waitingAudioSource != null && waitingAudioSource.isPlaying)
-            waitingAudioSource.Stop();
+        // We also don't need to do anything here.
+        // The 'timerEnded' flag is set in EndTimer(), and our new Update() method will see that
+        // and automatically pause the sound on the next frame.
     }
 
     public void SetPlayerInRadius(bool inRadius)

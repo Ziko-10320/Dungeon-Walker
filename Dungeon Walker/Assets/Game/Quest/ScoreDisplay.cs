@@ -124,7 +124,7 @@ public class ScoreDisplay : MonoBehaviour
         {
             if (timeRemaining > 0)
             {
-                timerText.text = timerPrefix + timeRemaining.ToString(timerFormat) + "s";
+                timerText.text = timerPrefix + timeRemaining.ToString(timerFormat);
                 if (timerImageUI != null) timerImageUI.gameObject.SetActive(true);
             }
             else

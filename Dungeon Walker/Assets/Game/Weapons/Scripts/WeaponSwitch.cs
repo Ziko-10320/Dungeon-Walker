@@ -116,7 +116,7 @@ public class WeaponSwitchManager : MonoBehaviour
         if (killsLeftText != null)
         {
             int killsRemaining = killsToSwitch - currentKills;
-            killsLeftText.text = $"Kills to Switch: {killsRemaining}";
+            killsLeftText.text = killsRemaining.ToString();
         }
         else
         {
