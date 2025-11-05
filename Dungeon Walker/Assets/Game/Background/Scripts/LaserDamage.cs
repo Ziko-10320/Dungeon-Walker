@@ -73,22 +73,31 @@ public class LaserTrap : MonoBehaviour
         if (!isActive) return;
         if (!other.CompareTag("Player")) return;
 
-        // Damage the player via PlayerHealth (we pass zero knockback to avoid double/conflicting forces)
-        PlayerHealth player = other.GetComponent<PlayerHealth>();
-        Rigidbody2D playerRb = other.attachedRigidbody ?? other.GetComponent<Rigidbody2D>();
+        // --- THIS IS THE START OF THE CHANGE ---
 
-        // Determine horizontal knock direction: push player away from laser on X axis
+        // Try to get the health component for Kritina
+        PlayerHealth kritinaHealth = other.GetComponent<PlayerHealth>();
+        if (kritinaHealth != null)
+        {
+            // Tell PlayerHealth the damage happened but with zero knockback parameters.
+            kritinaHealth.TakeDamage(damage, 0f, Vector2.zero);
+        }
+
+        // ALSO, try to get the health component for L3antix
+        L3antixHealth l3antixHealth = other.GetComponent<L3antixHealth>();
+        if (l3antixHealth != null)
+        {
+            // Tell L3antixHealth it took damage.
+            l3antixHealth.TakeDamage(damage, 0f, Vector2.zero);
+        }
+
+        // --- END OF THE CHANGE ---
+
+        // The rest of the knockback logic is perfect and remains the same.
+        Rigidbody2D playerRb = other.attachedRigidbody ?? other.GetComponent<Rigidbody2D>();
         float dirX = (other.transform.position.x < transform.position.x) ? -1f : 1f;
         Vector2 knockDir = new Vector2(dirX, 0f);
 
-        if (player != null)
-        {
-            // Tell PlayerHealth the damage happened but with zero knockback parameters.
-            // PlayerHealth will handle health, invincibility and visual effects.
-            player.TakeDamage(damage, 0f, Vector2.zero);
-        }
-
-        // Now **apply physical knockback ourselves** (independent of PlayerHealth)
         if (playerRb != null)
         {
             StartCoroutine(ApplyKnockbackRoutine(playerRb, knockDir, knockbackForce, stunDuration, disableMovementDuringKnockback));
@@ -110,7 +119,7 @@ public class LaserTrap : MonoBehaviour
         {
             // Try common movement script names — adjust if your movement class has a different name.
             movementScript = rb.GetComponent("KritinaMovement") as MonoBehaviour
-                             ?? rb.GetComponent("KritinaMovement2") as MonoBehaviour
+                            ?? rb.GetComponent("L3antixMovement") as MonoBehaviour
                              ?? rb.GetComponent("PlayerMovement") as MonoBehaviour
                              ?? rb.GetComponent("CharacterController2D") as MonoBehaviour;
             if (movementScript != null)

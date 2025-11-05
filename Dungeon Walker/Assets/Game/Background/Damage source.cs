@@ -25,6 +25,17 @@ public class DamageSource : MonoBehaviour
 
                 player.TakeDamage(damageAmount, knockbackForce, knockbackDirection);
             }
+            L3antixHealth L3antixHealth = other.GetComponent<L3antixHealth>();
+            if (L3antixHealth != null)
+            {
+                Vector2 knockbackDirection = (L3antixHealth.transform.position - transform.position).normalized;
+
+                // Add an upward component to the knockback direction
+                knockbackDirection.y += upwardKnockbackMultiplier;
+                knockbackDirection.Normalize(); // Normalize again after adding upward component
+
+                L3antixHealth.TakeDamage(damageAmount, knockbackForce, knockbackDirection);
+            }
         }
     }
 }

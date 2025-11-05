@@ -36,8 +36,17 @@ public class WaveConfig
     private Coroutine volcanoBrainCoroutine;
     // A list of ALL potential volcano locations for the current wave.
     private List<Transform> potentialVolcanoSpawns = new List<Transform>();
+    [Header("Wave Hazards")]
+    public bool hasLasers = false;
+    [Tooltip("A list of specific Laser Trap GameObjects to activate for THIS wave.")]
+    public List<GameObject> laserTrapObjects;
 }
-
+[System.Serializable]
+public class SpawnPointInfo
+{
+    public Transform point;
+    public float radius = 2.0f;
+}
 public class WaveManager : MonoBehaviour
 {
     [Header("Références")]
@@ -49,10 +58,9 @@ public class WaveManager : MonoBehaviour
     public List<WaveConfig> waveConfigs;
 
     [Header("Points de Spawn")]
+    [Header("Points de Spawn")]
     [Tooltip("Liste de tous les points où les ennemis peuvent apparaître.")]
-    public List<Transform> spawnPoints;
-
-    [SerializeField] private float spawnRadius = 2.0f;
+    public List<SpawnPointInfo> spawnPoints; // This is your main list for the Inspector
 
     [Tooltip("Le PRÉFABRIQUÉ de l'effet de particules à jouer au spawn/despawn.")]
     [SerializeField] private GameObject spawnEffectPrefab;
@@ -60,21 +68,26 @@ public class WaveManager : MonoBehaviour
     private List<GameObject> activeEnemies = new List<GameObject>();
     private List<PendingSpawn> pendingSpawns = new List<PendingSpawn>();
     private List<GameObject> activeVolcanoes = new List<GameObject>();
+    private List<GameObject> activeLasers = new List<GameObject>();
     private Coroutine spawnCheckCoroutine;
     private const float SPAWN_CHECK_INTERVAL = 0.5f;
     private GameObject activeBoss = null;
     private bool bossHasBeenSpawnedForThisWave = false;
-    private int currentScore = -1; // Initialisé à -1 pour forcer la première vague au démarrage
+    private int currentScore = -1;
     private bool waveIsActive = false;
-   
     private Coroutine currentWaveCoroutine;
     public Transform playerTransform { get; private set; }
+
     [Tooltip("How much the spawn rate speeds up as the wave progresses. 1.0 = no change. 1.5 = gets 50% faster. 2.0 = gets 100% faster.")]
     [SerializeField] private float wavePacingMultiplier = 1.5f;
-    private List<Transform> activeSpawningPoints = new List<Transform>();
+
+    // This is the ONLY activeSpawningPoints variable. It is a list of SpawnPointInfo.
+    private List<SpawnPointInfo> activeSpawningPoints = new List<SpawnPointInfo>();
+
     private PhotonView view;
     private bool isOnlineMode = false;
     private WaveConfig currentWaveConfig;
+
     [Tooltip("How long the volcanoes stay active when triggered.")]
     [SerializeField] private float volcanoActiveDuration = 1.5f;
     [Tooltip("How long the volcanoes stay dormant between eruptions.")]
@@ -284,164 +297,145 @@ public class WaveManager : MonoBehaviour
                 continue;
             }
 
-            // --- NEW LOGIC: Find a new spawn point to activate ---
-            // We check all unique spawn points that have enemies waiting.
-            var uniquePendingSpawnPoints = pendingSpawns.Select(p => p.SpawnPoint).Distinct();
+            var uniquePendingSpawnInfos = pendingSpawns.Select(p => p.SpawnInfo).Distinct();
 
-            foreach (Transform spawnPoint in uniquePendingSpawnPoints)
+            foreach (SpawnPointInfo spawnInfo in uniquePendingSpawnInfos)
             {
-                // Check three conditions:
-                // 1. Is the spawn point valid?
-                // 2. Is it now inside the player's radius?
-                // 3. Is it NOT already in our list of active spawners?
-                if (spawnPoint != null &&
-                    EffectCullingSystem.Instance.IsPositionInRadius(spawnPoint.position) &&
-                    !activeSpawningPoints.Contains(spawnPoint))
+                if (spawnInfo != null && spawnInfo.point != null &&
+                    EffectCullingSystem.Instance.IsPositionInRadius(spawnInfo.point.position) &&
+                    !activeSpawningPoints.Contains(spawnInfo))
                 {
-                    // All conditions met! Activate this spawn point.
-                    Debug.Log($"Player has entered range of spawn point {spawnPoint.name}. Activating it.");
-
-                    // Add it to the active list to prevent re-triggering.
-                    activeSpawningPoints.Add(spawnPoint);
-
-                    // Start a NEW, DEDICATED coroutine just for this spawn point.
-                   StartCoroutine(SpawnEnemiesAtPoint(spawnPoint, currentWaveConfig));
+                    Debug.Log($"Player has entered range of spawn point {spawnInfo.point.name}. Activating it.");
+                    activeSpawningPoints.Add(spawnInfo);
+                    StartCoroutine(SpawnEnemiesAtPoint(spawnInfo, currentWaveConfig));
                 }
             }
 
             yield return checkWait;
         }
     }
-    private IEnumerator SpawnEnemiesAtPoint(Transform spawnPoint, WaveConfig config)
+    private IEnumerator SpawnEnemiesAtPoint(SpawnPointInfo spawnInfo, WaveConfig config)
     {
-        // 1. Find all enemies that are waiting at this specific spawn point.
-        List<PendingSpawn> enemiesToSpawn = pendingSpawns.Where(p => p.SpawnPoint == spawnPoint).ToList();
+        List<PendingSpawn> enemiesToSpawn = pendingSpawns.Where(p => p.SpawnInfo == spawnInfo).ToList();
         int enemyCountForThisPoint = enemiesToSpawn.Count;
 
         if (enemyCountForThisPoint == 0)
         {
-            // No enemies for this point, so we're done.
-            activeSpawningPoints.Remove(spawnPoint); // Clean up
+            activeSpawningPoints.Remove(spawnInfo);
             yield break;
         }
 
-        float baseDelay = config.spawnPointDuration / enemyCountForThisPoint;
+        float baseDelay = (enemyCountForThisPoint > 0) ? config.spawnPointDuration / enemyCountForThisPoint : 0;
 
-
-        // 3. The Spawning Loop
         foreach (PendingSpawn pending in enemiesToSpawn)
         {
-            // --- DYNAMIC PACING LOGIC ---
-            // Calculate the progress of the entire wave (0.0 to 1.0).
-            float waveProgress = 1.0f - ((float)pendingSpawns.Count / (config.enemyCount + 1)); // +1 to avoid division by zero
-
-            // Use an AnimationCurve-like formula (EaseInOut) to create a nice rhythm.
-            // This makes the delay shorter in the middle of the wave and longer at the start/end.
-            float pacingFactor = 1.0f - (4.0f * (waveProgress - 0.5f) * (waveProgress - 0.5f)); // Parabolic curve
-                                                                                                // Use THIS wave's specific pacing multiplier.
+            float waveProgress = 1.0f - ((float)pendingSpawns.Count / (config.enemyCount + 1));
+            float pacingFactor = 1.0f - (4.0f * (waveProgress - 0.5f) * (waveProgress - 0.5f));
             pacingFactor = Mathf.Clamp(pacingFactor, 1.0f / config.wavePacingMultiplier, 1.0f);
-
-
-            // Calculate the final delay for this specific spawn.
             float currentDelay = baseDelay * pacingFactor;
-            // --- END OF PACING LOGIC ---
 
-            // Wait for the calculated delay.
             yield return new WaitForSeconds(currentDelay);
 
-            // Spawn this enemy and remove it from the master "waiting" list.
             if (pendingSpawns.Contains(pending))
             {
-                SpawnSingleEnemy(pending.EnemyPrefab, pending.SpawnPoint);
+                SpawnSingleEnemy(pending.EnemyPrefab, pending.SpawnInfo);
                 pendingSpawns.Remove(pending);
             }
         }
 
-        // 4. Cleanup: Once all enemies for this point are spawned, remove it from the active list.
-        Debug.Log($"Finished spawning all enemies for {spawnPoint.name}.");
-        activeSpawningPoints.Remove(spawnPoint);
+        Debug.Log($"Finished spawning all enemies for {spawnInfo.point.name}.");
+        activeSpawningPoints.Remove(spawnInfo);
     }
 
-
-    private void SpawnSingleEnemy(GameObject enemyPrefab, Transform spawnPoint)
+    private void SpawnSingleEnemy(GameObject enemyPrefab, SpawnPointInfo spawnInfo)
     {
-        Vector2 randomOffset = Random.insideUnitCircle * spawnRadius;
+        Transform spawnPoint = spawnInfo.point;
+        float currentSpawnRadius = spawnInfo.radius;
+
+        Vector2 randomOffset = Random.insideUnitCircle * currentSpawnRadius;
         Vector3 spawnPosition = spawnPoint.position + new Vector3(randomOffset.x, randomOffset.y, 0);
 
-        // Use your object pooler to get the enemy.
         GameObject spawnedEnemy = ObjectPoolManager.Instance.SpawnFromPool(enemyPrefab, spawnPosition, spawnPoint.rotation);
 
-        // Use the culling system to play the spawn effect (it will only play if in range).
         if (spawnEffectPrefab != null && EffectCullingSystem.Instance != null)
         {
             EffectCullingSystem.Instance.SpawnEffect(spawnEffectPrefab, spawnPosition, Quaternion.identity);
         }
 
-        // Add to the list of active enemies and initialize it.
         activeEnemies.Add(spawnedEnemy);
         InitializeEnemy(spawnedEnemy);
 
-        // Add the death listener so we know when it's killed.
-        // (You will need to add cases for all your enemy health scripts here)
         if (spawnedEnemy.TryGetComponent(out FleaHealth fleaHealth)) fleaHealth.OnDeath.AddListener(OnEnemyDied);
         if (spawnedEnemy.TryGetComponent(out SprayerHealth sprayerHealth)) sprayerHealth.OnDeath.AddListener(OnEnemyDied);
         if (spawnedEnemy.TryGetComponent(out FlyHealth flyHealth)) flyHealth.OnDeath.AddListener(OnEnemyDied);
         if (spawnedEnemy.TryGetComponent(out InkHealth inkHealth)) inkHealth.OnDeath.AddListener(OnEnemyDied);
         if (spawnedEnemy.TryGetComponent(out RatKingHealth ratKingHealth)) ratKingHealth.OnDeath.AddListener(OnEnemyDied);
     }
-
     // --- START OF THE FINAL, COMPLETE SPAWNWAVE METHOD ---
     private IEnumerator SpawnWave(WaveConfig config)
     {
         waveIsActive = true;
         Debug.Log($"Master Client preparing wave: {config.waveName}. Adding {config.enemyCount} enemies to the pending list.");
+        foreach (GameObject laser in activeLasers)
+        {
+            if (laser != null) laser.SetActive(false);
+        }
+        activeLasers.Clear();
 
-        // Clear any enemies that were waiting from a previous wave.
+        // Now, check if THIS wave has lasers.
+        if (config.hasLasers && config.laserTrapObjects != null)
+        {
+            Debug.Log($"Activating {config.laserTrapObjects.Count} lasers for this wave.");
+            // Go through each laser assigned to this wave.
+            foreach (GameObject laser in config.laserTrapObjects)
+            {
+                if (laser != null)
+                {
+                    // Activate it and add it to our list of active lasers for this wave.
+                    laser.SetActive(true);
+                    activeLasers.Add(laser);
+                }
+            }
+        }
         pendingSpawns.Clear();
         activeSpawningPoints.Clear();
-        // --- PRIORITY 1: HANDLE THE BOSS ---
+
         if (config.hasBoss && config.bossPrefab != null && !bossHasBeenSpawnedForThisWave)
         {
             bossHasBeenSpawnedForThisWave = true;
-            // Bosses are important, so we spawn them immediately regardless of range.
-            Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
+            SpawnPointInfo spawnInfo = spawnPoints[Random.Range(0, spawnPoints.Count)];
             Debug.Log("Spawning Boss immediately.");
-            SpawnSingleEnemy(config.bossPrefab, spawnPoint);
-            yield return new WaitForSeconds(1.5f); // Wait a moment after the boss spawns.
+            SpawnSingleEnemy(config.bossPrefab, spawnInfo);
+            yield return new WaitForSeconds(1.5f);
         }
+
         if (config.hasVolcanoes && config.volcanoPrefab != null)
         {
-            foreach (Transform spawnPoint in config.volcanoSpawnPoints)
+            foreach (Transform spawnPointTransform in config.volcanoSpawnPoints)
             {
-                // Spawn from the pool at the correct position and with the prefab's rotation.
                 GameObject volcano = ObjectPoolManager.Instance.SpawnFromPool(
                     config.volcanoPrefab,
-                    spawnPoint.position,
+                    spawnPointTransform.position,
                     config.volcanoPrefab.transform.rotation
                 );
 
                 if (volcano != null)
                 {
-                    // CRITICAL: Add it to our master list for this wave, but keep it DISABLED.
-                    // The VolcanoBrain will be responsible for enabling/disabling it based on range.
                     volcano.SetActive(false);
                     activeVolcanoes.Add(volcano);
                 }
             }
         }
 
-        // --- PRIORITY 2: PREPARE NORMAL ENEMIES ---
-        // Instead of spawning, we now add them to the "waiting" list.
         for (int i = 0; i < config.enemyCount; i++)
         {
             GameObject enemyPrefab = config.enemyPrefabs[Random.Range(0, config.enemyPrefabs.Count)];
-            Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
+            SpawnPointInfo spawnInfo = spawnPoints[Random.Range(0, spawnPoints.Count)];
 
-            // Create a new "pending spawn" request and add it to our list.
             PendingSpawn newPendingSpawn = new PendingSpawn
             {
                 EnemyPrefab = enemyPrefab,
-                SpawnPoint = spawnPoint
+                SpawnInfo = spawnInfo
             };
             pendingSpawns.Add(newPendingSpawn);
         }
@@ -452,7 +446,9 @@ public class WaveManager : MonoBehaviour
             volcanoBrainCoroutine = StartCoroutine(VolcanoBrain());
         }
         currentWaveCoroutine = null;
-        yield return null; // End the coroutine.
+        yield return null;
+
+        
     }
 
     private IEnumerator VolcanoBrain()
@@ -646,21 +642,19 @@ public class WaveManager : MonoBehaviour
     }
 
     private void OnDrawGizmosSelected()
-{
-    if (spawnPoints.Count > 0)
     {
-        Gizmos.color = Color.cyan; // Choisis une couleur pour les gizmos
-        foreach (Transform spawnPoint in spawnPoints)
+        if (spawnPoints != null && spawnPoints.Count > 0)
         {
-            if (spawnPoint != null)
+            Gizmos.color = Color.cyan;
+            foreach (SpawnPointInfo spawnInfo in spawnPoints)
             {
-                // Dessine un cercle qui représente le rayon de spawn
-                Gizmos.DrawWireSphere(spawnPoint.position, spawnRadius);
+                if (spawnInfo != null && spawnInfo.point != null)
+                {
+                    Gizmos.DrawWireSphere(spawnInfo.point.position, spawnInfo.radius);
+                }
             }
         }
     }
-}
-
     // N'oublie pas de te désabonner de l'événement quand l'objet est détruit
     void OnDestroy()
     {
@@ -692,5 +686,5 @@ public class WaveManager : MonoBehaviour
 public class PendingSpawn
 {
     public GameObject EnemyPrefab;
-    public Transform SpawnPoint;
+    public SpawnPointInfo SpawnInfo;
 }
