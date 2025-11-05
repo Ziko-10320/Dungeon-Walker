@@ -60,6 +60,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Image weaponIconImage;
     [SerializeField] private Button upgradeWeaponButton;
     [SerializeField] private TextMeshProUGUI upgradeCostText;
+    [SerializeField] private TextMeshProUGUI upgradeLabelText;
     [Header("Second Slot Upgrade")]
     [SerializeField] private GameObject slot2_LockedGroup;
     [SerializeField] private GameObject slot2_UnlockedGroup;
@@ -264,35 +265,34 @@ public class InventoryUI : MonoBehaviour
         // Update main info
         weaponNameText.text = currentWeapon.weaponName;
         weaponIconImage.sprite = currentWeapon.weaponIcon;
-        levelText.text = "Level: " + currentLevel + " / 5";
 
-        // --- NEW LOGIC FOR THE SEGMENTED BAR ---
+        // Update segmented bar (for your 2 segments)
         for (int i = 0; i < levelSegments.Count; i++)
         {
-            if (i < currentLevel)
-            {
-                // This segment represents a level the player has achieved.
-                levelSegments[i].color = Color.green; // Or whatever "filled" color you want
-            }
-            else
-            {
-                // This is an un-achieved level.
-                levelSegments[i].color = Color.gray; // Or a darker, "empty" color
-            }
+            levelSegments[i].color = (i < currentLevel) ? Color.green : Color.gray;
         }
-        // ----------------------------------------
 
-        // Update the upgrade button (this logic is unchanged)
-        if (currentLevel >= 2)
+        // --- THIS IS THE FINAL, CORRECT LOGIC FOR YOUR 2-LEVEL SYSTEM ---
+        if (currentLevel >= 2) // If level is 2 (or more, just in case), it's maxed out.
         {
+            // MAX LEVEL STATE
+            levelText.text = "Level MAX"; // This is what you wanted
             upgradeWeaponButton.interactable = false;
-            upgradeCostText.text = "MAX LEVEL";
+            upgradeLabelText.gameObject.SetActive(false); // Hide the "Upgrade" text
+            upgradeCostText.text = "MAX";
+            upgradeCostText.alignment = TextAlignmentOptions.Center; // Center the "MAX" text
         }
         else
         {
+            // UPGRADEABLE STATE (This runs for Level 0 and Level 1)
+            levelText.text = "Level " + currentLevel; // This is what you wanted
             upgradeWeaponButton.interactable = true;
+            upgradeLabelText.gameObject.SetActive(true); // Show the "Upgrade" text
+
+            // This is now safe because currentLevel will be 0 or 1
             WeaponUpgradeData nextLevelData = currentWeapon.upgradeLevels[currentLevel];
             upgradeCostText.text = nextLevelData.upgradeCost.ToString();
+            upgradeCostText.alignment = TextAlignmentOptions.Right; // Or whatever you prefer
         }
     }
     public void OnItemClicked(PowerUpData item)
@@ -324,7 +324,9 @@ public class InventoryUI : MonoBehaviour
         WeaponData currentWeapon = allWeapons[currentWeaponIndex];
         int currentLevel = InventoryManager.Instance.GetWeaponLevel(currentWeapon.name);
 
-        if (currentLevel < 5)
+        // --- THE FIX ---
+        // We check against the MAX number of paid upgrades, which is 2.
+        if (currentLevel < 2)
         {
             int upgradeCost = currentWeapon.upgradeLevels[currentLevel].upgradeCost;
             if (WalletManager.Instance.SpendCoins(upgradeCost))

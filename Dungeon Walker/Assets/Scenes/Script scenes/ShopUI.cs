@@ -32,7 +32,12 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private Button selectCatButton;
     [SerializeField] private Button selectManButton;
     [SerializeField] private List<SkinShopEntry> skinShopItems;
-    private enum ShopCategory { PowerUps, Skins }
+    [Header("Milk Category")]
+    [SerializeField] private Button milkTabButton;
+    [SerializeField] private GameObject milkContent;
+    [SerializeField] private Button buyMilkButton;
+    [SerializeField] private int milkPrice = 10000;
+    private enum ShopCategory { PowerUps, Skins, Milk }
     private ShopCategory currentCategory;
     private CharacterType currentCharacterView;
     [Header("Shop Items Configuration")]
@@ -46,6 +51,8 @@ public class ShopUI : MonoBehaviour
         skinsTabButton.onClick.AddListener(ShowSkinsCategory);
         selectCatButton.onClick.AddListener(ViewCatSkins);
         selectManButton.onClick.AddListener(ViewManSkins);
+        milkTabButton.onClick.AddListener(ShowMilkCategory);
+        buyMilkButton.onClick.AddListener(OnBuyMilkClicked);
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -100,8 +107,8 @@ public class ShopUI : MonoBehaviour
         currentCategory = ShopCategory.PowerUps;
         powerUpsContent.SetActive(true);
         skinsContent.SetActive(false);
+        milkContent.SetActive(false);
         descriptionPanel.SetActive(false);
-
     }
 
     public void ShowSkinsCategory()
@@ -109,11 +116,9 @@ public class ShopUI : MonoBehaviour
         currentCategory = ShopCategory.Skins;
         powerUpsContent.SetActive(false);
         skinsContent.SetActive(true);
+        milkContent.SetActive(false); // <-- ADD THIS
         descriptionPanel.SetActive(false);
-
-       
-
-        ViewCatSkins(); // Default to Cat view
+        ViewCatSkins();
     }
 
     private void ViewCatSkins()
@@ -143,7 +148,45 @@ public class ShopUI : MonoBehaviour
         }
         // You can add animation/color change for the Cat/Man buttons here if you want
     }
+    public void ShowMilkCategory()
+    {
+        currentCategory = ShopCategory.Milk;
+        powerUpsContent.SetActive(false);
+        skinsContent.SetActive(false);
+        milkContent.SetActive(true);
 
+        // Make sure the description panel is hidden for this simple category
+        descriptionPanel.SetActive(false);
+
+        // You could also update the price text on the button here if you want
+        // For example: buyMilkButton.GetComponentInChildren<TextMeshProUGUI>().text = milkPrice.ToString();
+    }
+
+    public void OnBuyMilkClicked()
+    {
+        // Try to spend the coins for the milk
+        if (WalletManager.Instance.SpendCoins(milkPrice))
+        {
+            // SUCCESS!
+            if (purchaseSuccessSound != null) uiAudioSource.PlayOneShot(purchaseSuccessSound);
+            Debug.Log("YOU BOUGHT THE MILK! YOU WIN!");
+
+            // Here, you would trigger the game's win condition!
+            // For example:
+            // GameManager.Instance.PlayerWins();
+            // SceneManager.LoadScene("WinScreen");
+
+            // For now, let's just disable the button so you can't buy it again.
+            buyMilkButton.interactable = false;
+            buyMilkButton.GetComponentInChildren<TextMeshProUGUI>().text = "WINNER!";
+        }
+        else
+        {
+            // FAIL!
+            if (purchaseFailSound != null) uiAudioSource.PlayOneShot(purchaseFailSound);
+            Debug.Log("Not enough coins to buy the milk!");
+        }
+    }
     public void ShowManSkins()
     {
         // Loop through all skin items and only show the ones for the Man
@@ -314,7 +357,7 @@ public class ShopUI : MonoBehaviour
             StartCoroutine(AnimatePanel(true));
             UpdateCoinCount();
             descriptionPanel.SetActive(false);
-            ShowPowerUpsCategory();
+            ShowPowerUpsCategory(); // This is correct
         }
     }
 
