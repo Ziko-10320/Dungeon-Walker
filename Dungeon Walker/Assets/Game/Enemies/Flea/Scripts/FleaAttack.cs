@@ -21,7 +21,8 @@ public class FleaChargeAttack : MonoBehaviour
     [SerializeField] private float chargeForce = 40f;
     [SerializeField] private float chargeDuration = 0.4f;
     [SerializeField] private float chargeDrag = 5f;
-    [SerializeField] private int attackDamage = 15;
+    public int baseAttackDamage = 15; 
+    public int attackDamage;
     [SerializeField] private float knockbackForce = 20f;
     [Tooltip("Nombre maximum de charges consécutives si l'attaque rate.")]
     [SerializeField] private int maxConsecutiveCharges = 2;
@@ -49,8 +50,14 @@ public class FleaChargeAttack : MonoBehaviour
 
     private Collider2D[] hitResults = new Collider2D[1];
 
-    private int frameCounter = 0;
-    private int updateRate = 1;
+    [Header("Performance / Time Slicing")]
+    [Tooltip("How many SECONDS to wait before checking if the flea can attack.")]
+    [Range(0.1f, 1.0f)]
+    public float attackCheckInterval = 0.3f; // Check about 3 times per second
+
+    private float attackCheckTimer = 0f;
+
+
     void Awake()
     {
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
@@ -90,7 +97,7 @@ public class FleaChargeAttack : MonoBehaviour
             fleaAnimator.SetBool(isChargingHash, false);
         }
       
-        StartCoroutine(UpdateAI_LOD_Routine());
+       
         // 4. Stop any old attack coroutines that might be stuck mid-charge.
         StopAllCoroutines();
 
@@ -135,65 +142,41 @@ public class FleaChargeAttack : MonoBehaviour
 
     void Update()
     {
-        frameCounter++;
-        if (frameCounter < updateRate)
+        // --- 1. THE TIMER ---
+        attackCheckTimer += Time.deltaTime;
+
+        // --- 2. THE "THINKING" BLOCK ---
+        if (attackCheckTimer >= attackCheckInterval)
         {
-            return; // Skip this frame
-        }
-        frameCounter = 0;
-        if (playerTransform == null || isAttacking || !canAttack) return;
+            attackCheckTimer = 0f; // Reset the timer
 
-        if (followScript != null && followScript.IsChasing)
-        {
-            return;
-        }
-        PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
-        PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
-        if (invis != null && invis.IsInvisible()) return;
-        if (invis3antix != null && invis3antix.IsInvisible()) return;
-        if (playerTransform == null || isAttacking || !canAttack) return;
+            // This is your original Update logic, now running periodically.
+            if (playerTransform == null || isAttacking || !canAttack) return;
+            if (followScript != null && followScript.IsChasing) return;
 
+            PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+            if (invis != null && invis.IsInvisible()) return;
+            PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
+            if (invis3antix != null && invis3antix.IsInvisible()) return;
 
-        float sqrDistanceToPlayer = (playerTransform.position - transform.position).sqrMagnitude;
-        playerInRange = sqrDistanceToPlayer <= (attackRange * attackRange);
+            float sqrDistanceToPlayer = (playerTransform.position - transform.position).sqrMagnitude;
+            playerInRange = sqrDistanceToPlayer <= (attackRange * attackRange);
 
-        if (playerInRange)
-        {
-            decisionTimer -= Time.deltaTime;
-            if (decisionTimer <= 0)
+            if (playerInRange)
             {
-                StartCoroutine(PerformChargeAttack());
-            }
-        }
-        else
-        {
-            ResetDecisionTimer();
-        }
-    }
-    private IEnumerator UpdateAI_LOD_Routine()
-    {
-        WaitForSeconds wait = new WaitForSeconds(0.5f);
-        while (true)
-        {
-            if (playerTransform != null && AI_LOD_Manager.Instance != null)
-            {
-                float dist = Vector2.Distance(transform.position, playerTransform.position);
-                if (dist > AI_LOD_Manager.Instance.lowPriorityRange)
+                decisionTimer -= attackCheckInterval; // Use the interval for consistent timing
+                if (decisionTimer <= 0)
                 {
-                    updateRate = AI_LOD_Manager.Instance.lowPriorityUpdateRate;
-                }
-                else if (dist > AI_LOD_Manager.Instance.midPriorityRange)
-                {
-                    updateRate = AI_LOD_Manager.Instance.midPriorityUpdateRate;
-                }
-                else
-                {
-                    updateRate = 1;
+                    StartCoroutine(PerformChargeAttack());
                 }
             }
-            yield return wait;
+            else
+            {
+                ResetDecisionTimer();
+            }
         }
     }
+   
 
     private void ResetDecisionTimer()
     {

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 360636130637630942}
   - component: {fileID: 8400834026435030469}
   - component: {fileID: 1604502176020612113}
+  - component: {fileID: -6678206895413395009}
   m_Layer: 0
   m_Name: GasEffectBronze
   m_TagString: Untagged
@@ -43,7 +44,7 @@ ParticleSystem:
   serializedVersion: 8
   lengthInSec: 1
   simulationSpeed: 1
-  stopAction: 0
+  stopAction: 1
   cullingMode: 0
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
@@ -4898,3 +4899,15 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &-6678206895413395009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901401031209182840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4c2376c7d9c73141b27861e00d2e956, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

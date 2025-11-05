@@ -15,7 +15,8 @@ public class RatKingBoss : MonoBehaviour
     [Header("General Behavior")]
     public bool CanMove = true;
     [SerializeField] private float wanderSpeed = 2f;
-    [SerializeField] private float chaseSpeed = 4f;
+    public Vector2 chaseSpeedRange = new Vector2(3.5f, 4.5f); // Add this for variety
+    public float chaseSpeed = 4f;
     public float stoppingDistance = 1.5f; // Made public
     [SerializeField] private float detectionRadius = 7f;
     [SerializeField] private float lostSightRadius = 10f;

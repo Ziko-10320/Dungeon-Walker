@@ -15,12 +15,12 @@ public class FleaFollow : MonoBehaviour
 
     [Header("Comportement Général (Ranges)")]
     [SerializeField] private Vector2 patrolSpeedRange = new Vector2(1.5f, 2.5f);
-    [SerializeField] private Vector2 chaseSpeedRange = new Vector2(3.5f, 5f);
+    [SerializeField] public Vector2 chaseSpeedRange = new Vector2(3.5f, 5f);
     [SerializeField] private Vector2 detectionRadiusRange = new Vector2(6f, 9f);
     [SerializeField] private Vector2 stopDistanceRange = new Vector2(1f, 2.5f);
 
     private float patrolSpeed;
-    private float chaseSpeed;
+    public float chaseSpeed;
     private float randomDetectionRadius;
     private float randomStopDistance;
 
@@ -40,6 +40,12 @@ public class FleaFollow : MonoBehaviour
     private float timeSinceLastFlip = 0f;
     private const float FLIP_COOLDOWN = 0.5f;
     public bool IsChasing => currentState == AIState.Chasing;
+    [Header("Performance / Time Slicing")]
+    [Tooltip("How many SECONDS to wait before re-evaluating the AI state. Higher numbers = better performance.")]
+    [Range(0.05f, 1.0f)]
+    public float thinkInterval = 0.2f; // Think 5 times per second
+
+    private float thinkTimer = 0f;
     void Awake()
     {
         // Awake should ONLY get references to its own components.
@@ -173,14 +179,27 @@ private void HandleInvisibility(bool invisible)
 
     void Update()
     {
-        if (health != null && health.isStunned)
+        // --- 1. THE TIMER ---
+        thinkTimer += Time.deltaTime;
+
+        // --- 2. THE "THINKING" BLOCK ---
+        // Only run the expensive AI logic if the timer has passed our interval.
+        if (thinkTimer >= thinkInterval)
         {
-            StopMoving();
-            fleaAnimator.SetBool("IsWalking", false);
-            return;
+            thinkTimer = 0f; // Reset the timer
+
+            // This is your original Update logic, now running periodically.
+            if (health != null && health.isStunned)
+            {
+                StopMoving();
+                fleaAnimator.SetBool("IsWalking", false);
+                return;
+            }
+            timeSinceLastFlip += thinkInterval; // Use the interval for consistent timing
+            UpdateAIState();
         }
-        timeSinceLastFlip += Time.deltaTime;
-        UpdateAIState();
+
+        // These parts need to run every frame for responsiveness.
         ExecuteCurrentState();
         UpdateAnimation();
     }

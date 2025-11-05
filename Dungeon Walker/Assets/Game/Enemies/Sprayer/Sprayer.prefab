@@ -982,6 +982,7 @@ MonoBehaviour:
   whatIsGround:
     serializedVersion: 2
     m_Bits: 64
+  thinkInterval: 1
 --- !u!114 &1564694357942923393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -996,6 +997,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackRange: 7.19
   attackCooldown: 1.55
+  baseDamagePerSecond: 25
   damagePerSecond: 25
   damageDuration: 1
   damageDelay: 0
@@ -1012,6 +1014,7 @@ MonoBehaviour:
   attackSoundVolume: 0.014
   visualDirectionReference: {fileID: 578209667700630728}
   effectPoolSize: 3
+  attackCheckInterval: 1
 --- !u!114 &561808408041264527
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1024,6 +1027,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 604c28a0d8dcce442b5d45c837ffb37b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  baseMaxHealth: 100
   maxHealth: 100
   deathEffect: {fileID: 0}
   knockbackDistance: 0
@@ -1063,6 +1067,9 @@ MonoBehaviour:
   dropChance: 0.05
   powerUpPickupPrefab: {fileID: 0}
   powerUpSpawnPoint: {fileID: 0}
+  healthIncreasePerWave: 15
+  damageIncreasePerWave: 8
+  chaseSpeedIncreasePerWave: 4
 --- !u!114 &4969289257960167119
 MonoBehaviour:
   m_ObjectHideFlags: 0

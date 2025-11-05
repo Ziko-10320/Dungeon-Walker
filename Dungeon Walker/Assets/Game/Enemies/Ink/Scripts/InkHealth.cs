@@ -7,7 +7,8 @@ using UnityEngine.Events;
 public class InkHealth : MonoBehaviour
 {
     // Public variables for health and effects
-    public int maxHealth = 100; // Maximum health of the ink enemy
+    public int baseMaxHealth = 100; // Renamed from maxHealth
+    public int maxHealth;
     public GameObject deathEffect; // Optional: Effect to play when the ink enemy dies
     public float knockbackDistance = 1f; // Distance the ink enemy moves during knockback
     public float knockbackDuration = 0.2f; // Duration of the knockback effect
@@ -211,6 +212,15 @@ public class InkHealth : MonoBehaviour
     private enum AIState { Idle, Aggro };
     private AIState currentState = AIState.Idle;
     private int updateRate = 1;
+    [Header("Scaling Per Wave")]
+    [Tooltip("How much extra health the ink enemy gets for each wave it survives after its first appearance.")]
+    public int healthIncreasePerWave = 20;
+    [Tooltip("How much extra damage the ink ball projectile gets per wave.")]
+    public int damageIncreasePerWave = 4;
+    // No speed increase for this enemy as it's stationary
+
+    // Internal memory for this specific ink instance
+    private int firstSpawnWave = -1;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -257,11 +267,39 @@ public class InkHealth : MonoBehaviour
     }
     void OnEnable()
     {
-        ResetEnemyState();
-        var InkAttack = GetComponent<InkAttack>();
-        if (InkAttack != null)
+        // --- 1. THE SCALING LOGIC ---
+        if (firstSpawnWave == -1)
         {
-            InkAttack.enabled = true;
+            // This is the first time this ink enemy has ever spawned.
+            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
+        }
+
+        // Calculate how many waves this ink enemy has "survived".
+        int wavesSurvived = ScoreDisplay.CurrentWaveNumber - firstSpawnWave;
+        if (wavesSurvived < 0) wavesSurvived = 0;
+
+        // --- 2. CALCULATE AND APPLY NEW STATS ---
+        // Health (handled by this script)
+        maxHealth = baseMaxHealth + (wavesSurvived * healthIncreasePerWave);
+
+        // Get a reference to the attack script
+        var attackScript = GetComponent<InkAttack>();
+
+        // Damage (tell the attack script its new damage)
+        if (attackScript != null)
+        {
+            attackScript.inkBallDamage = attackScript.baseInkBallDamage + (wavesSurvived * damageIncreasePerWave);
+        }
+
+        // --- 3. YOUR EXISTING RESET LOGIC ---
+        // Call your master reset method.
+        ResetEnemyState();
+
+        // The rest of your OnEnable logic can be simplified or moved to ResetEnemyState
+        // For now, we ensure the attack script is enabled.
+        if (attackScript != null)
+        {
+            attackScript.enabled = true;
         }
     }
     public void ResetEnemyState()

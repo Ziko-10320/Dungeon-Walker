@@ -6678,6 +6678,7 @@ MonoBehaviour:
   destructionEffectPoolSize: 3
   chargedProjectilePoolSize: 2
   chargedEffectPoolSize: 2
+  attackCheckInterval: 0.692
 --- !u!114 &4312947389679521180
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6724,6 +6725,7 @@ MonoBehaviour:
   detectionRadius: 20.9
   lostSightRadius: 22.2
   DetectionPoint: {fileID: 3253137947963228713}
+  thinkInterval: 0.665
 --- !u!114 &4723718349760670063
 MonoBehaviour:
   m_ObjectHideFlags: 0

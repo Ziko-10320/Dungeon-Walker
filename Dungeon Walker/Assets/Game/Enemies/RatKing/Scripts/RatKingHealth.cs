@@ -7,8 +7,8 @@ using UnityEngine.Events;
 public class RatKingHealth : MonoBehaviour
 {
 
-    // Public variables for health and effects
-    public int maxHealth = 100; // Maximum health of the Rat King
+    public int baseMaxHealth = 100; // Renamed from maxHealth
+    public int maxHealth;
     public GameObject deathEffect; // Optional: Effect to play when the Rat King dies
     public Transform bloodSpawnPoint; // Spawn point for blood particles
     public ParticleSystem bloodParticle; // Blood particle system
@@ -55,6 +55,16 @@ public class RatKingHealth : MonoBehaviour
     [Tooltip("The prefab for the physical power-up pickup item.")]
     public GameObject powerUpPickupPrefab;
     public Transform powerUpSpawnPoint;
+    [Header("Scaling Per Wave")]
+    [Tooltip("How much extra health the Rat King gets for each wave it survives after its first appearance.")]
+    public int healthIncreasePerWave = 100;
+    [Tooltip("How much extra damage the Rat King's attacks get per wave.")]
+    public int damageIncreasePerWave = 10;
+    [Tooltip("How much extra chase speed the Rat King gets per wave.")]
+    public float chaseSpeedIncreasePerWave = 0.5f;
+
+    // Internal memory for this specific Rat King instance
+    private int firstSpawnWave = -1;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -68,25 +78,63 @@ public class RatKingHealth : MonoBehaviour
     }
     void OnEnable()
     {
-        // This is the guaranteed reset for pooled enemies.
-        ResetState();
-
-        // Find the player reference ONCE and pass it to the other scripts.
-        Transform player = GameObject.FindGameObjectWithTag("Player").transform;
-
-        // Reset and re-enable the other scripts
-        var ratKingBoss = GetComponent<RatKingBoss>();
-        if (ratKingBoss != null)
+        // --- 1. THE SCALING LOGIC ---
+        if (firstSpawnWave == -1)
         {
-            ratKingBoss.enabled = true;
-            ratKingBoss.Initialize(player); // We will add this method
+            // This is the first time this Rat King has ever spawned.
+            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
         }
 
-        var ratKingAttack = GetComponent<RatKingAttack>();
-        if (ratKingAttack != null)
+        // Calculate how many waves this boss has "survived".
+        int wavesSurvived = ScoreDisplay.CurrentWaveNumber - firstSpawnWave;
+        if (wavesSurvived < 0) wavesSurvived = 0;
+
+        // --- 2. CALCULATE AND APPLY NEW STATS ---
+        // Health (handled by this script)
+        maxHealth = baseMaxHealth + (wavesSurvived * healthIncreasePerWave);
+
+        // Get references to the other scripts
+        var bossScript = GetComponent<RatKingBoss>();
+        var attackScript = GetComponent<RatKingAttack>();
+
+        // Speed (tell the boss script its new speed)
+        if (bossScript != null)
         {
-            ratKingAttack.enabled = true;
-            ratKingAttack.Initialize(player); // We will add this method
+            float baseChaseSpeed = Random.Range(bossScript.chaseSpeedRange.x, bossScript.chaseSpeedRange.y);
+            bossScript.chaseSpeed = baseChaseSpeed + (wavesSurvived * chaseSpeedIncreasePerWave);
+        }
+
+        // Damage (tell the attack script its new damage values)
+        if (attackScript != null)
+        {
+            attackScript.damageAmount = attackScript.baseDamageAmount + (wavesSurvived * damageIncreasePerWave);
+            attackScript.cheeseDamageAmount = attackScript.baseCheeseDamageAmount + (wavesSurvived * damageIncreasePerWave);
+        }
+
+        // --- 3. YOUR EXISTING RESET LOGIC ---
+        ResetState(); // This correctly sets currentHealth = maxHealth
+
+        Transform player = null;
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject != null)
+        {
+            player = playerObject.transform;
+        }
+        else
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        if (bossScript != null)
+        {
+            bossScript.enabled = true;
+            bossScript.Initialize(player);
+        }
+        if (attackScript != null)
+        {
+            attackScript.enabled = true;
+            attackScript.Initialize(player);
         }
     }
     private void PlaySound(AudioClip clip, float volume)

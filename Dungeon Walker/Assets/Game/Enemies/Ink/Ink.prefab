@@ -1021,7 +1021,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inkBallPrefab: {fileID: 6200637045303369031, guid: 26d1c70b616ac8d439f67b6642009107, type: 3}
   attackCooldown: 2
-  inkBallDamage: 15
+  baseInkBallDamage: 10
+  inkBallDamage: 10
   inkBallKnockbackForce: 5
   inkBallLifetime: 3
   isV2Attack: 0
@@ -1058,6 +1059,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b097556b2a1e7a45a927f42fad22603, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  baseMaxHealth: 100
   maxHealth: 100
   deathEffect: {fileID: 0}
   knockbackDistance: 0
@@ -1148,6 +1150,8 @@ MonoBehaviour:
   powerUpSpawnPoint: {fileID: 0}
   invincibilityActivationRange: 20
   playerTransform: {fileID: 0}
+  healthIncreasePerWave: 15
+  damageIncreasePerWave: 5
 --- !u!114 &8652883054127700324
 MonoBehaviour:
   m_ObjectHideFlags: 0

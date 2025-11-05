@@ -7,7 +7,8 @@ public class SprayerAttack : MonoBehaviour
     [Header("Attack Settings")]
     [SerializeField] private float attackRange = 3f;
     [SerializeField] private float attackCooldown = 2f;
-    [SerializeField] private float damagePerSecond = 10f;
+    public float baseDamagePerSecond = 10f; 
+    public float damagePerSecond;
     [SerializeField] private float damageDuration = 1f;
     [SerializeField] private float damageDelay = 0.3f;
     [SerializeField] private float damageInterval = 0.5f;
@@ -45,8 +46,13 @@ public class SprayerAttack : MonoBehaviour
     // The local pool and active effect reference
     private Queue<ParticleSystem> effectPool;
     private ParticleSystem activeSprayVFX;
-    private int frameCounter = 0;
-    private int updateRate = 1;
+    [Header("Performance / Time Slicing")]
+    [Tooltip("How many SECONDS to wait before checking if the sprayer can attack.")]
+    [Range(0.1f, 1.0f)]
+    public float attackCheckInterval = 0.33f; // Check about 3 times per second
+
+    private float attackCheckTimer = 0f;
+
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -94,8 +100,7 @@ public class SprayerAttack : MonoBehaviour
         isAttacking = false; // THIS IS THE KEY FIX. It allows the Update loop to run again.
         lastAttackTime = -attackCooldown; // This resets the attack cooldown timer.
 
-        StartCoroutine(UpdateAI_LOD_Routine());
-
+       
         // 3. Stop any old attack coroutines that might be stuck.
         StopAllCoroutines();
 
@@ -106,68 +111,40 @@ public class SprayerAttack : MonoBehaviour
 
     void Update()
     {
-        frameCounter++;
-        if (frameCounter < updateRate)
-        {
-            return; // Skip this frame
-        }
-        frameCounter = 0;
+        // --- 1. THE TIMER ---
+        attackCheckTimer += Time.deltaTime;
 
-        if (isAttacking)
+        // --- 2. THE "THINKING" BLOCK ---
+        if (attackCheckTimer >= attackCheckInterval)
         {
-            return; // Don\"t do anything else while an attack is in progress
-        }
-        GameObject playerObj = GameObject.FindWithTag("Player");
-        if (playerObj != null)
-        {
-            PlayerInvisibility invis = playerObj.GetComponent<PlayerInvisibility>();
-            PlayerInvisibility3antix invis3antix = playerObj.GetComponent<PlayerInvisibility3antix>();
-            if (invis != null && invis.IsInvisible())
+            attackCheckTimer = 0f; // Reset the timer
+
+            // This is your original Update logic, now running periodically.
+            if (isAttacking) return;
+
+            if (playerTransform == null)
             {
-               
-                EnableMovement(); // Ensure enemy can move
-                return;
+                // Try to find the player if the reference is lost
+                GameObject playerObj = GameObject.FindWithTag("Player");
+                if (playerObj != null) playerTransform = playerObj.transform;
+                else return; // Exit if still no player
             }
-            if (invis3antix != null && invis3antix.IsInvisible())
+
+            PlayerInvisibility invis = playerTransform.GetComponent<PlayerInvisibility>();
+            if (invis != null && invis.IsInvisible()) return;
+            PlayerInvisibility3antix invis3antix = playerTransform.GetComponent<PlayerInvisibility3antix>();
+            if (invis3antix != null && invis3antix.IsInvisible()) return;
+
+            if (Time.time >= lastAttackTime + attackCooldown)
             {
-                
-                EnableMovement(); // Ensure enemy can move
-                return;
-            }
-        }
-        if (Time.time >= lastAttackTime + attackCooldown)
-        {
-            if (IsPlayerInAttackRange())
-            {
-                StartAttack();
+                if (IsPlayerInAttackRange())
+                {
+                    StartAttack();
+                }
             }
         }
     }
-    private IEnumerator UpdateAI_LOD_Routine()
-    {
-        WaitForSeconds wait = new WaitForSeconds(0.5f);
-        while (true)
-        {
-            if (playerTransform != null && AI_LOD_Manager.Instance != null)
-            {
-                float dist = Vector2.Distance(transform.position, playerTransform.position);
-                if (dist > AI_LOD_Manager.Instance.lowPriorityRange)
-                {
-                    updateRate = AI_LOD_Manager.Instance.lowPriorityUpdateRate;
-                }
-                else if (dist > AI_LOD_Manager.Instance.midPriorityRange)
-                {
-                    updateRate = AI_LOD_Manager.Instance.midPriorityUpdateRate;
-                }
-                else
-                {
-                    updateRate = 1;
-                }
-            }
-            yield return wait;
-        }
-    }
-
+ 
     private bool IsPlayerInAttackRange()
     {
         return Physics2D.OverlapCircle(transform.position, attackRange, playerLayer) != null;

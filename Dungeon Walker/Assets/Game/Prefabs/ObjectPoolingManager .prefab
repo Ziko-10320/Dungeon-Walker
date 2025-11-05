@@ -121,6 +121,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1266603064206159665, guid: e8997dd2c61a5e64897ed0308ebb45b6, type: 3}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: destructionBoxePrefab
+      value: 
+      objectReference: {fileID: 6272939865767911060, guid: d2573a3cd2421cb4db9a17ff9c7cfc40, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: splatterSprayerPrefab
       value: 
       objectReference: {fileID: 7744118527560474626, guid: 12ab4ee6a9deb0240af4a47d1b47119d, type: 3}
@@ -133,9 +137,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5457631616143913318, guid: 86b25f9a407f5364b825816a662a673d, type: 3}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: flybloodHitEffectPrefab
+      value: 
+      objectReference: {fileID: 7307255123109828234, guid: 2256017ce8bebcf46a76012a7c146e73, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: splatterSprayerV2Prefab
       value: 
       objectReference: {fileID: 7464382647960571032, guid: 74dda3b76cc37504c8bdec5ce8802a63, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: fleaBloodHitEffectPrefab
+      value: 
+      objectReference: {fileID: 8776937223243229998, guid: 35222a58ec354b9478c3a166fb28eebc, type: 3}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: dustExplosionEffectPrefab
       value: 
@@ -148,6 +160,10 @@ PrefabInstance:
       propertyPath: dustExplosionEffectPrefabV2
       value: 
       objectReference: {fileID: 4696925322321457287, guid: 40c48c1cf3f6c504f8abf2b219d6c04b, type: 3}
+    - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
+      propertyPath: sprayerBloodHitEffectPrefab
+      value: 
+      objectReference: {fileID: 4538701124806512969, guid: 5c890eb1e2f783042952a611fb5175a9, type: 3}
     - target: {fileID: 2325944185594862231, guid: 1f852d050f558ec4d89e0d1dd41baa7e, type: 3}
       propertyPath: chargedExplosionEffectPrefab
       value: 

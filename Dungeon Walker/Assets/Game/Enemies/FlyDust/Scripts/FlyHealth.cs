@@ -7,7 +7,8 @@ using UnityEngine.Events;
 public class FlyHealth : MonoBehaviour
 {
     // Public variables for health and effects
-    public int maxHealth = 100; // Maximum health of the mushroom
+    public int baseMaxHealth = 100; 
+    public int maxHealth;
     public GameObject deathEffect; // Optional: Effect to play when the mushroom dies
     public float knockbackDistance = 1f; // Distance the mushroom moves during knockback
     public float knockbackDuration = 0.2f; // Duration of the knockback effect
@@ -58,6 +59,17 @@ public class FlyHealth : MonoBehaviour
     [Tooltip("The prefab for the physical power-up pickup item.")]
     public GameObject powerUpPickupPrefab;
     public Transform powerUpSpawnPoint;
+
+    [Header("Scaling Per Wave")]
+    [Tooltip("How much extra health the fly gets for each wave it survives after its first appearance.")]
+    public int healthIncreasePerWave = 12;
+    [Tooltip("How much extra damage the fly's projectiles get per wave.")]
+    public int damageIncreasePerWave = 3;
+    [Tooltip("How much extra movement speed the fly gets per wave.")]
+    public float moveSpeedIncreasePerWave = 0.3f;
+
+    // Internal memory for this specific fly instance
+    private int firstSpawnWave = -1;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -71,17 +83,64 @@ public class FlyHealth : MonoBehaviour
     }
     void OnEnable()
     {
-        ResetState();
-        // If the enemy has a movement script, re-enable it.
-        var FlyFollow = GetComponent<FlyFollow>();
-        if (FlyFollow != null)
+        // --- 1. THE SCALING LOGIC ---
+        if (firstSpawnWave == -1)
         {
-            FlyFollow.enabled = true;
+            // This is the first time this fly has ever spawned.
+            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
         }
-        var FlyAttack = GetComponent<FlyAttack>();
-        if (FlyAttack != null)
+
+        // Calculate how many waves this fly has "survived".
+        int wavesSurvived = ScoreDisplay.CurrentWaveNumber - firstSpawnWave;
+        if (wavesSurvived < 0) wavesSurvived = 0;
+
+        // --- 2. CALCULATE AND APPLY NEW STATS ---
+        // Health (handled by this script)
+        maxHealth = baseMaxHealth + (wavesSurvived * healthIncreasePerWave);
+        ResetState(); // Call your existing reset method which sets currentHealth = maxHealth
+
+        // Get references to the other scripts on this enemy
+        var followScript = GetComponent<FlyFollow>();
+        var attackScript = GetComponent<FlyAttack>();
+
+        // Speed (tell the follow script its new speed)
+        if (followScript != null)
         {
-            FlyAttack.enabled = true;
+            float baseMoveSpeed = Random.Range(followScript.moveSpeedRange.x, followScript.moveSpeedRange.y);
+            followScript.moveSpeed = baseMoveSpeed + (wavesSurvived * moveSpeedIncreasePerWave);
+        }
+
+        // Damage (tell the attack script its new damage values)
+        if (attackScript != null)
+        {
+            attackScript.projectileDamage = attackScript.baseProjectileDamage + (wavesSurvived * damageIncreasePerWave);
+            attackScript.explosionDamage = attackScript.baseExplosionDamage + (wavesSurvived * damageIncreasePerWave);
+            // Also scale the V2 charged attack if it exists
+            attackScript.chargedProjectileDamage = attackScript.baseChargedProjectileDamage + (wavesSurvived * (damageIncreasePerWave * 2)); // Charged attack gets double bonus
+        }
+
+        // --- 3. YOUR EXISTING INITIALIZE LOGIC ---
+        Transform player = null;
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject != null)
+        {
+            player = playerObject.transform;
+        }
+        else
+        {
+            gameObject.SetActive(false); // No player, disable self
+            return;
+        }
+
+        if (followScript != null)
+        {
+            followScript.enabled = true;
+            followScript.Initialize(player);
+        }
+        if (attackScript != null)
+        {
+            attackScript.enabled = true;
+            attackScript.Initialize(player);
         }
     }
     private void PlayRandomSound(AudioClip[] clips)
@@ -184,7 +243,6 @@ public class FlyHealth : MonoBehaviour
             StartCoroutine(ApplyKnockback(attackDirection, knockbackForce));
         }
 
-        // Play blood particle effect
         if (bloodSpawnPoint != null && bloodParticle != null)
         {
             InstantiateAndPlayParticleSystem(bloodParticle, bloodSpawnPoint.position);
@@ -318,10 +376,20 @@ public class FlyHealth : MonoBehaviour
     // Helper method to instantiate and play a particle system
     private void InstantiateAndPlayParticleSystem(ParticleSystem particleSystem, Vector3 position)
     {
-        ParticleSystem instance = Instantiate(particleSystem, position, Quaternion.identity);
-        instance.Play();
+        // Check if the manager and the prefab exist to avoid errors
+        if (ObjectPoolManager.Instance != null && particleSystem != null)
+        {
+            // Ask the manager for a blood effect from the pool using the prefab as the key.
+            ObjectPoolManager.Instance.SpawnFromPool(particleSystem.gameObject, position, Quaternion.identity);
+        }
+        else
+        {
+            // Fallback to the old Instantiate method if the pool system isn't ready.
+            // This makes your code safer.
+            ParticleSystem instance = Instantiate(particleSystem, position, Quaternion.identity);
+            instance.Play();
+        }
     }
-
     // Coroutine to handle the flash damage effect
     private IEnumerator FlashDamage()
     {

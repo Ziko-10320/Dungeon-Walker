@@ -19,7 +19,7 @@ public class SprayerFollow : MonoBehaviour
     [Header("Comportement Général")]
     public bool CanMove = true;
     [SerializeField] private float wanderSpeed = 2f;
-    [SerializeField] private float chaseSpeed = 4f;
+    [SerializeField] public float chaseSpeed = 4f;
     [SerializeField] private float stoppingDistance = 1.5f;
     [SerializeField] private float detectionRadius = 7f;
     [SerializeField] private float lostSightRadius = 10f;
@@ -52,7 +52,12 @@ public class SprayerFollow : MonoBehaviour
     private float moveDirection = 1f;
     private float timeSinceLastFlip = 0f;
     private const float FLIP_COOLDOWN = 0.5f; // Cooldown pour éviter le double flip
+    [Header("Performance / Time Slicing")]
+    [Tooltip("How many SECONDS to wait before re-evaluating the AI state. Higher numbers = better performance.")]
+    [Range(0.05f, 1.0f)]
+    public float thinkInterval = 0.25f; // Think 4 times per second
 
+    private float thinkTimer = 0f;
     void Awake()
     {
         
@@ -151,40 +156,43 @@ public class SprayerFollow : MonoBehaviour
 
     void Update()
     {
-        if (health != null && health.isStunned)
+        // --- 1. THE TIMER ---
+        thinkTimer += Time.deltaTime;
+
+        // --- 2. THE "THINKING" BLOCK ---
+        if (thinkTimer >= thinkInterval)
         {
-            StopMoving();
-            sprayerAnimator.SetBool("IsWalking", false);
-            return; // Skip AI logic
-        }
-        if (playerTransform == null)
-        {
-            // Si non, on essaie de le trouver.
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
+            thinkTimer = 0f; // Reset the timer
+
+            // This is your original Update logic, now running periodically.
+            if (health != null && health.isStunned)
             {
-                // Si on le trouve, on stocke sa référence.
-                playerTransform = playerObj.transform;
+                StopMoving();
+                sprayerAnimator.SetBool("IsWalking", false);
+                return;
             }
-            else
+            if (playerTransform == null)
             {
-                // Si on ne le trouve PAS, c'est qu'il n'existe pas (ou plus).
-                // On arrête TOUT pour cet ennemi.
-                StopMoving(); // On arrête le mouvement.
-                enabled = false; // On désactive complètement le script pour éviter d'autres erreurs.
-                return; // On quitte la fonction Update pour cette frame.
+                FindPlayerAgain();
+                if (playerTransform == null)
+                {
+                    StopMoving();
+                    return;
+                }
             }
+
+            timeSinceLastFlip += thinkInterval; // Use the interval for consistent timing
+
+            if (!CanMove || isAnticipatingJump)
+            {
+                StopMoving();
+                return;
+            }
+
+            UpdateAIState();
         }
 
-        timeSinceLastFlip += Time.deltaTime;
-
-        if (!CanMove || isAnticipatingJump)
-        {
-            StopMoving();
-            return;
-        }
-
-        UpdateAIState();
+        // These parts need to run every frame for responsiveness.
         ExecuteCurrentState();
         UpdateAnimation();
     }

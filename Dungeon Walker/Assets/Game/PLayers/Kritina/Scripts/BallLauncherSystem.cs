@@ -253,7 +253,14 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
     [Header("Object Pooling Settings")]
     [Tooltip("How many of each ball type to create at the start.")]
     [SerializeField] private int ballPoolSize = 10;
-  
+
+    [Header("UI REFERENCES")]
+    [Tooltip("The TextMeshPro UI element that will display the ammo count.")]
+    [SerializeField] private TMPro.TextMeshProUGUI ammoText;
+    [Tooltip("The empty Transform on the player that the ammo UI should follow.")]
+    [SerializeField] private Transform ammoUiFollowPoint;
+    [Tooltip("The main UI Canvas for positioning calculations.")]
+    [SerializeField] private Canvas uiCanvas;
 
     void Start()
     {
@@ -285,6 +292,55 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
         UpdateMinDistancePointPosition();
         UpdateTrajectoryVisualPoint();
         ApplyWeaponUpgrades();
+    }
+    private void UpdateAmmoUI()
+    {
+        if (ammoText == null) return;
+
+        // Check if the weapon is currently on cooldown
+        bool onCooldown = Time.time < lastShootTime + shootCooldown;
+
+        if (onCooldown)
+        {
+            // If on cooldown, show the "reloading" text
+            ammoText.text = "-- / --";
+        }
+        else
+        {
+            // Otherwise, show "1/1"
+            ammoText.text = "1 / 1";
+        }
+    }
+
+    // METHOD 2: The position update logic
+    private void UpdateAmmoUIPosition()
+    {
+        if (ammoText == null || !ammoText.gameObject.activeInHierarchy || ammoUiFollowPoint == null || uiCanvas == null)
+        {
+            return;
+        }
+
+        Vector2 screenPoint = Camera.main.WorldToScreenPoint(ammoUiFollowPoint.position);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            (RectTransform)uiCanvas.transform,
+            screenPoint,
+            uiCanvas.worldCamera,
+            out Vector2 localPosition
+        );
+        ammoText.transform.localPosition = localPosition;
+    }
+
+    // METHOD 3: A helper to find the canvas if it's not assigned
+    private void FindCanvas()
+    {
+        if (uiCanvas == null)
+        {
+            uiCanvas = FindObjectOfType<Canvas>();
+            if (uiCanvas == null)
+            {
+                Debug.LogError("RobustLauncherSystem: No UI Canvas found in the scene!");
+            }
+        }
     }
     private void ApplyWeaponUpgrades()
     {
@@ -328,6 +384,9 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
     }
     void OnEnable()
     {
+        FindCanvas(); // Make sure we have the canvas reference
+        UpdateAmmoUI();
+        if (ammoText != null) ammoText.gameObject.SetActive(true);
         // Start listening for the broadcast from the joystick
         JoystickBroadcaster.OnJoystickTouchStateChanged += HandleJoystickTouchState;
     }
@@ -336,6 +395,10 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
     // This function is called when your script is disabled
     void OnDisable()
     {
+        if (ammoText != null)
+        {
+            ammoText.gameObject.SetActive(false);
+        }
         // Stop listening to prevent errors
         JoystickBroadcaster.OnJoystickTouchStateChanged -= HandleJoystickTouchState;
     }
@@ -356,7 +419,8 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
         // Core updates every frame - ALWAYS allow rotation regardless of player movement
         HandleInputAndShooting();
         ApplyWorldSpaceRotations();
-
+        UpdateAmmoUI();
+        UpdateAmmoUIPosition();
         // Optimized updates with intervals
         if (Time.time - lastTrajectoryUpdate >= trajectoryUpdateInterval)
         {

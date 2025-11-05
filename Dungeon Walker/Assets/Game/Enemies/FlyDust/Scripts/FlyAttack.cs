@@ -19,7 +19,8 @@ public class FlyAttack : MonoBehaviour
 
     [Header("Projectile Settings")]
     public float projectileSpeed = 10f;
-    public int projectileDamage = 10;
+    public int baseProjectileDamage = 10;
+    public int projectileDamage;
     public float projectileLifetime = 3f;
     public LayerMask groundLayer;
     public LayerMask playerLayer;
@@ -34,7 +35,8 @@ public class FlyAttack : MonoBehaviour
 
     [Header("Explosion Settings")]
     public float explosionRadius = 2f;
-    public int explosionDamage = 15;
+    public int baseExplosionDamage = 15;
+    public int explosionDamage;
 
     [Header("Double Attack Settings")]
     [Range(0f, 1f)] public float doubleAttackChance = 0.3f;
@@ -51,7 +53,8 @@ public class FlyAttack : MonoBehaviour
     [Header("Charged Projectile Settings")]
     public GameObject chargedProjectilePrefab; // Assign your big projectile prefab here
     public float chargedProjectileSpeed = 8f;
-    public int chargedProjectileDamage = 30;
+    public int baseChargedProjectileDamage = 30;
+    public int chargedProjectileDamage;
     public float chargedProjectileLifetime = 4f;
     public float chargedExplosionRadius = 3f;
     public GameObject chargedExplosionEffect; // Assign the big explosion effect here

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -31,6 +32,10 @@ public class ObjectPoolManager : MonoBehaviour
     public GameObject splatterBossPrefab;
     public GameObject splatterBossV2Prefab; // <-- ADD THIS
 
+    public GameObject flybloodHitEffectPrefab;
+    public GameObject fleaBloodHitEffectPrefab;
+    public GameObject sprayerBloodHitEffectPrefab;
+
     public GameObject spawnEffectPrefab;
     public GameObject fartEffectPrefab;
     public int fartEffectPoolSize = 10;
@@ -55,6 +60,7 @@ public class ObjectPoolManager : MonoBehaviour
     public GameObject volcanoObstaclePrefab;
     public int volcanoPoolSize = 10;
     public GameObject destructionBoxePrefab;
+    public int bloodHitPoolSize = 30;
     void Awake()
     {
         if (Instance == null)
@@ -106,6 +112,13 @@ public class ObjectPoolManager : MonoBehaviour
         if (inkPuddleV2Prefab != null) CreatePool(inkPuddleV2Prefab, inkPuddlePoolSize);
         if (volcanoObstaclePrefab != null) CreatePool(volcanoObstaclePrefab, volcanoPoolSize);
         if (destructionBoxePrefab != null) CreatePool(destructionBoxePrefab, 7);
+
+
+        if (flybloodHitEffectPrefab != null) CreatePool(flybloodHitEffectPrefab, bloodHitPoolSize);
+        if (fleaBloodHitEffectPrefab != null) CreatePool(fleaBloodHitEffectPrefab, bloodHitPoolSize);
+        if (sprayerBloodHitEffectPrefab != null) CreatePool(sprayerBloodHitEffectPrefab, bloodHitPoolSize);
+
+
         foreach (MonoBehaviour script in allScripts)
         {
             // Check if the script we found has "signed the contract" of our IPoolable interface.
@@ -160,37 +173,40 @@ public class ObjectPoolManager : MonoBehaviour
     /// <param name="rotation">The rotation to spawn the object with.</param>
     /// <returns>The spawned GameObject from the pool.</returns>
     // --- REPLACE the old SpawnFromPool method with this one ---
+
     public GameObject SpawnFromPool(GameObject prefab, Vector3 position, Quaternion rotation)
     {
         if (!poolDictionary.ContainsKey(prefab))
         {
-            Debug.LogError($"Pool for prefab '{prefab.name}' doesn't exist. Create it first.");
-            return null;
+            Debug.LogError($"Pool for prefab '{prefab.name}' doesn't exist. Creating a new one on the fly.");
+            CreatePool(prefab, 5);
         }
 
-        // Get an object from the pool's queue.
-        GameObject objectToSpawn = poolDictionary[prefab].Dequeue();
+        // --- THIS IS THE NEW, SAFER LOGIC ---
+        Queue<GameObject> pool = poolDictionary[prefab];
 
-        // --- ROBUSTNESS FIX ---
-        // If the object is somehow already active, log a warning. This helps debug future issues.
-        if (objectToSpawn.activeInHierarchy)
+        // Find the first available INACTIVE object in the pool.
+        GameObject objectToSpawn = pool.FirstOrDefault(obj => !obj.activeInHierarchy);
+
+        // If we couldn't find an inactive one (meaning they are all somehow active),
+        // create a new one to prevent breaking the game. This is a safety net.
+        if (objectToSpawn == null)
         {
-            Debug.LogWarning($"Re-spawning an object '{objectToSpawn.name}' that was already active. This may indicate a pooling issue.");
+            Debug.LogWarning($"Pool for {prefab.name} ran out of inactive objects. Expanding pool by one.");
+            objectToSpawn = Instantiate(prefab);
+            objectToSpawn.transform.SetParent(this.transform.Find(prefab.name + " Pool")); // Keep it organized
+            pool.Enqueue(objectToSpawn);
         }
-        // --- END OF FIX ---
+        // --- END OF NEW LOGIC ---
 
         // Activate it and set its position and rotation.
         objectToSpawn.SetActive(true);
         objectToSpawn.transform.position = position;
         objectToSpawn.transform.rotation = rotation;
 
-        // Add the object back to the end of the queue so it can be reused later.
-        poolDictionary[prefab].Enqueue(objectToSpawn);
-
         return objectToSpawn;
     }
 
-   
 }
 public interface IPoolable
 {

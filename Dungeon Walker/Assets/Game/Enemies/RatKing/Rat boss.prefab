@@ -5792,6 +5792,7 @@ MonoBehaviour:
   groundImpactParticles: {fileID: 3962489236768551362}
   damageZoneOrigin: {fileID: 2937064212468406145}
   damageZoneRadius: 3.87
+  baseDamageAmount: 10
   damageAmount: 40
   playerLayer:
     serializedVersion: 2
@@ -5813,6 +5814,7 @@ MonoBehaviour:
   cheeseImpactParticlesPrefab3: {fileID: 5989248871805962395, guid: 42fc002353319184a9f45737980de158, type: 3}
   throwCooldown: 1.8
   throwProbability: 0.92
+  baseCheeseDamageAmount: 5
   cheeseDamageAmount: 30
   cheeseExplosionRadius: 2
   cheeseKnockbackForce: 10
@@ -5842,6 +5844,7 @@ MonoBehaviour:
   ratKingAttack: {fileID: 3449960890957057112}
   CanMove: 1
   wanderSpeed: 4
+  chaseSpeedRange: {x: 3.5, y: 4.5}
   chaseSpeed: 7
   stoppingDistance: 5
   detectionRadius: 15.3
@@ -5866,6 +5869,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff768d6f3799df3469bcb76d3724f5f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  baseMaxHealth: 100
   maxHealth: 500
   deathEffect: {fileID: 0}
   bloodSpawnPoint: {fileID: 4506034669272728072}
@@ -5904,6 +5908,9 @@ MonoBehaviour:
   dropChance: 0.05
   powerUpPickupPrefab: {fileID: 0}
   powerUpSpawnPoint: {fileID: 0}
+  healthIncreasePerWave: 100
+  damageIncreasePerWave: 20
+  chaseSpeedIncreasePerWave: 4
 --- !u!114 &4484414899429158999
 MonoBehaviour:
   m_ObjectHideFlags: 0

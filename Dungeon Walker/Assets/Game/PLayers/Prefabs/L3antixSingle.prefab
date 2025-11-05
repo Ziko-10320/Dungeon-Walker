@@ -134860,8 +134860,8 @@ MonoBehaviour:
   loopCheckpoints: 1
   coinsPerCheckpoint: 10
   interactButton: {fileID: 0}
-  scorePerCheckpoint: 1
-  scorePerLoop: 0
+  scorePerCheckpoint: 0
+  scorePerLoop: 1
   arrowPointer: {fileID: 0}
   OnCheckpointReached:
     m_PersistentCalls:
@@ -149623,7 +149623,7 @@ MonoBehaviour:
     armSpriteRenderer: {fileID: 1513883630650947019}
     weaponUIIcon: {fileID: 21300000, guid: f923651b4cdcd584f944c44bfd18773d, type: 3}
     dropChance: 0.265
-  killsToSwitch: 10
+  killsToSwitch: 15
   switchDelay: 0.1
   killsLeftText: {fileID: 0}
   weaponIconUI: {fileID: 0}
@@ -179282,6 +179282,37 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!1 &6522163610402147988
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4134651847245706291}
+  m_Layer: 8
+  m_Name: WaterGun UiPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4134651847245706291
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6522163610402147988}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.31, y: 0.75, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1397765682343992717}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6564475433967582015
 GameObject:
   m_ObjectHideFlags: 0
@@ -219534,6 +219565,9 @@ MonoBehaviour:
   showCalibrationDebug: 1
   CameraShakeExplosion: {fileID: 11400000, guid: e6107c79dc59e694082721368c332589, type: 2}
   ballPoolSize: 10
+  ammoText: {fileID: 0}
+  ammoUiFollowPoint: {fileID: 4134651847245706291}
+  uiCanvas: {fileID: 0}
 --- !u!114 &5638463088309302553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219567,7 +219601,7 @@ MonoBehaviour:
   enableTimeDestruction: 1
   instantDestruction: 1
   showDestructionDebug: 0
-  arrowDestroyParticleSystem: {fileID: 8561042351153965031, guid: 56c05a3aac7150e428b37e0dc9b5a879, type: 3}
+  arrowDestroyParticleSystem: {fileID: 1494861092186304631}
   weaponData: {fileID: 11400000, guid: f78a651e8f2921f43850ce99e92ac268, type: 2}
   minArrowDamage: 5
   maxArrowDamage: 70
@@ -219651,7 +219685,7 @@ MonoBehaviour:
   throwSlashSpawnPointRight: {fileID: 3412851248304903009}
   throwSlashSpawnPointLeft: {fileID: 1479781067605969313}
   throwSlashSpeed: 30
-  throwSlashDamage: 100
+  throwSlashDamage: 70
   bat2Prefab: {fileID: 4137591446552491165, guid: 97f20a84605025c47ae0a17430ce1947, type: 3}
   aimVerticalOffsetRightCursor: -1.77
   aimVerticalOffsetLeftCursor: 1.6
@@ -219741,9 +219775,9 @@ MonoBehaviour:
   bulletPrefab: {fileID: 4834404838286360832, guid: 9fb3d00f02457c348ac143efdfecd06f, type: 3}
   destructionEffectPrefab: {fileID: 6619945100955572787, guid: e5b9d31208f75c348a2b64794e1dfd02, type: 3}
   muzzleFlashEffect: {fileID: 8553383024861990118}
-  bulletSpeed: 22
+  bulletSpeed: 28
   bulletLifetime: 1
-  bulletDamage: 10
+  bulletDamage: 15
   damageableLayers:
     serializedVersion: 2
     m_Bits: 1664
@@ -219760,15 +219794,18 @@ MonoBehaviour:
   launcherRotationOffsetLeft: 180
   trajectoryRotationOffsetRight: 0
   trajectoryRotationOffsetLeft: 0
-  fireRate: 0.32
-  maxAmmo: 10
-  reloadTime: 1.6
+  fireRate: 0.3
+  maxAmmo: 12
+  reloadTime: 1.7
   shootSound: {fileID: 8300000, guid: 36267c8f0a93a4640a33e0f46fe37d6e, type: 3}
   shootSoundVolume: 1
   bulletCollisionSound: {fileID: 8300000, guid: 0a9e41efd2406c84ea5ea5dff4c22a9c, type: 3}
   bulletCollisionSoundVolume: 1
   bulletPoolSize: 25
   effectPoolSize: 25
+  ammoText: {fileID: 0}
+  ammoUiFollowPoint: {fileID: 4134651847245706291}
+  uiCanvas: {fileID: 0}
 --- !u!114 &8208407095181370280
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -220305,6 +220342,10 @@ MonoBehaviour:
   - {fileID: 8400834026435030469, guid: 452e043081d9ed849ad9bbb716fc1a76, type: 3}
   - {fileID: 8027755336850624125, guid: 1cc251135d3028a4c96f5978ba484713, type: 3}
   coinRotationSpeed: 720
+  goldenCoinPoolSize: 5
+  silverCoinPoolSize: 10
+  bronzeCoinPoolSize: 20
+  explosionEffectPoolSize: 10
 --- !u!114 &3242737803718247131
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -255772,6 +255813,7 @@ Transform:
   - {fileID: 3510942078707517890}
   - {fileID: 2484036269769512711}
   - {fileID: 6637655839311081406}
+  - {fileID: 4134651847245706291}
   - {fileID: 2797961963805371660}
   m_Father: {fileID: 9006167878275002792}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

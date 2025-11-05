@@ -1018,6 +1018,7 @@ MonoBehaviour:
   chaseSpeedRange: {x: 7, y: 13}
   detectionRadiusRange: {x: 10.34, y: 13.08}
   stopDistanceRange: {x: 3, y: 6}
+  chaseSpeed: 0
   wanderTimeRange: {x: 2.74, y: 6.41}
   wanderWaitTime: 1.5
   groundCheck: {fileID: 4041683331665385289}
@@ -1026,6 +1027,7 @@ MonoBehaviour:
   platformLayer:
     serializedVersion: 2
     m_Bits: 64
+  thinkInterval: 1
 --- !u!114 &1720233607332291632
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1051,6 +1053,7 @@ MonoBehaviour:
   chargeForce: 45
   chargeDuration: 0.25
   chargeDrag: 5
+  baseAttackDamage: 15
   attackDamage: 15
   knockbackForce: 17.4
   maxConsecutiveCharges: 2
@@ -1059,6 +1062,7 @@ MonoBehaviour:
   attackSoundClip: {fileID: 0}
   attackSoundVolume: 0.7
   isAttacking: 0
+  attackCheckInterval: 1
 --- !u!114 &7096068881124667400
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1071,6 +1075,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 894ec417920f3ae43a1a22ec4e856693, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  baseMaxHealth: 80
   maxHealth: 80
   deathEffect: {fileID: 0}
   knockbackDistance: 0
@@ -1107,6 +1112,9 @@ MonoBehaviour:
   isStunned: 0
   deathSplatterEffectPrefab: {fileID: 1266603064206159665, guid: 83134c1ee46f09f4eab9d8e3d42b48fc, type: 3}
   splatterSpawnPoint: {fileID: 3027643546219592734}
+  healthIncreasePerWave: 10
+  damageIncreasePerWave: 10
+  chaseSpeedIncreasePerWave: 10
 --- !u!114 &1370146577963590099
 MonoBehaviour:
   m_ObjectHideFlags: 0

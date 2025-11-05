@@ -9,7 +9,8 @@ using UnityEngine.Events;
 public class SprayerHealth : MonoBehaviour, IPunObservable
 {
     // Public variables for health and effects
-    public int maxHealth = 100; // Maximum health of the mushroom
+    public int baseMaxHealth = 100; // Renamed from maxHealth
+    public int maxHealth;
     public GameObject deathEffect; // Optional: Effect to play when the mushroom dies
     public float knockbackDistance = 1f; // Distance the mushroom moves during knockback
     public float knockbackDuration = 0.2f; // Duration of the knockback effect
@@ -61,6 +62,17 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
     [Tooltip("The prefab for the physical power-up pickup item.")]
     public GameObject powerUpPickupPrefab;
     public Transform powerUpSpawnPoint;
+
+    [Header("Scaling Per Wave")]
+    [Tooltip("How much extra health the sprayer gets for each wave it survives after its first appearance.")]
+    public int healthIncreasePerWave = 15;
+    [Tooltip("How much extra damage the sprayer's attack gets per wave.")]
+    public float damageIncreasePerWave = 2f; // Use float for damagePerSecond
+    [Tooltip("How much extra chase speed the sprayer gets per wave.")]
+    public float chaseSpeedIncreasePerWave = 0.4f;
+
+    // Internal memory for this specific sprayer instance
+    private int firstSpawnWave = -1;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -74,40 +86,69 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
     }
     void OnEnable()
     {
-        // This is the guaranteed reset for pooled enemies.
+        // --- 1. THE SCALING LOGIC ---
+        if (firstSpawnWave == -1)
+        {
+            // This is the first time this sprayer has ever spawned.
+            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
+        }
+
+        // Calculate how many waves this sprayer has "survived".
+        int wavesSurvived = ScoreDisplay.CurrentWaveNumber - firstSpawnWave;
+        if (wavesSurvived < 0) wavesSurvived = 0;
+
+        // --- 2. CALCULATE AND APPLY NEW STATS ---
+        // Health (handled by this script)
+        maxHealth = baseMaxHealth + (wavesSurvived * healthIncreasePerWave);
         currentHealth = maxHealth;
+
+        // Get references to the other scripts
+        var followScript = GetComponent<SprayerFollow>();
+        var attackScript = GetComponent<SprayerAttack>();
+
+        // Speed (tell the follow script its new speed)
+        if (followScript != null)
+        {
+            float baseChaseSpeed = Random.Range(followScript.chaseSpeedRange.x, followScript.chaseSpeedRange.y);
+            followScript.chaseSpeed = baseChaseSpeed + (wavesSurvived * chaseSpeedIncreasePerWave);
+        }
+
+        // Damage (tell the attack script its new damage)
+        if (attackScript != null)
+        {
+            attackScript.damagePerSecond = attackScript.baseDamagePerSecond + (wavesSurvived * damageIncreasePerWave);
+        }
+
+        // --- 3. YOUR EXISTING RESET LOGIC ---
         isKnockedBack = false;
         isFlashing = false;
-        isStunned = false; // Assuming you have this variable
+        isStunned = false;
 
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject == null)
         {
-            gameObject.SetActive(false); // Disable if no player exists.
+            gameObject.SetActive(false);
             return;
         }
         Transform player = playerObject.transform;
 
-        // Get the follow script and call our new master reset method.
-        var sprayerFollow = GetComponent<SprayerFollow>();
-        if (sprayerFollow != null)
+        if (followScript != null)
         {
-            sprayerFollow.InitializeAndReset(player);
+            followScript.InitializeAndReset(player);
         }
-        var SprayerAttack = GetComponent<SprayerAttack>();
-        if (SprayerAttack != null)
+        if (attackScript != null)
         {
-            SprayerAttack.enabled = true;
-            SprayerAttack.InitializeAndReset(player);
+            attackScript.InitializeAndReset(player);
         }
+
+        // Material reset logic
         if (spriteRenderers != null && originalMaterials != null && spriteRenderers.Length == originalMaterials.Length)
         {
             for (int i = 0; i < spriteRenderers.Length; i++)
             {
                 if (spriteRenderers[i] != null && originalMaterials[i] != null)
                 {
-                    // --- CHANGE THIS LINE ---
-                    spriteRenderers[i].sharedMaterial = originalMaterials[i];
+                    spriteRenderers[i].material = originalMaterials[i];
                 }
             }
         }
@@ -444,10 +485,21 @@ public class SprayerHealth : MonoBehaviour, IPunObservable
         }
     }
     // Helper method to instantiate and play a particle system
+
     private void InstantiateAndPlayParticleSystem(ParticleSystem particleSystem, Vector3 position)
     {
-        ParticleSystem instance = Instantiate(particleSystem, position, Quaternion.identity);
-        instance.Play();
+        // Check if the manager and the specific sprayer blood prefab exist
+        if (ObjectPoolManager.Instance != null && ObjectPoolManager.Instance.sprayerBloodHitEffectPrefab != null)
+        {
+            // Ask the manager for a blood effect from the specific Sprayer blood pool.
+            ObjectPoolManager.Instance.SpawnFromPool(ObjectPoolManager.Instance.sprayerBloodHitEffectPrefab, position, Quaternion.identity);
+        }
+        else
+        {
+            // Fallback to the old Instantiate method if the pool system isn't ready.
+            ParticleSystem instance = Instantiate(particleSystem, position, Quaternion.identity);
+            instance.Play();
+        }
     }
 
     // Coroutine to handle the flash damage effect

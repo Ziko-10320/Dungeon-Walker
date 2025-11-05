@@ -1553,6 +1553,7 @@ MonoBehaviour:
   chargeForce: 45
   chargeDuration: 0.25
   chargeDrag: 6
+  baseAttackDamage: 15
   attackDamage: 25
   knockbackForce: 22
   maxConsecutiveCharges: 3
@@ -1561,6 +1562,7 @@ MonoBehaviour:
   attackSoundClip: {fileID: 0}
   attackSoundVolume: 0.7
   isAttacking: 0
+  attackCheckInterval: 1
 --- !u!114 &3932573549224213230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1580,6 +1582,7 @@ MonoBehaviour:
   chaseSpeedRange: {x: 12, y: 18}
   detectionRadiusRange: {x: 14, y: 16.8}
   stopDistanceRange: {x: 7, y: 12}
+  chaseSpeed: 0
   wanderTimeRange: {x: 2.74, y: 6.41}
   wanderWaitTime: 1.5
   groundCheck: {fileID: 8104046359129128042}
@@ -1588,6 +1591,7 @@ MonoBehaviour:
   platformLayer:
     serializedVersion: 2
     m_Bits: 64
+  thinkInterval: 1
 --- !u!114 &7698766321757829591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1600,6 +1604,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fd6842d4c0a6e6449f5386a36b33d56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  baseMaxHealth: 120
   maxHealth: 120
   deathEffect: {fileID: 0}
   knockbackDistance: 0
@@ -1647,6 +1652,9 @@ MonoBehaviour:
   dropChance: 0.03
   powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
   powerUpSpawnPoint: {fileID: 3986929835973374505}
+  healthIncreasePerWave: 15
+  damageIncreasePerWave: 10
+  chaseSpeedIncreasePerWave: 4
 --- !u!114 &1395605611348485378
 MonoBehaviour:
   m_ObjectHideFlags: 0

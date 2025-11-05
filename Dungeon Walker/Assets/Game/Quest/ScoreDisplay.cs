@@ -25,7 +25,7 @@ public class ScoreDisplay : MonoBehaviour
     public CheckpointManager checkpointManager;
     public Camera mainCamera; // Reference to the main camera
     public Canvas canvas; // Reference to the UI Canvas
-
+    public static int CurrentWaveNumber = 0;
     void Start()
     {
         tutorialGameManager = FindObjectOfType<TutorialGameManager>();
@@ -116,6 +116,7 @@ public class ScoreDisplay : MonoBehaviour
     void UpdateScoreDisplay(int newScore)
     {
         scoreText.text = scorePrefix + newScore;
+        CurrentWaveNumber = newScore;
     }
 
     void UpdateTimerDisplay(float timeRemaining)

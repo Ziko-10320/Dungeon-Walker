@@ -5639,6 +5639,7 @@ MonoBehaviour:
   destructionEffectPoolSize: 3
   chargedProjectilePoolSize: 2
   chargedEffectPoolSize: 2
+  attackCheckInterval: 1
 --- !u!114 &3593707507768658826
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5685,6 +5686,7 @@ MonoBehaviour:
   detectionRadius: 15.9
   lostSightRadius: 22.7
   DetectionPoint: {fileID: 2360911222258903538}
+  thinkInterval: 1
 --- !u!114 &4354244927766121664
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5697,7 +5699,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c08db20c37a62b14b81698dd2dcd33c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 80
+  maxHealth: 65
   deathEffect: {fileID: 0}
   knockbackDistance: 0
   knockbackDuration: 0

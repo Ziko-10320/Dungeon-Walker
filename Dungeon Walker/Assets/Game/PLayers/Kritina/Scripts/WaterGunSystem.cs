@@ -1,10 +1,11 @@
+using Photon.Pun;
+using Photon.Realtime;
 using System.Collections;
+using TMPro;
 using Unity.Burst.Intrinsics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Photon.Pun;
-using Photon.Realtime;
 
 public class WaterGunSystem : MonoBehaviour, IPunObservable, IPoolable
 {
@@ -80,6 +81,14 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable, IPoolable
 
     [SerializeField] private int bulletPoolSize = 20;
     [SerializeField] private int effectPoolSize = 20;
+
+    [Header("UI REFERENCES")]
+    [Tooltip("The TextMeshPro UI element that will display the ammo count.")]
+    [SerializeField] private TextMeshProUGUI ammoText;
+    [Tooltip("The empty Transform on the player that the ammo UI should follow.")]
+    [SerializeField] private Transform ammoUiFollowPoint;
+    [Tooltip("The main UI Canvas for positioning calculations.")]
+    [SerializeField] private Canvas uiCanvas;
     void Awake()
     {
         view = GetComponentInParent<PhotonView>();
@@ -94,6 +103,88 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable, IPoolable
             audioSource = gameObject.AddComponent<AudioSource>();
         }
         ApplyWeaponUpgrades();
+        UpdateAmmoUI();
+        FindCanvas();
+    }
+    void OnEnable()
+    {
+        // When the weapon is switched to, immediately update and show the UI.
+        UpdateAmmoUI();
+    }
+
+    // This method is called automatically when the script is disabled
+    void OnDisable()
+    {
+        // When the weapon is switched away from, hide the ammo UI.
+        if (ammoText != null)
+        {
+            ammoText.gameObject.SetActive(false);
+        }
+
+        // Also, if we were in the middle of reloading, cancel it.
+        isReloading = false;
+        StopAllCoroutines();
+    }
+    private void UpdateAmmoUI()
+    {
+        if (ammoText == null) return; // Safety check
+
+        // --- THIS IS THE NEW LOGIC ---
+        if (isReloading)
+        {
+            // If we are reloading, show the special text.
+            ammoText.text = "-- / --";
+        }
+        else
+        {
+            // Otherwise, show the normal "current/max" ammo count.
+            ammoText.text = $"{currentAmmo} / {maxAmmo}";
+        }
+        // --- END OF NEW LOGIC ---
+
+        // This part remains the same: only show the UI if the script is active.
+        bool shouldBeVisible = this.enabled;
+        if (ammoText.gameObject.activeSelf != shouldBeVisible)
+        {
+            ammoText.gameObject.SetActive(shouldBeVisible);
+        }
+    }
+
+    // METHOD 2: The position update logic (copied from your BowSystem)
+    private void UpdateAmmoUIPosition()
+    {
+        // If any references are missing, or the text is inactive, do nothing.
+        if (ammoText == null || !ammoText.gameObject.activeInHierarchy || ammoUiFollowPoint == null || uiCanvas == null)
+        {
+            return;
+        }
+
+        // Convert the world position of our follow point to a screen position.
+        Vector2 screenPoint = Camera.main.WorldToScreenPoint(ammoUiFollowPoint.position);
+
+        // Convert the screen point into a local position within the canvas.
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            (RectTransform)uiCanvas.transform,
+            screenPoint,
+            uiCanvas.worldCamera, // Use the canvas's camera
+            out Vector2 localPosition
+        );
+
+        // Apply the correctly converted local position.
+        ammoText.transform.localPosition = localPosition;
+    }
+
+    // METHOD 3: A helper to find the canvas if it's not assigned
+    private void FindCanvas()
+    {
+        if (uiCanvas == null)
+        {
+            uiCanvas = FindObjectOfType<Canvas>();
+            if (uiCanvas == null)
+            {
+                Debug.LogError("WaterGunSystem: No UI Canvas found in the scene!");
+            }
+        }
     }
     public void CreatePools()
     {
@@ -148,6 +239,8 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable, IPoolable
         ApplyRotation();
 
         UpdateMinDistancePointPosition(); // Mise à jour du point de visualisation
+        UpdateAmmoUI();
+        UpdateAmmoUIPosition();
     }
 
     private void HandleInputAndShooting()
@@ -324,11 +417,13 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable, IPoolable
         if (isReloading) yield break;
         isReloading = true;
         Debug.Log("Reloading...");
+        UpdateAmmoUI();
         yield return new WaitForSeconds(reloadTime);
         currentAmmo = maxAmmo;
         isReloading = false;
+        UpdateAmmoUI();
         Debug.Log("Reload complete!");
-    }
+    } 
 
     private void UpdateMinDistancePointPosition()
     {
@@ -508,6 +603,7 @@ public class WaterBullet : MonoBehaviour
         if (deactivateCoroutine != null)
         {
             StopCoroutine(deactivateCoroutine);
+            deactivateCoroutine = null;
         }
         // Deactivate the bullet so it can be reused.
         gameObject.SetActive(false);

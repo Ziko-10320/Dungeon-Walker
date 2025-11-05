@@ -1214,10 +1214,47 @@ public class ArrowLifecycleController : MonoBehaviour
     public float chargePercentage; // To store the charge percentage for damage calculation
     private List<GameObject> hitEnemies = new List<GameObject>(); // Track enemies hit by this specific arrow
     public bool isReal;
+    private Vector3 lastPosition;
+    private int frameCounter = 0;
+    private const int CHECK_INTERVAL_IN_FRAMES = 3;
+    void OnEnable()
+    {
+        // When the arrow is activated, immediately record its starting position.
+        lastPosition = transform.position;
+        // Also, clear the list of enemies it has already hit from its previous life.
+        hitEnemies.Clear();
+    }
     void Update()
     {
-        // Time-based destruction
-        if (bowSystem != null && bowSystem.enableTimeDestruction && !hasBeenDestroyed)
+        if (hasBeenDestroyed) return;
+
+        // --- 1. THE OPTIMIZATION: INTERMITTENT CHECKING ---
+        frameCounter++;
+        if (frameCounter >= CHECK_INTERVAL_IN_FRAMES)
+        {
+            frameCounter = 0; // Reset the counter
+
+            // --- 2. THE EFFICIENT RAYCAST (Physics2D.Linecast) ---
+            // Linecast is faster than RaycastAll because it stops after the FIRST thing it hits.
+            RaycastHit2D hit = Physics2D.Linecast(lastPosition, transform.position, bowSystem.enemyLayers);
+
+            // 3. CHECK THE RESULT
+            // If the linecast hit something, and that something is an enemy we haven't hit yet...
+            if (hit.collider != null && isReal && !hitEnemies.Contains(hit.collider.gameObject))
+            {
+                // ...manually trigger the damage logic! This is our safety net.
+                Debug.Log("TUNNELING DETECTED! Raycast hit and forced damage on " + hit.collider.name);
+                bowSystem.HandleDamage(hit.collider.gameObject, hit.point, chargePercentage, gameObject);
+                hitEnemies.Add(hit.collider.gameObject);
+            }
+        }
+
+        // 4. Always update the last position for the next check.
+        lastPosition = transform.position;
+        // --- END OF OPTIMIZED LOGIC ---
+
+        // Your original time-based destruction logic is still perfect.
+        if (bowSystem != null && bowSystem.enableTimeDestruction)
         {
             if (Time.time > spawnTime + bowSystem.arrowLifetime)
             {

@@ -7,7 +7,8 @@ public class InkAttack : MonoBehaviour
     [Header("Attack Settings")]
     [SerializeField] private GameObject inkBallPrefab; // Assign your InkBall prefab here
     [SerializeField] private float attackCooldown = 2f; // Time between attacks
-    [SerializeField] private int inkBallDamage = 10; // Damage dealt by InkBall
+    [SerializeField] public int baseInkBallDamage = 10; // Renamed and made public
+    public int inkBallDamage;
     [SerializeField] private float inkBallKnockbackForce = 5f; // Knockback force of InkBall
     [SerializeField] private float inkBallLifetime = 3f; // How long the ink ball lasts before destroying itself
     [SerializeField] private bool isV2Attack = false;

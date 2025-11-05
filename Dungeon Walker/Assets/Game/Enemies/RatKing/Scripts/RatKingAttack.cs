@@ -31,7 +31,8 @@ public class RatKingAttack : MonoBehaviour
     [SerializeField] private ParticleSystem groundImpactParticles;
     [SerializeField] private Transform damageZoneOrigin;
     [SerializeField] private float damageZoneRadius = 1f;
-    [SerializeField] private int damageAmount = 10;
+    public int baseDamageAmount = 10; // Renamed and made public
+    public int damageAmount;
     [SerializeField] private LayerMask playerLayer;
 
     [Header("Player Knockback")]
@@ -57,7 +58,8 @@ public class RatKingAttack : MonoBehaviour
     [SerializeField] private ParticleSystem cheeseImpactParticlesPrefab3; // New particle system 3
     [SerializeField] private float throwCooldown = 2f;
     [SerializeField][Range(0, 1)] private float throwProbability = 1f; // Set to 1 for testing
-    [SerializeField] private int cheeseDamageAmount = 5; // Damage dealt by the real cheese
+    public int baseCheeseDamageAmount = 5; // Renamed and made public
+    public int cheeseDamageAmount;
     [SerializeField] private float cheeseExplosionRadius = 2f; // Radius for AoE damage
     [SerializeField] private float cheeseKnockbackForce = 10f; // Knockback force from cheese explosion
     private float lastThrowTime;

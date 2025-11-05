@@ -8,6 +8,7 @@ using UnityEngine.Events;
 public class FleaHealthV2 : MonoBehaviour, IPunObservable
 {
     // Public variables for health and effects
+    public int baseMaxHealth = 100;
     public int maxHealth = 100; // Maximum health of the mushroom
     public GameObject deathEffect; // Optional: Effect to play when the mushroom dies
     public float knockbackDistance = 1f; // Distance the mushroom moves during knockback
@@ -76,8 +77,54 @@ public class FleaHealthV2 : MonoBehaviour, IPunObservable
     [Tooltip("The prefab for the physical power-up pickup item.")]
     public GameObject powerUpPickupPrefab;
     public Transform powerUpSpawnPoint;
+
+    [Header("Scaling Per Wave")]
+    [Tooltip("How much extra health the flea gets for each wave it survives after its first appearance.")]
+    public int healthIncreasePerWave = 10;
+    [Tooltip("How much extra damage the flea's attack gets per wave.")]
+    public int damageIncreasePerWave = 5;
+    [Tooltip("How much extra chase speed the flea gets per wave.")]
+    public float chaseSpeedIncreasePerWave = 0.5f;
+
+    // Internal memory for this specific flea instance
+    private int firstSpawnWave = -1;
     void OnEnable()
     {
+        // --- 1. THE SCALING LOGIC ---
+        if (firstSpawnWave == -1)
+        {
+            // This is the first time this flea has ever spawned.
+            // Record the current wave as its "birth" wave.
+            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
+        }
+
+        // Calculate how many waves this flea has "survived" since its first appearance.
+        int wavesSurvived = ScoreDisplay.CurrentWaveNumber - firstSpawnWave;
+        if (wavesSurvived < 0) wavesSurvived = 0; // Safety check
+
+        // --- 2. CALCULATE AND APPLY NEW STATS ---
+        // Health (handled by this script)
+        maxHealth = baseMaxHealth + (wavesSurvived * healthIncreasePerWave);
+        currentHealth = maxHealth;
+
+        // Get references to the other scripts on this enemy
+        var followScript = GetComponent<FleaFollow>();
+        var attackScript = GetComponent<FleaChargeAttack>();
+
+        // Speed (tell the follow script its new speed)
+        if (followScript != null)
+        {
+            // We get the base speed from the script's range, then add the bonus.
+            float baseChaseSpeed = Random.Range(followScript.chaseSpeedRange.x, followScript.chaseSpeedRange.y);
+            followScript.chaseSpeed = baseChaseSpeed + (wavesSurvived * chaseSpeedIncreasePerWave);
+        }
+
+        // Damage (tell the attack script its new damage)
+        if (attackScript != null)
+        {
+            attackScript.attackDamage = attackScript.baseAttackDamage + (wavesSurvived * damageIncreasePerWave);
+        }
+
         // This is the guaranteed reset for pooled enemies.
         currentHealth = maxHealth;
         isKnockedBack = false;
@@ -110,18 +157,16 @@ public class FleaHealthV2 : MonoBehaviour, IPunObservable
         }
         Transform player = playerObject.transform;
 
-        // Assuming you have V2 versions of these scripts
-        var followScript = GetComponent<FleaFollow>();
         if (followScript != null)
         {
+            followScript.enabled = true;
             followScript.InitializeAndReset(player);
         }
-        var attackScript = GetComponent<FleaChargeAttack>();
         if (attackScript != null)
         {
+            attackScript.enabled = true;
             attackScript.InitializeAndReset(player);
         }
-    
 
     }
     private void PlayRandomSound(AudioClip[] clips)
