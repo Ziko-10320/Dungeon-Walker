@@ -79171,6 +79171,10 @@ PrefabInstance:
       propertyPath: timerImageUI
       value: 
       objectReference: {fileID: 8455070525341567712}
+    - target: {fileID: 569016522605348105, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: beeSwarmVolume
+      value: 0.495
+      objectReference: {fileID: 0}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: shieldSlider
       value: 
@@ -79203,6 +79207,14 @@ PrefabInstance:
       propertyPath: ammoUiFollowPoint
       value: 
       objectReference: {fileID: 1464997987}
+    - target: {fileID: 1000888707120661668, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.23
+      objectReference: {fileID: 0}
+    - target: {fileID: 1000888707120661668, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.09
+      objectReference: {fileID: 0}
     - target: {fileID: 2493920547019745464, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: arrowPointer
       value: 
@@ -79235,6 +79247,10 @@ PrefabInstance:
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 490707551240320423}
+    - target: {fileID: 2677368946817612599, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: ammoText
       value: 
@@ -79251,6 +79267,14 @@ PrefabInstance:
       propertyPath: ammoUiFollowPoint
       value: 
       objectReference: {fileID: 1464997987}
+    - target: {fileID: 2853761122042426774, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3952472523969697907, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 4263109833319814150, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: heartAnimator
       value: 
@@ -79299,6 +79323,10 @@ PrefabInstance:
       propertyPath: fullyChargedIndicator
       value: 
       objectReference: {fileID: 2833191139351611861}
+    - target: {fileID: 5096298250817510365, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: joystick
       value: 
@@ -79341,6 +79369,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5689588596020951161, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6315686769556476770, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
@@ -79415,6 +79447,14 @@ PrefabInstance:
       propertyPath: heartWithWings
       value: 
       objectReference: {fileID: 80940859}
+    - target: {fileID: 8981578073890990322, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
+    - target: {fileID: 9078075540027060496, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: InitialModule.startSpeed.scalar
+      value: 5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -81068,6 +81108,14 @@ PrefabInstance:
       propertyPath: ammoUiFollowPoint
       value: 
       objectReference: {fileID: 995162007}
+    - target: {fileID: 5217040170062689098, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: beeSwarmVolume
+      value: 0.559
+      objectReference: {fileID: 0}
+    - target: {fileID: 5217040170062689098, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: beeSwarms.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: aimJoystick
       value: 
