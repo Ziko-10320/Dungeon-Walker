@@ -37,6 +37,7 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private GameObject milkContent;
     [SerializeField] private Button buyMilkButton;
     [SerializeField] private int milkPrice = 10000;
+    [SerializeField] private GameObject creditsPanel;
     private enum ShopCategory { PowerUps, Skins, Milk }
     private ShopCategory currentCategory;
     private CharacterType currentCharacterView;
@@ -164,21 +165,32 @@ public class ShopUI : MonoBehaviour
 
     public void OnBuyMilkClicked()
     {
-        // Try to spend the coins for the milk
         if (WalletManager.Instance.SpendCoins(milkPrice))
         {
             // SUCCESS!
             if (purchaseSuccessSound != null) uiAudioSource.PlayOneShot(purchaseSuccessSound);
             Debug.Log("YOU BOUGHT THE MILK! YOU WIN!");
 
-            // Here, you would trigger the game's win condition!
-            // For example:
-            // GameManager.Instance.PlayerWins();
-            // SceneManager.LoadScene("WinScreen");
+            // --- THIS IS THE NEW LOGIC ---
+            // 1. Hide the entire shop panel
+            if (shopPanel != null)
+            {
+                shopPanel.SetActive(false);
+            }
 
-            // For now, let's just disable the button so you can't buy it again.
-            buyMilkButton.interactable = false;
-            buyMilkButton.GetComponentInChildren<TextMeshProUGUI>().text = "WINNER!";
+            // 2. Show the credits panel
+            if (creditsPanel != null)
+            {
+                creditsPanel.SetActive(true);
+
+                // 3. Find the scroller script and start the credits!
+                CreditsScroller scroller = creditsPanel.GetComponent<CreditsScroller>();
+                if (scroller != null)
+                {
+                    scroller.StartCredits();
+                }
+            }
+            // -----------------------------
         }
         else
         {
