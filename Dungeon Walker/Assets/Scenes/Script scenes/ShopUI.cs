@@ -38,6 +38,7 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private Button buyMilkButton;
     [SerializeField] private int milkPrice = 10000;
     [SerializeField] private GameObject creditsPanel;
+    [SerializeField] private TextMeshProUGUI buyMilkPriceText;
     private enum ShopCategory { PowerUps, Skins, Milk }
     private ShopCategory currentCategory;
     private CharacterType currentCharacterView;
@@ -158,39 +159,50 @@ public class ShopUI : MonoBehaviour
 
         // Make sure the description panel is hidden for this simple category
         descriptionPanel.SetActive(false);
-
+        if (PlayerPrefs.GetInt("MilkBought", 0) == 0)
+        {
+            buyMilkPriceText.text = milkPrice.ToString();
+        }
+        else
+        {
+            buyMilkPriceText.text = "YAY!";
+        }
         // You could also update the price text on the button here if you want
         // For example: buyMilkButton.GetComponentInChildren<TextMeshProUGUI>().text = milkPrice.ToString();
     }
 
     public void OnBuyMilkClicked()
     {
+        // First, check if we've already bought it
+        if (PlayerPrefs.GetInt("MilkBought", 0) == 1)
+        {
+            Debug.Log("You already bought the milk!");
+            return;
+        }
+
         if (WalletManager.Instance.SpendCoins(milkPrice))
         {
             // SUCCESS!
             if (purchaseSuccessSound != null) uiAudioSource.PlayOneShot(purchaseSuccessSound);
             Debug.Log("YOU BOUGHT THE MILK! YOU WIN!");
 
-            // --- THIS IS THE NEW LOGIC ---
-            // 1. Hide the entire shop panel
-            if (shopPanel != null)
-            {
-                shopPanel.SetActive(false);
-            }
+            // --- NEW: Save that the milk has been bought ---
+            PlayerPrefs.SetInt("MilkBought", 1);
+            PlayerPrefs.Save();
+            // ---------------------------------------------
 
-            // 2. Show the credits panel
+            // Update the button text immediately
+            buyMilkButton.interactable = false;
+            buyMilkPriceText.text = "YAY!";
+
+            // Hide the shop and start the credits
+            if (shopPanel != null) shopPanel.SetActive(false);
             if (creditsPanel != null)
             {
                 creditsPanel.SetActive(true);
-
-                // 3. Find the scroller script and start the credits!
                 CreditsScroller scroller = creditsPanel.GetComponent<CreditsScroller>();
-                if (scroller != null)
-                {
-                    scroller.StartCredits();
-                }
+                if (scroller != null) scroller.StartCredits();
             }
-            // -----------------------------
         }
         else
         {

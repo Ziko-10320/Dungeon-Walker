@@ -133,12 +133,12 @@ public class WaterGunSystem : MonoBehaviour, IPunObservable, IPoolable
         if (isReloading)
         {
             // If we are reloading, show the special text.
-            ammoText.text = "-- / --";
+            ammoText.text = "--/--";
         }
         else
         {
             // Otherwise, show the normal "current/max" ammo count.
-            ammoText.text = $"{currentAmmo} / {maxAmmo}";
+            ammoText.text = $"{currentAmmo}/{maxAmmo}";
         }
         // --- END OF NEW LOGIC ---
 

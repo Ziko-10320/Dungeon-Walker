@@ -1,43 +1,91 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.InputSystem; // Needed for the new input system
 
 public class CreditsScroller : MonoBehaviour
 {
-    public RectTransform creditsTextRect; // The text object to scroll
-    public float scrollSpeed = 50f;       // How fast it scrolls (pixels per second)
-    public float endYPosition = 2500f;    // When to stop scrolling
+    public RectTransform creditsTextRect;
+    public float scrollSpeed = 50f;
+    public float fastScrollMultiplier = 3f; // How much faster it scrolls when holding
+    public float endYPosition = 2500f;
+    public float returnToMenuDelay = 5f; // Time to wait before returning to menu
 
     public void StartCredits()
     {
-        StartCoroutine(ScrollCreditsRoutine());
+        // We now start the master routine that handles everything
+        StartCoroutine(FullCreditsSequence());
     }
 
-    private IEnumerator ScrollCreditsRoutine()
+    private IEnumerator FullCreditsSequence()
     {
+        CanvasGroup cg = GetComponent<CanvasGroup>();
+        if (cg != null)
+        {
+            cg.alpha = 0f; // Start fully transparent
+            float timer = 0f;
+            while (timer < 1f) // Fade in over 1 second
+            {
+                timer += Time.deltaTime;
+                cg.alpha = timer; // Fade from 0 to 1
+                yield return null;
+            }
+            cg.alpha = 1f; // Ensure it's fully visible
+        }
         // Start with the text at the bottom
         Vector2 startPos = new Vector2(creditsTextRect.anchoredPosition.x, -creditsTextRect.rect.height);
         creditsTextRect.anchoredPosition = startPos;
 
-        // The target position is high above the screen
         Vector2 endPos = new Vector2(creditsTextRect.anchoredPosition.x, endYPosition);
 
-        // Keep scrolling until the text reaches the end position
         while (creditsTextRect.anchoredPosition.y < endPos.y)
         {
-            creditsTextRect.anchoredPosition += Vector2.up * scrollSpeed * Time.deltaTime;
-            yield return null; // Wait for the next frame
+            // --- NEW: Check for input to speed up ---
+            float currentSpeed = scrollSpeed;
+            if (Mouse.current.leftButton.isPressed || (Touchscreen.current != null && Touchscreen.current.primaryTouch.isInProgress))
+            {
+                currentSpeed *= fastScrollMultiplier;
+            }
+            // ----------------------------------------
+
+            creditsTextRect.anchoredPosition += Vector2.up * currentSpeed * Time.deltaTime;
+            yield return null;
         }
 
         Debug.Log("Credits finished.");
-        // Here you could load the main menu after a delay
-        // StartCoroutine(ReturnToMenu(5f));
+
+        // --- NEW: Hide the panel and return to menu ---
+        StartCoroutine(EndCreditsSequence());
     }
 
-    // Optional: A function to return to the main menu after credits
+    private IEnumerator EndCreditsSequence()
+    {
+        // Wait a moment before starting the fade out
+        yield return new WaitForSeconds(1f);
+
+        // Optional: Fade out the credits panel
+        CanvasGroup cg = GetComponent<CanvasGroup>();
+        if (cg != null)
+        {
+            float timer = 0f;
+            while (timer < 1f)
+            {
+                timer += Time.deltaTime;
+                cg.alpha = 1f - timer;
+                yield return null;
+            }
+        }
+
+        // Deactivate the panel
+        gameObject.SetActive(false);
+
+        // Now, start the countdown to return to the main menu
+        StartCoroutine(ReturnToMenu(returnToMenuDelay));
+    }
+
     private IEnumerator ReturnToMenu(float delay)
     {
         yield return new WaitForSeconds(delay);
-        // Replace "MainMenuScene" with the actual name of your main menu scene
-        // UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene");
+        // Load the scene at build index 0 (your main menu)
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 }

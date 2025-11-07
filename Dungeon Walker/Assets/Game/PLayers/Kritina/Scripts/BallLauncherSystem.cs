@@ -303,12 +303,12 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
         if (onCooldown)
         {
             // If on cooldown, show the "reloading" text
-            ammoText.text = "-- / --";
+            ammoText.text = "--/--";
         }
         else
         {
             // Otherwise, show "1/1"
-            ammoText.text = "1 / 1";
+            ammoText.text = "1/1";
         }
     }
 

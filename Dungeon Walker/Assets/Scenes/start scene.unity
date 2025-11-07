@@ -12761,8 +12761,9 @@ MonoBehaviour:
   milkTabButton: {fileID: 252025831}
   milkContent: {fileID: 2001375798}
   buyMilkButton: {fileID: 740939437}
-  milkPrice: 1000
+  milkPrice: 5
   creditsPanel: {fileID: 1958863545}
+  buyMilkPriceText: {fileID: 2128348110}
   shopItems:
   - powerUpData: {fileID: 11400000, guid: 573422d6c849a9045bda87c65a5036b1, type: 2}
     purchaseButton: {fileID: 513669400}
@@ -40875,6 +40876,7 @@ GameObject:
   - component: {fileID: 1958863549}
   - component: {fileID: 1958863548}
   - component: {fileID: 1958863547}
+  - component: {fileID: 1958863550}
   m_Layer: 5
   m_Name: Credits Panel
   m_TagString: Untagged
@@ -40916,7 +40918,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   creditsTextRect: {fileID: 345951753}
   scrollSpeed: 80
-  endYPosition: 3000
+  fastScrollMultiplier: 4
+  endYPosition: 3500
+  returnToMenuDelay: 5
 --- !u!114 &1958863548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40955,6 +40959,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1958863545}
   m_CullTransparentMesh: 1
+--- !u!225 &1958863550
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958863545}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1962287626
 GameObject:
   m_ObjectHideFlags: 0
