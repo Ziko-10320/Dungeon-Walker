@@ -26,7 +26,10 @@ public class StatCounterAnimation : MonoBehaviour
     [SerializeField] private float countDuration = 0.75f;
     [SerializeField] private float delayBetweenStats = 0.2f;
     [Header("Sound Effects (Optional)")]
-    [SerializeField] private AudioSource tickSound;
+    [SerializeField] private AudioSource soundPlayer;      // The one AudioSource that will play all sounds
+    [SerializeField] private AudioClip panelOpenSound;   // Sound for when the panel appears
+    [SerializeField] private AudioClip scoreKillsTickClip; // Ticking sound for score and kills
+    [SerializeField] private AudioClip coinTickClip;       // Special ticking sound for coins
     [SerializeField] private AudioClip finishSound;
 
 
@@ -36,6 +39,12 @@ public class StatCounterAnimation : MonoBehaviour
     // StartAnimation and Update methods are unchanged.
     public void StartAnimation(int finalScore, int finalKills, int finalCoins)
     {
+        // Play the panel open sound if it exists
+        if (panelOpenSound != null && soundPlayer != null)
+        {
+            soundPlayer.PlayOneShot(panelOpenSound);
+        }
+
         if (animationCoroutine != null) StopCoroutine(animationCoroutine);
         animationCoroutine = StartCoroutine(AnimateAllStats(finalScore, finalKills, finalCoins));
     }
@@ -72,7 +81,7 @@ public class StatCounterAnimation : MonoBehaviour
         }
 
         // Animate the score value
-        yield return StartCoroutine(CountUp(scoreValueText, finalScore));
+        yield return StartCoroutine(CountUp(scoreValueText, finalScore, scoreKillsTickClip)); // <-- MODIFIED
         PlayFinishSound();
         yield return new WaitForSeconds(delayBetweenStats);
 
@@ -97,7 +106,7 @@ public class StatCounterAnimation : MonoBehaviour
         }
 
         // Animate the kills value
-        yield return StartCoroutine(CountUp(killsValueText, finalKills));
+        yield return StartCoroutine(CountUp(killsValueText, finalKills, scoreKillsTickClip)); // <-- MODIFIED
         PlayFinishSound();
         yield return new WaitForSeconds(delayBetweenStats);
 
@@ -110,7 +119,7 @@ public class StatCounterAnimation : MonoBehaviour
         coinsLabelText.text = "Coins Gathered:"; // <--- UPDATED TEXT
 
         // Animate the coins value
-        yield return StartCoroutine(CountUp(coinsValueText, finalCoins));
+        yield return StartCoroutine(CountUp(coinsValueText, finalCoins, coinTickClip)); // <-- MODIFIED
         PlayFinishSound();
 
         isAnimating = false;
@@ -118,10 +127,15 @@ public class StatCounterAnimation : MonoBehaviour
     }
 
     // The CountUp method is unchanged and correct.
-    private IEnumerator CountUp(TextMeshProUGUI valueText, int targetValue)
+    private IEnumerator CountUp(TextMeshProUGUI valueText, int targetValue, AudioClip tickClip)
     {
-        valueText.text = "0"; // Start from 0
-        if (tickSound != null) tickSound.Play();
+        valueText.text = "0";
+        if (tickClip != null && soundPlayer != null)
+        {
+            soundPlayer.clip = tickClip; // Set the correct ticking sound
+            soundPlayer.Play();          // Play it on loop
+        }
+
         float timer = 0f;
         while (timer < countDuration)
         {
@@ -130,26 +144,20 @@ public class StatCounterAnimation : MonoBehaviour
             valueText.text = currentValue.ToString();
             yield return null;
         }
+
         valueText.text = targetValue.ToString();
-        if (tickSound != null) tickSound.Stop();
+        if (soundPlayer != null) soundPlayer.Stop(); // Stop the ticking
     }
 
     // The SkipAnimation method is simplified to just call the final state logic.
     public void SkipAnimation()
     {
         if (!isAnimating) return;
-        Debug.Log("Skipping stat animation!");
-
-        // 1. Stop all animations and sounds
         StopAllCoroutines();
-        if (tickSound != null) tickSound.Stop();
+        if (soundPlayer != null) soundPlayer.Stop(); // Stop any ticking sound
 
-        // 2. Instantly display the final results
         ShowFinalResults();
-
-        // 3. Mark the animation as complete
         isAnimating = false;
-        animationCoroutine = null;
     }
 
     // A helper method to turn everything on or off.
@@ -223,9 +231,9 @@ public class StatCounterAnimation : MonoBehaviour
     // The PlayFinishSound method is unchanged.
     private void PlayFinishSound()
     {
-        if (finishSound != null && tickSound != null)
+        if (finishSound != null && soundPlayer != null)
         {
-            tickSound.PlayOneShot(finishSound);
+            soundPlayer.PlayOneShot(finishSound);
         }
     }
 }
