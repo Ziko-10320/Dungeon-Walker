@@ -21214,12 +21214,12 @@ MonoBehaviour:
   splatterSpawnPoint: {fileID: 1512217368586473421}
   isMutated: 1
   dropTable: {fileID: 11400000, guid: f15d97d19a3a35643bb0b312cd4c5d8c, type: 2}
-  dropChance: 0.03
+  dropChance: 0.2
   powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
   powerUpSpawnPoint: {fileID: 1512217368586473421}
   invincibilityActivationRange: 20
   playerTransform: {fileID: 0}
-  healthIncreasePerWave: 20
+  healthIncreasePerWave: 10
   damageIncreasePerWave: 4
 --- !u!114 &546657359667457528
 MonoBehaviour:

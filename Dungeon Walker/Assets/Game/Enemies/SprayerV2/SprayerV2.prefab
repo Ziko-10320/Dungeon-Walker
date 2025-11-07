@@ -1414,7 +1414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 604c28a0d8dcce442b5d45c837ffb37b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseMaxHealth: 100
+  baseMaxHealth: 180
   maxHealth: 180
   deathEffect: {fileID: 0}
   knockbackDistance: 0
@@ -1431,7 +1431,7 @@ MonoBehaviour:
   - DeathParticulesMushroomSprayerV2
   DeathMushroomSpawn: {fileID: 5779158238054543535}
   DeathMushroomSpawn2: {fileID: 3360400410138837293}
-  flashMaterial: {fileID: 2100000, guid: 50ac647e8f9605d4d881ccbab0eeaf96, type: 2}
+  flashMaterial: {fileID: 2100000, guid: 5326f8124fd459242b8f9f713e1286ec, type: 2}
   flashAmountProperty: _FlashAmount
   flashDuration: 0.2
   spriteRenderers:
@@ -1454,9 +1454,9 @@ MonoBehaviour:
   dropChance: 0.03
   powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
   powerUpSpawnPoint: {fileID: 6887314040794923926}
-  healthIncreasePerWave: 20
-  damageIncreasePerWave: 15
-  chaseSpeedIncreasePerWave: 6
+  healthIncreasePerWave: 10
+  damageIncreasePerWave: 6
+  chaseSpeedIncreasePerWave: 2
 --- !u!114 &1564694357942923393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1501,7 +1501,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 619882bba3066864582df5032d77324f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flashMaterial: {fileID: 2100000, guid: 50ac647e8f9605d4d881ccbab0eeaf96, type: 2}
+  flashMaterial: {fileID: 2100000, guid: 5326f8124fd459242b8f9f713e1286ec, type: 2}
   clawSpawnPoint: {fileID: 4949681105294044618}
   renderersToFlash:
   - {fileID: 7059399505968963755}
@@ -1532,7 +1532,7 @@ MonoBehaviour:
   chainStartSound: {fileID: 8300000, guid: 33f09a5789724a043be4b2e686c17013, type: 3}
   chainStartVolume: 1
   linePrefab: {fileID: 4943147264204026684, guid: 0ef561181d9b49349877ecdd30bdca09, type: 3}
-  outlineMaterial: {fileID: 2100000, guid: bdb5ccad587a88241a08541810999e61, type: 2}
+  outlineMaterial: {fileID: 2100000, guid: 2d016c38e68e50d4bb5f64a0ee5d691e, type: 2}
   linePoint: {fileID: 6582116681831121868}
   spriteRenderers:
   - {fileID: 7059399505968963755}

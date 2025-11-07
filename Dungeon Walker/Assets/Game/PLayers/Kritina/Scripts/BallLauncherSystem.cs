@@ -261,7 +261,10 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
     [SerializeField] private Transform ammoUiFollowPoint;
     [Tooltip("The main UI Canvas for positioning calculations.")]
     [SerializeField] private Canvas uiCanvas;
-
+    [Header("GUARDIAN SETTINGS (Fix for disappearing arm)")]
+    [Tooltip("How many frames to wait before checking if the arm is active. Higher = more optimized.")]
+    [SerializeField] private int armCheckInterval = 10;
+    private int armCheckFrameCounter = 0;
     void Start()
     {
         view = GetComponentInParent<PhotonView>();
@@ -410,6 +413,12 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
     }
     void Update()
     {
+        armCheckFrameCounter++;
+        if (armCheckFrameCounter >= armCheckInterval)
+        {
+            armCheckFrameCounter = 0;
+            EnsureArmIsActive(); // This is our new guardian method
+        }
         if (isOnlineMode && !view.IsMine)
         {
             // If we are online and this is not our character, we do nothing in Update.
@@ -464,7 +473,16 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
             }
         }
     }
-
+    private void EnsureArmIsActive()
+    {
+        // If the Arm reference exists but the GameObject itself is not active in the scene...
+        if (Arm != null && !Arm.activeInHierarchy)
+        {
+            // ...then force it to be active.
+            Debug.LogWarning("WaterGun's Arm was found disabled! Forcing it back on. This is the Guardian fix.");
+            Arm.SetActive(true);
+        }
+    }
     private void CalculateDynamicForce()
     {
         if (!IsAimingValid())

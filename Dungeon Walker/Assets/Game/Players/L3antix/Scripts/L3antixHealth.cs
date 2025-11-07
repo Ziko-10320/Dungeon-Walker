@@ -207,7 +207,8 @@ public class L3antixHealth : MonoBehaviour
     private void Die()
     {
         Debug.Log("Player has died!");
-
+        if (vignette != null) vignette.active = false;
+        if (chromaticAberration != null) chromaticAberration.active = false;
         // --- Try Revive Upgraded first ---
         ReviveUpgradedSystemL3antix reviveUp = GetComponent<ReviveUpgradedSystemL3antix>();
         if (reviveUp != null && reviveUp.hasReviveUpgradedPowerUp && !reviveUp.HasUsedRevive)

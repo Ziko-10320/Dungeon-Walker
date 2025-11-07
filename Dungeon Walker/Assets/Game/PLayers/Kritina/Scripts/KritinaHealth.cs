@@ -209,6 +209,8 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         Debug.Log("Player has died!");
+        if (vignette != null) vignette.active = false;
+        if (chromaticAberration != null) chromaticAberration.active = false;
 
         // --- Try Revive Upgraded first ---
         ReviveUpgradedSystem reviveUp = GetComponent<ReviveUpgradedSystem>();

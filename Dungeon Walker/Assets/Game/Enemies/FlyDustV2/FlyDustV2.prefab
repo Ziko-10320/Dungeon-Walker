@@ -6740,7 +6740,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseMaxHealth: 100
-  maxHealth: 120
+  maxHealth: 100
   deathEffect: {fileID: 0}
   knockbackDistance: 0
   knockbackDuration: 0
@@ -6779,7 +6779,7 @@ MonoBehaviour:
   splatterSpawnPoint: {fileID: 3206954105282813643}
   isMutated: 1
   dropTable: {fileID: 11400000, guid: f15d97d19a3a35643bb0b312cd4c5d8c, type: 2}
-  dropChance: 0.03
+  dropChance: 0.2
   powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
   powerUpSpawnPoint: {fileID: 3206954105282813643}
   healthIncreasePerWave: 8
@@ -6797,7 +6797,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 619882bba3066864582df5032d77324f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flashMaterial: {fileID: 2100000, guid: e55bc08426ddc374ab56920d36c8efbd, type: 2}
+  flashMaterial: {fileID: 2100000, guid: bc62b419e29610c4b85fbd250e98fadd, type: 2}
   clawSpawnPoint: {fileID: 3463120393959659486}
   renderersToFlash:
   - {fileID: 5275999989393107}

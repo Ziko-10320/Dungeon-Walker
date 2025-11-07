@@ -7152,7 +7152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff768d6f3799df3469bcb76d3724f5f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseMaxHealth: 100
+  baseMaxHealth: 800
   maxHealth: 800
   deathEffect: {fileID: 0}
   bloodSpawnPoint: {fileID: 9132003264305942687}
@@ -7191,9 +7191,9 @@ MonoBehaviour:
   dropChance: 1
   powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
   powerUpSpawnPoint: {fileID: 9132003264305942687}
-  healthIncreasePerWave: 120
-  damageIncreasePerWave: 25
-  chaseSpeedIncreasePerWave: 6
+  healthIncreasePerWave: 100
+  damageIncreasePerWave: 6
+  chaseSpeedIncreasePerWave: 1.3
 --- !u!114 &4658677222075927841
 MonoBehaviour:
   m_ObjectHideFlags: 0

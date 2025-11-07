@@ -207,6 +207,10 @@ public class BowSystems : MonoBehaviour, IPunObservable, IPoolable
     [Tooltip("Activer les contrôles pour Mobile (joystick).")]
     public bool enableMobileInput = true;
     [SerializeField] private int arrowPoolSize = 20;
+    [Header("GUARDIAN SETTINGS (Fix for disappearing arm)")]
+    [Tooltip("How many frames to wait before checking if the arm is active. Higher = more optimized.")]
+    [SerializeField] private int armCheckInterval = 10;
+    private int armCheckFrameCounter = 0;
     void OnEnable()
     {
         // Start listening for the broadcast from the joystick
@@ -309,6 +313,12 @@ public class BowSystems : MonoBehaviour, IPunObservable, IPoolable
     }
     void Update()
     {
+        armCheckFrameCounter++;
+        if (armCheckFrameCounter >= armCheckInterval)
+        {
+            armCheckFrameCounter = 0;
+            EnsureArmIsActive(); // This is our new guardian method
+        }
         if (isOnlineMode && !view.IsMine)
         {
             return;
@@ -331,7 +341,16 @@ public class BowSystems : MonoBehaviour, IPunObservable, IPoolable
         }
         UpdateChargeSliderPosition();
     }
-
+    private void EnsureArmIsActive()
+    {
+        // If the Arm reference exists but the GameObject itself is not active in the scene...
+        if (Arm != null && !Arm.activeInHierarchy)
+        {
+            // ...then force it to be active.
+            Debug.LogWarning("WaterGun's Arm was found disabled! Forcing it back on. This is the Guardian fix.");
+            Arm.SetActive(true);
+        }
+    }
     public void OnJoystickPointerDown()
     {
         isJoystickHeldDown = true;
@@ -1262,6 +1281,7 @@ public class ArrowLifecycleController : MonoBehaviour
             }
         }
     }
+
     void OnTriggerEnter2D(Collider2D other)
     {
         if (bowSystem == null || hasBeenDestroyed) return;

@@ -8,7 +8,7 @@ public class InGamePowerUpManager : MonoBehaviour
     private const int MAX_SLOTS = 2;
     public PowerUpData[] inGameSlots = new PowerUpData[MAX_SLOTS];
     private int nextSlotToReplace = 0;
-
+    public static InGamePowerUpManager Instance { get; private set; }
     // --- THIS IS THE KEY CHANGE ---
     // Instead of a specific manager, we now look for the BASE manager.
     private BasePowerUpManager permanentPowerUpManager;
@@ -21,6 +21,16 @@ public class InGamePowerUpManager : MonoBehaviour
 
     void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            // Optional: If another one exists, destroy this one to enforce the singleton pattern.
+            Destroy(gameObject);
+            return;
+        }
         // --- THIS IS THE KEY CHANGE ---
         // This will now find EITHER PowerUpManager OR PowerUpManagerL3antix,
         // because both are a "BasePowerUpManager".
@@ -35,9 +45,96 @@ public class InGamePowerUpManager : MonoBehaviour
 
     void LateUpdate()
     {
+        // --- THIS IS THE NEW, SELF-CONTAINED LOGIC ---
+
+        // Loop through our two temporary slots every frame.
+        for (int i = 0; i < MAX_SLOTS; i++)
+        {
+            // Get the power-up in the current slot.
+            PowerUpData powerUp = inGameSlots[i];
+
+            // If there's no power-up in this slot, just continue to the next one.
+            if (powerUp == null)
+            {
+                continue;
+            }
+
+            // Now, we check if this power-up is "finished".
+            bool isFinished = false;
+            switch (powerUp.type)
+            {
+                case PowerUpType.Invisibility:
+                    // Check if the player has an invisibility component and if it's NOT currently active.
+                    var invis = GetComponent<PlayerInvisibility>();
+                    var invis3antix = GetComponent<PlayerInvisibility3antix>();
+                    if ((invis != null && !invis.IsInvisible()) || (invis3antix != null && !invis3antix.IsInvisible()))
+                    {
+                        isFinished = true;
+                    }
+                    break;
+
+                case PowerUpType.Shield:
+                case PowerUpType.ShieldUpgraded:
+                    // Check if the player has a health component and if its shield is gone.
+                    var health = GetComponent<PlayerHealth>();
+                    var health3antix = GetComponent<L3antixHealth>();
+                    if ((health != null && !health.HasShield) || (health3antix != null && !health3antix.HasShield))
+                    {
+                        isFinished = true;
+                    }
+                    break;
+
+                case PowerUpType.Revive:
+                    // Check if the player has a revive component and if it has been used.
+                    var revive = GetComponent<ReviveSystem>();
+                    if (revive != null && revive.hasUsedRevive)
+                    {
+                        isFinished = true;
+                    }
+                    break;
+
+                case PowerUpType.ReviveUpgraded:
+                    // Check for the upgraded revive component.
+                    var reviveUp = GetComponent<ReviveUpgradedSystem>();
+                    if (reviveUp != null && reviveUp.HasUsedRevive)
+                    {
+                        isFinished = true;
+                    }
+                    break;
+            }
+
+            // If we determined that the power-up in this slot is finished...
+            if (isFinished)
+            {
+                Debug.Log($"Detected that temporary power-up '{powerUp.powerUpName}' has been used. Removing from slot {i}.");
+                // ...remove it from the slot.
+                inGameSlots[i] = null;
+            }
+        }
+
+        // Finally, update the UI based on the current state of the slots.
         UpdateUI();
     }
+    public void ReportPowerUpFinished(PowerUpType finishedType)
+    {
+        Debug.Log($"Report received: Power-up '{finishedType}' has finished.");
+        // Loop through our temporary slots.
+        for (int i = 0; i < MAX_SLOTS; i++)
+        {
+            // If we find the power-up that just finished...
+            if (inGameSlots[i] != null && inGameSlots[i].type == finishedType)
+            {
+                Debug.Log($"Found and removed '{finishedType}' from temporary slot {i}.");
+                // We don't need to call RemovePersistentEffect here, because the effect
+                // has already ended (e.g., invisibility wore off, shield broke).
+                // We just need to clear it from the UI.
+                inGameSlots[i] = null;
 
+                // We found it, so we can stop looking.
+                return;
+            }
+        }
+    }
     public void CollectPowerUp(PowerUpData newData)
     {
         // The "permanentPowerUpManager" variable will be null if it wasn't found in Awake.

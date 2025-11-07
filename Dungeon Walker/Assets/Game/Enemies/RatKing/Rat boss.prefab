@@ -5869,7 +5869,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff768d6f3799df3469bcb76d3724f5f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseMaxHealth: 100
+  baseMaxHealth: 500
   maxHealth: 500
   deathEffect: {fileID: 0}
   bloodSpawnPoint: {fileID: 4506034669272728072}
@@ -5903,14 +5903,14 @@ MonoBehaviour:
   isStunned: 0
   deathSplatterEffectPrefab: {fileID: 2426752246179592511, guid: 9398fe330c75dc341baf52ce61f8d603, type: 3}
   splatterSpawnPoint: {fileID: 4506034669272728072}
-  isMutated: 0
-  dropTable: {fileID: 0}
-  dropChance: 0.05
-  powerUpPickupPrefab: {fileID: 0}
-  powerUpSpawnPoint: {fileID: 0}
+  isMutated: 1
+  dropTable: {fileID: 11400000, guid: f15d97d19a3a35643bb0b312cd4c5d8c, type: 2}
+  dropChance: 1
+  powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
+  powerUpSpawnPoint: {fileID: 4506034669272728072}
   healthIncreasePerWave: 100
-  damageIncreasePerWave: 20
-  chaseSpeedIncreasePerWave: 4
+  damageIncreasePerWave: 4
+  chaseSpeedIncreasePerWave: 0.5
 --- !u!114 &4484414899429158999
 MonoBehaviour:
   m_ObjectHideFlags: 0

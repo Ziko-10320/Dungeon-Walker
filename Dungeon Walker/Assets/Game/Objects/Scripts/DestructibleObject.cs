@@ -1,5 +1,24 @@
 using UnityEngine;
+using System.Collections.Generic;
+public static class DestructibleManager
+{
+    // A list that will hold a reference to every destructible object in the scene.
+    public static List<DestructibleObject> allDestructibles = new List<DestructibleObject>();
 
+    // A public method that anyone can call to reset all the objects.
+    public static void ResetAll()
+    {
+        Debug.Log($"Resetting {allDestructibles.Count} destructible objects.");
+        foreach (DestructibleObject obj in allDestructibles)
+        {
+            if (obj != null)
+            {
+                // Simply reactivate the GameObject. The OnEnable method will handle resetting its health.
+                obj.gameObject.SetActive(true);
+            }
+        }
+    }
+}
 public class DestructibleObject : MonoBehaviour
 {
     [Header("Health Settings")]
@@ -25,8 +44,12 @@ public class DestructibleObject : MonoBehaviour
     {
         // Reset the health every time the object is spawned (important for object pooling).
         currentHealth = maxHealth;
+        if (!DestructibleManager.allDestructibles.Contains(this))
+        {
+            DestructibleManager.allDestructibles.Add(this);
+        }
     }
-
+   
     // This is the main public method that other scripts (like player attacks) will call.
     public void TakeDamage(int damageAmount)
     {

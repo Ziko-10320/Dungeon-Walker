@@ -88,7 +88,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -39138,7 +39138,7 @@ Transform:
   m_GameObject: {fileID: 503508981720555500}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.115, y: 1.991, z: 0}
+  m_LocalPosition: {x: 1.115, y: 2.25, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -49016,7 +49016,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -54055,7 +54055,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -54097,7 +54097,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2244461483262329346}
   - component: {fileID: 8545762253052663629}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Bat
   m_TagString: PlayerWeaponBat
   m_Icon: {fileID: 0}
@@ -54140,7 +54140,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -93816,7 +93816,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1000888707120661668
 Transform:
   m_ObjectHideFlags: 0
@@ -93826,7 +93826,7 @@ Transform:
   m_GameObject: {fileID: 2677368946817612599}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.48, y: 1.23, z: 0.50464}
+  m_LocalPosition: {x: -0.23, y: 1.09, z: 0.50464}
   m_LocalScale: {x: 1.4431099, y: 1.4431099, z: 1.4431099}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -123498,7 +123498,7 @@ Transform:
   m_GameObject: {fileID: 3472234239716230849}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.72, y: 1.909, z: 0}
+  m_LocalPosition: {x: 0.72, y: 2.13, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -133479,7 +133479,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -173044,7 +173044,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -188545,7 +188545,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2752008154407669762}
   - component: {fileID: 1708148029879124167}
-  m_Layer: 8
+  m_Layer: 11
   m_Name: TrajectoryLine (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -193897,7 +193897,7 @@ MonoBehaviour:
   aimVerticalOffsetRightCursor: -1.77
   aimVerticalOffsetLeftCursor: 1.6
   throwBatVolume: 1
-  batPickupRange: 2.03
+  batPickupRange: 3.13
   attackPoint: {fileID: 8267787891087180992}
   upwardAttackPoint: {fileID: 4059178564605435968}
   attackRange: 1.4
@@ -194046,6 +194046,7 @@ MonoBehaviour:
   enablePcInput: 0
   enableMobileInput: 1
   arrowPoolSize: 3
+  armCheckInterval: 50
 --- !u!114 &2502294520060319531
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194118,6 +194119,7 @@ MonoBehaviour:
   bulletCollisionSoundVolume: 1
   bulletPoolSize: 50
   effectPoolSize: 30
+  armCheckInterval: 50
 --- !u!114 &2837465749836920815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194228,6 +194230,7 @@ MonoBehaviour:
   ammoText: {fileID: 0}
   ammoUiFollowPoint: {fileID: 15537030341338960}
   uiCanvas: {fileID: 0}
+  armCheckInterval: 50
 --- !u!114 &838453109639267503
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194281,6 +194284,7 @@ MonoBehaviour:
   ammoText: {fileID: 0}
   ammoUiFollowPoint: {fileID: 15537030341338960}
   uiCanvas: {fileID: 0}
+  armCheckInterval: 50
 --- !u!114 &3674480518580276143
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194794,7 +194798,7 @@ MonoBehaviour:
   beeSwarms:
   - {fileID: 9078075540027060496}
   beeSwarmSound: {fileID: 8300000, guid: 0b6a70ede774f4b419f9824ce8bdcd30, type: 3}
-  beeSwarmVolume: 0.47
+  beeSwarmVolume: 0.495
   damagePoint: {fileID: 5655835730392218243}
   damageRadius: 5.24
   damage: 25
@@ -195011,7 +195015,7 @@ MonoBehaviour:
     armSpriteRenderer: {fileID: 6947184254319397887}
     weaponUIIcon: {fileID: 21300000, guid: 75078900b0e489d45932b21ee3f84bf5, type: 3}
     dropChance: 0.112
-  killsToSwitch: 5
+  killsToSwitch: 15
   switchDelay: 0.2
   killsLeftText: {fileID: 0}
   weaponIconUI: {fileID: 0}
@@ -200249,7 +200253,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -234828,7 +234832,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

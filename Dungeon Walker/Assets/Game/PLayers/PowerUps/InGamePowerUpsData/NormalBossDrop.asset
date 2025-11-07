@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca12bee504839e541b731d5e248b02d3, type: 3}
+  m_Name: NormalBossDrop
+  m_EditorClassIdentifier: 
+  possibleDrops:
+  - powerUpData: {fileID: 11400000, guid: 573422d6c849a9045bda87c65a5036b1, type: 2}
+    weight: 17
+  - powerUpData: {fileID: 11400000, guid: b39d40ba1e6b7884fa8b27b4a587a74d, type: 2}
+    weight: 17
+  - powerUpData: {fileID: 11400000, guid: 4dcc431544f286a489eb5d7c9c3c15f4, type: 2}
+    weight: 16
+  - powerUpData: {fileID: 11400000, guid: 0208bfb82d0f89f4fa3fdeaf4fcaf4c3, type: 2}
+    weight: 17
+  - powerUpData: {fileID: 11400000, guid: 6f4a9acd0b072894fa5f236065d96f75, type: 2}
+    weight: 17
+  - powerUpData: {fileID: 11400000, guid: 247d8cb83cbfc9a43816805ad07f15ee, type: 2}
+    weight: 16

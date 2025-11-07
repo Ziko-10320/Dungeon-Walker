@@ -117,6 +117,7 @@ public class ScoreDisplay : MonoBehaviour
     {
         scoreText.text = scorePrefix + newScore;
         CurrentWaveNumber = newScore;
+        DestructibleManager.ResetAll();
     }
 
     void UpdateTimerDisplay(float timeRemaining)
