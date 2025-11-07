@@ -5604,6 +5604,7 @@ MonoBehaviour:
   attackIntervalMax: 2.5
   playerTargetOffset: {x: -0.82, y: 0}
   projectileSpeed: 15
+  baseProjectileDamage: 10
   projectileDamage: 10
   projectileLifetime: 3
   groundLayer:
@@ -5617,6 +5618,7 @@ MonoBehaviour:
   attackRange: 15
   rangeOriginPoint: {fileID: 7509101114178256049}
   explosionRadius: 1.3
+  baseExplosionDamage: 15
   explosionDamage: 10
   doubleAttackChance: 0.374
   delayBetweenProjectiles: 0.69
@@ -5625,6 +5627,7 @@ MonoBehaviour:
   attacksBeforeCharge: 2
   chargedProjectilePrefab: {fileID: 0}
   chargedProjectileSpeed: 8
+  baseChargedProjectileDamage: 30
   chargedProjectileDamage: 30
   chargedProjectileLifetime: 4
   chargedExplosionRadius: 3
@@ -5639,7 +5642,6 @@ MonoBehaviour:
   destructionEffectPoolSize: 3
   chargedProjectilePoolSize: 2
   chargedEffectPoolSize: 2
-  attackCheckInterval: 1
 --- !u!114 &3593707507768658826
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5686,7 +5688,6 @@ MonoBehaviour:
   detectionRadius: 15.9
   lostSightRadius: 22.7
   DetectionPoint: {fileID: 2360911222258903538}
-  thinkInterval: 1
 --- !u!114 &4354244927766121664
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5699,6 +5700,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c08db20c37a62b14b81698dd2dcd33c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  baseMaxHealth: 100
   maxHealth: 65
   deathEffect: {fileID: 0}
   knockbackDistance: 0
@@ -5741,6 +5743,9 @@ MonoBehaviour:
   dropChance: 0.05
   powerUpPickupPrefab: {fileID: 0}
   powerUpSpawnPoint: {fileID: 0}
+  healthIncreasePerWave: 7
+  damageIncreasePerWave: 3
+  moveSpeedIncreasePerWave: 0.5
 --- !u!114 &3258580432998555543
 MonoBehaviour:
   m_ObjectHideFlags: 0
