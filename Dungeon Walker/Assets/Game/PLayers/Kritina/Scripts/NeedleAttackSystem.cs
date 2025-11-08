@@ -49,7 +49,7 @@ public class BatAttackSystem : MonoBehaviour
     private AudioSource throwLoopAudioSource;
     [Header("Bat Pickup Settings")]
     [SerializeField] private float batPickupRange = 1.5f; // Range within which player can pick up the Bat2
-
+    [SerializeField] private Transform batPickupPoint; // <--- ADD THIS LINE
     [Header("Damage Area Settings")]
     [SerializeField] private Transform attackPoint; // Origin point of the normal attack (usually in front of the player)
     [SerializeField] private Transform upwardAttackPoint; // Origin point of the upward attack (usually above the player)
@@ -285,7 +285,10 @@ public class BatAttackSystem : MonoBehaviour
             // Check for spawned bat pickup
             if (spawnedBat2 != null)
             {
-                float distanceToBat2 = Vector2.Distance(transform.position, spawnedBat2.transform.position);
+                Vector3 pickupCenter = (batPickupPoint != null) ? batPickupPoint.position : transform.position;
+
+                // 2. Calculate the distance from our new center point to the bat on the ground.
+                float distanceToBat2 = Vector2.Distance(pickupCenter, spawnedBat2.transform.position);
                 if (distanceToBat2 <= batPickupRange)
                 {
                     PickUpBat2();
@@ -1626,12 +1629,15 @@ public class BatAttackSystem : MonoBehaviour
             Gizmos.DrawLine(transform.position, upwardAttackPoint.position);
         }
 
-        if (!hasBat)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, batPickupRange);
-        }
+        Gizmos.color = Color.yellow;
 
+        // Determine the center point for drawing the gizmo.
+        // If batPickupPoint is assigned, use it. Otherwise, fall back to the player's main transform.
+        Vector3 pickupCenter = (batPickupPoint != null) ? batPickupPoint.position : transform.position;
+
+        // Draw the wire sphere from our new center point.
+        // This will now draw ALWAYS, both in Play Mode and in the Editor.
+        Gizmos.DrawWireSphere(pickupCenter, batPickupRange);
         // Draw ghost target indicators
         Gizmos.color = Color.cyan;
         foreach (SpriteRenderer targetRenderer in ghostTargets)

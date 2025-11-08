@@ -10236,6 +10236,8 @@ MonoBehaviour:
     volcanoSpawnPoints: []
     volcanoActiveDuration: 1.5
     volcanoDormantDuration: 2
+    hasLasers: 0
+    laserTrapObjects: []
   - waveName: Score 1
     scoreThreshold: 1
     enemyPrefabs:
@@ -10252,6 +10254,8 @@ MonoBehaviour:
     volcanoSpawnPoints: []
     volcanoActiveDuration: 1.5
     volcanoDormantDuration: 2
+    hasLasers: 0
+    laserTrapObjects: []
   - waveName: Score 2
     scoreThreshold: 2
     enemyPrefabs:
@@ -10269,6 +10273,8 @@ MonoBehaviour:
     volcanoSpawnPoints: []
     volcanoActiveDuration: 1.5
     volcanoDormantDuration: 2
+    hasLasers: 0
+    laserTrapObjects: []
   - waveName: Score 3
     scoreThreshold: 3
     enemyPrefabs:
@@ -10286,12 +10292,17 @@ MonoBehaviour:
     volcanoSpawnPoints: []
     volcanoActiveDuration: 1.5
     volcanoDormantDuration: 2
+    hasLasers: 0
+    laserTrapObjects: []
   spawnPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  spawnRadius: 7.53
+  - point: {fileID: 0}
+    radius: 2
+  - point: {fileID: 0}
+    radius: 2
+  - point: {fileID: 0}
+    radius: 2
+  - point: {fileID: 0}
+    radius: 2
   spawnEffectPrefab: {fileID: 6931139375341048568, guid: 167cfba23a69cb04c9d4e5465254483f, type: 3}
   wavePacingMultiplier: 1.5
   volcanoActiveDuration: 1.5
@@ -75440,7 +75451,7 @@ Transform:
   m_GameObject: {fileID: 3314504003526612840}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.070000306, y: 0, z: 0}
+  m_LocalPosition: {x: 0.056, y: -0.274, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -134856,12 +134867,12 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  player: {fileID: 0}
+  player: {fileID: 9006167878275002792}
   loopCheckpoints: 1
   coinsPerCheckpoint: 10
   interactButton: {fileID: 0}
-  scorePerCheckpoint: 0
-  scorePerLoop: 1
+  scorePerCheckpoint: 1
+  scorePerLoop: 0
   arrowPointer: {fileID: 0}
   OnCheckpointReached:
     m_PersistentCalls:
@@ -219506,7 +219517,7 @@ MonoBehaviour:
   previewFollowsLauncher: 1
   destructionLayers:
     serializedVersion: 2
-    m_Bits: 1728
+    m_Bits: 704
   ballLifetime: 3
   enableCollisionDestruction: 1
   enableTimeDestruction: 1
@@ -219568,6 +219579,7 @@ MonoBehaviour:
   ammoText: {fileID: 0}
   ammoUiFollowPoint: {fileID: 4134651847245706291}
   uiCanvas: {fileID: 0}
+  armCheckInterval: 10
 --- !u!114 &5638463088309302553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219654,6 +219666,7 @@ MonoBehaviour:
   enablePcInput: 0
   enableMobileInput: 1
   arrowPoolSize: 20
+  armCheckInterval: 10
 --- !u!114 &8558709009588466802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219690,7 +219703,8 @@ MonoBehaviour:
   aimVerticalOffsetRightCursor: -1.77
   aimVerticalOffsetLeftCursor: 1.6
   throwBatVolume: 1
-  batPickupRange: 2.03
+  batPickupRange: 1.81
+  batPickupPoint: {fileID: 3510942078707517890}
   attackPoint: {fileID: 3989724729098276922}
   upwardAttackPoint: {fileID: 3611628031764258540}
   attackRange: 2.44
@@ -219806,6 +219820,7 @@ MonoBehaviour:
   ammoText: {fileID: 0}
   ammoUiFollowPoint: {fileID: 4134651847245706291}
   uiCanvas: {fileID: 0}
+  armCheckInterval: 10
 --- !u!114 &8208407095181370280
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219878,6 +219893,7 @@ MonoBehaviour:
   bulletCollisionSoundVolume: 1
   bulletPoolSize: 50
   effectPoolSize: 30
+  armCheckInterval: 10
 --- !u!114 &3125200794304404667
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -220003,16 +220019,13 @@ MonoBehaviour:
   ghostLifetime: 0.35
   ghostColor: {r: 0.10933607, g: 0.491883, b: 0.8584906, a: 0.5803922}
   ghostTargetRenderers:
-  - {fileID: 1513883630650947019}
-  - {fileID: 424992741881069786}
-  - {fileID: 8502858067901786408}
+  - {fileID: 7236779817434805656}
   - {fileID: 7083827798946069781}
   - {fileID: 2417544658215623664}
   - {fileID: 8631921337546508178}
   - {fileID: 8579230705114351702}
   - {fileID: 8043226532676479707}
   - {fileID: 4328031091243625692}
-  - {fileID: 7236779817434805656}
 --- !u!95 &2218340754347845100
 Animator:
   serializedVersion: 5
@@ -220219,7 +220232,7 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 640
-  damage: 500
+  damage: 1000
   damageDelay: 0
   shaderParam: _WaveDistanceFromCenter
   startValue: -0.1

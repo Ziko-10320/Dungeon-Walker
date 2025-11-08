@@ -376,24 +376,42 @@ public class WaveManager : MonoBehaviour
     {
         waveIsActive = true;
         Debug.Log($"Master Client preparing wave: {config.waveName}. Adding {config.enemyCount} enemies to the pending list.");
-        foreach (GameObject laser in activeLasers)
+        foreach (GameObject laserObject in activeLasers)
         {
-            if (laser != null) laser.SetActive(false);
+            if (laserObject != null)
+            {
+                // Get the script and tell it to stop its internal timer.
+                LaserTrap trap = laserObject.GetComponent<LaserTrap>();
+                if (trap != null)
+                {
+                    trap.StopTrap();
+                }
+                // Now, disable the object.
+                laserObject.SetActive(false);
+            }
         }
         activeLasers.Clear();
 
-        // Now, check if THIS wave has lasers.
+        // 2. Now, check if THIS wave has lasers.
         if (config.hasLasers && config.laserTrapObjects != null)
         {
-            Debug.Log($"Activating {config.laserTrapObjects.Count} lasers for this wave.");
-            // Go through each laser assigned to this wave.
-            foreach (GameObject laser in config.laserTrapObjects)
+            Debug.Log($"Activating and Resetting {config.laserTrapObjects.Count} lasers for this wave.");
+            foreach (GameObject laserObject in config.laserTrapObjects)
             {
-                if (laser != null)
+                if (laserObject != null)
                 {
-                    // Activate it and add it to our list of active lasers for this wave.
-                    laser.SetActive(true);
-                    activeLasers.Add(laser);
+                    // First, activate the GameObject.
+                    laserObject.SetActive(true);
+
+                    // Then, get the script and tell it to RESET its internal state and timer.
+                    LaserTrap trap = laserObject.GetComponent<LaserTrap>();
+                    if (trap != null)
+                    {
+                        trap.ResetTrap();
+                    }
+
+                    // Finally, add it to our list of active lasers for this wave.
+                    activeLasers.Add(laserObject);
                 }
             }
         }

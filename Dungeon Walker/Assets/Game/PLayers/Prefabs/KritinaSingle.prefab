@@ -193613,8 +193613,8 @@ MonoBehaviour:
   loopCheckpoints: 1
   coinsPerCheckpoint: 10
   interactButton: {fileID: 0}
-  scorePerCheckpoint: 1
-  scorePerLoop: 0
+  scorePerCheckpoint: 0
+  scorePerLoop: 1
   arrowPointer: {fileID: 0}
   OnCheckpointReached:
     m_PersistentCalls:
@@ -193897,7 +193897,8 @@ MonoBehaviour:
   aimVerticalOffsetRightCursor: -1.77
   aimVerticalOffsetLeftCursor: 1.6
   throwBatVolume: 1
-  batPickupRange: 3.13
+  batPickupRange: 1.35
+  batPickupPoint: {fileID: 5655835730392218243}
   attackPoint: {fileID: 8267787891087180992}
   upwardAttackPoint: {fileID: 4059178564605435968}
   attackRange: 1.4
@@ -194167,7 +194168,7 @@ MonoBehaviour:
   previewFollowsLauncher: 1
   destructionLayers:
     serializedVersion: 2
-    m_Bits: 1728
+    m_Bits: 704
   ballLifetime: 2.5
   enableCollisionDestruction: 1
   enableTimeDestruction: 1
@@ -194680,7 +194681,7 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 640
-  damage: 500
+  damage: 1000
   damageDelay: 0
   shaderParam: _WaveDistanceFromCenter
   startValue: -0.1
@@ -224925,7 +224926,7 @@ Transform:
   m_GameObject: {fileID: 8465114301003767691}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.013, y: 1.355, z: 0}
+  m_LocalPosition: {x: -0.068, y: 1.314, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

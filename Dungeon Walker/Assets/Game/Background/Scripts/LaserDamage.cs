@@ -32,17 +32,17 @@ public class LaserTrap : MonoBehaviour
         laserVisual = GetComponent<SpriteRenderer>();
     }
 
-    void Start()
+    void OnEnable()
     {
-        if (randomStartOffsetMax > 0f)
-        {
-            float r = Random.Range(0f, randomStartOffsetMax);
-            StartCoroutine(ToggleLaserRoutine(r));
-        }
-        else
-        {
-            StartCoroutine(ToggleLaserRoutine(0f));
-        }
+        // This method is called every time the GameObject is set to active.
+        // We will let the WaveManager be responsible for starting the coroutine
+        // by calling ResetTrap(). For now, we can just make sure the laser
+        // starts in a predictable state.
+
+        // Default to being ON when first enabled.
+        isActive = true;
+        if (boxCollider != null) boxCollider.enabled = true;
+        if (laserVisual != null) laserVisual.enabled = true;
     }
 
     private IEnumerator ToggleLaserRoutine(float initialDelay)
@@ -149,5 +149,35 @@ public class LaserTrap : MonoBehaviour
             // If we didn't disable movement, still wait a short moment so knockback feels consistent
             yield return new WaitForSeconds(0.05f);
         }
+    }
+    public void ResetTrap()
+    {
+        StopAllCoroutines();
+
+        // Reset the laser to its initial "on" state.
+        isActive = true;
+        if (boxCollider != null) boxCollider.enabled = true;
+        if (laserVisual != null) laserVisual.enabled = true;
+
+        // --- THIS IS THE KEY CHANGE ---
+        // The logic from Start() now lives here.
+        if (randomStartOffsetMax > 0f)
+        {
+            float r = Random.Range(0f, randomStartOffsetMax);
+            StartCoroutine(ToggleLaserRoutine(r));
+        }
+        else
+        {
+            StartCoroutine(ToggleLaserRoutine(0f));
+        }
+        // --- END OF CHANGE ---
+
+        Debug.Log($"{gameObject.name} has been reset and is now toggling.");
+    }
+    // --- ALSO ADD THIS NEW METHOD ---
+    public void StopTrap()
+    {
+        // This method ensures the coroutine is stopped when the laser is disabled.
+        StopAllCoroutines();
     }
 }
