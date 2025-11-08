@@ -6174,11 +6174,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!198 &174513495 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 1494861092186304631, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-  m_PrefabInstance: {fileID: 5869509796292021625}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &177296320
 GameObject:
   m_ObjectHideFlags: 0
@@ -35515,11 +35510,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 990781309}
   m_CullTransparentMesh: 1
---- !u!4 &995162007 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4134651847245706291, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-  m_PrefabInstance: {fileID: 5869509796292021625}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &995567756
 GameObject:
   m_ObjectHideFlags: 0
@@ -78663,11 +78653,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1771621013620372492, guid: dfbbaefef6bce374d8be30a2b4e4ca6b, type: 3}
   m_PrefabInstance: {fileID: 3511443043920724447}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &2986381062538419666 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 9112834347693875806, guid: a3823dbd8faa0fe4fa1715d9de2f205e, type: 3}
-  m_PrefabInstance: {fileID: 4617959566137443153}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3511443043920724447
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -80051,11 +80036,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!4 &5323071456487248742 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2223038819634670826, guid: a3823dbd8faa0fe4fa1715d9de2f205e, type: 3}
-  m_PrefabInstance: {fileID: 4617959566137443153}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &5355099974198588745 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3917867030180391694, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
@@ -80088,11 +80068,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 208489767894967984, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
   m_PrefabInstance: {fileID: 5869509796292021625}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &5835083953232197504 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 575592957537110028, guid: a3823dbd8faa0fe4fa1715d9de2f205e, type: 3}
-  m_PrefabInstance: {fileID: 4617959566137443153}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5869509796292021625
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -80109,34 +80084,14 @@ PrefabInstance:
       propertyPath: killsLeftText
       value: 
       objectReference: {fileID: 6401434828770073582}
-    - target: {fileID: 851914017429333725, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: killsToSwitch
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 1023462743933587843, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: m_Layer
-      value: 11
-      objectReference: {fileID: 0}
-    - target: {fileID: 1125763267989149378, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 1746019872459014062, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: arrowPointer
       value: 
       objectReference: {fileID: 1676475629}
     - target: {fileID: 1746019872459014062, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: scorePerLoop
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1746019872459014062, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: interactButton
       value: 
       objectReference: {fileID: 5355099974198588745}
-    - target: {fileID: 1746019872459014062, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: scorePerCheckpoint
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1746019872459014062, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: checkpoints.Array.data[0]
       value: 
@@ -80185,14 +80140,6 @@ PrefabInstance:
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 490707551240320423}
-    - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: ammoUiFollowPoint
-      value: 
-      objectReference: {fileID: 995162007}
-    - target: {fileID: 3094847560455993516, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 3125200794304404667, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: superButton
       value: 
@@ -80205,58 +80152,18 @@ PrefabInstance:
       propertyPath: superReadyIndicator
       value: 
       objectReference: {fileID: 1622636011190298253}
-    - target: {fileID: 3999735109931876743, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
-    - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: maxAmmo
-      value: 12
-      objectReference: {fileID: 0}
     - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: ammoText
       value: 
       objectReference: {fileID: 990781311}
     - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: fireRate
-      value: 0.3
-      objectReference: {fileID: 0}
-    - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: uiCanvas
       value: 
       objectReference: {fileID: 7621536464130212169}
     - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: reloadTime
-      value: 1.7
-      objectReference: {fileID: 0}
-    - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 490707551240320423}
-    - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: bulletSpeed
-      value: 28
-      objectReference: {fileID: 0}
-    - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: bulletDamage
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: ammoUiFollowPoint
-      value: 
-      objectReference: {fileID: 995162007}
-    - target: {fileID: 4425494075282511855, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: m_Layer
-      value: 11
-      objectReference: {fileID: 0}
-    - target: {fileID: 5217040170062689098, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: beeSwarmVolume
-      value: 0.559
-      objectReference: {fileID: 0}
-    - target: {fileID: 5217040170062689098, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: beeSwarms.Array.size
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: aimJoystick
       value: 
@@ -80269,14 +80176,6 @@ PrefabInstance:
       propertyPath: fullyChargedIndicator
       value: 
       objectReference: {fileID: 2833191139351611861}
-    - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: arrowDestroyParticleSystem
-      value: 
-      objectReference: {fileID: 174513495}
-    - target: {fileID: 6734370145734748242, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: maxHealth
-      value: 350
-      objectReference: {fileID: 0}
     - target: {fileID: 6734370145734748242, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: shieldSlider
       value: 
@@ -80293,10 +80192,6 @@ PrefabInstance:
       propertyPath: joystick
       value: 
       objectReference: {fileID: 2311707432988319596}
-    - target: {fileID: 6796231500301844375, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: moveSpeed
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 6965179099987216530, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: canvas
       value: 
@@ -80329,30 +80224,10 @@ PrefabInstance:
       propertyPath: checkpointManager
       value: 
       objectReference: {fileID: 4942962649329083098}
-    - target: {fileID: 7010330397883274141, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: spawnPoints.Array.data[0]
-      value: 
-      objectReference: {fileID: 5835083953232197504}
-    - target: {fileID: 7010330397883274141, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: spawnPoints.Array.data[1]
-      value: 
-      objectReference: {fileID: 2986381062538419666}
-    - target: {fileID: 7010330397883274141, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: spawnPoints.Array.data[2]
-      value: 
-      objectReference: {fileID: 5323071456487248742}
-    - target: {fileID: 7010330397883274141, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: spawnPoints.Array.data[3]
-      value: 
-      objectReference: {fileID: 6023458747045393005}
     - target: {fileID: 7796940568639449547, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: m_Name
       value: L3antix
       objectReference: {fileID: 0}
-    - target: {fileID: 7984387711765867595, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: aimJoystick
       value: 
@@ -80390,10 +80265,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 4203659889669267634}
     - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: throwSlashDamage
-      value: 70
-      objectReference: {fileID: 0}
-    - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: attackButtonImage
       value: 
       objectReference: {fileID: 9025724228433501889}
@@ -80413,10 +80284,6 @@ PrefabInstance:
       propertyPath: batPointerRectTransform
       value: 
       objectReference: {fileID: 6104333719322005268}
-    - target: {fileID: 8685742060505890826, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
     - target: {fileID: 9006167878275002792, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: m_LocalPosition.x
       value: -66.67
@@ -80470,11 +80337,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
---- !u!4 &6023458747045393005 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 329066922166963681, guid: a3823dbd8faa0fe4fa1715d9de2f205e, type: 3}
-  m_PrefabInstance: {fileID: 4617959566137443153}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &6104333719322005268 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2934340826197791059, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}

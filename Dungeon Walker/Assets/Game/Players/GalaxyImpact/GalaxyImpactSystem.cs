@@ -17,7 +17,10 @@ public class GalaxyImapctSystem : MonoBehaviour
     [SerializeField] private KeyCode superMoveKey = KeyCode.F;
     [Tooltip("Le cooldown en secondes avant de pouvoir réutiliser le super coup.")]
     [SerializeField] private float superMoveCooldown = 10f;
-
+    [Header("Audio")]
+    [Tooltip("Sound that plays once when the super move is activated.")]
+    public AudioClip superActivationSound;
+    [Range(0f, 1f)] public float superActivationVolume = 1.0f;
     [Header("Scripts to Disable During Super")]
     [Tooltip("Faites glisser ici tous les scripts qui doivent être désactivés pendant le super coup (ex: scripts d'armes, dash, etc.).")]
     public List<MonoBehaviour> scriptsToDisable;
@@ -98,6 +101,32 @@ public class GalaxyImapctSystem : MonoBehaviour
             if (superBarSlider != null) superBarSlider.value = 0f;
             if (superReadyIndicator != null) superReadyIndicator.SetActive(false);
         });
+    }
+    public void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || Camera.main == null) return;
+
+        // Create a clean, independent object for the sound
+        GameObject soundPlayerObject = new GameObject("GalaxyImpact_FORCE_PLAY_SOUND");
+
+        // Position it directly on the camera to guarantee it's heard at full volume
+        soundPlayerObject.transform.position = Camera.main.transform.position;
+
+        // Add and aggressively configure the AudioSource
+        AudioSource tempAudioSource = soundPlayerObject.AddComponent<AudioSource>();
+        tempAudioSource.clip = clip;
+
+        // --- CRITICAL OVERRIDES ---
+        tempAudioSource.volume = volume;
+        tempAudioSource.spatialBlend = 0.0f;              // Force 2D sound
+        tempAudioSource.priority = 0;                     // Highest priority
+        tempAudioSource.bypassEffects = true;             // Ignore mixers
+        tempAudioSource.bypassListenerEffects = true;     // Ignore listener effects
+        tempAudioSource.bypassReverbZones = true;         // Ignore reverb zones
+
+        // Play the sound and schedule its destruction
+        tempAudioSource.Play();
+        Destroy(soundPlayerObject, clip.length);
     }
     private void OnEnable()
     {
@@ -243,6 +272,7 @@ public class GalaxyImapctSystem : MonoBehaviour
         if (superMeter != null && superMeter.HasSuperCharge())
         {
             superMeter.UseSuper();
+            PlaySound(superActivationSound, superActivationVolume);
             StartSuperMove();
         }
         else

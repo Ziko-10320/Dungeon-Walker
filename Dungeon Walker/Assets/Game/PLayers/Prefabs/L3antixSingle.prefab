@@ -90090,7 +90090,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -109880,7 +109880,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -134871,8 +134871,8 @@ MonoBehaviour:
   loopCheckpoints: 1
   coinsPerCheckpoint: 10
   interactButton: {fileID: 0}
-  scorePerCheckpoint: 1
-  scorePerLoop: 0
+  scorePerCheckpoint: 0
+  scorePerLoop: 1
   arrowPointer: {fileID: 0}
   OnCheckpointReached:
     m_PersistentCalls:
@@ -204334,7 +204334,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -219437,7 +219437,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ab90aa3ab0fe044ba595a9da6838c04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 9
+  moveSpeed: 10
   jumpPower: 25
   jumpReleaseCutMultiplier: 0.3
   joystick: {fileID: 0}
@@ -219914,6 +219914,8 @@ MonoBehaviour:
   superMoveTriggerName: GalaxyImpact
   superMoveKey: 102
   superMoveCooldown: 1
+  superActivationSound: {fileID: 8300000, guid: bdd52102860f3a24d8acdecd7b8fd6a7, type: 3}
+  superActivationVolume: 1
   scriptsToDisable:
   - {fileID: 9119050250133076237}
   - {fileID: 6734370145734748242}
@@ -219943,7 +219945,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95b1f2fc3a0291a4cbbefe096873036b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 300
+  maxHealth: 350
   currentHealth: 0
   rb: {fileID: 4712472362792144401}
   L3antixMovement: {fileID: 6796231500301844375}
@@ -220292,9 +220294,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   beeSwarms:
   - {fileID: 1267550171789032839}
-  - {fileID: 3061071017553072481}
   beeSwarmSound: {fileID: 8300000, guid: 0b6a70ede774f4b419f9824ce8bdcd30, type: 3}
-  beeSwarmVolume: 1
+  beeSwarmVolume: 0.559
   damagePoint: {fileID: 3510942078707517890}
   damageRadius: 5.64
   damage: 15
@@ -245459,7 +245460,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -250892,7 +250893,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
