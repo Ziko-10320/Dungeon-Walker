@@ -21,8 +21,9 @@ public class FlyHealth : MonoBehaviour
 
     public Transform DeathMushroomSpawn;
     public Transform DeathMushroomSpawn2;
-  
 
+    private TutorialGameManager tutorialManager;
+    private bool isTutorialEnemy = false;
     // Flash Damage Variables
     public Material flashMaterial; // Material with the flash shader
     public string flashAmountProperty = "_FlashAmount"; // Name of the Flash Amount property in the shader
@@ -112,12 +113,12 @@ public class FlyHealth : MonoBehaviour
 
         // Damage (tell the attack script its new damage values)
         if (attackScript != null)
-        {
+            {
             attackScript.projectileDamage = attackScript.baseProjectileDamage + (wavesSurvived * damageIncreasePerWave);
             attackScript.explosionDamage = attackScript.baseExplosionDamage + (wavesSurvived * damageIncreasePerWave);
             // Also scale the V2 charged attack if it exists
             attackScript.chargedProjectileDamage = attackScript.baseChargedProjectileDamage + (wavesSurvived * (damageIncreasePerWave * 2)); // Charged attack gets double bonus
-        }
+            }
 
         // --- 3. YOUR EXISTING INITIALIZE LOGIC ---
         Transform player = null;
@@ -228,7 +229,11 @@ public class FlyHealth : MonoBehaviour
         // --- STOP LEFTOVER COROUTINES ---
         StopAllCoroutines();
     }
-
+    public void SetTutorialManager(TutorialGameManager manager, bool isTutorial)
+    {
+        this.tutorialManager = manager;
+        this.isTutorialEnemy = isTutorial;
+    }
     // Method to take damage
     public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 1f)
     {
@@ -349,7 +354,10 @@ public class FlyHealth : MonoBehaviour
                 }
             }
         }
-
+        if (tutorialManager != null)
+        {
+            tutorialManager.OnEnemyDefeated();
+        }
         // Trigger camera shake
         CameraShakerHandler.Shake(CameraShakeDeath);
 

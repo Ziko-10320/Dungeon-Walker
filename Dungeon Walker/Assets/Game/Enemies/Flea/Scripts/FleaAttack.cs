@@ -26,7 +26,7 @@ public class FleaChargeAttack : MonoBehaviour
     [SerializeField] private float knockbackForce = 20f;
     [Tooltip("Nombre maximum de charges consécutives si l'attaque rate.")]
     [SerializeField] private int maxConsecutiveCharges = 2;
-
+    private bool isTutorialMode = false;
     [Header("Visual Effects")]
     public ParticleSystem BurstDust;
     public ParticleSystem BurstDust2;
@@ -104,6 +104,11 @@ public class FleaChargeAttack : MonoBehaviour
 
         // 5. Ensure the script is enabled and ready to go.
         this.enabled = true;
+    }
+    public void SetTutorialMode()
+    {
+        Debug.Log("FleaChargeAttack has been set to Tutorial Mode. Damage will be 0.");
+        this.isTutorialMode = true;
     }
 
     void OnEnable()
@@ -262,25 +267,31 @@ public class FleaChargeAttack : MonoBehaviour
         Collider2D playerHit = Physics2D.OverlapCircle(rb.position, 0.5f, LayerMask.GetMask("Player"));
         if (playerHit != null)
         {
+            // ----> THIS IS THE CRITICAL FIX <----
+            // Determine the damage to deal. If in tutorial mode, it's 0. Otherwise, it's the normal attackDamage.
+            int damageToDeal = isTutorialMode ? 0 : attackDamage;
+
+
             PlayerHealth playerHealth = playerHit.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
                 Vector2 knockbackDirection = (playerHit.transform.position - transform.position).normalized;
                 knockbackDirection.y = 0.5f;
-                playerHealth.TakeDamage(attackDamage, knockbackForce, knockbackDirection.normalized);
+                // Use the 'damageToDeal' variable here.
+                playerHealth.TakeDamage(damageToDeal, knockbackForce, knockbackDirection.normalized);
             }
             L3antixHealth l3antixHealth = playerHit.GetComponent<L3antixHealth>();
             if (l3antixHealth != null)
             {
                 Vector2 knockbackDirection = (playerHit.transform.position - transform.position).normalized;
                 knockbackDirection.y = 0.5f;
-                l3antixHealth.TakeDamage(attackDamage, knockbackForce, knockbackDirection.normalized);
+                // And also use 'damageToDeal' here.
+                l3antixHealth.TakeDamage(damageToDeal, knockbackForce, knockbackDirection.normalized);
             }
             return true;
         }
         return false;
     }
-
     private void FlipTowards(Vector2 direction)
     {
         float scaleValue = Mathf.Abs(transform.localScale.x);

@@ -17,7 +17,7 @@ public class FleaHealth : MonoBehaviour, IPunObservable
     public Transform bloodSpawnPoint; // Spawn point for blood particles
     public ParticleSystem bloodParticle; // Blood particle system
     public List<string> deathEffectNames;
-
+    private TutorialGameManager tutorialManager;
     public AudioClip[] deathSounds;
     public Transform DeathMushroomSpawn;
     public Transform DeathMushroomSpawn2;
@@ -142,6 +142,11 @@ public class FleaHealth : MonoBehaviour, IPunObservable
             stun.ResetStunState();
         }
     }
+    public void SetTutorialManager(TutorialGameManager manager)
+    {
+        this.tutorialManager = manager;
+    }
+
     private void PlayRandomSound(AudioClip[] clips)
     {
         if (clips == null || clips.Length == 0) return;
@@ -362,7 +367,10 @@ public class FleaHealth : MonoBehaviour, IPunObservable
             // Notify the chain BEFORE we destroy the GameObject so the chain can capture position/linePoint.
             soul.NotifyDied();
         }
-
+        if (tutorialManager != null)
+        {
+            tutorialManager.OnEnemyDefeated();
+        }
         if (PhotonNetwork.IsMasterClient || !PhotonNetwork.IsConnected)
         {
             if (view != null && PhotonNetwork.IsConnected)

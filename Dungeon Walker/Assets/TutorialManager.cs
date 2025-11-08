@@ -14,7 +14,15 @@ public class TutorialGameManager : MonoBehaviour
     [Header("Camera Control")]
     public CameraFollowMouseHorizontal cameraFollowScript;
     public Transform characterFollowTarget;
+    [Header("Enemy Encounters")]
+    [Tooltip("A list of all enemy encounters in the tutorial, in order.")]
+    public List<EnemyEncounter> encounters;
 
+    // --- Private Variables ---
+    private const string TutorialCompletedKey = "TutorialCompleted";
+    private bool tutorialFinished = false;
+    private int currentEncounterIndex = 0; // To track which encounter we are on
+    private GameObject spawnedEnemy;
     [Header("Tutorial Goal")]
     public int scoreToComplete = 1;
     [Header("UI Pop-In Animation")]
@@ -22,7 +30,17 @@ public class TutorialGameManager : MonoBehaviour
     public List<GameObject> animatedElements;
     [Tooltip("The time to wait between each element popping in.")]
     public float delayBetweenAnimations = 0.5f;
-
+    [System.Serializable]
+    public class EnemyEncounter
+    {
+        public string encounterName; // For you to identify it in the Inspector
+        public Collider2D triggerZone;
+        public GameObject barrierWalls;
+        public GameObject enemyPrefab;
+        public Transform enemySpawnPoint;
+        [Tooltip("If true, the spawned enemy will deal 0 damage.")]
+        public bool makeEnemyDealZeroDamage = false;
+    }
     [Tooltip("How long the pop-in animation for each element should take.")]
     public float popInDuration = 0.3f;
     public AudioClip popInSound;
@@ -36,8 +54,7 @@ public class TutorialGameManager : MonoBehaviour
     public CanvasGroup panelCanvasGroup; // This is for the fade OUT now.
     public float fadeDuration = 0.5f;
 
-    private const string TutorialCompletedKey = "TutorialCompleted";
-    private bool tutorialFinished = false;
+    
 
     // Awake() and Start() are now simplified
     void Awake()
@@ -52,7 +69,13 @@ public class TutorialGameManager : MonoBehaviour
         {
             tutorialCompletePanel.SetActive(false);
         }
-
+        foreach (var encounter in encounters)
+        {
+            if (encounter.barrierWalls != null)
+            {
+                encounter.barrierWalls.SetActive(false);
+            }
+        }
         // Hide each animated element and the main menu button initially.
         foreach (var element in animatedElements)
         {
@@ -60,7 +83,25 @@ public class TutorialGameManager : MonoBehaviour
         }
         mainMenuButton.gameObject.SetActive(false);
     }
+    void Update()
+    {
+        // Check if there are still encounters left to complete.
+        if (currentEncounterIndex < encounters.Count)
+        {
+            // Get the current encounter we're waiting for.
+            EnemyEncounter currentEncounter = encounters[currentEncounterIndex];
 
+            if (currentEncounter.triggerZone != null && existingCharacterObject != null)
+            {
+                Collider2D playerCollider = existingCharacterObject.GetComponent<Collider2D>();
+                if (playerCollider != null && currentEncounter.triggerZone.IsTouching(playerCollider))
+                {
+                    // Start the current encounter.
+                    StartEncounter(currentEncounter);
+                }
+            }
+        }
+    }
     // OnScoreUpdated is unchanged
     public void OnScoreUpdated(int newScore)
     {
@@ -70,7 +111,53 @@ public class TutorialGameManager : MonoBehaviour
             CompleteTutorial();
         }
     }
+    private void StartEncounter(EnemyEncounter encounter)
+    {
+        Debug.Log($"Starting encounter: {encounter.encounterName}");
 
+        if (encounter.barrierWalls != null) encounter.barrierWalls.SetActive(true);
+
+        if (encounter.enemyPrefab != null && encounter.enemySpawnPoint != null)
+        {
+            spawnedEnemy = Instantiate(encounter.enemyPrefab, encounter.enemySpawnPoint.position, encounter.enemySpawnPoint.rotation);
+
+            // ----> THIS IS THE NEW, SMARTER CONNECTION LOGIC <----
+            // Try to get FleaHealth script
+            FleaHealth fleaHealth = spawnedEnemy.GetComponent<FleaHealth>();
+            if (fleaHealth != null)
+            {
+                fleaHealth.SetTutorialManager(this); // Tell it to report back on death
+
+                if (encounter.makeEnemyDealZeroDamage)
+                {
+                    // Get the Flea's attack script...
+                    FleaChargeAttack fleaAttack = spawnedEnemy.GetComponent<FleaChargeAttack>();
+                    if (fleaAttack != null)
+                    {
+                        // ...and call the new function we just made!
+                        fleaAttack.SetTutorialMode();
+                    }
+                }
+            }
+
+            // Try to get FlyHealth script
+            FlyHealth flyHealth = spawnedEnemy.GetComponent<FlyHealth>();
+            if (flyHealth != null)
+            {
+                flyHealth.SetTutorialManager(this, encounter.makeEnemyDealZeroDamage);
+                if (encounter.makeEnemyDealZeroDamage)
+                {
+                    FlyAttack flyAttack = spawnedEnemy.GetComponent<FlyAttack>();
+                    if (flyAttack != null)
+                    {
+                        flyAttack.SetTutorialMode();
+                    }
+                }
+            }
+        }
+
+        if (encounter.triggerZone != null) encounter.triggerZone.gameObject.SetActive(false);
+    }
     // ----> THIS FUNCTION IS NOW SIMPLER <----
     // It just shows the panel and pauses the game. No fade.
     private void CompleteTutorial()
@@ -88,6 +175,23 @@ public class TutorialGameManager : MonoBehaviour
             StartCoroutine(AnimatePanelSequence());
         }
     }
+    public void OnEnemyDefeated()
+    {
+        Debug.Log($"Enemy defeated for encounter: {encounters[currentEncounterIndex].encounterName}");
+
+        // Get the current encounter and disable its walls.
+        EnemyEncounter currentEncounter = encounters[currentEncounterIndex];
+        if (currentEncounter.barrierWalls != null)
+        {
+            currentEncounter.barrierWalls.SetActive(false);
+        }
+        spawnedEnemy = null;
+
+        // Move to the next encounter!
+        currentEncounterIndex++;
+        Debug.Log("Ready for next encounter.");
+    }
+
     private IEnumerator AnimatePanelSequence()
     {
         // Loop through each UI element you added to the list.

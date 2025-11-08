@@ -309,6 +309,13 @@ public class FlyAttack : MonoBehaviour
         }
         // --- END OF NEW LOGIC ---
     }
+    public void SetTutorialMode()
+    {
+        Debug.Log("FlyAttack has been set to Tutorial Mode. Damage will be 0.");
+        this.projectileDamage = 0;
+        this.explosionDamage = 0;
+        this.chargedProjectileDamage = 0;
+    }
     private IEnumerator PerformChargedAttackRoutine()
     {
         // --- 1. PRE-SPAWN THE PROJECTILE AND START ANTICIPATION ---
