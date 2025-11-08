@@ -78261,6 +78261,10 @@ PrefabInstance:
       value: 0.495
       objectReference: {fileID: 0}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: maxHealth
+      value: 300
+      objectReference: {fileID: 0}
+    - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: damageSound
       value: 
       objectReference: {fileID: 0}
@@ -79315,11 +79319,11 @@ PrefabInstance:
     - target: {fileID: 7968635909057444716, guid: a3823dbd8faa0fe4fa1715d9de2f205e, type: 3}
       propertyPath: waveConfigs.Array.data[0].enemyPrefabs.Array.data[0]
       value: 
-      objectReference: {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
+      objectReference: {fileID: 1619136985213934694, guid: f44ed2cafc53e9c48bc1b3f7149c0c2c, type: 3}
     - target: {fileID: 7968635909057444716, guid: a3823dbd8faa0fe4fa1715d9de2f205e, type: 3}
       propertyPath: waveConfigs.Array.data[0].enemyPrefabs.Array.data[1]
       value: 
-      objectReference: {fileID: 473562806081651193, guid: 5d73933474e76b349aeeff74593106c1, type: 3}
+      objectReference: {fileID: 1787418285100596395, guid: c0d0d09088c8ac7428a5e8a928bb089c, type: 3}
     - target: {fileID: 7968635909057444716, guid: a3823dbd8faa0fe4fa1715d9de2f205e, type: 3}
       propertyPath: waveConfigs.Array.data[5].enemyPrefabs.Array.data[0]
       value: 
@@ -80270,6 +80274,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 174513495}
     - target: {fileID: 6734370145734748242, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: maxHealth
+      value: 350
+      objectReference: {fileID: 0}
+    - target: {fileID: 6734370145734748242, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: shieldSlider
       value: 
       objectReference: {fileID: 7053378291981091934}
@@ -80285,6 +80293,10 @@ PrefabInstance:
       propertyPath: joystick
       value: 
       objectReference: {fileID: 2311707432988319596}
+    - target: {fileID: 6796231500301844375, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: moveSpeed
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 6965179099987216530, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: canvas
       value: 

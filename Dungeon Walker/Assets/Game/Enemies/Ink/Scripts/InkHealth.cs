@@ -301,6 +301,11 @@ public class InkHealth : MonoBehaviour
         {
             attackScript.enabled = true;
         }
+        EnemyStun stun = GetComponent<EnemyStun>();
+        if (stun != null)
+        {
+            stun.ResetStunState();
+        }
     }
     public void ResetEnemyState()
     {

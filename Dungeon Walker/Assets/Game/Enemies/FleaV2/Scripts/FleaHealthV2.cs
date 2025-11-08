@@ -168,6 +168,12 @@ public class FleaHealthV2 : MonoBehaviour, IPunObservable
             attackScript.InitializeAndReset(player);
         }
 
+        EnemyStun stun = GetComponent<EnemyStun>();
+        if (stun != null)
+        {
+            stun.ResetStunState();
+        }
+
     }
     private void PlayRandomSound(AudioClip[] clips)
     {

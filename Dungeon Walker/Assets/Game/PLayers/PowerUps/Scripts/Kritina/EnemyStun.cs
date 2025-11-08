@@ -20,10 +20,25 @@ public class EnemyStun : MonoBehaviour
 
     private bool isStunned = false;
 
+    [Header("Pooling")]
+    [Tooltip("How many stun effects to keep ready in the pool.")]
+    [SerializeField] private int stunEffectPoolSize = 3;
+    private Queue<GameObject> stunEffectPool;
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (enemyAnimator == null) enemyAnimator = GetComponent<Animator>();
+
+        stunEffectPool = new Queue<GameObject>();
+        if (stunEffectPrefab != null)
+        {
+            for (int i = 0; i < stunEffectPoolSize; i++)
+            {
+                GameObject effect = Instantiate(stunEffectPrefab, stunEffectSpawnPoint);
+                effect.SetActive(false);
+                stunEffectPool.Enqueue(effect);
+            }
+        }
     }
 
     public void Stun(float duration)
@@ -36,11 +51,15 @@ public class EnemyStun : MonoBehaviour
     {
         isStunned = true;
 
-        // Spawn stun effect
-        if (stunEffectPrefab != null && stunEffectSpawnPoint != null)
+        // --- THIS IS THE REPLACEMENT ---
+        // Spawn stun effect from our new pool
+        if (stunEffectPool != null && stunEffectPool.Count > 0)
         {
-            activeStunEffect = Instantiate(stunEffectPrefab, stunEffectSpawnPoint.position, Quaternion.identity, transform);
+            activeStunEffect = stunEffectPool.Dequeue();
+            activeStunEffect.transform.position = stunEffectSpawnPoint.position;
+            activeStunEffect.SetActive(true);
         }
+        // --- END OF REPLACEMENT ---
 
         // Disable animator
         if (enemyAnimator != null)
@@ -58,21 +77,34 @@ public class EnemyStun : MonoBehaviour
 
         yield return new WaitForSeconds(duration);
 
-        // Re-enable
-        if (enemyAnimator != null)
-            enemyAnimator.enabled = true;
+        // --- THIS IS THE REPLACEMENT FOR THE CLEANUP ---
+        // We just call our new ResetStunState method to clean everything up perfectly.
+        ResetStunState();
+        // --- END OF REPLACEMENT ---
+    }
 
+    public void ResetStunState()
+    {
+        // This is our "factory reset" button.
+        StopAllCoroutines(); // Stop any lingering stun timers.
+
+        // Force-enable all components that might have been disabled.
+        if (enemyAnimator != null) enemyAnimator.enabled = true;
         foreach (var script in scriptsToDisable)
         {
             if (script != null) script.enabled = true;
         }
 
-        if (rb != null)
-            rb.bodyType = RigidbodyType2D.Dynamic;
+        // Unfreeze physics.
+        if (rb != null) rb.bodyType = RigidbodyType2D.Dynamic;
 
-        // Destroy stun effect
+        // Hide any active stun effect and return it to the pool.
         if (activeStunEffect != null)
-            Destroy(activeStunEffect);
+        {
+            activeStunEffect.SetActive(false);
+            stunEffectPool.Enqueue(activeStunEffect);
+            activeStunEffect = null;
+        }
 
         isStunned = false;
     }

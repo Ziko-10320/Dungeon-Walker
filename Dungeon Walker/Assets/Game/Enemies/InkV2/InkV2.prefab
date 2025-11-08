@@ -21219,8 +21219,8 @@ MonoBehaviour:
   powerUpSpawnPoint: {fileID: 1512217368586473421}
   invincibilityActivationRange: 20
   playerTransform: {fileID: 0}
-  healthIncreasePerWave: 10
-  damageIncreasePerWave: 4
+  healthIncreasePerWave: 4
+  damageIncreasePerWave: 3
 --- !u!114 &546657359667457528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21338,6 +21338,7 @@ MonoBehaviour:
   - {fileID: 6658136880003167551}
   stunEffectPrefab: {fileID: 1032346235029450486, guid: da9903449e7a5ac43890ea76cfbe0772, type: 3}
   stunEffectSpawnPoint: {fileID: 3425921744500850084}
+  stunEffectPoolSize: 3
 --- !u!212 &5245095671736577232
 SpriteRenderer:
   m_ObjectHideFlags: 0

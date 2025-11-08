@@ -1112,9 +1112,9 @@ MonoBehaviour:
   isStunned: 0
   deathSplatterEffectPrefab: {fileID: 1266603064206159665, guid: 83134c1ee46f09f4eab9d8e3d42b48fc, type: 3}
   splatterSpawnPoint: {fileID: 3027643546219592734}
-  healthIncreasePerWave: 5
-  damageIncreasePerWave: 4
-  chaseSpeedIncreasePerWave: 2
+  healthIncreasePerWave: 4
+  damageIncreasePerWave: 2
+  chaseSpeedIncreasePerWave: 1
 --- !u!114 &1370146577963590099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1230,6 +1230,7 @@ MonoBehaviour:
   - {fileID: 4000390345464616173}
   stunEffectPrefab: {fileID: 1032346235029450486, guid: da9903449e7a5ac43890ea76cfbe0772, type: 3}
   stunEffectSpawnPoint: {fileID: 4943337719773091088}
+  stunEffectPoolSize: 3
 --- !u!212 &-8629119309797380700
 SpriteRenderer:
   m_ObjectHideFlags: 0

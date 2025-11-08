@@ -1454,8 +1454,8 @@ MonoBehaviour:
   dropChance: 0.03
   powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
   powerUpSpawnPoint: {fileID: 6887314040794923926}
-  healthIncreasePerWave: 10
-  damageIncreasePerWave: 6
+  healthIncreasePerWave: 5
+  damageIncreasePerWave: 4
   chaseSpeedIncreasePerWave: 2
 --- !u!114 &1564694357942923393
 MonoBehaviour:
@@ -1565,6 +1565,7 @@ MonoBehaviour:
   - {fileID: 6463975689986382202}
   stunEffectPrefab: {fileID: 1032346235029450486, guid: da9903449e7a5ac43890ea76cfbe0772, type: 3}
   stunEffectSpawnPoint: {fileID: 2820584415069136652}
+  stunEffectPoolSize: 3
 --- !u!212 &6059791923545360836
 SpriteRenderer:
   m_ObjectHideFlags: 0

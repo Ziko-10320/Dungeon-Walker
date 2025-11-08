@@ -136,6 +136,11 @@ public class FleaHealth : MonoBehaviour, IPunObservable
                 }
             }
         }
+        EnemyStun stun = GetComponent<EnemyStun>();
+        if (stun != null)
+        {
+            stun.ResetStunState();
+        }
     }
     private void PlayRandomSound(AudioClip[] clips)
     {

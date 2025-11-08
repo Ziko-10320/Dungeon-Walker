@@ -142,6 +142,11 @@ public class FlyHealth : MonoBehaviour
             attackScript.enabled = true;
             attackScript.Initialize(player);
         }
+        EnemyStun stun = GetComponent<EnemyStun>();
+        if (stun != null)
+        {
+            stun.ResetStunState();
+        }
     }
     private void PlayRandomSound(AudioClip[] clips)
     {
