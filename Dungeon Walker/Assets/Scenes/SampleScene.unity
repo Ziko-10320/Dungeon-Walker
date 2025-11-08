@@ -78261,6 +78261,10 @@ PrefabInstance:
       value: 0.495
       objectReference: {fileID: 0}
     - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: damageSound
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 704909933309968761, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: shieldSlider
       value: 
       objectReference: {fileID: 7053378291981091934}
@@ -81029,13 +81033,17 @@ PrefabInstance:
       value: 147
       objectReference: {fileID: 0}
     - target: {fileID: 1899312454338929128, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
+      propertyPath: finishSound
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1899312454338929128, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
       propertyPath: soundPlayer
       value: 
       objectReference: {fileID: 1405268632}
     - target: {fileID: 1899312454338929128, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
       propertyPath: coinTickClip
       value: 
-      objectReference: {fileID: 8300000, guid: b9ae78fa0ccbc6647ae484e6ec44773f, type: 3}
+      objectReference: {fileID: 8300000, guid: 387a3263d72d40344ae0c58cfb6c02a3, type: 3}
     - target: {fileID: 1899312454338929128, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
       propertyPath: panelOpenSound
       value: 
@@ -81043,7 +81051,7 @@ PrefabInstance:
     - target: {fileID: 1899312454338929128, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
       propertyPath: scoreKillsTickClip
       value: 
-      objectReference: {fileID: 8300000, guid: 66b3c034a3db90546830e1b9fe566390, type: 3}
+      objectReference: {fileID: 8300000, guid: 7d57af851fc60d84498378c59df7b759, type: 3}
     - target: {fileID: 2228327678077617969, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -406.5

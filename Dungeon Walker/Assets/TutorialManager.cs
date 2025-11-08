@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 public class TutorialGameManager : MonoBehaviour
 {
@@ -16,7 +17,19 @@ public class TutorialGameManager : MonoBehaviour
 
     [Header("Tutorial Goal")]
     public int scoreToComplete = 1;
+    [Header("UI Pop-In Animation")]
+    [Tooltip("The list of UI elements to animate in sequence.")]
+    public List<GameObject> animatedElements;
+    [Tooltip("The time to wait between each element popping in.")]
+    public float delayBetweenAnimations = 0.5f;
 
+    [Tooltip("How long the pop-in animation for each element should take.")]
+    public float popInDuration = 0.3f;
+    public AudioClip popInSound;
+    [Tooltip("How much bigger the element gets before shrinking back to normal size (e.g., 1.2 is 20% bigger).")]
+    public float popInOvershootScale = 1.2f;
+    [Tooltip("Drag your dedicated 2D AudioSource object here.")]
+    public AudioSource soundEffectSource;
     [Header("Completion UI")]
     public GameObject tutorialCompletePanel;
     public Button mainMenuButton;
@@ -34,11 +47,18 @@ public class TutorialGameManager : MonoBehaviour
 
     void Start()
     {
-        // We just need to make sure the panel is hidden at the start.
+        // We need to hide all the animated elements at the start.
         if (tutorialCompletePanel != null)
         {
             tutorialCompletePanel.SetActive(false);
         }
+
+        // Hide each animated element and the main menu button initially.
+        foreach (var element in animatedElements)
+        {
+            element.SetActive(false);
+        }
+        mainMenuButton.gameObject.SetActive(false);
     }
 
     // OnScoreUpdated is unchanged
@@ -60,12 +80,80 @@ public class TutorialGameManager : MonoBehaviour
 
         if (tutorialCompletePanel != null)
         {
-            Debug.Log("Showing completion panel instantly.");
-            tutorialCompletePanel.SetActive(true); // Show the panel immediately.
-            Time.timeScale = 0f; // Pause the game.
+            // Show the main panel background and pause the game.
+            tutorialCompletePanel.SetActive(true);
+            Time.timeScale = 0f;
+
+            // Start the animation sequence!
+            StartCoroutine(AnimatePanelSequence());
         }
     }
+    private IEnumerator AnimatePanelSequence()
+    {
+        // Loop through each UI element you added to the list.
+        foreach (var element in animatedElements)
+        {
+            // Start the pop-in animation for the current element.
+            StartCoroutine(PopInElement(element));
 
+            // Wait for the specified delay before moving to the next element.
+            yield return new WaitForSecondsRealtime(delayBetweenAnimations);
+        }
+
+        // After all elements have animated, pop in the main menu button.
+        StartCoroutine(PopInElement(mainMenuButton.gameObject));
+    }
+    private IEnumerator PopInElement(GameObject element)
+    {
+        if (popInSound != null && soundEffectSource != null)
+        {
+            // Use the AudioSource you provided to play the sound.
+            soundEffectSource.PlayOneShot(popInSound);
+        }
+        else
+        {
+            // This warning helps if you forget to hook something up.
+            if (popInSound != null) Debug.LogWarning("Pop-in sound is assigned, but the Sound Effect Source is missing!");
+        }
+        // 1. Set initial state: invisible and normal size.
+        element.SetActive(true);
+        element.transform.localScale = Vector3.one;
+        CanvasGroup cg = element.GetComponent<CanvasGroup>();
+        if (cg == null) cg = element.AddComponent<CanvasGroup>(); // Add CanvasGroup if it doesn't exist
+        cg.alpha = 0;
+
+        // 2. Animation loop
+        float timer = 0f;
+        while (timer < popInDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            float progress = timer / popInDuration;
+
+            // Fade in the alpha
+            cg.alpha = progress;
+
+            // Scale up to the overshoot size, then back down to 1.
+            // This uses a simple curve: goes up to overshootScale then back to 1.
+            float scale;
+            if (progress < 0.5f)
+            {
+                // First half: scale up
+                scale = Mathf.Lerp(1f, popInOvershootScale, progress * 2);
+            }
+            else
+            {
+                // Second half: scale down
+                scale = Mathf.Lerp(popInOvershootScale, 1f, (progress - 0.5f) * 2);
+            }
+            element.transform.localScale = Vector3.one * scale;
+
+            yield return null;
+        }
+
+        // 3. Ensure final state is perfect.
+        cg.alpha = 1;
+        element.transform.localScale = Vector3.one;
+    }
     // ----> THIS FUNCTION NOW STARTS THE FADE-OUT <----
     // This is the public function your button calls from the Inspector.
     public void GoToMainMenu()
