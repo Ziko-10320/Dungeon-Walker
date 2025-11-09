@@ -24319,6 +24319,18 @@ PrefabInstance:
       propertyPath: soundPlayer
       value: 
       objectReference: {fileID: 2043961507}
+    - target: {fileID: 1899312454338929128, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
+      propertyPath: coinTickClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 387a3263d72d40344ae0c58cfb6c02a3, type: 3}
+    - target: {fileID: 1899312454338929128, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
+      propertyPath: panelOpenSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 943c273321e9497489e51957e646bdca, type: 3}
+    - target: {fileID: 1899312454338929128, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
+      propertyPath: scoreKillsTickClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 7d57af851fc60d84498378c59df7b759, type: 3}
     - target: {fileID: 2530987000490956146, guid: a6794fd7a3119d74592cfbe0a3c0b2a8, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -62340,7 +62352,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 8185db39c9b59de43804c843782cd939, type: 3}
     - target: {fileID: 1846754222639225028, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSoundVolume
-      value: 0.49
+      value: 0.59
       objectReference: {fileID: 0}
     - target: {fileID: 2009317352812818580, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: radius
@@ -62356,7 +62368,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 238a4b2c07047104cbc08e37b0ea8933, type: 3}
     - target: {fileID: 2009317352812818580, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSoundVolume
-      value: 0.52
+      value: 0.62
       objectReference: {fileID: 0}
     - target: {fileID: 2152214585143898621, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: m_SortingLayer
@@ -62460,7 +62472,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 3327fbb5020b6a64fab622b1539c45bb, type: 3}
     - target: {fileID: 4756638473540226993, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSoundVolume
-      value: 0.58
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 4912603726435717811, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: m_LocalScale.x
@@ -62497,10 +62509,10 @@ PrefabInstance:
     - target: {fileID: 4954343501837858821, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSound
       value: 
-      objectReference: {fileID: 8300000, guid: eaeace9232893464cabaefa0e360a7a3, type: 3}
+      objectReference: {fileID: 8300000, guid: ac54fe74d5b372a48ae95249fd7e3732, type: 3}
     - target: {fileID: 4954343501837858821, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSoundVolume
-      value: 0.39
+      value: 0.67
       objectReference: {fileID: 0}
     - target: {fileID: 4981345893631958809, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: m_LocalPosition.x
@@ -62559,8 +62571,12 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7441735867177664504, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
+      propertyPath: waitingSound
+      value: 
+      objectReference: {fileID: 8300000, guid: c77420b80a92baf48a2d882e99468f48, type: 3}
+    - target: {fileID: 7441735867177664504, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: waitingSoundVolume
-      value: 0.53
+      value: 0.74
       objectReference: {fileID: 0}
     - target: {fileID: 7583845094298221411, guid: f23b61bf72675664683c4a0541bf81ae, type: 3}
       propertyPath: m_LocalScale.x
@@ -131773,6 +131789,22 @@ PrefabInstance:
       propertyPath: joystick
       value: 
       objectReference: {fileID: 1203452574}
+    - target: {fileID: 6796231500301844375, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: jumpVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6796231500301844375, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: landVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6796231500301844375, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: runningVolume
+      value: 0.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 6796231500301844375, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: doubleJumpVolume
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6965179099987216530, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: canvas
       value: 
@@ -131805,6 +131837,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: L3antixSingle
       objectReference: {fileID: 0}
+    - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: shootSound
+      value: 
+      objectReference: {fileID: 8300000, guid: dd911e8ba488de942ae0829353fd8532, type: 3}
     - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: aimJoystick
       value: 
@@ -143482,6 +143518,22 @@ PrefabInstance:
       propertyPath: joystick
       value: 
       objectReference: {fileID: 1203452574}
+    - target: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: jumpVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: landVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: runningVolume
+      value: 0.59
+      objectReference: {fileID: 0}
+    - target: {fileID: 5159600053955234360, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: doubleJumpVolume
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5655835730392218243, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.068

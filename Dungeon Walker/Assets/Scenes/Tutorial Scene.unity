@@ -5667,7 +5667,7 @@ GameObject:
   - component: {fileID: 298070237}
   m_Layer: 0
   m_Name: wol
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -12656,7 +12656,10 @@ MonoBehaviour:
   - {fileID: 1545144365}
   delayBetweenAnimations: 2.5
   popInDuration: 0.5
-  popInSound: {fileID: 8300000, guid: 0975d8fed24a2fb48b17a8ad898bc7be, type: 3}
+  popInSounds:
+  - {fileID: 8300000, guid: 0975d8fed24a2fb48b17a8ad898bc7be, type: 3}
+  - {fileID: 8300000, guid: f2744f3d159807c4f98daaf1401bd648, type: 3}
+  - {fileID: 8300000, guid: e0082b443e14731429493aabeb757ae1, type: 3}
   popInOvershootScale: 1.2
   soundEffectSource: {fileID: 402047886}
   tutorialCompletePanel: {fileID: 935684646}
@@ -22386,7 +22389,7 @@ GameObject:
   - component: {fileID: 1390964330}
   m_Layer: 0
   m_Name: wol (1)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -27338,7 +27341,7 @@ GameObject:
   - component: {fileID: 1760339729}
   m_Layer: 0
   m_Name: wol (1)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -27751,7 +27754,7 @@ GameObject:
   - component: {fileID: 1792821386}
   m_Layer: 0
   m_Name: wol
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

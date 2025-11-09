@@ -23,6 +23,7 @@ public class TutorialGameManager : MonoBehaviour
     private bool tutorialFinished = false;
     private int currentEncounterIndex = 0; // To track which encounter we are on
     private GameObject spawnedEnemy;
+    private List<AudioClip> availablePopSounds;
     [Header("Tutorial Goal")]
     public int scoreToComplete = 1;
     [Header("UI Pop-In Animation")]
@@ -43,7 +44,7 @@ public class TutorialGameManager : MonoBehaviour
     }
     [Tooltip("How long the pop-in animation for each element should take.")]
     public float popInDuration = 0.3f;
-    public AudioClip popInSound;
+    public List<AudioClip> popInSounds;
     [Tooltip("How much bigger the element gets before shrinking back to normal size (e.g., 1.2 is 20% bigger).")]
     public float popInOvershootScale = 1.2f;
     [Tooltip("Drag your dedicated 2D AudioSource object here.")]
@@ -82,6 +83,10 @@ public class TutorialGameManager : MonoBehaviour
             element.SetActive(false);
         }
         mainMenuButton.gameObject.SetActive(false);
+        if (popInSounds != null)
+        {
+            availablePopSounds = new List<AudioClip>(popInSounds);
+        }
     }
     void Update()
     {
@@ -209,15 +214,27 @@ public class TutorialGameManager : MonoBehaviour
     }
     private IEnumerator PopInElement(GameObject element)
     {
-        if (popInSound != null && soundEffectSource != null)
+        if (soundEffectSource != null && popInSounds != null && popInSounds.Count > 0)
         {
-            // Use the AudioSource you provided to play the sound.
-            soundEffectSource.PlayOneShot(popInSound);
-        }
-        else
-        {
-            // This warning helps if you forget to hook something up.
-            if (popInSound != null) Debug.LogWarning("Pop-in sound is assigned, but the Sound Effect Source is missing!");
+            // 1. Check if our temporary list is empty. If it is, refill it.
+            if (availablePopSounds == null || availablePopSounds.Count == 0)
+            {
+                Debug.Log("Sound list empty, refilling...");
+                availablePopSounds = new List<AudioClip>(popInSounds);
+            }
+
+            // 2. Pick a random sound from the *available* sounds list.
+            int randomIndex = Random.Range(0, availablePopSounds.Count);
+            AudioClip soundToPlay = availablePopSounds[randomIndex];
+
+            // 3. Play the sound.
+            if (soundToPlay != null)
+            {
+                soundEffectSource.PlayOneShot(soundToPlay);
+            }
+
+            // 4. IMPORTANT: Remove the sound we just played from the available list.
+            availablePopSounds.RemoveAt(randomIndex);
         }
         // 1. Set initial state: invisible and normal size.
         element.SetActive(true);
