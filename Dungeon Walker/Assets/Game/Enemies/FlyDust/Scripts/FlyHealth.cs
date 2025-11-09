@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class FlyHealth : MonoBehaviour
+public class FlyHealth : MonoBehaviour, IDamageable
 {
     // Public variables for health and effects
     public int baseMaxHealth = 100; 

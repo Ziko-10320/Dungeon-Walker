@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-public class FleaHealthV2 : MonoBehaviour, IPunObservable
+public class FleaHealthV2 : MonoBehaviour, IPunObservable, IDamageable
 {
     // Public variables for health and effects
     public int baseMaxHealth = 100;

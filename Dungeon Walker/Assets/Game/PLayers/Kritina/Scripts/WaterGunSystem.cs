@@ -597,7 +597,7 @@ public class WaterBullet : MonoBehaviour
                 Vector2 attackDirection = (other.transform.position - transform.position).normalized;
                 // Assuming InkHealth.TakeDamage takes damage, attackDirection, and knockbackForce
                 // You might need to adjust the knockbackForce value (e.g., 1f) based on your game design.
-                RatKingHealth.TakeDamage(damage);
+                RatKingHealth.TakeDamage(damage, Vector2.zero, 0f);
                 FindObjectOfType<SuperMoveController>().superMeter.AddDamage(damage);
             }
 

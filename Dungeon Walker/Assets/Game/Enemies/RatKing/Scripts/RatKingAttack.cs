@@ -675,7 +675,7 @@ public class RatKingAttack : MonoBehaviour
 
 // NEW: CheeseProjectile script (nested class for simplicity, or can be a separate file)
 // This class will be added to the cheese prefabs at runtime.
-public class CheeseProjectile : MonoBehaviour
+public class CheeseProjectile : MonoBehaviour, IDamageable
 {
     private bool isRealCheese;
     private int damageAmount;
@@ -1064,7 +1064,7 @@ public class CheeseProjectile : MonoBehaviour
         }
         // --- END OF MATERIAL FIX ---
     }
-    public void TakeDamage(int damageAmount, Vector2 attackDirection, float knockbackForce = 0f)
+    public void TakeDamage(float damageAmount, Vector2 attackDirection, float knockbackForce = 0f)
     {
         Explode();
     }

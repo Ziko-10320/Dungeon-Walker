@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class FleaHealth : MonoBehaviour, IPunObservable
+public class FleaHealth : MonoBehaviour, IPunObservable, IDamageable
 {
     // Public variables for health and effects
     public int baseMaxHealth = 100; // Maximum health of the mushroom

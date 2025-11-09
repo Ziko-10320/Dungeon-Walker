@@ -121,7 +121,7 @@ public class BeePowerUpL3antix : MonoBehaviour
                     if (col.TryGetComponent(out FlyHealth fly)) fly.TakeDamage((int)damage, Vector2.zero);
                     if (col.TryGetComponent(out SprayerHealth sprayer)) sprayer.TakeDamage((int)damage, Vector2.zero);
                     if (col.TryGetComponent(out InkHealth ink)) ink.TakeDamage((int)damage, Vector2.zero);
-                    if (col.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage((int)damage);
+                    if (col.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage((int)damage, Vector2.zero, 0f);
                     if (col.TryGetComponent(out PlayerHealth player)) player.TakeDamage((int)damage, 0f, Vector2.zero);
                 }
             }

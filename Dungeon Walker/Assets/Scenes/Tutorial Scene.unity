@@ -12931,6 +12931,14 @@ PrefabInstance:
       value: 2.245
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: joystickUI
+      value: 
+      objectReference: {fileID: 1508550109}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: attackButtonUI
+      value: 
+      objectReference: {fileID: 1747816770}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: attackJoystick
       value: 
       objectReference: {fileID: 438052003}
@@ -12938,6 +12946,22 @@ PrefabInstance:
       propertyPath: runningJoystick
       value: 
       objectReference: {fileID: 744619629}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: attackButtonRect
+      value: 
+      objectReference: {fileID: 1221249199}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: attackButtonHandle
+      value: 
+      objectReference: {fileID: 1025032596}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: uiCanvasRectTransform
+      value: 
+      objectReference: {fileID: 1997504697}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: attackButtonBackground
+      value: 
+      objectReference: {fileID: 1508550110}
     - target: {fileID: 6790693189779611674, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Name
       value: KritinaSingle
@@ -17590,6 +17614,11 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!224 &1025032596 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 3186718372700648999, guid: c44da69a8d959c44b89efeaba8084792, type: 3}
+  m_PrefabInstance: {fileID: 151047200}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1029266267
 GameObject:
   m_ObjectHideFlags: 0
@@ -20549,6 +20578,11 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!224 &1221249199 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1123907384840353615, guid: c44da69a8d959c44b89efeaba8084792, type: 3}
+  m_PrefabInstance: {fileID: 151047200}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1228862501
 GameObject:
   m_ObjectHideFlags: 0
@@ -24182,6 +24216,16 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1508550109 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 29195463443153330, guid: c44da69a8d959c44b89efeaba8084792, type: 3}
+  m_PrefabInstance: {fileID: 151047200}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &1508550110 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 6998355555272601196, guid: c44da69a8d959c44b89efeaba8084792, type: 3}
+  m_PrefabInstance: {fileID: 151047200}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1513120271
 GameObject:
   m_ObjectHideFlags: 0
@@ -27109,6 +27153,11 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &1747816770 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8137031534836371469, guid: c44da69a8d959c44b89efeaba8084792, type: 3}
+  m_PrefabInstance: {fileID: 151047200}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1748654680
 GameObject:
   m_ObjectHideFlags: 0
@@ -31125,6 +31174,11 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!224 &1997504697 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 6466644148916044356, guid: c44da69a8d959c44b89efeaba8084792, type: 3}
+  m_PrefabInstance: {fileID: 151047200}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2001377120
 GameObject:
   m_ObjectHideFlags: 0

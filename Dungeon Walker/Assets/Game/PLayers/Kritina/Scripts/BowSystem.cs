@@ -1159,7 +1159,7 @@ public void HandleImpactDamage(Vector2 impactPosition)
 
                 if (target.TryGetComponent<RatKingHealth>(out var ratKingHealth))
                 {
-                    ratKingHealth.TakeDamage(Mathf.RoundToInt(damageToDeal));
+                    ratKingHealth.TakeDamage(Mathf.RoundToInt(damageToDeal), Vector2.zero, 0f);
                     if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                         L3antixSuperMeter.Instance.AddDamage((int)damageToDeal);
 

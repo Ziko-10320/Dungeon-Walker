@@ -770,7 +770,7 @@ public class BatAttackSystem : MonoBehaviour
                 }
                 else if (enemyCollider.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
                 {
-                    RatKingHealth.TakeDamage(throwSlashDamage);
+                    RatKingHealth.TakeDamage(throwSlashDamage,Vector2.zero, 0f);
                     if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                         L3antixSuperMeter.Instance.AddDamage(throwSlashDamage);
 
@@ -1442,7 +1442,7 @@ public class BatAttackSystem : MonoBehaviour
             }
             else if (enemy.TryGetComponent<RatKingHealth>(out var RatKingHealth) && RatKingHealth != null)
             {
-                RatKingHealth.TakeDamage(damage);
+                RatKingHealth.TakeDamage(damage, Vector2.zero, 0f);
                 if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                     L3antixSuperMeter.Instance.AddDamage(damage);
 

@@ -262,7 +262,7 @@ public class GalaxyImapctSystem : MonoBehaviour
             if (ratKingHealth != null)
             {
                 Vector2 directionToEnemy = (enemy.transform.position - transform.position).normalized;
-                ratKingHealth.TakeDamage(damagePerTick);
+                ratKingHealth.TakeDamage(damagePerTick, Vector2.zero, 0f);
             }
         }
     }

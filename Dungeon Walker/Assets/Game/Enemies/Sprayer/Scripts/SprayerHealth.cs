@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class SprayerHealth : MonoBehaviour, IPunObservable
+public class SprayerHealth : MonoBehaviour, IPunObservable, IDamageable
 {
     // Public variables for health and effects
     public int baseMaxHealth = 100; // Renamed from maxHealth

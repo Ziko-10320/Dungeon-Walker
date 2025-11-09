@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class InkHealth : MonoBehaviour
+public class InkHealth : MonoBehaviour, IDamageable
 {
     // Public variables for health and effects
     public int baseMaxHealth = 100; // Renamed from maxHealth

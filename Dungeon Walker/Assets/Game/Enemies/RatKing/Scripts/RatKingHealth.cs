@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class RatKingHealth : MonoBehaviour
+public class RatKingHealth : MonoBehaviour, IDamageable
 {
 
     public int baseMaxHealth = 100; // Renamed from maxHealth
@@ -214,7 +214,7 @@ public class RatKingHealth : MonoBehaviour
     }
 
     // Method to take damage
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, Vector2 attackDirection, float knockbackForce = 0f)
     {
         // Reduce health
         currentHealth -= (int)damage;

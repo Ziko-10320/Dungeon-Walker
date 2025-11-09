@@ -64,7 +64,7 @@ public class DelayedDamageClaw : MonoBehaviour
             }
             else if (enemy.TryGetComponent<RatKingHealth>(out var ratKingHealth))
             {
-                ratKingHealth.TakeDamage(damageAmount);
+                ratKingHealth.TakeDamage(damageAmount, Vector2.zero, 0f);
             }
         }
         // --- END OF DAMAGE LOGIC ---

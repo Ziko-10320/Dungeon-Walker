@@ -144,7 +144,7 @@ public class BulletBehavior : MonoBehaviour
         RatKingHealth RatKingHealth = hitObject.GetComponent<RatKingHealth>();
         if (RatKingHealth != null)
         {
-            RatKingHealth.TakeDamage(bulletDamage);
+            RatKingHealth.TakeDamage(bulletDamage, Vector2.zero, 0f);
             if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                 L3antixSuperMeter.Instance.AddDamage(bulletDamage);
 

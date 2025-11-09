@@ -156,7 +156,7 @@ public class ReviveUpgradedSystem : MonoBehaviour
             if (enemy.TryGetComponent(out FlyHealth fly)) fly.TakeDamage(damage, Vector2.zero);
             if (enemy.TryGetComponent(out SprayerHealth sprayer)) sprayer.TakeDamage(damage, Vector2.zero);
             if (enemy.TryGetComponent(out InkHealth ink)) ink.TakeDamage(damage, Vector2.zero);
-            if (enemy.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage(damage);
+            if (enemy.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage(damage, Vector2.zero, 0f);
         }
 
         Debug.Log($"💥 Explosion dealt {damage} damage to {enemies.Length} enemies!");

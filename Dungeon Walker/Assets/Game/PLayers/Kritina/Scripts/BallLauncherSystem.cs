@@ -1574,7 +1574,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
             if (RatKingHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                RatKingHealth.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
+                RatKingHealth.TakeDamage(ballDamage, Vector2.zero, 0f); // EXACT DAMAGE - NO CONVERSION
                 if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                     L3antixSuperMeter.Instance.AddDamage(ballDamage);
 
@@ -1696,7 +1696,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
             if (RatKingHealth != null)
             {
                 Vector2 attackDirection = (target.transform.position - projectileGameObject.transform.position).normalized;
-                RatKingHealth.TakeDamage(ballDamage); // EXACT DAMAGE - NO CONVERSION
+                RatKingHealth.TakeDamage(ballDamage, Vector2.zero, 0f); // EXACT DAMAGE - NO CONVERSION
                 if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                     L3antixSuperMeter.Instance.AddDamage(ballDamage);
 
@@ -1830,7 +1830,7 @@ public class RobustLauncherSystem : MonoBehaviour, IPunObservable, IPoolable
             if (RatKingHealth != null)
             {
                 Vector2 attackDirection = (enemyCollider.transform.position - (Vector3)explosionCenter).normalized;
-                RatKingHealth.TakeDamage(ballDamage); // EXACT DAMAGE - NO MULTIPLIERS
+                RatKingHealth.TakeDamage(ballDamage, Vector2.zero, 0f); // EXACT DAMAGE - NO MULTIPLIERS
                 if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
                     L3antixSuperMeter.Instance.AddDamage(ballDamage);
 

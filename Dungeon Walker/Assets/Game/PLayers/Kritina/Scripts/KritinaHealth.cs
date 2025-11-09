@@ -72,6 +72,16 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private PlayerInvisibility playerInvisibility;
     public ShakeData CameraShakeDeath;
     private PowerUpManager powerUpManager;
+
+    [Header("Revive Settings")]
+    [Tooltip("The UI panel that asks the player if they want to watch an ad to revive.")]
+    [SerializeField] private GameObject reviveRequestPanel;
+    [Tooltip("The maximum number of times the player can revive per life/run.")]
+    [SerializeField] private int maxRevives = 2;
+    [Tooltip("Particle effects to play when the player is revived.")]
+    [SerializeField] private ParticleSystem[] reviveParticles;
+    private bool isDead = false;
+    private int revivesUsed = 0;
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -91,7 +101,55 @@ public class PlayerHealth : MonoBehaviour
             Debug.LogWarning("PlayerHealth could not find PowerUpManager on Awake.");
         }
     }
+    void OnEnable()
+    {
+        // Subscribe to the event from the AdsManager.
+        // When the ad is completed, the RevivePlayer method will be called.
+        RewardedAdButton.OnRewardGranted += RevivePlayer;
+    }
 
+    void OnDisable()
+    {
+        // Unsubscribe to prevent errors when this object is destroyed.
+        RewardedAdButton.OnRewardGranted -= RevivePlayer;
+    }
+
+     private void RevivePlayer()
+    {
+        Debug.Log("RevivePlayer method called! Reviving the player.");
+
+        // 1. Restore player's health and state
+        currentHealth = maxHealth;
+        isDead = false; // Mark the player as alive again
+        revivesUsed++;
+        UpdateHealthEffects(); // Update UI and screen effects to reflect full health
+
+        // 2. Play the revive particle effects
+        if (reviveParticles != null && reviveParticles.Length > 0)
+        {
+            foreach (ParticleSystem ps in reviveParticles)
+            {
+                if (ps != null) ps.Play();
+            }
+        }
+
+        // 3. Re-enable player controls
+        if (movementScript != null) movementScript.enabled = true;
+        // You can re-enable other scripts here if needed, e.g., weapon scripts
+
+        // 4. Hide UI panels
+        if (reviveRequestPanel != null) reviveRequestPanel.SetActive(false);
+        if (gameUIManager != null) gameUIManager.HideDeathScreen(); // Assuming you have a method to hide it
+
+        // 5. Reset any lingering post-processing effects
+        ResetPostProcessingOnDeath();
+    }
+    private void ResetPostProcessingOnDeath()
+    {
+        // This method cleans up the low-health screen effects.
+        if (vignette != null) vignette.active = false;
+        if (chromaticAberration != null) chromaticAberration.active = false;
+    }
     void Start()
     {
         currentHealth = maxHealth;
@@ -208,55 +266,71 @@ public class PlayerHealth : MonoBehaviour
 
     private void Die()
     {
-        Debug.Log("Player has died!");
-        if (vignette != null) vignette.active = false;
-        if (chromaticAberration != null) chromaticAberration.active = false;
+        // 1. First, check if we are already in the process of dying.
+        if (isDead) return;
 
-        // --- Try Revive Upgraded first ---
         ReviveUpgradedSystem reviveUp = GetComponent<ReviveUpgradedSystem>();
         if (reviveUp != null && reviveUp.hasReviveUpgradedPowerUp && !reviveUp.HasUsedRevive)
         {
             Debug.Log("Revive Upgraded available — starting revive sequence.");
             reviveUp.TryRevive();
-            return; // cancel death, revive instead
+            return; // Stop the Die() method here.
         }
 
-        // --- Then try normal Revive ---
         ReviveSystem revive = GetComponent<ReviveSystem>();
         if (revive != null && revive.hasRevivePowerUp && !revive.hasUsedRevive)
         {
             Debug.Log("Revive available — starting revive sequence.");
             revive.TryRevive();
-            return;
+            return; // Stop the Die() method here.
         }
 
-        // --- Normal (final) death flow (no revive) ---
-        if (checkpointManager == null)
+
+        AdManager_New adManager = FindObjectOfType<AdManager_New>();
+        bool isAdReady = (adManager != null && adManager.IsRewardedAdReady);
+        bool canUseAdRevive = (revivesUsed < maxRevives) && isAdReady;
+
+        if (canUseAdRevive && reviveRequestPanel != null)
         {
-            checkpointManager = FindObjectOfType<CheckpointManager>();
+            // If we can revive, show the request panel.
+            Debug.Log("Player died, but can revive via ad. Showing revive request panel.");
+            isDead = true; // Mark as "dying" to prevent this from running again
+            if (movementScript != null) movementScript.enabled = false; // Freeze player
+            Time.timeScale = 0f;
+            reviveRequestPanel.SetActive(true);
+            return; // Stop the Die() method here and wait for player's choice.
         }
 
+
+        // 4. If no revives of any kind are left, this is the FINAL death.
+        Debug.Log("Player has died for good. No revives left.");
+        isDead = true;
+        ResetPostProcessingOnDeath(); // Clean up screen effects
+
+        if (checkpointManager == null) checkpointManager = FindObjectOfType<CheckpointManager>();
         if (checkpointManager != null && PlayerStatsManager.Instance != null)
         {
-            int finalScore = checkpointManager.TotalScore;
-            PlayerStatsManager.Instance.SetFinalScore(finalScore);
-            Debug.Log("Final score of " + finalScore + " sent to PlayerStatsManager.");
-        }
-        else
-        {
-            Debug.LogWarning("Could not set final score. CheckpointManager or PlayerStatsManager not found.");
+            PlayerStatsManager.Instance.SetFinalScore(checkpointManager.TotalScore);
         }
 
         if (gameUIManager != null)
         {
             gameUIManager.ShowDeathScreen();
         }
-        else
-        {
-            Debug.LogError("GameUIManager not found! Cannot show death screen.");
-        }
 
-        gameObject.SetActive(false); // final death
+        gameObject.SetActive(false); // Final deactivation of the player object.
+    }
+    public void DeclineRevive()
+    {
+        // This is called when the player clicks "No" on the ad revive panel.
+        // It skips straight to the permanent death logic.
+        Debug.Log("Player declined ad revive. Checking for other revives.");
+        reviveRequestPanel.SetActive(false);
+        Time.timeScale = 1f;
+        // We set revivesUsed to max so the Die() method won't ask for an ad again.
+        revivesUsed = maxRevives;
+        isDead = false; // Temporarily un-flag death so Die() can run its checks again.
+        Die(); // Call Die() again, which will now skip the ad check and proceed to final death.
     }
 
     // ... The rest of your script (HealOverTime, UpdateHealthEffects, HandleHit, etc.) is unchanged ...
@@ -580,7 +654,7 @@ public class PlayerHealth : MonoBehaviour
             if (enemyCollider.TryGetComponent(out FlyHealth fly)) fly.TakeDamage(shieldExplosionDamage, Vector2.zero);
             if (enemyCollider.TryGetComponent(out SprayerHealth sprayer)) sprayer.TakeDamage(shieldExplosionDamage, Vector2.zero);
             if (enemyCollider.TryGetComponent(out InkHealth ink)) ink.TakeDamage(shieldExplosionDamage, Vector2.zero);
-            if (enemyCollider.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage(shieldExplosionDamage);
+            if (enemyCollider.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage(shieldExplosionDamage, Vector2.zero, 0f);
         }
 
     }

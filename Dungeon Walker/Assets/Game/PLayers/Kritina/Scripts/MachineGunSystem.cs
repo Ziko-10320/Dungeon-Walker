@@ -126,6 +126,11 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable, IPoolable
     [Tooltip("How many frames to wait before checking if the arm is active. Higher = more optimized.")]
     [SerializeField] private int armCheckInterval = 10;
     private int armCheckFrameCounter = 0;
+
+    [Header("Object Pooling Settings")]
+   
+    [SerializeField] private int muzzleFlashPoolSize = 20; // <--- ADD THIS LINE"
+    [SerializeField] private int emptyShellPoolSize = 50;
     void Awake()
     {
         view = GetComponentInParent<PhotonView>();
@@ -153,6 +158,17 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable, IPoolable
         {
             originalGunColor = gunSpriteRenderers[0].color; // Store the original color of the first renderer
         }
+        if (ObjectPoolManager.Instance != null)
+        {
+           
+            if (muzzleFlashEffect != null) ObjectPoolManager.Instance.CreatePool(muzzleFlashEffect.gameObject, muzzleFlashPoolSize);
+            if (emptyBulletPrefab != null) ObjectPoolManager.Instance.CreatePool(emptyBulletPrefab, emptyShellPoolSize);
+            Debug.Log("[MachineGunSystem] All object pools created.");
+        }
+        else
+        {
+            Debug.LogError("[MachineGunSystem] ObjectPoolManager.Instance is not found! Pooling will fail.");
+        }
     }
     public void CreatePools()
     {
@@ -170,6 +186,7 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable, IPoolable
             armCheckFrameCounter = 0;
             EnsureArmIsActive(); // This is our new guardian method
         }
+
         if (isOnlineMode && !view.IsMine)
         {
             // If we are online and this isn't our character, do nothing.
@@ -380,74 +397,69 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable, IPoolable
            
         }
     }
-   
+
 
     private void Shoot()
-{
-        // Local effects are always played immediately for responsiveness.
-        if (muzzleFlashEffect != null && bulletSpawnPoint != null)
+    {
+        // --- 1. PLAY LOCAL EFFECTS (UNCHANGED) ---
+        if (muzzleFlashEffect != null)
         {
-            // 1. Instantiate the prefab at the bullet spawn point's position and rotation.
-            ParticleSystem flashInstance = Instantiate(muzzleFlashEffect, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
-
-            // 2. (Optional but good practice) Destroy the effect after it has played.
-            // This prevents your Hierarchy from filling up with thousands of old effects.
-            Destroy(flashInstance.gameObject, flashInstance.main.duration);
+            ObjectPoolManager.Instance.SpawnFromPool(muzzleFlashEffect.gameObject, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
         }
-        else
+        if (shootSound != null)
         {
-            if (muzzleFlashEffect == null) Debug.LogWarning("MuzzleFlashEffect prefab is not assigned in the Inspector!");
-            if (bulletSpawnPoint == null) Debug.LogWarning("BulletSpawnPoint is not assigned in the Inspector!");
-        } 
-       if (shootSound != null)
-    {
-        AudioSource.PlayClipAtPoint(shootSound, bulletSpawnPoint.position, shootSoundVolume);
-    }
+            AudioSource.PlayClipAtPoint(shootSound, bulletSpawnPoint.position, shootSoundVolume);
+        }
 
-    // Calculate spawn parameters once.
-    float spread = Random.Range(-maxSpreadAngle / 2f, maxSpreadAngle / 2f);
-    Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation + spread);
-    Vector2 randomSpawnOffset = Random.insideUnitCircle * spawnAreaRadius;
-    Vector3 spawnPosition = bulletSpawnPoint.position + (Vector3)randomSpawnOffset;
-    Vector2 shootDirection = shootRotation * Vector2.right;
+        // --- 2. CALCULATE THE SHOT DIRECTION (UNCHANGED) ---
+        float spread = Random.Range(-maxSpreadAngle / 2f, maxSpreadAngle / 2f);
+        Quaternion shootRotation = Quaternion.Euler(0, 0, worldTrajectoryRotation + spread);
+        Vector2 shootDirection = shootRotation * Vector2.right;
+        Vector3 spawnPosition = bulletSpawnPoint.position;
 
-    // --- THE MODE-AWARE LOGIC ---
-    if (isOnlineMode)
-    {
-            // --- ONLINE ---
-            // 1. The shooter creates their own "real" bullet locally.
-            GameObject myBullet = ObjectPoolManager.Instance.SpawnFromPool(bulletPrefab, spawnPosition, shootRotation);
-            InitializeBullet(myBullet, shootDirection, true); // true = isReal
+        // --- 3. FIRE THE RAYCAST (UNCHANGED) ---
+        LayerMask combinedLayers = enemyLayers | collisionLayers;
+        RaycastHit2D hit = Physics2D.Raycast(spawnPosition, shootDirection, 100f, combinedLayers);
 
-        // 2. The shooter tells everyone else to create a "visual" bullet via an RPC.
-        // This RPC must be on your PlayerSyncManager.
-        if (syncManager != null)
+        // --- 4. PROCESS DAMAGE AND EFFECTS (IF WE HIT SOMETHING) ---
+        if (hit.collider != null)
         {
-                view.RPC("RPC_SpawnVisualBullet", RpcTarget.Others, spawnPosition, shootRotation, shootDirection);
+            GameObject collidedObject = hit.collider.gameObject;
+            if (((1 << collidedObject.layer) & enemyLayers) != 0)
+            {
+                // Deal damage to enemies
+                if (collidedObject.TryGetComponent(out FleaHealth flea)) flea.TakeDamage(bulletDamage, transform.right);
+                if (collidedObject.TryGetComponent(out FleaHealthV2 fleav2)) fleav2.TakeDamage(bulletDamage, transform.right);
+                else if (collidedObject.TryGetComponent(out SprayerHealth sprayer)) sprayer.TakeDamage(bulletDamage, Vector2.zero, 0f);
+                else if (collidedObject.TryGetComponent(out FlyHealth fly)) fly.TakeDamage(bulletDamage, transform.right);
+                else if (collidedObject.TryGetComponent(out InkHealth ink)) ink.TakeDamage(bulletDamage, Vector2.zero, 0f);
+                else if (collidedObject.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage(bulletDamage, Vector2.zero, 0f);
+                else if (collidedObject.TryGetComponent(out DestructibleObject destructible)) destructible.TakeDamage(bulletDamage);
+
+                // Add to super meter
+                if (L3antixSuperMeter.Instance != null) L3antixSuperMeter.Instance.AddDamage(bulletDamage);
+                if (PlayerSuperMeter.Instance != null) PlayerSuperMeter.Instance.AddDamage(bulletDamage);
             }
+            // Spawn the destruction effect at the point of impact.
+            TriggerDestructionEffect(hit.point);
+        }
+
+        // --- 5. SPAWN AND INITIALIZE THE VISUAL BULLET ---
+        GameObject visualBullet = ObjectPoolManager.Instance.SpawnFromPool(bulletPrefab, spawnPosition, shootRotation);
+        PooledVisualEffect effect = visualBullet.GetComponent<PooledVisualEffect>();
+        if (effect == null)
+        {
+            effect = visualBullet.AddComponent<PooledVisualEffect>();
+        }
+
+        // We now pass the ENTIRE 'hit' object to the Initialize method.
+        // The visual effect is now smart enough to handle itself.
+        effect.Initialize(shootDirection, bulletSpeed, bulletLifetime, hit);
+
+        // --- 6. SPAWN THE EMPTY SHELL CASING (UNCHANGED) ---
+        SpawnEmptyBullet();
     }
-    else
-    {
-            // --- OFFLINE ---
-            GameObject myBullet = ObjectPoolManager.Instance.SpawnFromPool(bulletPrefab, spawnPosition, shootRotation);
-            InitializeBullet(myBullet, shootDirection, true); // true = isReal
-    }
-}
-    [PunRPC]
-    public void RPC_SpawnVisualBullet(Vector3 position, Quaternion rotation, Vector2 direction)
-    {
-        // This runs on all other clients.
-        GameObject visualBullet = ObjectPoolManager.Instance.SpawnFromPool(bulletPrefab, position, rotation);
-        InitializeBullet(visualBullet, direction, false); // false = isReal
-    }
-    private void InitializeBullet(GameObject bullet, Vector2 direction, bool isReal)
-    {
-        BulletComponent bulletComponent = bullet.AddComponent<BulletComponent>();
-        bulletComponent.machineGunSystem = this; // Give it a reference back to this script
-        bulletComponent.isReal = isReal;
-        bulletComponent.ResetHitFlag();
-        bulletComponent.Initialize(direction, bulletSpeed, bulletLifetime, bulletDamage, damageableLayers, collisionLayers, enemyLayers, destructionEffectPrefab, bulletCollisionSound, bulletCollisionSoundVolume);
-    }
+
     public void TriggerNetworkedDestruction(Vector3 position)
     {
         if (isOnlineMode)
@@ -623,211 +635,76 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable, IPoolable
     }
 }
 
-// Nested class for bullet behavior
-public class BulletComponent : MonoBehaviour
+public class PooledVisualEffect : MonoBehaviour
 {
     private Vector2 direction;
     private float speed;
     private float lifetime;
-    private int damage;
-    private LayerMask damageableLayers;
-    private LayerMask collisionLayers;
-    private LayerMask enemyLayers;
-    private ParticleSystem destructionEffectPrefab;
-    private AudioClip collisionSound;
-    private float collisionSoundVolume;
-    private Rigidbody2D rb;
-    private AudioSource audioSource;
-    public MachineGunSystem machineGunSystem;
-    public bool isReal;
-    private bool hasHit = false;
+    private float lifeTimer;
 
-    public void Initialize(Vector2 dir, float spd, float life, int dmg, LayerMask dmgLayers, LayerMask colLayers, LayerMask enemyLyrs, ParticleSystem destructionFx, AudioClip colSound, float colSoundVolume)
+    // --- NEW VARIABLES ---
+    private bool hasHitTarget;
+    private Vector2 impactPoint;
+
+    // The new Initialize method now accepts the hit information.
+    public void Initialize(Vector2 dir, float spd, float life, RaycastHit2D hit)
     {
-        // --- THIS IS THE CRITICAL FIX ---
-        // We must assign the incoming parameters to the class-level variables.
-        this.direction = dir.normalized;
-        this.speed = spd;
-        this.lifetime = life;
-        this.damage = dmg;
-        this.damageableLayers = dmgLayers;
-        this.collisionLayers = colLayers;
-        this.enemyLayers = enemyLyrs;
-        this.destructionEffectPrefab = destructionFx;
-        this.collisionSound = colSound;
-        this.collisionSoundVolume = colSoundVolume;
-        // --- END OF FIX ---
+        direction = dir;
+        speed = spd;
+        lifetime = life;
+        lifeTimer = 0f;
 
-        // The rest of the function was already correct.
-        rb = GetComponent<Rigidbody2D>() ?? gameObject.AddComponent<Rigidbody2D>();
-        rb.gravityScale = 0;
-        // We no longer set the velocity here, as FixedUpdate will handle it.
-
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
+        // Check if the raycast actually hit something.
+        if (hit.collider != null)
         {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-
-        StartCoroutine(DeactivateAfterTime(life));
-
-    }
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        HandleCollision(other.gameObject);
-    }
-
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        HandleCollision(collision.gameObject);
-    }
-
-    void FixedUpdate()
-    {
-        if (rb != null) rb.velocity = direction * speed;
-    }
-
-    public void ResetHitFlag()
-    {
-        this.hasHit = false;
-    }
-    private void HandleCollision(GameObject collidedObject)
-    {
-        // If this bullet has already processed a hit, do nothing.
-        if (hasHit) return;
-
-        // Check what we hit
-        bool hitEnemy = ((1 << collidedObject.layer) & enemyLayers) != 0;
-        bool hitWall = ((1 << collidedObject.layer) & collisionLayers) != 0;
-
-        // If we didn't hit an enemy OR a wall, ignore the collision and continue flying.
-        if (!hitEnemy && !hitWall)
-        {
-            return;
-        }
-
-        // --- If we are here, it means we hit a valid target (enemy or wall) ---
-
-        // Mark this bullet as "hit" to prevent any further collision checks.
-        hasHit = true;
-
-        // --- LOGIC FOR THE "REAL" BULLET (THE ONE THAT DEALS DAMAGE) ---
-        if (isReal)
-        {
-            // 1. If it hit an enemy, deal damage.
-            if (hitEnemy)
-            {
-                FleaHealth fleaHealth = collidedObject.GetComponent<FleaHealth>();
-                if (fleaHealth != null)
-                {
-                    fleaHealth.TakeDamage(damage, transform.right);
-                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
-                        L3antixSuperMeter.Instance.AddDamage(damage);
-
-                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
-                        PlayerSuperMeter.Instance.AddDamage(damage);
-
-                }
-
-                SprayerHealth sprayerHealth = collidedObject.GetComponent<SprayerHealth>();
-                if (sprayerHealth != null)
-                {
-                    sprayerHealth.TakeDamage(damage, transform.right);
-                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
-                        L3antixSuperMeter.Instance.AddDamage(damage);
-
-                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
-                        PlayerSuperMeter.Instance.AddDamage(damage);
-                }
-
-                FleaHealthV2 FleaHealthV2 = collidedObject.GetComponent<FleaHealthV2>();
-                if (FleaHealthV2 != null)
-                {
-                    FleaHealthV2.TakeDamage(damage, transform.right);
-                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
-                        L3antixSuperMeter.Instance.AddDamage(damage);
-
-                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
-                        PlayerSuperMeter.Instance.AddDamage(damage);
-                }
-
-                FlyHealth flyHealth = collidedObject.GetComponent<FlyHealth>();
-                if (flyHealth != null)
-                {
-                    flyHealth.TakeDamage(damage, transform.right);
-                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
-                        L3antixSuperMeter.Instance.AddDamage(damage);
-
-                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
-                        PlayerSuperMeter.Instance.AddDamage(damage);
-                }
-
-                InkHealth inkHealth = collidedObject.GetComponent<InkHealth>();
-                if (inkHealth != null)
-                {
-                    inkHealth.TakeDamage(damage, transform.right, 1f);
-                    if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
-                        L3antixSuperMeter.Instance.AddDamage(damage);
-
-                    if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
-                        PlayerSuperMeter.Instance.AddDamage(damage);
-
-                }
-                RatKingHealth ratKingHealth = collidedObject.GetComponent<RatKingHealth>();
-                if (ratKingHealth != null)
-                {
-                     ratKingHealth.TakeDamage(damage);
-                        if (L3antixSuperMeter.Instance != null && L3antixSuperMeter.Instance.isActiveAndEnabled)
-                            L3antixSuperMeter.Instance.AddDamage(damage);
-
-                        if (PlayerSuperMeter.Instance != null && PlayerSuperMeter.Instance.isActiveAndEnabled)
-                            PlayerSuperMeter.Instance.AddDamage(damage);   
-                }
-                CheeseProjectile sporeMine = collidedObject.GetComponent<CheeseProjectile>();
-                if (sporeMine != null)
-                {
-
-                    sporeMine.TakeDamage(damage, Vector2.zero, 0f);
-
-                }
-                DestructibleObject DestructibleObject = collidedObject.GetComponent<DestructibleObject>();
-                if (DestructibleObject != null)
-                {
-
-                    DestructibleObject.TakeDamage(damage);
-
-                }
-            }
-
-                machineGunSystem.TriggerDestructionEffect(transform.position);
-
-            // 3. The "real" bullet destroys itself.
-            gameObject.SetActive(false);
-
+            hasHitTarget = true;
+            impactPoint = hit.point;
         }
         else
-            {
-            // --- LOGIC FOR THE "VISUAL" BULLET ---
-            // Visual copies just destroy themselves silently. They don't deal damage or create effects.
-            gameObject.SetActive(false);
-
+        {
+            hasHitTarget = false;
         }
     }
-    private System.Collections.IEnumerator DeactivateAfterTime(float delay)
+
+    void Update()
     {
-        yield return new WaitForSeconds(delay);
-        // This check prevents errors if the bullet was already disabled by a collision.
-        if (gameObject.activeInHierarchy)
+        // Calculate how far we will move this frame.
+        float moveDistance = speed * Time.deltaTime;
+
+        // --- THE "SNAP" LOGIC ---
+        if (hasHitTarget)
+        {
+            // We have a target. Check if we are about to overshoot it.
+            float distanceToImpact = Vector2.Distance(transform.position, impactPoint);
+
+            if (moveDistance >= distanceToImpact)
+            {
+                // We are going to overshoot.
+                // Instead of moving, snap directly to the impact point.
+                transform.position = impactPoint;
+                // Then immediately disable the bullet.
+                gameObject.SetActive(false);
+                return; // Stop any further processing this frame.
+            }
+        }
+        // --- END OF "SNAP" LOGIC ---
+
+        // If we are here, it means we are either not going to overshoot, or we have no target.
+        // So, move normally.
+        transform.Translate(direction * moveDistance, Space.World);
+
+        // Check lifetime (for bullets that don't hit anything).
+        lifeTimer += Time.deltaTime;
+        if (lifeTimer >= lifetime)
         {
             gameObject.SetActive(false);
         }
     }
 }
-
-    // Interface for damageable objects
-    public interface IDamageable
+// Interface for damageable objects
+public interface IDamageable
     {
-        void TakeDamage(int damage);
+        void TakeDamage(float damage, Vector2 knockbackDirection, float knockbackForce);
     }
 
 

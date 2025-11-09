@@ -192,6 +192,22 @@ public class GameUIManager : MonoBehaviour
         Time.timeScale = 0f;
         isGamePaused = true;
     }
+    public void HideDeathScreen()
+    {
+        // This method simply deactivates the death panel.
+        if (deathPanel != null)
+        {
+            deathPanel.SetActive(false);
+        }
+
+        // We also make sure the game is not paused if we are reviving.
+        // The AdsManager already sets Time.timeScale back to 1, but this is an extra safeguard.
+        if (isGamePaused)
+        {
+            Time.timeScale = 1f;
+            isGamePaused = false;
+        }
+    }
     public void RestartGame()
     {
         StartCoroutine(FadeAndRestart());
