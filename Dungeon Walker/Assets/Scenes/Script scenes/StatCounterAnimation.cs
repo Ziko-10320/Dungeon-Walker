@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using TMPro;
-
+using UnityEngine.Events;
 public class StatCounterAnimation : MonoBehaviour
 {
     // All your variable declarations are correct.
@@ -32,6 +32,7 @@ public class StatCounterAnimation : MonoBehaviour
     [SerializeField] private AudioClip coinTickClip;       // Special ticking sound for coins
     [SerializeField] private AudioClip finishSound;
 
+    public UnityEvent OnCountUpComplete;
 
     private Coroutine animationCoroutine;
     private bool isAnimating = false;
@@ -53,7 +54,17 @@ public class StatCounterAnimation : MonoBehaviour
     {
         if (isAnimating && Input.GetMouseButtonDown(0)) SkipAnimation();
     }
+    public void AnimateCoinStat(int newCoinTarget)
+    {
+        if (isAnimating) StopCoroutine(animationCoroutine); // Stop any current animation
 
+        // Get the current value from the text to start from
+        int startCoins = 0;
+        int.TryParse(coinsValueText.text, out startCoins);
+
+        // Start a new coroutine that only animates the coins
+        animationCoroutine = StartCoroutine(CountUpJustCoins(startCoins, newCoinTarget, coinTickClip));
+    }
     // --- THIS IS THE NEW, SIMPLIFIED CORE LOGIC ---
     private IEnumerator AnimateAllStats(int finalScore, int finalKills, int finalCoins)
     {
@@ -121,11 +132,33 @@ public class StatCounterAnimation : MonoBehaviour
         // Animate the coins value
         yield return StartCoroutine(CountUp(coinsValueText, finalCoins, coinTickClip)); // <-- MODIFIED
         PlayFinishSound();
-
+        OnCountUpComplete?.Invoke();
         isAnimating = false;
         animationCoroutine = null;
     }
+    private IEnumerator CountUpJustCoins(int startValue, int targetValue, AudioClip tickClip)
+    {
+        isAnimating = true;
+        if (tickClip != null && soundPlayer != null)
+        {
+            soundPlayer.clip = tickClip;
+            soundPlayer.Play();
+        }
 
+        float timer = 0f;
+        while (timer < countDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            int currentValue = (int)Mathf.Lerp(startValue, targetValue, timer / countDuration);
+            coinsValueText.text = currentValue.ToString();
+            yield return null;
+        }
+
+        coinsValueText.text = targetValue.ToString();
+        if (soundPlayer != null) soundPlayer.Stop();
+        PlayFinishSound();
+        isAnimating = false;
+    }
     // The CountUp method is unchanged and correct.
     private IEnumerator CountUp(TextMeshProUGUI valueText, int targetValue, AudioClip tickClip)
     {

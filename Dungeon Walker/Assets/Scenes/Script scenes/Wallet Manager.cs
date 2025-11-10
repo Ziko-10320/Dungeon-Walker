@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.Events;
 public class WalletManager : MonoBehaviour
 {
     // Singleton instance - this makes it globally accessible
@@ -10,7 +10,7 @@ public class WalletManager : MonoBehaviour
 
     // A key to save and load the coin data from PlayerPrefs.
     private const string CoinsSaveKey = "PlayerTotalCoins";
-
+    public UnityEvent<int> OnCoinsChanged;
     // This function is called when the script instance is being loaded.
     private void Awake()
     {
@@ -32,7 +32,11 @@ public class WalletManager : MonoBehaviour
         // Load the player's coin balance from storage when the game starts.
         LoadCoins();
     }
-
+    private void Start() // <-- ADD A Start() METHOD
+    {
+        // When the game starts, fire the event once to make sure all UI is up-to-date.
+        OnCoinsChanged?.Invoke(CurrentCoins);
+    }
     /// <summary>
     /// Loads the coin balance from PlayerPrefs. If no data is found, it defaults to 0.
     /// </summary>
@@ -65,8 +69,15 @@ public class WalletManager : MonoBehaviour
         CurrentCoins += amountToAdd;
         SaveCoins(); // Save the new balance immediately.
         Debug.Log(amountToAdd + " coins added. New balance: " + CurrentCoins);
-    }
 
+        OnCoinsChanged?.Invoke(CurrentCoins);
+    }
+    public void AddFiveCoinsFromAd()
+    {
+        // We call your existing, safe AddCoins method.
+        AddCoins(5);
+        Debug.Log("5 coins awarded from watching a rewarded ad!");
+    }
     /// <summary>
     /// Attempts to spend a specified amount of coins.
     /// </summary>
@@ -85,6 +96,7 @@ public class WalletManager : MonoBehaviour
             CurrentCoins -= amountToSpend;
             SaveCoins(); // Save the new balance immediately.
             Debug.Log(amountToSpend + " coins spent. New balance: " + CurrentCoins);
+            OnCoinsChanged?.Invoke(CurrentCoins);
             return true; // Purchase successful
         }
         else

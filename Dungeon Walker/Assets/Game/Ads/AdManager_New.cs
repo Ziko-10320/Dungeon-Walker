@@ -1,85 +1,100 @@
 using UnityEngine;
 using UnityEngine.Advertisements;
 using System;
+using System.Collections.Generic; // We need this for the list
 
 public class AdManager_New : MonoBehaviour, IUnityAdsInitializationListener, IUnityAdsLoadListener
 {
-    // This is a scene-specific instance.
+    // --- Singleton Pattern ---
+    // This makes it a single, persistent manager for the whole game.
     public static AdManager_New Instance { get; private set; }
 
-    [Header("Unity Ads - Android")]
+    [Header("Ad Configuration")]
     [SerializeField] private string androidGameId;
-    private const string ANDROID_REWARDED_ID = "Rewarded_Android";
-
-    [Header("Settings")]
     [SerializeField] private bool testMode = true;
 
-    // We use a static variable for the ad state so it can persist briefly between scenes.
-    private static bool isAdReady = false;
-    public bool IsRewardedAdReady => isAdReady;
+    [Header("Ad Unit IDs")]
+    [Tooltip("Add ALL the Rewarded Ad Unit IDs you use in your game here.")]
+    [SerializeField] private List<string> rewardedAdUnitIds = new List<string>();
+
+    // A simple flag to know if *any* rewarded ad is ready.
+    // Your RewardedAdButton will handle checking the specific ad.
+    public bool IsRewardedAdReady { get; private set; } = false;
+    public static Action OnAnyRewardedAdLoaded;
 
     void Awake()
     {
-        // If another instance exists in this scene, destroy this one.
+        // --- Persistent Singleton Pattern ---
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
         Instance = this;
-        Debug.Log("[AdManager_New] Scene-specific instance created.");
+        DontDestroyOnLoad(gameObject);
+        // --- End of Pattern ---
 
-        // Initialize ads every time a scene with this manager loads.
         InitializeAds();
     }
 
     private void InitializeAds()
     {
-        // The SDK itself is static and persists. We just need to re-initialize our listeners.
         if (!Advertisement.isInitialized)
         {
-            Debug.Log("[AdManager_New] SDK not initialized. Initializing now...");
             Advertisement.Initialize(androidGameId, testMode, this);
         }
         else
         {
-            Debug.Log("[AdManager_New] SDK was already initialized. Just loading an ad.");
-            LoadRewardedAd();
+            // If already initialized, just start loading our ads.
+            LoadAllRewardedAds();
         }
     }
 
-    public void LoadRewardedAd()
+    // This is the new method that loads all ads from your list.
+    private void LoadAllRewardedAds()
     {
-        Debug.Log("[AdManager_New] Requesting to load a Rewarded Ad...");
-        isAdReady = false;
-        Advertisement.Load(ANDROID_REWARDED_ID, this);
+        Debug.Log("[AdManager] Loading all specified rewarded ads...");
+        foreach (var id in rewardedAdUnitIds)
+        {
+            Advertisement.Load(id, this);
+        }
+    }
+
+    // This is the public method the button will call to load a new ad after one is used.
+    public void LoadSpecificRewardedAd(string adUnitId)
+    {
+        Debug.Log($"[AdManager] Requesting to load a specific Rewarded Ad: {adUnitId}...");
+        Advertisement.Load(adUnitId, this);
     }
 
     // --- SDK CALLBACKS ---
 
     public void OnInitializationComplete()
     {
-        Debug.Log("[AdManager_New] SDK initialization complete.");
-        LoadRewardedAd();
+        Debug.Log("[AdManager] SDK initialization complete.");
+        LoadAllRewardedAds();
     }
 
     public void OnInitializationFailed(UnityAdsInitializationError error, string message)
     {
-        Debug.LogError($"[AdManager_New] SDK Initialization FAILED: {error} - {message}");
+        Debug.LogError($"[AdManager] SDK Initialization FAILED: {error} - {message}");
     }
 
     public void OnUnityAdsAdLoaded(string placementId)
     {
-        if (placementId == ANDROID_REWARDED_ID)
+        // If any of our rewarded ads load, we can consider ads to be "ready".
+        if (rewardedAdUnitIds.Contains(placementId))
         {
-            Debug.Log("[AdManager_New] Rewarded Ad successfully loaded.");
-            isAdReady = true;
+            Debug.Log($"[AdManager] Rewarded Ad '{placementId}' successfully loaded.");
+            IsRewardedAdReady = true;
+            OnAnyRewardedAdLoaded?.Invoke();
         }
     }
 
     public void OnUnityAdsFailedToLoad(string placementId, UnityAdsLoadError error, string message)
     {
-        Debug.LogError($"[AdManager_New] FAILED to load Ad {placementId}: {error} - {message}");
-        isAdReady = false;
+        Debug.LogError($"[AdManager] FAILED to load Ad '{placementId}': {error} - {message}");
+        // Note: We don't set IsRewardedAdReady to false here, because another ad might still be ready.
+        // The RewardedAdButton will handle its own state.
     }
 }

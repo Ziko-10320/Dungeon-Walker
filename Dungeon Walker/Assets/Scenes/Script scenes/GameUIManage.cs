@@ -30,7 +30,8 @@ public class GameUIManager : MonoBehaviour
 
     [Header("Pause Panel UI")]
     [SerializeField] private GameObject pausePanel;
-
+    [SerializeField] private Button doubleCoinsButton;
+    private bool hasUsedDoubleCoinsAd = false;
     void Awake()
     {
         // ---- NEW: Check for Developer Mode at the start ----
@@ -96,6 +97,12 @@ public class GameUIManager : MonoBehaviour
 
     void Start()
     {
+        if (statAnimation != null)
+        {
+            // Subscribe to the OnCountUpComplete event.
+            // When it fires, our ShowDoubleCoinsButton method will be called.
+            statAnimation.OnCountUpComplete.AddListener(ShowDoubleCoinsButton);
+        }
         if (statAnimation != null) statAnimation.ResetUI();
         // Hide UI panels
         if (deathPanel != null) deathPanel.SetActive(false);
@@ -142,6 +149,10 @@ public class GameUIManager : MonoBehaviour
             Debug.LogError("Death Panel is not assigned in the Inspector!");
             return;
         }
+        if (doubleCoinsButton != null)
+        {
+            doubleCoinsButton.gameObject.SetActive(false);
+        }
 
         // --- THIS IS THE CORRECTED LOGIC FLOW ---
 
@@ -187,10 +198,52 @@ public class GameUIManager : MonoBehaviour
         {
             Debug.LogError("PlayerStatsManager.Instance is not found! Cannot show stats.");
         }
-
+       
         // Pause the game at the very end.
         Time.timeScale = 0f;
         isGamePaused = true;
+    }
+    private void ShowDoubleCoinsButton()
+    {
+        Debug.Log("[GameUIManager] Stat animation finished. Checking if Double Coins button should be shown.");
+        bool hasCoinsToDouble = (PlayerStatsManager.Instance != null && PlayerStatsManager.Instance.coinsGathered > 0);
+
+        if (doubleCoinsButton != null)
+        {
+            // Show the button if there are coins and the ad hasn't been used.
+            doubleCoinsButton.gameObject.SetActive(hasCoinsToDouble && !hasUsedDoubleCoinsAd);
+        }
+    }
+
+    /// <summary>
+    /// This is the "callback" method that the AdManager will execute ONLY if the ad is watched successfully.
+    /// </summary>
+    public void RewardDoubleCoins()
+    {
+        Debug.Log("Ad successfully completed! Doubling coins.");
+
+        hasUsedDoubleCoinsAd = true;
+        if (doubleCoinsButton != null)
+        {
+            // The RewardedAdButton script will disable the button, but we can hide it for good.
+            doubleCoinsButton.gameObject.SetActive(false);
+        }
+
+        if (PlayerStatsManager.Instance != null && WalletManager.Instance != null)
+        {
+            int coinsThisRun = PlayerStatsManager.Instance.coinsGathered;
+            if (coinsThisRun > 0)
+            {
+                Debug.Log($"Player gathered {coinsThisRun} coins this run. Adding them again to the wallet.");
+                WalletManager.Instance.AddCoins(coinsThisRun);
+                if (statAnimation != null)
+                {
+                    // Call the new method to animate only the coins to the new doubled value.
+                    statAnimation.AnimateCoinStat(coinsThisRun * 2);
+                }
+
+            }
+        }
     }
     public void HideDeathScreen()
     {
