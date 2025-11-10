@@ -432,7 +432,9 @@ public class ShopUI : MonoBehaviour
         if (coinCountText != null && WalletManager.Instance != null)
         {
             int currentCoins = WalletManager.Instance.CurrentCoins;
-            coinCountText.text = "Coins: " + currentCoins.ToString();
+
+            // --- THIS IS THE FIX ---
+            coinCountText.text = currentCoins.ToString();
         }
     }
 }
