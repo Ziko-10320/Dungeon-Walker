@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.U2D.Animation;
 using FirstGearGames.SmoothCameraShaker;
+using UnityEngine.UI;
 public class PlayerHealth : MonoBehaviour
 {
     [Header("Health Settings")]
@@ -17,7 +18,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private KritinaMovement movementScript;
     [SerializeField] private GameUIManager gameUIManager; // ---- UPDATED ----: Reference to the new GameUIManager
-
+    private Animator animator;
     [Header("Health Regeneration")]
     [SerializeField] private int healthPerSecond = 10;
     [SerializeField] private float delayBeforeHeal = 3f;
@@ -82,6 +83,26 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private ParticleSystem[] reviveParticles;
     private bool isDead = false;
     private int revivesUsed = 0;
+
+    [Header("Death Sequence Settings")]
+    [Tooltip("A black UI Image that covers the screen and can be faded in.")]
+    [SerializeField] private Image deathFadeImage;
+    [Tooltip("The name of the Sorting Layer to put the player on during death (e.g., 'OnTop').")]
+    [SerializeField] private string onTopSortingLayerName = "OnTop";
+    [Tooltip("How long the screen takes to fade to black.")]
+    [SerializeField] private float fadeDuration = 0.5f;
+    [Tooltip("The delay after the screen is black before showing revive options.")]
+    [SerializeField] private float postFadeDelay = 1.0f;
+    private Dictionary<SpriteRenderer, int> originalSortingLayers = new Dictionary<SpriteRenderer, int>();
+    [Header("Death Camera Zoom")]
+    [Tooltip("The main camera to control for the zoom effect.")]
+    [SerializeField] private Camera mainCamera;
+    [Tooltip("The target orthographic size for the zoom-in.")]
+    [SerializeField] private float zoomInSize = 3f;
+    [Tooltip("How long the zoom-in effect should take.")]
+    [SerializeField] private float zoomDuration = 1.0f;
+    private float originalCameraSize;
+    private bool isReviving = false;
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
@@ -100,49 +121,82 @@ public class PlayerHealth : MonoBehaviour
         {
             Debug.LogWarning("PlayerHealth could not find PowerUpManager on Awake.");
         }
-    }
-    void OnEnable()
-    {
-        // Subscribe to the event from the AdsManager.
-        // When the ad is completed, the RevivePlayer method will be called.
-        RewardedAdButton.OnRewardGranted += RevivePlayer;
-    }
 
-    void OnDisable()
-    {
-        // Unsubscribe to prevent errors when this object is destroyed.
-        RewardedAdButton.OnRewardGranted -= RevivePlayer;
-    }
-
-     private void RevivePlayer()
-    {
-        Debug.Log("RevivePlayer method called! Reviving the player.");
-
-        // 1. Restore player's health and state
-        currentHealth = maxHealth;
-        isDead = false; // Mark the player as alive again
-        revivesUsed++;
-        UpdateHealthEffects(); // Update UI and screen effects to reflect full health
-
-        // 2. Play the revive particle effects
-        if (reviveParticles != null && reviveParticles.Length > 0)
+        foreach (var renderer in spriteRenderers)
         {
-            foreach (ParticleSystem ps in reviveParticles)
+            if (renderer != null)
             {
-                if (ps != null) ps.Play();
+                // THIS IS THE FIX: We store the ID of the layer itself.
+                originalSortingLayers[renderer] = renderer.sortingLayerID;
             }
         }
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
+        if (mainCamera != null)
+        {
+            originalCameraSize = mainCamera.orthographicSize;
+        }
+    }
 
-        // 3. Re-enable player controls
+    public void AdRevive()
+    {
+        Debug.Log("[PlayerHealth] Ad Revive requested. Hiding panel and telling ReviveSystem to start.");
+        if (reviveRequestPanel != null)
+        {
+            reviveRequestPanel.SetActive(false);
+        }
+        revivesUsed++;
+        // Find the ReviveSystem and tell it to do its job.
+        ReviveSystem reviveSystem = GetComponent<ReviveSystem>();
+        if (reviveSystem != null)
+        {
+            reviveSystem.DoAdRevive();
+        }
+    }
+
+
+    public void OnReviveComplete()
+    {
+        Debug.Log("[PlayerHealth] A revive power-up has completed. Finalizing player state.");
+        if (animator != null) animator.SetTrigger("Revive");
+        // 1. Restore physics and movement.
+        rb.isKinematic = false;
         if (movementScript != null) movementScript.enabled = true;
-        // You can re-enable other scripts here if needed, e.g., weapon scripts
 
-        // 4. Hide UI panels
-        if (reviveRequestPanel != null) reviveRequestPanel.SetActive(false);
-        if (gameUIManager != null) gameUIManager.HideDeathScreen(); // Assuming you have a method to hide it
+        FullHeal(); // Use your existing FullHeal method.
+        isDead = false;
+        isReviving = false;
+        isInvincible = false;
+    }
+    private IEnumerator FadeScreen(float targetAlpha)
+    {
+        if (deathFadeImage == null) yield break;
+        float startAlpha = deathFadeImage.color.a;
+        float timer = 0f;
+        while (timer < fadeDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            float newAlpha = Mathf.Lerp(startAlpha, targetAlpha, timer / fadeDuration);
+            deathFadeImage.color = new Color(0, 0, 0, newAlpha);
+            yield return null;
+        }
+        deathFadeImage.color = new Color(0, 0, 0, targetAlpha);
+    }
 
-        // 5. Reset any lingering post-processing effects
-        ResetPostProcessingOnDeath();
+    private IEnumerator ZoomOnPlayer(float targetSize)
+    {
+        if (mainCamera == null) yield break;
+        float startSize = mainCamera.orthographicSize;
+        float timer = 0f;
+        while (timer < zoomDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+            mainCamera.orthographicSize = Mathf.Lerp(startSize, targetSize, timer / zoomDuration);
+            yield return null;
+        }
+        mainCamera.orthographicSize = targetSize;
     }
     private void ResetPostProcessingOnDeath()
     {
@@ -153,7 +207,7 @@ public class PlayerHealth : MonoBehaviour
     void Start()
     {
         currentHealth = maxHealth;
-
+        animator = GetComponent<Animator>();
         // ---- UPDATED ----: Automatically find the GameUIManager if it's not assigned in the Inspector.
         if (gameUIManager == null)
         {
@@ -268,71 +322,157 @@ public class PlayerHealth : MonoBehaviour
     {
         // 1. First, check if we are already in the process of dying.
         if (isDead) return;
-
-        ReviveUpgradedSystem reviveUp = GetComponent<ReviveUpgradedSystem>();
-        if (reviveUp != null && reviveUp.hasReviveUpgradedPowerUp && !reviveUp.HasUsedRevive)
-        {
-            Debug.Log("Revive Upgraded available — starting revive sequence.");
-            reviveUp.TryRevive();
-            return; // Stop the Die() method here.
-        }
-
-        ReviveSystem revive = GetComponent<ReviveSystem>();
-        if (revive != null && revive.hasRevivePowerUp && !revive.hasUsedRevive)
-        {
-            Debug.Log("Revive available — starting revive sequence.");
-            revive.TryRevive();
-            return; // Stop the Die() method here.
-        }
-
-
-        AdManager_New adManager = FindObjectOfType<AdManager_New>();
-        bool isAdReady = (adManager != null && adManager.IsRewardedAdReady);
-        bool canUseAdRevive = (revivesUsed < maxRevives) && isAdReady;
-
-        if (canUseAdRevive && reviveRequestPanel != null)
-        {
-            // If we can revive, show the request panel.
-            Debug.Log("Player died, but can revive via ad. Showing revive request panel.");
-            isDead = true; // Mark as "dying" to prevent this from running again
-            if (movementScript != null) movementScript.enabled = false; // Freeze player
-            Time.timeScale = 0f;
-            reviveRequestPanel.SetActive(true);
-            return; // Stop the Die() method here and wait for player's choice.
-        }
-
-
-        // 4. If no revives of any kind are left, this is the FINAL death.
-        Debug.Log("Player has died for good. No revives left.");
         isDead = true;
-        ResetPostProcessingOnDeath(); // Clean up screen effects
+        Debug.Log("Player health reached zero. Starting death sequence...");
 
+        // Start the new, dramatic death sequence coroutine.
+        StartCoroutine(DeathSequence());
+    }
+    // --- END OF NEW Die() METHOD ---
+
+    // --- THIS IS THE NEW COROUTINE THAT CONTAINS ALL THE DEATH LOGIC ---
+    private IEnumerator DeathSequence(bool skipToFinalDeath = false)
+    {
+        animator.SetTrigger("Death");
+
+        if (!skipToFinalDeath)
+        {
+            // ... (The dramatic intro part is the same: set invincible, freeze player, zoom, fade in)
+            isInvincible = true;
+            if (movementScript != null) movementScript.enabled = false;
+            rb.velocity = Vector2.zero;
+            rb.isKinematic = true;
+            int onTopLayerID = SortingLayer.NameToID(onTopSortingLayerName);
+            foreach (var renderer in spriteRenderers) { if (renderer != null) renderer.sortingLayerID = onTopLayerID; }
+            if (mainCamera != null) StartCoroutine(ZoomOnPlayer(zoomInSize));
+            CameraShakerHandler.Shake(CameraShakeDeath);
+            if (deathFadeImage != null)
+            {
+                deathFadeImage.gameObject.SetActive(true);
+                yield return StartCoroutine(FadeScreen(1f));
+            }
+            yield return new WaitForSecondsRealtime(postFadeDelay);
+        }
+
+        // --- PART 2: The Revive Logic ---
+        if (!skipToFinalDeath)
+        {
+            // ... (The logic for checking for revive power-ups is the same)
+            ReviveUpgradedSystem reviveUp = GetComponent<ReviveUpgradedSystem>();
+            if (reviveUp != null && reviveUp.hasReviveUpgradedPowerUp && !reviveUp.HasUsedRevive)
+            {
+                isReviving = true; // Set the master lock.
+                reviveUp.TryRevive(); // Let the script handle itself.
+                yield break;
+            }
+            ReviveSystem revive = GetComponent<ReviveSystem>();
+            if (revive != null && revive.hasRevivePowerUp && !revive.hasUsedRevive)
+            {
+                isReviving = true;
+                revive.TryRevive();
+                yield break;
+            }
+
+            // Ad Revive Logic
+            AdManager_New adManager = FindObjectOfType<AdManager_New>();
+            bool isAdReady = (adManager != null && adManager.IsAdReady("Rewarded_Android"));
+            bool canUseAdRevive = (revivesUsed < maxRevives) && isAdReady;
+            if (canUseAdRevive && reviveRequestPanel != null)
+            {
+                // THIS IS THE FIX for the dim screen. We wait for the reset to finish.
+                yield return StartCoroutine(FadeOutAndResetVisuals()); // Use the helper method we already have.
+               
+                reviveRequestPanel.SetActive(true);
+                yield break;
+            }
+        }
+
+        // --- PART 3: Final Death ---
+        Debug.Log("No revives available. Showing final death panel.");
+        // THIS IS THE FIX for the dim screen on final death.
+        yield return StartCoroutine(FadeOutAndResetVisuals()); // Use the helper method here too.
+
+        ResetPostProcessingOnDeath();
+        if (checkpointManager != null && PlayerStatsManager.Instance != null)
+        {
+            PlayerStatsManager.Instance.SetFinalScore(checkpointManager.TotalScore);
+        }
+        CameraFollowMouseHorizontal cameraFollow = mainCamera.GetComponent<CameraFollowMouseHorizontal>();
+        if (cameraFollow != null)
+        {
+            cameraFollow.enabled = false;
+        }
+        gameObject.SetActive(false);
+        if (gameUIManager != null)
+        {
+            gameUIManager.ShowDeathScreen();
+        }
+    }
+    public void ResetDeathEffects()
+    {
+        Debug.Log("[PlayerHealth] Resetting all death effects (fade, zoom, sorting layers).");
+
+        // Start a coroutine to handle the fade out and reset.
+        StartCoroutine(FadeOutAndResetVisuals());
+    }
+
+    // This is the helper coroutine for the method above.
+    private IEnumerator FadeOutAndResetVisuals()
+    {
+        // 1. Fade the black screen OUT.
+        if (deathFadeImage != null)
+        {
+            yield return StartCoroutine(FadeScreen(0f));
+            deathFadeImage.gameObject.SetActive(false);
+        }
+
+        // 2. Reset the camera zoom.
+        if (mainCamera != null)
+        {
+            yield return StartCoroutine(ZoomOnPlayer(originalCameraSize));
+        }
+
+        // 3. Restore the player's original sorting layers. THIS IS THE FIX.
+        foreach (var pair in originalSortingLayers)
+        {
+            // pair.Key is the SpriteRenderer, pair.Value is the original sortingLayerID
+            if (pair.Key != null)
+            {
+                pair.Key.sortingLayerID = pair.Value;
+            }
+        }
+    }
+    public void DeclineRevive()
+    {
+        Debug.Log("Player declined ad revive. Proceeding to final death.");
+        reviveRequestPanel.SetActive(false);
+
+        // This is now a synchronous operation.
+        // We immediately disable the player and show the death screen.
+        CameraFollowMouseHorizontal cameraFollow = mainCamera.GetComponent<CameraFollowMouseHorizontal>();
+        if (cameraFollow != null)
+        {
+            cameraFollow.enabled = false;
+        }
+        // Reset visual effects instantly.
+        if (deathFadeImage != null) deathFadeImage.gameObject.SetActive(false);
+        if (mainCamera != null) mainCamera.orthographicSize = originalCameraSize;
+
+        // Set final score.
+        ResetPostProcessingOnDeath();
         if (checkpointManager == null) checkpointManager = FindObjectOfType<CheckpointManager>();
         if (checkpointManager != null && PlayerStatsManager.Instance != null)
         {
             PlayerStatsManager.Instance.SetFinalScore(checkpointManager.TotalScore);
         }
 
+        // Disable player and show the screen.
+        gameObject.SetActive(false);
         if (gameUIManager != null)
         {
             gameUIManager.ShowDeathScreen();
         }
-
-        gameObject.SetActive(false); // Final deactivation of the player object.
     }
-    public void DeclineRevive()
-    {
-        // This is called when the player clicks "No" on the ad revive panel.
-        // It skips straight to the permanent death logic.
-        Debug.Log("Player declined ad revive. Checking for other revives.");
-        reviveRequestPanel.SetActive(false);
-        Time.timeScale = 1f;
-        // We set revivesUsed to max so the Die() method won't ask for an ad again.
-        revivesUsed = maxRevives;
-        isDead = false; // Temporarily un-flag death so Die() can run its checks again.
-        Die(); // Call Die() again, which will now skip the ad check and proceed to final death.
-    }
-
     // ... The rest of your script (HealOverTime, UpdateHealthEffects, HandleHit, etc.) is unchanged ...
     // ... as it is all correct and does not need modification. I've included it below for completeness.
     public void CancelDeathState()
@@ -522,9 +662,25 @@ public class PlayerHealth : MonoBehaviour
         StartHealingParticles();
         StopHealingParticles();
     }
+    public void ForceRemoveShield(PowerUpType shieldTypeToRemove)
+    {
+        Debug.Log($"[PlayerHealth] Force removing shield of type: {shieldTypeToRemove}");
 
-    // NEW METHOD 1: Adds a shield to the queue. Called by PowerUpManager.
-    // METHOD 1: Adds a shield to the queue. Called by PowerUpManager.
+        // If the shield to remove is the one currently active...
+        if (HasShield && shieldQueue.Count > 0 && shieldQueue[0] == shieldTypeToRemove)
+        {
+            // ...forcefully break it and activate the next one.
+            Debug.Log("Force removing the currently active shield.");
+            // We call DamageShield with a huge number to guarantee it breaks.
+            DamageShield(99999);
+        }
+        else if (shieldQueue.Contains(shieldTypeToRemove))
+        {
+            // If the shield is in the queue but not active, just remove it silently.
+            Debug.Log("Force removing a queued (non-active) shield.");
+            shieldQueue.Remove(shieldTypeToRemove);
+        }
+    }
     public void AddShieldToQueue(PowerUpType shieldType)
     {
         if (shieldQueue.Contains(shieldType)) return; // Don't add duplicates

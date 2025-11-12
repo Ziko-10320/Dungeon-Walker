@@ -24337,6 +24337,7 @@ GameObject:
   - component: {fileID: 1155076663}
   - component: {fileID: 1155076664}
   - component: {fileID: 1155076665}
+  - component: {fileID: 1155076666}
   m_Layer: 5
   m_Name: Coin
   m_TagString: Untagged
@@ -24461,6 +24462,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1155076666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1155076662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29df462258aa83c4687adef8ec5a8c8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1157242110
 GameObject:
   m_ObjectHideFlags: 0
@@ -29769,7 +29782,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   adUnitId: Rewarded_Android_FreeCoins
   buttonToControl: {fileID: 1425975277}
-  OnRewardGranted_UnityEvent:
+  OnRewardGranted:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 259650005}
@@ -30686,7 +30699,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   adUnitId: Rewarded_Android_FreeCoins
   buttonToControl: {fileID: 1461210922}
-  OnRewardGranted_UnityEvent:
+  OnRewardGranted:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 259650005}

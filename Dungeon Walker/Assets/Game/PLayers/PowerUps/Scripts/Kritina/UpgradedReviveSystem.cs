@@ -5,7 +5,7 @@ public class ReviveUpgradedSystem : MonoBehaviour
 {
     [Header("Revive Settings")]
     public bool hasReviveUpgradedPowerUp = false;
-    private bool hasUsedRevive = false;
+    public bool hasUsedRevive = false;
     public bool HasUsedRevive => hasUsedRevive;
 
     [Header("References")]
@@ -81,6 +81,8 @@ public class ReviveUpgradedSystem : MonoBehaviour
 
     private IEnumerator ReviveSequence()
     {
+        if (playerHealth != null) playerHealth.ResetDeathEffects();
+
         // Pause game
         Time.timeScale = 0f;
 
@@ -130,9 +132,11 @@ public class ReviveUpgradedSystem : MonoBehaviour
 
         // Delay damage + apply
         playerHealth.StartCoroutine(DelayedDamage());
-        
+
+        if (playerHealth != null) playerHealth.OnReviveComplete();
         // Animate shader wave
         playerHealth.StartCoroutine(AnimateShockwaveShader());
+
     }
     private IEnumerator DisableCircleShockWaveAfterTime(float duration)
     {

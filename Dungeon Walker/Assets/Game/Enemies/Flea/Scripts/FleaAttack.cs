@@ -96,8 +96,9 @@ public class FleaChargeAttack : MonoBehaviour
             fleaAnimator.SetBool(isAnticipatingHash, false);
             fleaAnimator.SetBool(isChargingHash, false);
         }
-      
-       
+
+        fleaAnimator.Rebind();
+        fleaAnimator.Update(0f);
         // 4. Stop any old attack coroutines that might be stuck mid-charge.
         StopAllCoroutines();
 

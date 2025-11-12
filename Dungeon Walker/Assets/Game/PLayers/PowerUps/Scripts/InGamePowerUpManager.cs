@@ -194,13 +194,39 @@ public class InGamePowerUpManager : MonoBehaviour
         Debug.Log("Checkpoint reached. Removing all temporary power-ups.");
         for (int i = 0; i < MAX_SLOTS; i++)
         {
-            if (inGameSlots[i] != null && permanentPowerUpManager != null)
+            if (inGameSlots[i] != null)
             {
-                permanentPowerUpManager.RemovePersistentEffect(inGameSlots[i]);
+                // --- THIS IS THE FIX ---
+                // We only care about cleaning up shields.
+                if (inGameSlots[i].type == PowerUpType.Shield || inGameSlots[i].type == PowerUpType.ShieldUpgraded)
+                {
+                    // Find the correct health script on the player and call our new "kill switch".
+                    PlayerHealth pHealth = GetComponent<PlayerHealth>();
+                    if (pHealth != null)
+                    {
+                        pHealth.ForceRemoveShield(inGameSlots[i].type);
+                    }
+
+                    L3antixHealth l3Health = GetComponent<L3antixHealth>();
+                    if (l3Health != null)
+                    {
+                        l3Health.ForceRemoveShield(inGameSlots[i].type);
+                    }
+                }
+                // For other temporary power-ups, we can still call the old method if needed,
+                // but for shields, we use our new, safe method.
+                else if (permanentPowerUpManager != null)
+                {
+                    permanentPowerUpManager.RemovePersistentEffect(inGameSlots[i]);
+                }
+                // --- END OF FIX ---
+
+                // Finally, clear the slot.
                 inGameSlots[i] = null;
             }
         }
         nextSlotToReplace = 0;
+        UpdateUI(); // Force the UI to update after clearing the slots.
     }
 
     private void UpdateUI()

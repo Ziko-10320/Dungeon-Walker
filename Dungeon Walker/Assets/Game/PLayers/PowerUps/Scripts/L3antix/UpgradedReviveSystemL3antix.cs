@@ -5,7 +5,7 @@ public class ReviveUpgradedSystemL3antix : MonoBehaviour
 {
     [Header("Revive Settings")]
     public bool hasReviveUpgradedPowerUp = false;
-    private bool hasUsedRevive = false;
+    public bool hasUsedRevive = false;
     public bool HasUsedRevive => hasUsedRevive;
 
     [Header("References")]
@@ -81,6 +81,7 @@ public class ReviveUpgradedSystemL3antix : MonoBehaviour
 
     private IEnumerator ReviveSequence()
     {
+        if (L3antixHealth != null) L3antixHealth.ResetDeathEffects();
         // Pause game
         Time.timeScale = 0f;
 
@@ -130,7 +131,7 @@ public class ReviveUpgradedSystemL3antix : MonoBehaviour
 
         // Delay damage + apply
         L3antixHealth.StartCoroutine(DelayedDamage());
-
+        if (L3antixHealth != null) L3antixHealth.OnReviveComplete();
         // Animate shader wave
         L3antixHealth.StartCoroutine(AnimateShockwaveShader());
     }

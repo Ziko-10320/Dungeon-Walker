@@ -55,6 +55,7 @@ public class ReviveSystemL3antix : MonoBehaviour
 
     private IEnumerator ReviveSequence()
     {
+        if (L3antixHealth != null) L3antixHealth.ResetDeathEffects();
         if (reviveSound != null)
         {
             AudioSource.PlayClipAtPoint(reviveSound, transform.position, reviveVolume);
@@ -135,6 +136,7 @@ public class ReviveSystemL3antix : MonoBehaviour
 
         // 12) Re-enable movement (allow input again)
         if (L3antixMovement != null) L3antixMovement.enabled = true;
+        if (L3antixHealth != null) L3antixHealth.OnReviveComplete();
     }
 
     private IEnumerator TemporaryInvulnerability(float duration)
@@ -143,5 +145,38 @@ public class ReviveSystemL3antix : MonoBehaviour
         L3antixHealth.isInvincible = true;
         yield return new WaitForSeconds(duration); // scaled time is fine here (game running)
         L3antixHealth.isInvincible = false;
+    }
+    public void DoAdRevive()
+    {
+        Debug.Log("Ad Revive triggered! Starting the normal revive sequence.");
+        // THIS IS THE FIX. We call the working ReviveSequence, not the broken one on PlayerHealth.
+        StartCoroutine(ReviveSequence());
+    }
+    public IEnumerator PlayReviveAnimation()
+    {
+        // This coroutine's ONLY job is to play the visual effects.
+        // It does NOT change health, movement, or game state.
+
+        if (reviveSound != null) AudioSource.PlayClipAtPoint(reviveSound, transform.position, reviveVolume);
+        if (heartAnimator != null) heartAnimator.updateMode = AnimatorUpdateMode.UnscaledTime;
+
+        Time.timeScale = 0f; // Pause for the animation
+
+        if (darkFlare != null) darkFlare.SetActive(true);
+        if (heartWithWings != null) heartWithWings.SetActive(true);
+        if (heartAnimator != null) heartAnimator.SetTrigger("In");
+
+        yield return new WaitForSecondsRealtime(revivePauseDuration / 2f);
+
+        if (heartAnimator != null) heartAnimator.SetTrigger("Out");
+
+        yield return new WaitForSecondsRealtime(revivePauseDuration / 2f);
+
+        if (darkFlare != null) darkFlare.SetActive(false);
+        if (heartWithWings != null) heartWithWings.SetActive(false);
+
+        Time.timeScale = 1f; // Resume the game
+
+        Debug.Log("[ReviveSystem] Animation finished.");
     }
 }

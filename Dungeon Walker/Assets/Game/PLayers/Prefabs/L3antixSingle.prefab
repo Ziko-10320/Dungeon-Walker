@@ -219850,7 +219850,7 @@ MonoBehaviour:
   muzzleFlashEffect: {fileID: 5374799189625228237, guid: b0531f4b0ae47334db61dbef9cc7d06a, type: 3}
   bulletSpeed: 70
   bulletLifetime: 0.35
-  bulletDamage: 7
+  bulletDamage: 15
   damageableLayers:
     serializedVersion: 2
     m_Bits: 1664
@@ -219859,7 +219859,7 @@ MonoBehaviour:
     m_Bits: 1224
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 1728
+    m_Bits: 1664
   maxUpwardAngle: 180
   maxDownwardAngle: 180
   minDistanceToAim: 1.87
@@ -219894,6 +219894,8 @@ MonoBehaviour:
   bulletPoolSize: 50
   effectPoolSize: 30
   armCheckInterval: 10
+  muzzleFlashPoolSize: 20
+  emptyShellPoolSize: 50
 --- !u!114 &3125200794304404667
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219971,6 +219973,7 @@ MonoBehaviour:
   - {fileID: 8579230705114351702}
   - {fileID: 8043226532676479707}
   - {fileID: 4328031091243625692}
+  - {fileID: 7083827798946069781}
   postProcessVolume: {fileID: 0}
   damageSound: {fileID: 0}
   damageSoundVolume: 1
@@ -219985,6 +219988,21 @@ MonoBehaviour:
   isSuperActive: 0
   playerInvisibility: {fileID: 0}
   CameraShakeDeath: {fileID: 11400000, guid: 5de216865eb2173459f490db41b47444, type: 2}
+  reviveRequestPanel: {fileID: 0}
+  maxRevives: 2
+  reviveParticles:
+  - {fileID: 1511292470126193948}
+  - {fileID: 1328927269730136223}
+  - {fileID: 3956948370735595761}
+  - {fileID: 8113848594758285760}
+  - {fileID: 5861366033599340391}
+  deathFadeImage: {fileID: 0}
+  onTopSortingLayerName: CameraSortingLayer
+  fadeDuration: 0.5
+  postFadeDelay: 1
+  mainCamera: {fileID: 0}
+  zoomInSize: 8
+  zoomDuration: 1
 --- !u!114 &9119050250133076237
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -220211,6 +220229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hasReviveUpgradedPowerUp: 0
+  hasUsedRevive: 0
   L3antixHealth: {fileID: 6734370145734748242}
   reviveHeartUI: {fileID: 0}
   heartAnimator: {fileID: 0}
@@ -220227,7 +220246,7 @@ MonoBehaviour:
   explosionParticles:
   - {fileID: 930039085904333776}
   - {fileID: 1418340171213764751}
-  reviveSound: {fileID: 0}
+  reviveSound: {fileID: 8300000, guid: 1073b1c329701044e853109b4fe302da, type: 3}
   reviveVolume: 1
   damagePoint: {fileID: 6353124163619318654}
   damageRadius: 30
