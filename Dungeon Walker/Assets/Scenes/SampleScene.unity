@@ -32613,6 +32613,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1689206220}
     m_Modifications:
+    - target: {fileID: 1075196058938580709, guid: e37be8d7e5d4682429d65cb360f6b855, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 1635255654487979473, guid: e37be8d7e5d4682429d65cb360f6b855, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
     - target: {fileID: 3211017212119271259, guid: e37be8d7e5d4682429d65cb360f6b855, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -32653,9 +32661,29 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3941223122035600221, guid: e37be8d7e5d4682429d65cb360f6b855, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
     - target: {fileID: 4217452014058731653, guid: e37be8d7e5d4682429d65cb360f6b855, type: 3}
       propertyPath: m_Name
       value: 'Boxes '
+      objectReference: {fileID: 0}
+    - target: {fileID: 5277098803395899669, guid: e37be8d7e5d4682429d65cb360f6b855, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 6027135338661789543, guid: e37be8d7e5d4682429d65cb360f6b855, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 6125036612159495722, guid: e37be8d7e5d4682429d65cb360f6b855, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 6766211633775826027, guid: e37be8d7e5d4682429d65cb360f6b855, type: 3}
+      propertyPath: m_Layer
+      value: 13
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -78247,6 +78275,14 @@ PrefabInstance:
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 490707551240320423}
+    - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: collisionLayers.m_Bits
+      value: 9921
+      objectReference: {fileID: 0}
+    - target: {fileID: 838453109639267503, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: damageableLayers.m_Bits
+      value: 9856
+      objectReference: {fileID: 0}
     - target: {fileID: 2493920547019745464, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: arrowPointer
       value: 
@@ -78293,7 +78329,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: enemyLayers.m_Bits
-      value: 1664
+      value: 640
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: collisionLayers.m_Bits
+      value: 9416
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: damageableLayers.m_Bits
+      value: 9856
       objectReference: {fileID: 0}
     - target: {fileID: 2813424294025378842, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Enabled
@@ -78311,6 +78355,18 @@ PrefabInstance:
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 490707551240320423}
+    - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: damageOnCollision
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: enemyLayers.m_Bits
+      value: 9920
+      objectReference: {fileID: 0}
+    - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: destructionLayers.m_Bits
+      value: 8896
+      objectReference: {fileID: 0}
     - target: {fileID: 3864344641162655751, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.12
@@ -78363,6 +78419,14 @@ PrefabInstance:
       propertyPath: chargeSlider
       value: 
       objectReference: {fileID: 9183276878537282167}
+    - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: damageOnCollision
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: enemyLayers.m_Bits
+      value: 9856
+      objectReference: {fileID: 0}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: fullyChargedIndicator
       value: 
@@ -78459,6 +78523,14 @@ PrefabInstance:
       propertyPath: attackButtonHandle
       value: 
       objectReference: {fileID: 3646306793151808266}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: enemyLayers.m_Bits
+      value: 8832
+      objectReference: {fileID: 0}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: groundLayer.m_Bits
+      value: 712
+      objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: uiCanvasRectTransform
       value: 
@@ -80132,6 +80204,18 @@ PrefabInstance:
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 490707551240320423}
+    - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: damageOnCollision
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: enemyLayers.m_Bits
+      value: 9920
+      objectReference: {fileID: 0}
+    - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: destructionLayers.m_Bits
+      value: 8896
+      objectReference: {fileID: 0}
     - target: {fileID: 3125200794304404667, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: superButton
       value: 
@@ -80156,6 +80240,14 @@ PrefabInstance:
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 490707551240320423}
+    - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: collisionLayers.m_Bits
+      value: 9921
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375792508270846377, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: damageableLayers.m_Bits
+      value: 9856
+      objectReference: {fileID: 0}
     - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: aimJoystick
       value: 
@@ -80164,6 +80256,14 @@ PrefabInstance:
       propertyPath: chargeSlider
       value: 
       objectReference: {fileID: 9183276878537282167}
+    - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: damageOnCollision
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: enemyLayers.m_Bits
+      value: 9856
+      objectReference: {fileID: 0}
     - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: fullyChargedIndicator
       value: 
@@ -80294,12 +80394,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: enemyLayers.m_Bits
-      value: 1664
+      value: 640
       objectReference: {fileID: 0}
     - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: smokeParticleSystem
       value: 
       objectReference: {fileID: 2756118813767827608}
+    - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: collisionLayers.m_Bits
+      value: 9416
+      objectReference: {fileID: 0}
+    - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: damageableLayers.m_Bits
+      value: 9856
+      objectReference: {fileID: 0}
     - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: joystickUI
       value: 
@@ -80336,6 +80444,14 @@ PrefabInstance:
       propertyPath: attackButtonHandle
       value: 
       objectReference: {fileID: 3646306793151808266}
+    - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: enemyLayers.m_Bits
+      value: 8832
+      objectReference: {fileID: 0}
+    - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: groundLayer.m_Bits
+      value: 712
+      objectReference: {fileID: 0}
     - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: uiCanvasRectTransform
       value: 

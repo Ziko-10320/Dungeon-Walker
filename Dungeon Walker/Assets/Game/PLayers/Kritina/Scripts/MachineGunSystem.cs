@@ -435,6 +435,7 @@ public class MachineGunSystem : MonoBehaviour, IPunObservable, IPoolable
                 else if (collidedObject.TryGetComponent(out InkHealth ink)) ink.TakeDamage(bulletDamage, Vector2.zero, 0f);
                 else if (collidedObject.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage(bulletDamage, Vector2.zero, 0f);
                 else if (collidedObject.TryGetComponent(out DestructibleObject destructible)) destructible.TakeDamage(bulletDamage);
+                else if (collidedObject.TryGetComponent(out CheeseProjectile spore)) spore.TakeDamage(bulletDamage, Vector2.zero, 0f);
 
                 // Add to super meter
                 if (L3antixSuperMeter.Instance != null) L3antixSuperMeter.Instance.AddDamage(bulletDamage);

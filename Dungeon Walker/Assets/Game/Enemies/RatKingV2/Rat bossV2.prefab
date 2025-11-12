@@ -6678,11 +6678,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -73.444176
+      value: -68.97753
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.61096334
+      value: -0.8735266
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: c3dd6fc9e2cbc8a459b98b564598a5e3, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7075,8 +7075,8 @@ MonoBehaviour:
   groundImpactParticles: {fileID: 4633736363332905312}
   damageZoneOrigin: {fileID: 8079099776451593908}
   damageZoneRadius: 5.03
-  baseDamageAmount: 10
-  damageAmount: 60
+  baseDamageAmount: 50
+  damageAmount: 50
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -7097,8 +7097,8 @@ MonoBehaviour:
   cheeseImpactParticlesPrefab3: {fileID: 5989248871805962395, guid: 42fc002353319184a9f45737980de158, type: 3}
   throwCooldown: 1.5
   throwProbability: 0.897
-  baseCheeseDamageAmount: 5
-  cheeseDamageAmount: 45
+  baseCheeseDamageAmount: 40
+  cheeseDamageAmount: 40
   cheeseExplosionRadius: 4.8
   cheeseKnockbackForce: 10
   isV2SporeAttack: 1
@@ -7192,7 +7192,7 @@ MonoBehaviour:
   powerUpPickupPrefab: {fileID: 619877399475702588, guid: a753f18eafa5b42418a2b714fa2c60ef, type: 3}
   powerUpSpawnPoint: {fileID: 9132003264305942687}
   healthIncreasePerWave: 20
-  damageIncreasePerWave: 4
+  damageIncreasePerWave: 3
   chaseSpeedIncreasePerWave: 1
 --- !u!114 &4658677222075927841
 MonoBehaviour:
