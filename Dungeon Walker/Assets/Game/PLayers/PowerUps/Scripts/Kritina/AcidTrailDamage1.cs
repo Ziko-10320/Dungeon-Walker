@@ -129,7 +129,26 @@ public class AcidTrailDamage : MonoBehaviour
             if (enemy.TryGetComponent(out RatKingHealth rat)) rat.TakeDamage(damage, Vector2.zero, 0f);
         }
     }
+    void OnDisable()
+    {
+        // This function is called automatically when the component is disabled.
+        // We must ensure the looping sound is stopped here.
+        if (trailAudioSource != null && trailAudioSource.isPlaying)
+        {
+            trailAudioSource.Stop();
+            Debug.Log("Acid Trail disabled, stopping sound.");
+        }
 
+        // Also, ensure all visual effects are turned off.
+        foreach (var ps in acidVisuals)
+        {
+            if (ps != null)
+            {
+                var em = ps.emission;
+                em.enabled = false;
+            }
+        }
+    }
     IEnumerator DamageCooldown()
     {
         canDamage = false;

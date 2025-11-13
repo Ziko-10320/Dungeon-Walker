@@ -166,7 +166,28 @@ public class SoapTrailDamage : MonoBehaviour
         }
     }
 
+    void OnDisable()
+    {
+        // This function is called automatically when the component is disabled.
+        // We must ensure the looping sound is stopped here.
+        if (trailAudioSource != null && trailAudioSource.isPlaying)
+        {
+            trailAudioSource.Stop();
+            Debug.Log("Soap Trail disabled, stopping sound.");
+        }
 
+        // Also, ensure all visual effects are turned off.
+        // Your DisablePowerUp() method already does this, but it's good practice
+        // to have it here as well for robustness.
+        foreach (var ps in soapVisuals)
+        {
+            if (ps != null)
+            {
+                var em = ps.emission;
+                em.enabled = false;
+            }
+        }
+    }
 
     IEnumerator DamageCooldown()
     {
