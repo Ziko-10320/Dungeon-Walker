@@ -60,7 +60,10 @@ public class RewardedAdButton : MonoBehaviour, IUnityAdsShowListener
         buttonToControl.interactable = false;
         Advertisement.Show(adUnitId, this);
     }
-
+    public string GetAdUnitId()
+    {
+        return adUnitId;
+    }
     public void OnUnityAdsShowComplete(string placementId, UnityAdsShowCompletionState showCompletionState)
     {
         if (placementId == adUnitId && showCompletionState == UnityAdsShowCompletionState.COMPLETED)

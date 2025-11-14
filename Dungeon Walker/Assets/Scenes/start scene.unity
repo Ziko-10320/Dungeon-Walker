@@ -7529,6 +7529,7 @@ GameObject:
   - component: {fileID: 351452084}
   - component: {fileID: 351452086}
   - component: {fileID: 351452087}
+  - component: {fileID: 351452088}
   m_Layer: 5
   m_Name: Shop panel
   m_TagString: Untagged
@@ -7636,6 +7637,19 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &351452088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 351452082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 237065475c5e15148b72ed906cac2ea2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  adButtonToRefresh: {fileID: 1425975277}
 --- !u!1 &352664645
 GameObject:
   m_ObjectHideFlags: 0
@@ -8251,6 +8265,7 @@ GameObject:
   - component: {fileID: 377853742}
   - component: {fileID: 377853745}
   - component: {fileID: 377853746}
+  - component: {fileID: 377853747}
   m_Layer: 5
   m_Name: InventoryPanel
   m_TagString: Untagged
@@ -8354,6 +8369,19 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &377853747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 377853740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 237065475c5e15148b72ed906cac2ea2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  adButtonToRefresh: {fileID: 1461210922}
 --- !u!1 &377982135
 GameObject:
   m_ObjectHideFlags: 0

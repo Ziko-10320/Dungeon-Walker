@@ -219517,7 +219517,7 @@ MonoBehaviour:
   previewFollowsLauncher: 1
   destructionLayers:
     serializedVersion: 2
-    m_Bits: 704
+    m_Bits: 8896
   ballLifetime: 3
   enableCollisionDestruction: 1
   enableTimeDestruction: 1
@@ -219526,9 +219526,9 @@ MonoBehaviour:
   ballDamage: 80
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 1728
+    m_Bits: 9920
   enableDamageSystem: 1
-  damageOnCollision: 1
+  damageOnCollision: 0
   damageOnExplosion: 1
   explosionDamageRadius: 0.9
   explosionDamageMultiplier: 2
@@ -219619,7 +219619,7 @@ MonoBehaviour:
   maxArrowDamage: 70
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 1664
+    m_Bits: 9856
   enableDamageSystem: 1
   damageOnCollision: 1
   showDamageDebug: 0
@@ -219703,17 +219703,17 @@ MonoBehaviour:
   aimVerticalOffsetRightCursor: -1.77
   aimVerticalOffsetLeftCursor: 1.6
   throwBatVolume: 1
-  batPickupRange: 1.81
+  batPickupRange: 2.18
   batPickupPoint: {fileID: 3510942078707517890}
   attackPoint: {fileID: 3989724729098276922}
   upwardAttackPoint: {fileID: 3611628031764258540}
   attackRange: 2.44
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 1664
+    m_Bits: 8832
   groundLayer:
     serializedVersion: 2
-    m_Bits: 1736
+    m_Bits: 712
   upwardZoneMinY: 3.07
   upwardZoneMaxY: 10.9
   normalZoneMaxY: 2.97
@@ -219794,10 +219794,10 @@ MonoBehaviour:
   bulletDamage: 15
   damageableLayers:
     serializedVersion: 2
-    m_Bits: 1664
+    m_Bits: 9856
   collisionLayers:
     serializedVersion: 2
-    m_Bits: 1729
+    m_Bits: 9921
   weaponData: {fileID: 11400000, guid: a2577c9cd59dd364da52ae79d5ce230e, type: 2}
   maxUpwardAngle: 180
   maxDownwardAngle: 180
@@ -219853,13 +219853,13 @@ MonoBehaviour:
   bulletDamage: 15
   damageableLayers:
     serializedVersion: 2
-    m_Bits: 1664
+    m_Bits: 9856
   collisionLayers:
     serializedVersion: 2
-    m_Bits: 1224
+    m_Bits: 9416
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 1664
+    m_Bits: 8832
   maxUpwardAngle: 180
   maxDownwardAngle: 180
   minDistanceToAim: 1.87
@@ -219887,7 +219887,7 @@ MonoBehaviour:
   overheatAudioClip: {fileID: 8300000, guid: 5f358d554ae7a624ab7ef0e02f06a87e, type: 3}
   overheatAudioVolume: 1
   cameraShakeOver: {fileID: 11400000, guid: 91161cc12ac12444280a59edf89a180b, type: 2}
-  shootSound: {fileID: 8300000, guid: 1c7a4f78818ce094383296beeaaa205f, type: 3}
+  shootSound: {fileID: 8300000, guid: dd911e8ba488de942ae0829353fd8532, type: 3}
   shootSoundVolume: 1
   bulletCollisionSound: {fileID: 0}
   bulletCollisionSoundVolume: 1
@@ -219952,9 +219952,9 @@ MonoBehaviour:
   rb: {fileID: 4712472362792144401}
   L3antixMovement: {fileID: 6796231500301844375}
   gameUIManager: {fileID: 0}
-  healthPerSecond: 15
+  healthPerSecond: 10
   delayBeforeHeal: 3
-  beeHealthPerSecond: 15
+  beeHealthPerSecond: 20
   beeDelayBeforeHeal: 1.2
   healingParticles:
   - {fileID: 8171575599083744421}
@@ -219989,7 +219989,7 @@ MonoBehaviour:
   playerInvisibility: {fileID: 0}
   CameraShakeDeath: {fileID: 11400000, guid: 5de216865eb2173459f490db41b47444, type: 2}
   reviveRequestPanel: {fileID: 0}
-  maxRevives: 2
+  maxRevives: 4
   reviveParticles:
   - {fileID: 1511292470126193948}
   - {fileID: 1328927269730136223}
@@ -220314,7 +220314,7 @@ MonoBehaviour:
   beeSwarms:
   - {fileID: 1267550171789032839}
   beeSwarmSound: {fileID: 8300000, guid: 0b6a70ede774f4b419f9824ce8bdcd30, type: 3}
-  beeSwarmVolume: 0.559
+  beeSwarmVolume: 1
   damagePoint: {fileID: 3510942078707517890}
   damageRadius: 5.64
   damage: 15

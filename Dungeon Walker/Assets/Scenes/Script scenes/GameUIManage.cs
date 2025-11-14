@@ -196,6 +196,7 @@ public class GameUIManager : MonoBehaviour
         // Pause the game at the very end.
         Time.timeScale = 0f;
         isGamePaused = true;
+        StartCoroutine(RefreshAdStatusLoop());
     }
     private void ShowDoubleCoinsButton()
     {
@@ -331,5 +332,32 @@ public class GameUIManager : MonoBehaviour
         fadeCanvasGroup.alpha = 1;
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    private IEnumerator RefreshAdStatusLoop()
+    {
+        // This loop will run as long as the death panel is active.
+        while (deathPanel.activeInHierarchy)
+        {
+            // Find the RewardedAdButton component on your double coins button.
+            RewardedAdButton adButton = doubleCoinsButton.GetComponent<RewardedAdButton>();
+            if (adButton != null)
+            {
+                // Manually call its UpdateAdStatus() method.
+                // This will force it to check with the AdManager again.
+                adButton.UpdateAdStatus();
+            }
+
+            // If the button is STILL not interactable, it means the ad is not ready.
+            // We should tell the AdManager to try loading it again.
+            if (!doubleCoinsButton.interactable && AdManager_New.Instance != null)
+            {
+                // This is a safe way to try reloading.
+                AdManager_New.Instance.LoadSpecificRewardedAd("Rewarded_Android_DoubleCoins");
+            }
+
+            // Wait for a few seconds before checking again.
+            // We don't want to spam the ad server.
+            yield return new WaitForSecondsRealtime(5f); // Check every 5 seconds.
+        }
     }
 }
