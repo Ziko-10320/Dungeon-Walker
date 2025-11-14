@@ -24642,11 +24642,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1649313770026638291, guid: 42365d802c31ca147ad4d3c7ed47ae07, type: 3}
       propertyPath: rewardedAdUnitIds.Array.size
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1649313770026638291, guid: 42365d802c31ca147ad4d3c7ed47ae07, type: 3}
       propertyPath: rewardedAdUnitIds.Array.data[0]
-      value: Rewarded_Android_FreeCoins
+      value: Rewarded_Android
+      objectReference: {fileID: 0}
+    - target: {fileID: 1649313770026638291, guid: 42365d802c31ca147ad4d3c7ed47ae07, type: 3}
+      propertyPath: rewardedAdUnitIds.Array.data[1]
+      value: Rewarded_Android_DoubleCoins
       objectReference: {fileID: 0}
     - target: {fileID: 5850487941229874811, guid: 42365d802c31ca147ad4d3c7ed47ae07, type: 3}
       propertyPath: m_Name

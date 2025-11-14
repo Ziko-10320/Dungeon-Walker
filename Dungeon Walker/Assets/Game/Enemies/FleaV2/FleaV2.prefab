@@ -1204,11 +1204,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -72.861694
+      value: -73.78472
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.3887477
+      value: -0.38726503
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 469768b3dfb20a0448c02d21e5ee63db, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1563,6 +1563,12 @@ MonoBehaviour:
   attackSoundVolume: 0.7
   isAttacking: 0
   attackCheckInterval: 1
+  normalBodyParts:
+  - {fileID: 8536045494277040110}
+  - {fileID: 703834237120877902}
+  - {fileID: 9111527908230037792}
+  ballAttackParts:
+  - {fileID: 2486644113775177970}
 --- !u!114 &3932573549224213230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1896,6 +1902,11 @@ PrefabInstance:
 --- !u!4 &1889060596128229704 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -7552582706839291426, guid: daafcb9bff0739242914421014141fd6, type: 3}
+  m_PrefabInstance: {fileID: 943676270153879702}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2486644113775177970 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3430275295349727332, guid: daafcb9bff0739242914421014141fd6, type: 3}
   m_PrefabInstance: {fileID: 943676270153879702}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3389388512565605062

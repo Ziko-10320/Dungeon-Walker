@@ -34,13 +34,10 @@ public class GameUIManager : MonoBehaviour
     private bool hasUsedDoubleCoinsAd = false;
     void Awake()
     {
-        // ---- NEW: Check for Developer Mode at the start ----
-        // If this is true, we skip all the PlayerPrefs logic and use what's active in the scene.
+        // Developer Mode check is perfect, we leave it as is.
         if (developerMode)
         {
             Debug.LogWarning("DEVELOPER MODE is ON. Using characters enabled in the scene hierarchy.");
-
-            // We still need to tell the camera who to follow based on the active character.
             if (catCharacterObject != null && catCharacterObject.activeInHierarchy)
             {
                 if (cameraFollowScript != null && catFollowTarget != null)
@@ -55,46 +52,43 @@ public class GameUIManager : MonoBehaviour
                     cameraFollowScript.SetTarget(manFollowTarget);
                 }
             }
-            // Exit the function early so the PlayerPrefs code below doesn't run.
             return;
         }
 
-        // ---- Your existing PlayerPrefs logic ----
+        // --- THIS IS THE FINAL, GUARANTEED FIX ---
         // This code will only run if 'developerMode' is false.
         string selectedCharacter = PlayerPrefs.GetString("SelectedCharacter", "Cat");
 
         if (selectedCharacter == "Cat")
         {
-            // Enable Cat objects
-            if (catCharacterObject != null) catCharacterObject.SetActive(true);
-            if (catManagerObject != null) catManagerObject.SetActive(true);
-            // Disable Man objects
+            // If we chose Cat, ONLY disable Man.
+            // We assume Cat is already active in the scene.
             if (manCharacterObject != null) manCharacterObject.SetActive(false);
             if (manManagerObject != null) manManagerObject.SetActive(false);
-            // Set camera target
+
+            // Set the camera to follow the Cat.
             if (cameraFollowScript != null && catFollowTarget != null)
             {
                 cameraFollowScript.SetTarget(catFollowTarget);
             }
-            Debug.Log("Activating Cat, CatManager, and setting camera target.");
+            Debug.Log("Character Selected: Cat. Disabling Man and setting camera target.");
         }
-        else if (selectedCharacter == "Man")
+        else // This covers the "Man" case and any other possibility.
         {
-            // Enable Man objects
-            if (manCharacterObject != null) manCharacterObject.SetActive(true);
-            if (manManagerObject != null) manManagerObject.SetActive(true);
-            // Disable Cat objects
+            // If we chose Man, ONLY disable Cat.
+            // We assume Man is already active in the scene.
             if (catCharacterObject != null) catCharacterObject.SetActive(false);
             if (catManagerObject != null) catManagerObject.SetActive(false);
-            // Set camera target
+
+            // Set the camera to follow the Man.
             if (cameraFollowScript != null && manFollowTarget != null)
             {
                 cameraFollowScript.SetTarget(manFollowTarget);
             }
-            Debug.Log("Activating Man, ManManager, and setting camera target.");
+            Debug.Log("Character Selected: Man. Disabling Cat and setting camera target.");
         }
+        // --- END OF FIX ---
     }
-
     void Start()
     {
         if (statAnimation != null)

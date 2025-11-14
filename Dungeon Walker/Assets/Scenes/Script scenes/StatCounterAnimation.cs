@@ -50,10 +50,7 @@ public class StatCounterAnimation : MonoBehaviour
         animationCoroutine = StartCoroutine(AnimateAllStats(finalScore, finalKills, finalCoins));
     }
 
-    void Update()
-    {
-        if (isAnimating && Input.GetMouseButtonDown(0)) SkipAnimation();
-    }
+   
     public void AnimateCoinStat(int newCoinTarget)
     {
         if (isAnimating) StopCoroutine(animationCoroutine); // Stop any current animation

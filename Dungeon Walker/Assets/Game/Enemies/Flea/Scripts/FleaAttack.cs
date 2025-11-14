@@ -57,7 +57,12 @@ public class FleaChargeAttack : MonoBehaviour
 
     private float attackCheckTimer = 0f;
 
+    [Header("Animation Body Parts")]
+    [Tooltip("All the GameObjects that make up the normal flea body.")]
+    [SerializeField] private GameObject[] normalBodyParts;
 
+[Tooltip("All the GameObjects that make up the 'ball' version of the flea.")]
+    [SerializeField] private GameObject[] ballAttackParts;
     void Awake()
     {
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
@@ -79,31 +84,52 @@ public class FleaChargeAttack : MonoBehaviour
 
     public void InitializeAndReset(Transform player)
     {
-        // 1. Forcefully get the player reference.
+        // We still set the player reference immediately.
         playerTransform = player;
 
-        // 2. Reset all critical state variables.
+        // Stop any old coroutines and start the new, safe reset sequence.
+        StopAllCoroutines();
+        StartCoroutine(ResetStateSequence());
+    }
+
+    // This is the new coroutine that contains all the logic.
+    // It waits one frame before resetting the animator, which fixes the bug.
+    private IEnumerator ResetStateSequence()
+    {
+        // --- THIS IS THE GUARANTEED FIX ---
+        // Wait for the end of the current frame. This lets the Animator
+        // fully wake up and get into its broken state.
+        yield return new WaitForEndOfFrame();
+        // --- END OF FIX ---
+
+        // NOW, in the next frame, we can safely override everything.
+
+        // 1. Reset all critical state variables.
         canAttack = true;
         isAttacking = false;
-        ResetDecisionTimer(); // Reset the attack timer.
+        ResetDecisionTimer();
 
-        // 3. --- THIS IS THE CRITICAL ANIMATION FIX ---
-        // Ensure the animator reference is not null.
+        // 2. Force the correct body parts to be active.
+        foreach (GameObject part in normalBodyParts)
+        {
+            if (part != null) part.SetActive(true);
+        }
+        foreach (GameObject part in ballAttackParts)
+        {
+            if (part != null) part.SetActive(false);
+        }
+
+        // 3. Forcefully reset the Animator. Now it will obey.
         if (fleaAnimator == null) fleaAnimator = GetComponent<Animator>();
         if (fleaAnimator != null)
         {
-            // Force all animation booleans back to their default (false) state.
             fleaAnimator.SetBool(isAnticipatingHash, false);
             fleaAnimator.SetBool(isChargingHash, false);
+            fleaAnimator.Rebind();
+            fleaAnimator.Update(0f);
         }
 
-        fleaAnimator.Rebind();
-        fleaAnimator.Update(0f);
-        // 4. Stop any old attack coroutines that might be stuck mid-charge.
-        StopAllCoroutines();
-
-
-        // 5. Ensure the script is enabled and ready to go.
+        // 4. Ensure the script is enabled.
         this.enabled = true;
     }
     public void SetTutorialMode()
@@ -114,6 +140,7 @@ public class FleaChargeAttack : MonoBehaviour
 
     void OnEnable()
     {
+
         PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;
         PlayerInvisibility3antix.OnInvisibilityChanged += HandleInvisibility;
     }
