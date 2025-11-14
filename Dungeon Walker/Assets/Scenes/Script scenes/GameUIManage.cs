@@ -156,6 +156,16 @@ public class GameUIManager : MonoBehaviour
         // Make sure the PlayerStatsManager exists before doing anything
         if (PlayerStatsManager.Instance != null)
         {
+            if (activeCheckpointManager != null)
+            {
+                PlayerStatsManager.Instance.SetFinalScore(activeCheckpointManager.TotalScore);
+            }
+            else
+            {
+                // If there's no manager, at least set the score to 0.
+                PlayerStatsManager.Instance.SetFinalScore(0);
+                Debug.LogWarning("Could not find an active CheckpointManager. Score set to 0.");
+            }
             // 1. SET THE FINAL SCORE FIRST
             // This is critical. The score must be set before we check it.
             if (activeCheckpointManager != null)

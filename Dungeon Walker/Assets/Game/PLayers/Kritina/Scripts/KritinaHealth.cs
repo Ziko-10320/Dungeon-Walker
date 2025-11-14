@@ -397,16 +397,20 @@ public class PlayerHealth : MonoBehaviour
         {
             PlayerStatsManager.Instance.SetFinalScore(checkpointManager.TotalScore);
         }
+
+        // 2. Tell the UI Manager to show the screen. It will now have the correct score.
+        if (gameUIManager != null)
+        {
+            gameUIManager.ShowDeathScreen();
+        }
+
+        // 3. NOW, disable the camera follow and the player object.
         CameraFollowMouseHorizontal cameraFollow = mainCamera.GetComponent<CameraFollowMouseHorizontal>();
         if (cameraFollow != null)
         {
             cameraFollow.enabled = false;
         }
         gameObject.SetActive(false);
-        if (gameUIManager != null)
-        {
-            gameUIManager.ShowDeathScreen();
-        }
     }
     public void ResetDeathEffects()
     {
@@ -447,31 +451,33 @@ public class PlayerHealth : MonoBehaviour
         Debug.Log("Player declined ad revive. Proceeding to final death.");
         reviveRequestPanel.SetActive(false);
 
-        // This is now a synchronous operation.
-        // We immediately disable the player and show the death screen.
-        CameraFollowMouseHorizontal cameraFollow = mainCamera.GetComponent<CameraFollowMouseHorizontal>();
-        if (cameraFollow != null)
-        {
-            cameraFollow.enabled = false;
-        }
         // Reset visual effects instantly.
         if (deathFadeImage != null) deathFadeImage.gameObject.SetActive(false);
         if (mainCamera != null) mainCamera.orthographicSize = originalCameraSize;
-
-        // Set final score.
         ResetPostProcessingOnDeath();
+
+        // --- THIS IS THE FIX ---
+        // 1. Find the CheckpointManager and save the score.
         if (checkpointManager == null) checkpointManager = FindObjectOfType<CheckpointManager>();
         if (checkpointManager != null && PlayerStatsManager.Instance != null)
         {
             PlayerStatsManager.Instance.SetFinalScore(checkpointManager.TotalScore);
         }
 
-        // Disable player and show the screen.
-        gameObject.SetActive(false);
+        // 2. Tell the UI Manager to show the screen.
         if (gameUIManager != null)
         {
             gameUIManager.ShowDeathScreen();
         }
+
+        // 3. NOW, disable the camera follow and the player object.
+        CameraFollowMouseHorizontal cameraFollow = mainCamera.GetComponent<CameraFollowMouseHorizontal>();
+        if (cameraFollow != null)
+        {
+            cameraFollow.enabled = false;
+        }
+        gameObject.SetActive(false);
+        // --- END OF FIX ---
     }
     // ... The rest of your script (HealOverTime, UpdateHealthEffects, HandleHit, etc.) is unchanged ...
     // ... as it is all correct and does not need modification. I've included it below for completeness.
