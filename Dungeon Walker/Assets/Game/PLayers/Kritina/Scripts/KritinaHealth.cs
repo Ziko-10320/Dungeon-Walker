@@ -12,7 +12,7 @@ public class PlayerHealth : MonoBehaviour
     [Header("Health Settings")]
     [SerializeField] public int maxHealth = 100;
     [HideInInspector] public int currentHealth;
-   
+    [SerializeField] private AudioClip deathAnimationSound;
 
     [Header("Component References")]
     [SerializeField] private Rigidbody2D rb;
@@ -333,6 +333,10 @@ public class PlayerHealth : MonoBehaviour
     // --- THIS IS THE NEW COROUTINE THAT CONTAINS ALL THE DEATH LOGIC ---
     private IEnumerator DeathSequence(bool skipToFinalDeath = false)
     {
+        if (deathAnimationSound != null && mainCamera != null)
+        {
+            AudioSource.PlayClipAtPoint(deathAnimationSound, mainCamera.transform.position, 1f); // Volume is 1f (full)
+        }
         animator.SetTrigger("Death");
 
         if (!skipToFinalDeath)
