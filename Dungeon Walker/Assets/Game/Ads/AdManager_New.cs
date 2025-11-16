@@ -11,7 +11,7 @@ public class AdManager_New : MonoBehaviour, IUnityAdsInitializationListener, IUn
 
     [Header("Ad Configuration")]
     [SerializeField] private string androidGameId;
-    [SerializeField] private bool testMode = true;
+    [SerializeField] private bool testMode = false;
 
     [Header("Ad Unit IDs")]
     [SerializeField] private List<string> rewardedAdUnitIds = new List<string>();

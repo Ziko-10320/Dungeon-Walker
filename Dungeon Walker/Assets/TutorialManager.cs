@@ -121,7 +121,13 @@ public class TutorialGameManager : MonoBehaviour
         Debug.Log($"Starting encounter: {encounter.encounterName}");
 
         if (encounter.barrierWalls != null) encounter.barrierWalls.SetActive(true);
-
+        BatAttackSystem batSystem = existingCharacterObject.GetComponent<BatAttackSystem>();
+        if (batSystem != null && !batSystem.HasBat())
+        {
+            Debug.Log("Player entered encounter without bat. Forcing bat return!");
+            // This is the magic function you already wrote! It gives the bat back.
+            batSystem.PickUpBat2();
+        }
         if (encounter.enemyPrefab != null && encounter.enemySpawnPoint != null)
         {
             spawnedEnemy = Instantiate(encounter.enemyPrefab, encounter.enemySpawnPoint.position, encounter.enemySpawnPoint.rotation);

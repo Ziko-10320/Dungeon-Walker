@@ -75,7 +75,7 @@ public class WalletManager : MonoBehaviour
     public void AddFiveCoinsFromAd()
     {
         // We call your existing, safe AddCoins method.
-        AddCoins(5);
+        AddCoins(20);
         Debug.Log("5 coins awarded from watching a rewarded ad!");
     }
     /// <summary>

@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Water gun
   weaponIcon: {fileID: 21300000, guid: 01244a28271240c4a8300a356767e150, type: 3}
   upgradeLevels:
-  - upgradeCost: 10
+  - upgradeCost: 75
     pistolStats:
       pistolDamage: 20
       pistolFireRate: 0.15
@@ -35,7 +35,7 @@ MonoBehaviour:
       launcherDamage: 0
       launcherFireRate: 0
       launcherRadius: 0
-  - upgradeCost: 20
+  - upgradeCost: 200
     pistolStats:
       pistolDamage: 30
       pistolFireRate: 0.06

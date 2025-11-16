@@ -58,6 +58,7 @@ public class RewardedAdButton : MonoBehaviour, IUnityAdsShowListener
     {
         Debug.Log($"[RewardedAdButton] Show Ad button clicked. Attempting to show '{adUnitId}'.");
         buttonToControl.interactable = false;
+        AdManager_New.OnAnyRewardedAdLoaded -= UpdateAdStatus;
         Advertisement.Show(adUnitId, this);
     }
     public string GetAdUnitId()
@@ -77,6 +78,7 @@ public class RewardedAdButton : MonoBehaviour, IUnityAdsShowListener
         }
 
         Time.timeScale = 1f;
+        AdManager_New.OnAnyRewardedAdLoaded += UpdateAdStatus;
         AdManager_New.Instance?.LoadSpecificRewardedAd(adUnitId);
     }
 

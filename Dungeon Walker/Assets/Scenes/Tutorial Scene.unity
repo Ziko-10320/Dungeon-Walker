@@ -6139,13 +6139,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330797027}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 9.35, y: -8.52, z: 26.7}
-  m_LocalScale: {x: 1.7531145, y: 1.7531145, z: 1.7531145}
+  m_LocalRotation: {x: 0.008999893, y: -0.0023927765, z: 0.25693008, w: 0.9663851}
+  m_LocalPosition: {x: 9.77, y: -8.03, z: 26.7}
+  m_LocalScale: {x: 0.9762787, y: 0.9762787, z: 0.9762787}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1908170766}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 1.067, y: 0, z: 29.777}
 --- !u!212 &330797029
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -6187,7 +6187,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 4346091125168160682, guid: 938e536df46c9d74bae3265eef412d66, type: 3}
+  m_Sprite: {fileID: -8906876387337562058, guid: 6e6cdf4fe5ea95b4db3b0bbfc35c8e38, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -22391,7 +22391,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1390964329}
   - component: {fileID: 1390964330}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: wol (1)
   m_TagString: Wall
   m_Icon: {fileID: 0}

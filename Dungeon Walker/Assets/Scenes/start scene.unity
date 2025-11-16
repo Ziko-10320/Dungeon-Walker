@@ -10162,7 +10162,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: +5
+  m_text: 20
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a963c50524e35eb42bdea776a99f8703, type: 2}
   m_sharedMaterial: {fileID: -3543452604890863520, guid: a963c50524e35eb42bdea776a99f8703, type: 2}
@@ -13902,7 +13902,7 @@ MonoBehaviour:
   milkTabButton: {fileID: 252025831}
   milkContent: {fileID: 2001375798}
   buyMilkButton: {fileID: 740939437}
-  milkPrice: 100
+  milkPrice: 1000
   creditsPanel: {fileID: 1958863545}
   buyMilkPriceText: {fileID: 2128348110}
   shopItems:
@@ -15151,7 +15151,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: +5
+  m_text: '20
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a963c50524e35eb42bdea776a99f8703, type: 2}
   m_sharedMaterial: {fileID: -3543452604890863520, guid: a963c50524e35eb42bdea776a99f8703, type: 2}
@@ -20038,7 +20040,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -483.7, y: -49.8}
+  m_AnchoredPosition: {x: -293, y: -49.8}
   m_SizeDelta: {x: 137.72, y: 133.972}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &890818940
@@ -23892,7 +23894,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -290.7, y: -49}
+  m_AnchoredPosition: {x: -480, y: -49}
   m_SizeDelta: {x: 137.72, y: 133.972}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1081243757
@@ -24664,6 +24666,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1649313770026638291, guid: 42365d802c31ca147ad4d3c7ed47ae07, type: 3}
+      propertyPath: testMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1649313770026638291, guid: 42365d802c31ca147ad4d3c7ed47ae07, type: 3}
       propertyPath: androidRewardedIdDoubleCoins
       value: Rewarded_Android_DoubleCoins
@@ -30030,7 +30036,7 @@ MonoBehaviour:
   slot3_UnlockedGroup: {fileID: 931651881}
   unlockSlotButton: {fileID: 1685184573}
   unlockPriceText: {fileID: 462819740}
-  thirdSlotPrice: 20
+  thirdSlotPrice: 200
   weaponsTabButton: {fileID: 484261275}
   weaponsContent: {fileID: 1446899943}
   levelSegments:
@@ -30050,7 +30056,7 @@ MonoBehaviour:
   slot2_UnlockedGroup: {fileID: 1974905241}
   unlockSlot2Button: {fileID: 1587103574}
   unlockPrice2Text: {fileID: 2041294123}
-  secondSlotPrice: 10
+  secondSlotPrice: 75
   equippedIcon_3: {fileID: 446889118}
   equippedName_3: {fileID: 294983898}
   unequipButton_3: {fileID: 2047758219}
@@ -30948,6 +30954,7 @@ GameObject:
   - component: {fileID: 1425975278}
   - component: {fileID: 1425975277}
   - component: {fileID: 1425975276}
+  - component: {fileID: 1425975280}
   m_Layer: 5
   m_Name: FreeCoinAd
   m_TagString: Untagged
@@ -31089,6 +31096,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1425975274}
   m_CullTransparentMesh: 1
+--- !u!114 &1425975280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1425975274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36034ff95819bed4ab462daf63d4cdfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pressedScale: 0.9
+  scaleSpeed: 15
 --- !u!1 &1429373557
 GameObject:
   m_ObjectHideFlags: 0
@@ -31865,6 +31886,7 @@ GameObject:
   - component: {fileID: 1461210923}
   - component: {fileID: 1461210922}
   - component: {fileID: 1461210921}
+  - component: {fileID: 1461210925}
   m_Layer: 5
   m_Name: FreeCoinAd (1)
   m_TagString: Untagged
@@ -32006,6 +32028,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1461210919}
   m_CullTransparentMesh: 1
+--- !u!114 &1461210925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1461210919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36034ff95819bed4ab462daf63d4cdfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pressedScale: 0.9
+  scaleSpeed: 15
 --- !u!1 &1462601596
 GameObject:
   m_ObjectHideFlags: 0

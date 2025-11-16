@@ -134869,7 +134869,7 @@ MonoBehaviour:
   - {fileID: 0}
   player: {fileID: 9006167878275002792}
   loopCheckpoints: 1
-  coinsPerCheckpoint: 10
+  coinsPerCheckpoint: 2
   interactButton: {fileID: 0}
   scorePerCheckpoint: 0
   scorePerLoop: 1
@@ -149597,7 +149597,7 @@ MonoBehaviour:
     armGameObject: {fileID: 1528049513010370764}
     armSpriteRenderer: {fileID: 8502858067901786408}
     weaponUIIcon: {fileID: 21300000, guid: 75078900b0e489d45932b21ee3f84bf5, type: 3}
-    dropChance: 0.079
+    dropChance: 0.19
   - weaponName: WaterGun
     weaponGameObjects:
     - {fileID: 7312334363234009699}
@@ -219949,12 +219949,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 350
   currentHealth: 0
+  deathAnimationSound: {fileID: 8300000, guid: ee63cd1e5f8f5eb4ca9bbb35ada61a5b, type: 3}
   rb: {fileID: 4712472362792144401}
   L3antixMovement: {fileID: 6796231500301844375}
   gameUIManager: {fileID: 0}
   healthPerSecond: 10
   delayBeforeHeal: 3
-  beeHealthPerSecond: 20
+  beeHealthPerSecond: 30
   beeDelayBeforeHeal: 1.2
   healingParticles:
   - {fileID: 8171575599083744421}
@@ -219979,10 +219980,10 @@ MonoBehaviour:
   damageSoundVolume: 1
   checkpointManager: {fileID: 1746019872459014062}
   isInvincible: 0
-  shieldMaxHealth: 70
-  upgradedShieldMaxHealth: 120
+  shieldMaxHealth: 100
+  upgradedShieldMaxHealth: 200
   shieldExplosionPoint: {fileID: 3510942078707517890}
-  shieldExplosionDamage: 50
+  shieldExplosionDamage: 100
   shieldExplosionRadius: 2.68
   shieldSlider: {fileID: 0}
   isSuperActive: 0
@@ -220153,7 +220154,7 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 640
-  damage: 5
+  damage: 8
   damageInterval: 0.5
   trailSound: {fileID: 8300000, guid: d79293b4bee4ccf41beacdcac48423a2, type: 3}
   trailVolume: 1
@@ -220184,8 +220185,8 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 640
-  damage: 10
-  damageInterval: 0.6
+  damage: 15
+  damageInterval: 0.5
   trailSound: {fileID: 8300000, guid: 5f358d554ae7a624ab7ef0e02f06a87e, type: 3}
   trailVolume: 1
   player: {fileID: 0}
@@ -220249,11 +220250,11 @@ MonoBehaviour:
   reviveSound: {fileID: 8300000, guid: 1073b1c329701044e853109b4fe302da, type: 3}
   reviveVolume: 1
   damagePoint: {fileID: 6353124163619318654}
-  damageRadius: 30
+  damageRadius: 31.4
   enemyLayer:
     serializedVersion: 2
     m_Bits: 640
-  damage: 1000
+  damage: 10000
   damageDelay: 0
   shaderParam: _WaveDistanceFromCenter
   startValue: -0.1
@@ -220294,7 +220295,7 @@ MonoBehaviour:
   - {fileID: 7818301228350883554}
   - {fileID: 121951730308524707}
   invisibleMaterial: {fileID: 2100000, guid: f3ccae55d69c05c43a8e6e2146420eaf, type: 2}
-  invisibilityDuration: 10
+  invisibilityDuration: 12.5
   becomeInvisibleSound: {fileID: 8300000, guid: 93913c3a762034943aea63e7664db3cc, type: 3}
   invisibleVolume: 1
   becomeVisibleSound: {fileID: 8300000, guid: f6a2a67f56b4c7b4792e0b4dea12f834, type: 3}
@@ -220317,7 +220318,7 @@ MonoBehaviour:
   beeSwarmVolume: 1
   damagePoint: {fileID: 3510942078707517890}
   damageRadius: 5.64
-  damage: 15
+  damage: 30
   damageTickInterval: 0.5
   enemyLayer:
     serializedVersion: 2

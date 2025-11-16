@@ -1103,7 +1103,7 @@ public class BatAttackSystem : MonoBehaviour
         }
     }
 
-    void PickUpBat2()
+    public void PickUpBat2()
     {
         if (audioSource != null && audioSource.isPlaying && audioSource.clip == throwBatSound)
         {
