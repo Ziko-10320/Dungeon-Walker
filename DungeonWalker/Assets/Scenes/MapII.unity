@@ -38,6 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -121752,7 +121753,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1649313770026638291, guid: 42365d802c31ca147ad4d3c7ed47ae07, type: 3}
       propertyPath: testMode
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5850487941229874811, guid: 42365d802c31ca147ad4d3c7ed47ae07, type: 3}
       propertyPath: m_Name
@@ -141979,7 +141980,6 @@ MonoBehaviour:
   m_DeselectOnBackgroundClick: 1
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
-  m_ScrollDeltaPerTick: 6
 --- !u!114 &1956138996
 MonoBehaviour:
   m_ObjectHideFlags: 0
