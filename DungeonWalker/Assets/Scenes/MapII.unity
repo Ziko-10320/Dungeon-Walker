@@ -131566,6 +131566,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2093435832}
     - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: PcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: ammoText
       value: 
       objectReference: {fileID: 1371777508}
@@ -131573,6 +131577,10 @@ PrefabInstance:
       propertyPath: uiCanvas
       value: 
       objectReference: {fileID: 799431480}
+    - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: MobileInput
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2970626968342253187, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: aimJoystick
       value: 
@@ -131657,6 +131665,14 @@ PrefabInstance:
       propertyPath: chargeSlider
       value: 
       objectReference: {fileID: 1988029380}
+    - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: enablePcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: enableMobileInput
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5638463088309302553, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: fullyChargedIndicator
       value: 
@@ -131750,17 +131766,33 @@ PrefabInstance:
       value: L3antixSingle
       objectReference: {fileID: 0}
     - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: PcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: shootSound
       value: 
       objectReference: {fileID: 8300000, guid: dd911e8ba488de942ae0829353fd8532, type: 3}
+    - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: MobileInput
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8208407095181370280, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 645937793}
     - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: PcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: joystickUI
       value: 
       objectReference: {fileID: 2002070803}
+    - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
+      propertyPath: MobileInput
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8558709009588466802, guid: 2b3d86e57a2979c4d819b2b569cf8e7b, type: 3}
       propertyPath: attackButtonUI
       value: 
@@ -143272,12 +143304,24 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 27075655}
     - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: PcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: MobileInput
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2502294520060319531, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: aimJoystick
       value: 
       objectReference: {fileID: 645937793}
     - target: {fileID: 2813424294025378842, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: PcInput
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: ammoText
@@ -143287,6 +143331,10 @@ PrefabInstance:
       propertyPath: uiCanvas
       value: 
       objectReference: {fileID: 799431480}
+    - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: MobileInput
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2837465749836920815, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: aimJoystick
       value: 
@@ -143351,6 +143399,14 @@ PrefabInstance:
       propertyPath: chargeSlider
       value: 
       objectReference: {fileID: 1988029380}
+    - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: enablePcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: enableMobileInput
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4880712677658907754, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: fullyChargedIndicator
       value: 
@@ -143424,9 +143480,17 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: PcInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: joystickUI
       value: 
       objectReference: {fileID: 2002070803}
+    - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
+      propertyPath: MobileInput
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6486646314645600925, guid: 163c9a58c66a24f4b8fc9d26a3d22baf, type: 3}
       propertyPath: attackButtonUI
       value: 
