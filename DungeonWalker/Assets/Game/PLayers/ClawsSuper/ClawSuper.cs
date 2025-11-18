@@ -118,7 +118,7 @@ public class SuperMoveController : MonoBehaviour
         // hook events
         superMeter.onSuperReady.AddListener(() =>
         {
-            if (superBarText != null) superBarText.text = "CLICK ICON";
+            if (superBarText != null) superBarText.text = "PRESS F";
             if (superBarSlider != null) superBarSlider.value = 1f;
             if (superReadyIndicator != null) superReadyIndicator.SetActive(true);
         });

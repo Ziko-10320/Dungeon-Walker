@@ -163,6 +163,9 @@ public class BatAttackSystem : MonoBehaviour
 
     private PlayerSuperMeter superMeter;
     private WeaponSwitchManager weaponSwitchManager;
+
+    private bool isAimingWithMouse = false;
+    private Vector2 mouseAimDirection = Vector2.right;
     void OnDisable()
     {
         Debug.Log("BatAttackSystem OnDisable called - performing comprehensive cleanup");
@@ -475,7 +478,41 @@ public class BatAttackSystem : MonoBehaviour
             }
             if (Input.GetMouseButtonDown(1))
             {
-                lastMousePosition = Input.mousePosition;
+                isAimingWithMouse = true;
+                // Turn on the aim line so the player can see it.
+                if (aimLineRenderer != null)
+                {
+                    aimLineRenderer.enabled = true;
+                }
+            }
+
+            // 2. WHILE YOU ARE HOLDING the right mouse button...
+            if (isAimingWithMouse && Input.GetMouseButton(1))
+            {
+                // Calculate the direction from the player to the mouse cursor.
+                Vector3 mouseWorldPos = playerCamera.ScreenToWorldPoint(Input.mousePosition);
+                mouseWorldPos.z = transform.position.z; // Keep it 2D
+                mouseAimDirection = (mouseWorldPos - transform.position).normalized;
+
+                // Update the aim line to show the player where they are aiming.
+                UpdateAimLineDirection(mouseAimDirection);
+            }
+
+            // 3. WHEN YOU RELEASE the right mouse button...
+            if (isAimingWithMouse && Input.GetMouseButtonUp(1))
+            {
+                isAimingWithMouse = false;
+                // Turn off the aim line.
+                if (aimLineRenderer != null)
+                {
+                    aimLineRenderer.enabled = false;
+                }
+
+                // Use the last aimed direction for the throw.
+                // We will reuse the mobile 'buttonAimDirection' variable to pass the info.
+                buttonAimDirection = mouseAimDirection;
+
+                // Perform the throw!
                 ThrowSlash();
             }
         }
