@@ -57,8 +57,33 @@ public class InkAttack : MonoBehaviour
     private Transform poolParent;
 
     private static Transform sharedPlayerTransform;
-    private void OnEnable()
+    void OnEnable()
     {
+        // --- 1. GET THE TIER MULTIPLIER ---
+        float tierMultiplier = 1.0f;
+        if (StatMultiplierManager.Instance != null)
+        {
+            tierMultiplier = StatMultiplierManager.Instance.InkMultiplier;
+        }
+
+        // --- 2. GET WAVE SCALING INFO FROM HEALTH SCRIPT ---
+        int wavesSurvived = 0;
+        int waveDamageBonus = 0;
+        InkHealth healthScript = GetComponent<InkHealth>();
+        if (healthScript != null)
+        {
+            if (healthScript.firstSpawnWave != -1)
+            {
+                wavesSurvived = ScoreDisplay.CurrentWaveNumber - healthScript.firstSpawnWave;
+                if (wavesSurvived < 0) wavesSurvived = 0;
+            }
+            waveDamageBonus = wavesSurvived * healthScript.damageIncreasePerWave;
+        }
+
+        // --- 3. APPLY ALL SCALING ---
+        inkBallDamage = Mathf.RoundToInt(baseInkBallDamage * tierMultiplier) + waveDamageBonus;
+
+        // --- 4. YOUR EXISTING RESET LOGIC ---
         ResetAttackState();
     }
     void Start()

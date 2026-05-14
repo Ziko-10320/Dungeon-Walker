@@ -69,8 +69,7 @@ public class FlyHealth : MonoBehaviour, IDamageable
     [Tooltip("How much extra movement speed the fly gets per wave.")]
     public float moveSpeedIncreasePerWave = 0.3f;
 
-    // Internal memory for this specific fly instance
-    private int firstSpawnWave = -1;
+    public int firstSpawnWave { get; private set; } = -1;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -84,43 +83,28 @@ public class FlyHealth : MonoBehaviour, IDamageable
     }
     void OnEnable()
     {
-        // --- 1. THE SCALING LOGIC ---
-        if (firstSpawnWave == -1)
+        // --- 1. GET THE TIER MULTIPLIER ---
+        float tierMultiplier = 1.0f;
+        if (StatMultiplierManager.Instance != null)
         {
-            // This is the first time this fly has ever spawned.
-            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
+            tierMultiplier = StatMultiplierManager.Instance.FlyMultiplier;
         }
 
-        // Calculate how many waves this fly has "survived".
+        // --- 2. WAVE SCALING LOGIC ---
+        if (firstSpawnWave == -1)
+        {
+            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
+        }
         int wavesSurvived = ScoreDisplay.CurrentWaveNumber - firstSpawnWave;
         if (wavesSurvived < 0) wavesSurvived = 0;
 
-        // --- 2. CALCULATE AND APPLY NEW STATS ---
-        // Health (handled by this script)
-        maxHealth = baseMaxHealth + (wavesSurvived * healthIncreasePerWave);
-        ResetState(); // Call your existing reset method which sets currentHealth = maxHealth
+        // --- 3. APPLY ALL SCALING ---
+        maxHealth = Mathf.RoundToInt(baseMaxHealth * tierMultiplier) + (wavesSurvived * healthIncreasePerWave);
+        ResetState(); // This sets currentHealth = maxHealth
 
-        // Get references to the other scripts on this enemy
-        var followScript = GetComponent<FlyFollow>();
-        var attackScript = GetComponent<FlyAttack>();
+        // The attack script will now set its own damage in its OnEnable.
 
-        // Speed (tell the follow script its new speed)
-        if (followScript != null)
-        {
-            float baseMoveSpeed = Random.Range(followScript.moveSpeedRange.x, followScript.moveSpeedRange.y);
-            followScript.moveSpeed = baseMoveSpeed + (wavesSurvived * moveSpeedIncreasePerWave);
-        }
-
-        // Damage (tell the attack script its new damage values)
-        if (attackScript != null)
-            {
-            attackScript.projectileDamage = attackScript.baseProjectileDamage + (wavesSurvived * damageIncreasePerWave);
-            attackScript.explosionDamage = attackScript.baseExplosionDamage + (wavesSurvived * damageIncreasePerWave);
-            // Also scale the V2 charged attack if it exists
-            attackScript.chargedProjectileDamage = attackScript.baseChargedProjectileDamage + (wavesSurvived * (damageIncreasePerWave * 2)); // Charged attack gets double bonus
-            }
-
-        // --- 3. YOUR EXISTING INITIALIZE LOGIC ---
+        // --- 4. YOUR EXISTING INITIALIZE LOGIC ---
         Transform player = null;
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
@@ -129,15 +113,20 @@ public class FlyHealth : MonoBehaviour, IDamageable
         }
         else
         {
-            gameObject.SetActive(false); // No player, disable self
+            gameObject.SetActive(false);
             return;
         }
 
+        var followScript = GetComponent<FlyFollow>();
         if (followScript != null)
         {
+            float baseMoveSpeed = Random.Range(followScript.moveSpeedRange.x, followScript.moveSpeedRange.y);
+            followScript.moveSpeed = baseMoveSpeed + (wavesSurvived * moveSpeedIncreasePerWave);
             followScript.enabled = true;
             followScript.Initialize(player);
         }
+
+        var attackScript = GetComponent<FlyAttack>();
         if (attackScript != null)
         {
             attackScript.enabled = true;

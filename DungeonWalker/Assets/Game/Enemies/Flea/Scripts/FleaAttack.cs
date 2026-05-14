@@ -80,6 +80,7 @@ public class FleaChargeAttack : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
         audioSource.playOnAwake = false;
+        OnEnable();
     }
 
     public void InitializeAndReset(Transform player)
@@ -140,7 +141,28 @@ public class FleaChargeAttack : MonoBehaviour
 
     void OnEnable()
     {
+        float tierMultiplier = 1.0f;
+        if (StatMultiplierManager.Instance != null)
+        {
+            tierMultiplier = StatMultiplierManager.Instance.FleaMultiplier;
+        }
 
+        // --- 2. GET WAVE SCALING INFO FROM HEALTH SCRIPT ---
+        int wavesSurvived = 0;
+        int waveDamageBonus = 0;
+        FleaHealth healthScript = GetComponent<FleaHealth>();
+        if (healthScript != null)
+        {
+            if (healthScript.firstSpawnWave != -1)
+            {
+                wavesSurvived = ScoreDisplay.CurrentWaveNumber - healthScript.firstSpawnWave;
+                if (wavesSurvived < 0) wavesSurvived = 0;
+            }
+            waveDamageBonus = wavesSurvived * healthScript.damageIncreasePerWave;
+        }
+
+        // --- 3. APPLY ALL SCALING ---
+        attackDamage = Mathf.RoundToInt(baseAttackDamage * tierMultiplier) + waveDamageBonus;
         PlayerInvisibility.OnInvisibilityChanged += HandleInvisibility;
         PlayerInvisibility3antix.OnInvisibilityChanged += HandleInvisibility;
     }

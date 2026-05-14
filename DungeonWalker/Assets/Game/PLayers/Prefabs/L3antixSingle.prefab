@@ -134869,7 +134869,7 @@ MonoBehaviour:
   - {fileID: 0}
   player: {fileID: 9006167878275002792}
   loopCheckpoints: 1
-  coinsPerCheckpoint: 2
+  coinsPerCheckpoint: 25
   interactButton: {fileID: 0}
   scorePerCheckpoint: 0
   scorePerLoop: 1
@@ -219314,7 +219314,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &9006167878275002792
 Transform:
   m_ObjectHideFlags: 0
@@ -219461,15 +219461,15 @@ MonoBehaviour:
   - {fileID: 4772137947764362218}
   - {fileID: 6675580805833625354}
   jumpSoundClip: {fileID: 8300000, guid: 6c20c1b1e22fea749820fc8669b7cd18, type: 3}
-  jumpVolume: 0.778
+  jumpVolume: 1
   doubleJumpSoundClip: {fileID: 8300000, guid: 10dd0f3896486e94181b7558d0297f0f, type: 3}
-  doubleJumpVolume: 0.795
+  doubleJumpVolume: 1
   landSoundClip: {fileID: 8300000, guid: 669b3786784ee4846a20810776913691, type: 3}
-  landVolume: 0.803
+  landVolume: 1
   rb: {fileID: 0}
   isFacingRight: 1
   runningSoundClip: {fileID: 8300000, guid: b02fc2b5ddbcb9448a43dc7e2250e061, type: 3}
-  runningVolume: 0.103
+  runningVolume: 0.85
 --- !u!114 &2970626968342253187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219517,7 +219517,7 @@ MonoBehaviour:
   previewFollowsLauncher: 1
   destructionLayers:
     serializedVersion: 2
-    m_Bits: 8896
+    m_Bits: 704
   ballLifetime: 3
   enableCollisionDestruction: 1
   enableTimeDestruction: 1
@@ -219533,8 +219533,8 @@ MonoBehaviour:
   explosionDamageRadius: 0.9
   explosionDamageMultiplier: 2
   showDamageDebug: 0
-  PcInput: 0
-  MobileInput: 1
+  PcInput: 1
+  MobileInput: 0
   explosionSound: {fileID: 8300000, guid: dd911e8ba488de942ae0829353fd8532, type: 3}
   additionalExplosionSounds: []
   shootSound: {fileID: 8300000, guid: 70eb062116e0bea47a84b6b12ca4cb63, type: 3}
@@ -219663,8 +219663,8 @@ MonoBehaviour:
   aimLineRenderer: {fileID: 4108717855947680673}
   aimLineLength: 20
   CameraShakeImpact: {fileID: 0}
-  enablePcInput: 0
-  enableMobileInput: 1
+  enablePcInput: 1
+  enableMobileInput: 0
   arrowPoolSize: 20
   armCheckInterval: 10
 --- !u!114 &8558709009588466802
@@ -219687,8 +219687,8 @@ MonoBehaviour:
   anticipationDuration: 0.7
   attackCooldown: 0.3
   damage: 70
-  MobileInput: 1
-  PcInput: 0
+  MobileInput: 0
+  PcInput: 1
   attackJoystick: {fileID: 0}
   runningJoystick: {fileID: 0}
   joystickAimThreshold: 0.5
@@ -219703,7 +219703,7 @@ MonoBehaviour:
   aimVerticalOffsetRightCursor: -1.77
   aimVerticalOffsetLeftCursor: 1.6
   throwBatVolume: 1
-  batPickupRange: 2.18
+  batPickupRange: 1.81
   batPickupPoint: {fileID: 3510942078707517890}
   attackPoint: {fileID: 3989724729098276922}
   upwardAttackPoint: {fileID: 3611628031764258540}
@@ -219865,8 +219865,8 @@ MonoBehaviour:
   minDistanceToAim: 1.87
   rotationSpeed: 17
   useInstantRotation: 1
-  PcInput: 0
-  MobileInput: 1
+  PcInput: 1
+  MobileInput: 0
   launcherRotationOffsetRight: 0
   launcherRotationOffsetLeft: 180
   trajectoryRotationOffsetRight: 0
@@ -219987,10 +219987,10 @@ MonoBehaviour:
   shieldExplosionRadius: 2.68
   shieldSlider: {fileID: 0}
   isSuperActive: 0
-  playerInvisibility: {fileID: 0}
+  playerInvisibility: {fileID: 7481536329242542935}
   CameraShakeDeath: {fileID: 11400000, guid: 5de216865eb2173459f490db41b47444, type: 2}
   reviveRequestPanel: {fileID: 0}
-  maxRevives: 4
+  maxRevives: 2
   reviveParticles:
   - {fileID: 1511292470126193948}
   - {fileID: 1328927269730136223}
@@ -220254,7 +220254,7 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 640
-  damage: 10000
+  damage: 1000
   damageDelay: 0
   shaderParam: _WaveDistanceFromCenter
   startValue: -0.1

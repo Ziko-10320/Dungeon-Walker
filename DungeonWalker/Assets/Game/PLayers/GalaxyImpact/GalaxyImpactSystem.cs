@@ -90,7 +90,7 @@ public class GalaxyImapctSystem : MonoBehaviour
 
         superMeter.onSuperReady.AddListener(() =>
         {
-            if (superBarText != null) superBarText.text = "PRESS F";
+            if (superBarText != null) superBarText.text = "Press F";
             if (superBarSlider != null) superBarSlider.value = 1f;
             if (superReadyIndicator != null) superReadyIndicator.SetActive(true);
         });

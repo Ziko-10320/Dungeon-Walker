@@ -378,18 +378,58 @@ public class PlayerHealth : MonoBehaviour
             }
 
             // Ad Revive Logic
-            AdManager_New adManager = FindObjectOfType<AdManager_New>();
-            bool isAdReady = (adManager != null && adManager.IsAdReady("Rewarded_Android"));
-            bool canUseAdRevive = (revivesUsed < maxRevives) && isAdReady;
-            if (canUseAdRevive && reviveRequestPanel != null)
+#if UNITY_WEBGL
+            // --- CRAZY GAMES (WEBGL) PATH ---
+            bool canUseAdRevive_Crazy = (revivesUsed < maxRevives) && (CrazyGamesManager.Instance != null && CrazyGamesManager.Instance.IsSDKInitialized);
+            if (canUseAdRevive_Crazy && reviveRequestPanel != null)
             {
-                // THIS IS THE FIX for the dim screen. We wait for the reset to finish.
-                yield return StartCoroutine(FadeOutAndResetVisuals()); // Use the helper method we already have.
-               
+                yield return StartCoroutine(FadeOutAndResetVisuals());
                 reviveRequestPanel.SetActive(true);
-                yield break;
+
+                // Find the "Yes" button on the panel and set it up for CrazyGames
+                Button yesButton = reviveRequestPanel.transform.Find("YesButton").GetComponent<Button>(); // Make sure your button is named "YesButton"
+                if (yesButton != null)
+                {
+                    yesButton.onClick.RemoveAllListeners(); // Clear old listeners
+                    yesButton.onClick.AddListener(() => {
+                        // When clicked, show a CrazyGames ad. If successful, call AdRevive().
+                        CrazyGamesManager.Instance.ShowRewardedAd(AdRevive);
+                    });
+                }
+                yield break; // Stop the coroutine here and wait for player input.
             }
-        }
+
+#else
+            // --- UNITY ADS (ANDROID) PATH ---
+            AdManager_New adManager = FindObjectOfType<AdManager_New>();
+            bool isAdReady_Unity = (adManager != null && adManager.IsAdReady("Rewarded_Android"));
+            bool canUseAdRevive_Unity = (revivesUsed < maxRevives) && isAdReady_Unity;
+
+            if (canUseAdRevive_Unity && reviveRequestPanel != null)
+            {
+                yield return StartCoroutine(FadeOutAndResetVisuals());
+                reviveRequestPanel.SetActive(true);
+
+                // --- THIS IS THE GUARANTEED FIX ---
+                // DELETE THE ENTIRE BLOCK OF CODE THAT FINDS THE BUTTON AND ADDS A LISTENER.
+                // Your RewardedAdButton script is already handling this. This code is causing the conflict.
+                /*
+                Button yesButton = reviveRequestPanel.transform.Find("YesButton").GetComponent<Button>();
+                if (yesButton != null)
+                {
+                    yesButton.onClick.RemoveAllListeners();
+                    yesButton.onClick.AddListener(() => {
+                        AdRevive();
+                    });
+                }
+                */
+                // --- END OF FIX ---
+
+                yield break; // Stop the coroutine here and wait for the player to click the button.
+            }
+#endif
+        
+    }
 
         // --- PART 3: Final Death ---
         Debug.Log("No revives available. Showing final death panel.");

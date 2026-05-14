@@ -63,6 +63,8 @@ public class GameUIManager : MonoBehaviour
         {
             // If we chose Cat, ONLY disable Man.
             // We assume Cat is already active in the scene.
+            if (catCharacterObject != null) catCharacterObject.SetActive(true);
+            if (catManagerObject != null) catManagerObject.SetActive(true);
             if (manCharacterObject != null) manCharacterObject.SetActive(false);
             if (manManagerObject != null) manManagerObject.SetActive(false);
 
@@ -77,6 +79,8 @@ public class GameUIManager : MonoBehaviour
         {
             // If we chose Man, ONLY disable Cat.
             // We assume Man is already active in the scene.
+            if (manCharacterObject != null) manCharacterObject.SetActive(true);
+            if (manManagerObject != null) manManagerObject.SetActive(true);
             if (catCharacterObject != null) catCharacterObject.SetActive(false);
             if (catManagerObject != null) catManagerObject.SetActive(false);
 
@@ -88,6 +92,45 @@ public class GameUIManager : MonoBehaviour
             Debug.Log("Character Selected: Man. Disabling Cat and setting camera target.");
         }
         // --- END OF FIX ---
+#if UNITY_WEBGL
+        // This code will only be included in WebGL builds.
+        Debug.Log("Platform is WebGL. Configuring ads for CrazyGames.");
+        if (doubleCoinsButton != null)
+        {
+            // Find the old Unity Ads button script and disable it.
+            RewardedAdButton unityAdButton = doubleCoinsButton.GetComponent<RewardedAdButton>();
+            if (unityAdButton != null)
+            {
+                unityAdButton.enabled = false;
+            }
+
+            // Make sure the new CrazyGames button script is enabled.
+            RewardedAdButtonCrazy crazyAdButton = doubleCoinsButton.GetComponent<RewardedAdButtonCrazy>();
+            if (crazyAdButton != null)
+            {
+                crazyAdButton.enabled = true;
+            }
+        }
+#else
+    //This code will run on all other platforms (like Android).
+    Debug.Log("Platform is NOT WebGL. Configuring ads for Unity Ads.");
+    if (doubleCoinsButton != null)
+    {
+        // Find the new CrazyGames button script and disable it.
+        RewardedAdButtonCrazy crazyAdButton = doubleCoinsButton.GetComponent<RewardedAdButtonCrazy>();
+        if (crazyAdButton != null)
+        {
+            crazyAdButton.enabled = false;
+        }
+
+        // Make sure the old Unity Ads button script is enabled.
+        RewardedAdButton unityAdButton = doubleCoinsButton.GetComponent<RewardedAdButton>();
+        if (unityAdButton != null)
+        {
+            unityAdButton.enabled = true;
+        }
+    }
+#endif
     }
     void Start()
     {
@@ -268,12 +311,39 @@ public class GameUIManager : MonoBehaviour
     }
     public void RestartGame()
     {
-        StartCoroutine(FadeAndRestart());
+#if UNITY_WEBGL
+        // For WebGL, tell the CrazyGamesManager to handle everything.
+        if (CrazyGamesManager.Instance != null)
+        {
+            CrazyGamesManager.Instance.ShowMidGameAdAndRestart();
+        }
+#else
+    // For other platforms (like Android), just restart directly.
+    StartCoroutine(FadeAndRestart());
+#endif
     }
 
     public void ReturnToMenu()
     {
         StartCoroutine(FadeAndLoadScene(0));
+    }
+    public void ReturnToMenuDeath()
+    {
+#if UNITY_WEBGL
+        // For WebGL, tell the CrazyGamesManager to use our new, flexible function.
+        if (CrazyGamesManager.Instance != null)
+        {
+            // We tell the manager: "Show an ad, and the action to perform afterward
+            // is to load the main menu scene (Scene 0)."
+            CrazyGamesManager.Instance.ShowMidGameAdAndPerformAction(() => {
+                StartCoroutine(FadeAndLoadScene(0));
+            });
+        }
+#else
+    // For other platforms (like Android), just go to the menu directly.
+    // You could add a different ad logic here if you wanted.
+    StartCoroutine(FadeAndLoadScene(0));
+#endif
     }
     private IEnumerator FadeIn()
     {

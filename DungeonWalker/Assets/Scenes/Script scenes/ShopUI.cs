@@ -312,6 +312,7 @@ public class ShopUI : MonoBehaviour
             Debug.Log("Purchase successful: " + item.powerUpName);
             InventoryManager.Instance.AddOwnedPowerUp(item);
             UpdateCoinCount();
+            PlayerPowerLevelManager.Instance.CalculateAndSavePPL();
 
             // --- NEW: After buying, update the description panel's state ---
             // Disable the buy button and change its text to "Owned"
@@ -352,6 +353,8 @@ public class ShopUI : MonoBehaviour
             InventoryManager.Instance.AddOwnedSkin(item.GetUniqueID()); // <--- THIS IS THE FIX
             OnItemSelected(item); // Refresh the UI
             UpdateCoinCount();
+            PlayerPowerLevelManager.Instance.CalculateAndSavePPL();
+
         }
         else
         {

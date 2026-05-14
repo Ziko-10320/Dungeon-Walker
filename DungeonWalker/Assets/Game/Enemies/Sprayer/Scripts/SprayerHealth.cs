@@ -71,8 +71,7 @@ public class SprayerHealth : MonoBehaviour, IPunObservable, IDamageable
     [Tooltip("How much extra chase speed the sprayer gets per wave.")]
     public float chaseSpeedIncreasePerWave = 0.4f;
 
-    // Internal memory for this specific sprayer instance
-    private int firstSpawnWave = -1;
+    public int firstSpawnWave { get; private set; } = -1;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -86,40 +85,27 @@ public class SprayerHealth : MonoBehaviour, IPunObservable, IDamageable
     }
     void OnEnable()
     {
-        // --- 1. THE SCALING LOGIC ---
-        if (firstSpawnWave == -1)
+        // --- 1. GET THE TIER MULTIPLIER ---
+        float tierMultiplier = 1.0f;
+        if (StatMultiplierManager.Instance != null)
         {
-            // This is the first time this sprayer has ever spawned.
-            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
+            tierMultiplier = StatMultiplierManager.Instance.SprayerMultiplier;
         }
 
-        // Calculate how many waves this sprayer has "survived".
+        // --- 2. WAVE SCALING LOGIC ---
+        if (firstSpawnWave == -1)
+        {
+            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
+        }
         int wavesSurvived = ScoreDisplay.CurrentWaveNumber - firstSpawnWave;
         if (wavesSurvived < 0) wavesSurvived = 0;
 
-        // --- 2. CALCULATE AND APPLY NEW STATS ---
-        // Health (handled by this script)
-        maxHealth = baseMaxHealth + (wavesSurvived * healthIncreasePerWave);
+        // --- 3. APPLY ALL SCALING ---
+        maxHealth = Mathf.RoundToInt(baseMaxHealth * tierMultiplier) + (wavesSurvived * healthIncreasePerWave);
         currentHealth = maxHealth;
 
-        // Get references to the other scripts
-        var followScript = GetComponent<SprayerFollow>();
-        var attackScript = GetComponent<SprayerAttack>();
-
-        // Speed (tell the follow script its new speed)
-        if (followScript != null)
-        {
-            float baseChaseSpeed = Random.Range(followScript.chaseSpeedRange.x, followScript.chaseSpeedRange.y);
-            followScript.chaseSpeed = baseChaseSpeed + (wavesSurvived * chaseSpeedIncreasePerWave);
-        }
-
-        // Damage (tell the attack script its new damage)
-        if (attackScript != null)
-        {
-            attackScript.damagePerSecond = attackScript.baseDamagePerSecond + (wavesSurvived * damageIncreasePerWave);
-        }
-
-        // --- 3. YOUR EXISTING RESET LOGIC ---
+        // --- 4. YOUR EXISTING RESET LOGIC (MODIFIED) ---
+        // We no longer set damage/speed here. The other scripts will do it themselves.
         isKnockedBack = false;
         isFlashing = false;
         isStunned = false;
@@ -132,16 +118,20 @@ public class SprayerHealth : MonoBehaviour, IPunObservable, IDamageable
         }
         Transform player = playerObject.transform;
 
+        var followScript = GetComponent<SprayerFollow>();
         if (followScript != null)
         {
+            // We still need to update the follow script's speed
+            float baseChaseSpeed = Random.Range(followScript.chaseSpeedRange.x, followScript.chaseSpeedRange.y);
+            followScript.chaseSpeed = baseChaseSpeed + (wavesSurvived * chaseSpeedIncreasePerWave);
             followScript.InitializeAndReset(player);
         }
+        var attackScript = GetComponent<SprayerAttack>();
         if (attackScript != null)
         {
             attackScript.InitializeAndReset(player);
         }
 
-        // Material reset logic
         if (spriteRenderers != null && originalMaterials != null && spriteRenderers.Length == originalMaterials.Length)
         {
             for (int i = 0; i < spriteRenderers.Length; i++)

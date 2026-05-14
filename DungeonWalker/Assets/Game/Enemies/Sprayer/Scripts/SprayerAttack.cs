@@ -52,7 +52,32 @@ public class SprayerAttack : MonoBehaviour
     public float attackCheckInterval = 0.33f; // Check about 3 times per second
 
     private float attackCheckTimer = 0f;
+    void OnEnable()
+    {
+        // --- 1. GET THE TIER MULTIPLIER ---
+        float tierMultiplier = 1.0f;
+        if (StatMultiplierManager.Instance != null)
+        {
+            tierMultiplier = StatMultiplierManager.Instance.SprayerMultiplier;
+        }
 
+        // --- 2. GET WAVE SCALING INFO FROM HEALTH SCRIPT ---
+        int wavesSurvived = 0;
+        float waveDamageBonus = 0f;
+        SprayerHealth healthScript = GetComponent<SprayerHealth>();
+        if (healthScript != null)
+        {
+            if (healthScript.firstSpawnWave != -1)
+            {
+                wavesSurvived = ScoreDisplay.CurrentWaveNumber - healthScript.firstSpawnWave;
+                if (wavesSurvived < 0) wavesSurvived = 0;
+            }
+            waveDamageBonus = wavesSurvived * healthScript.damageIncreasePerWave;
+        }
+
+        // --- 3. APPLY ALL SCALING ---
+        damagePerSecond = (baseDamagePerSecond * tierMultiplier) + waveDamageBonus;
+    }
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();
@@ -62,6 +87,7 @@ public class SprayerAttack : MonoBehaviour
         }
         audioSource.playOnAwake = false;
         CreateLocalVFXPool();
+        OnEnable();
     }
     private void CreateLocalVFXPool()
     {

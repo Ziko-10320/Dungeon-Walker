@@ -50,6 +50,7 @@ public class InventoryManager : MonoBehaviour
         {
             weaponLevels[weaponName] = currentLevel + 1;
             SaveInventory();
+            PlayerPowerLevelManager.Instance.CalculateAndSavePPL();
             Debug.Log(weaponName + " has been upgraded to Level " + (currentLevel + 1));
         }
     }
@@ -65,12 +66,15 @@ public class InventoryManager : MonoBehaviour
     {
         isSecondSlotUnlocked = true;
         SaveInventory();
+        PlayerPowerLevelManager.Instance.CalculateAndSavePPL();
+
         Debug.Log("Second power-up slot has been permanently unlocked!");
     }
     public void UnlockThirdSlot()
     {
         isThirdSlotUnlocked = true;
         SaveInventory(); // Save the change immediately
+        PlayerPowerLevelManager.Instance.CalculateAndSavePPL();
         Debug.Log("Third power-up slot has been permanently unlocked!");
     }
     public bool IsSkinOwned(string uniqueID)

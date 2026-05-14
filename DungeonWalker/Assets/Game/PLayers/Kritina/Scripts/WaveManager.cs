@@ -42,6 +42,26 @@ public class WaveConfig
     public List<GameObject> laserTrapObjects;
 }
 [System.Serializable]
+public class DifficultyTier
+{
+    public string tierName;
+    [Tooltip("The minimum Player Power Level required to use this tier.")]
+    public int minPPL;
+    [Tooltip("The MAXIMUM Player Power Level for this tier (inclusive).")]
+    public int maxPPL;
+    [Header("Tier Stat Multipliers")]
+    [Tooltip("Multiplier for Flea health and damage in this tier. 1.0 = normal.")]
+    public float fleaMultiplier = 1.0f;
+    [Tooltip("Multiplier for Sprayer health and damage in this tier. 1.0 = normal.")]
+    public float sprayerMultiplier = 1.0f;
+    [Tooltip("Multiplier for Ink health and damage. 1.0 = normal.")]
+    public float inkMultiplier = 1.0f; // ---- NEW ----
+    [Tooltip("Multiplier for Fly health and damage. 1.0 = normal.")]
+    public float flyMultiplier = 1.0f;
+    [Tooltip("The list of wave configurations specific to this tier.")]
+    public List<WaveConfig> waveConfigsForThisTier;
+}
+[System.Serializable]
 public class SpawnPointInfo
 {
     public Transform point;
@@ -54,8 +74,11 @@ public class WaveManager : MonoBehaviour
     public CheckpointManager checkpointManager;
 
     [Header("Configuration des Vagues")]
-    [Tooltip("Configure ici toutes tes vagues, dans l'ordre croissant des scores.")]
-    public List<WaveConfig> waveConfigs;
+    [Tooltip("Configure here all your difficulty tiers, from lowest PPL to highest.")]
+    public List<DifficultyTier> difficultyTiers;
+
+    // ---- NEW ----: This will hold the chosen set of waves for the current run.
+    private List<WaveConfig> activeWaveConfigs;
 
     [Header("Points de Spawn")]
     [Header("Points de Spawn")]
@@ -98,6 +121,7 @@ public class WaveManager : MonoBehaviour
 
     void Start()
     {
+        SelectDifficultyTier();
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
         {
@@ -171,7 +195,61 @@ public class WaveManager : MonoBehaviour
             volcanoBrainCoroutine = StartCoroutine(VolcanoBrain());
         }
     }
+    private void SelectDifficultyTier()
+    {
+        // First, get the player's power level. This part is the same.
+        int currentPPL = PlayerPowerLevelManager.Instance.GetPPL();
+        Debug.Log($"[WaveManager] Current Player Power Level is: {currentPPL}. Selecting difficulty tier...");
 
+        DifficultyTier chosenTier = null;
+
+        // Loop through all the tiers you defined in the Inspector.
+        foreach (var tier in difficultyTiers)
+        {
+            // Check if the player's PPL falls within this tier's range.
+            if (currentPPL >= tier.minPPL && currentPPL <= tier.maxPPL)
+            {
+                chosenTier = tier;
+                break; // We found the correct tier, so we can stop searching.
+            }
+        }
+
+        // After the loop, check if we found a tier.
+        if (chosenTier != null)
+        {
+            // If we found a matching tier, use its waves for this run.
+            activeWaveConfigs = chosenTier.waveConfigsForThisTier;
+            Debug.Log($"[WaveManager] Selected Tier: '{chosenTier.tierName}' (Range: {chosenTier.minPPL}-{chosenTier.maxPPL}). Using its {activeWaveConfigs.Count} wave configs for this run.");
+            if (StatMultiplierManager.Instance != null)
+            {
+                StatMultiplierManager.Instance.SetMultipliers(chosenTier.fleaMultiplier, chosenTier.sprayerMultiplier, chosenTier.inkMultiplier, chosenTier.flyMultiplier);
+            }
+            else
+            {
+                Debug.LogError("[WaveManager] StatMultiplierManager.Instance not found! Enemy stats will not be scaled.");
+            }
+        }
+        else
+        {
+            // Fallback logic
+            Debug.LogError($"[WaveManager] No suitable difficulty tier found for PPL {currentPPL}! Defaulting to the first tier.");
+            if (difficultyTiers.Count > 0)
+            {
+                chosenTier = difficultyTiers[0]; // Use the first tier as fallback
+                activeWaveConfigs = chosenTier.waveConfigsForThisTier;
+                if (StatMultiplierManager.Instance != null)
+                {
+                    // ---- MODIFIED ----: Also set multipliers for the fallback tier.
+                    StatMultiplierManager.Instance.SetMultipliers(chosenTier.fleaMultiplier, chosenTier.sprayerMultiplier, chosenTier.inkMultiplier, chosenTier.flyMultiplier);
+                }
+            }
+            else
+            {
+                activeWaveConfigs = new List<WaveConfig>();
+                Debug.LogError("[WaveManager] NO difficulty tiers are configured!");
+            }
+        }
+    }
     // REMPLACER l'ancienne méthode OnScoreUpdated par celle-ci :
     private void OnScoreUpdated(int newScore)
     {
@@ -642,14 +720,15 @@ public class WaveManager : MonoBehaviour
     // Trouve la configuration de vague appropriée pour le score actuel
     private WaveConfig GetWaveConfigForScore(int score)
     {
+        // If there are no waves for this tier, return null.
+        if (activeWaveConfigs == null || activeWaveConfigs.Count == 0) return null;
+
         WaveConfig bestConfig = null;
-        // Parcours toutes les configurations pour trouver la meilleure correspondance
-        foreach (var config in waveConfigs)
+        // We now search through the list of waves chosen for this run.
+        foreach (var config in activeWaveConfigs)
         {
-            // Si le score actuel est suffisant pour cette vague
             if (score >= config.scoreThreshold)
             {
-                // Et si cette vague est la plus "avancée" qu'on ait trouvée jusqu'à présent
                 if (bestConfig == null || config.scoreThreshold > bestConfig.scoreThreshold)
                 {
                     bestConfig = config;
@@ -658,7 +737,6 @@ public class WaveManager : MonoBehaviour
         }
         return bestConfig;
     }
-
     private void OnDrawGizmosSelected()
     {
         if (spawnPoints != null && spawnPoints.Count > 0)

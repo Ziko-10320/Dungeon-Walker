@@ -101,6 +101,36 @@ public class FlyAttack : MonoBehaviour
     private Queue<GameObject> anticipationParticlesPool;
     // A parent object to keep the hierarchy clean
     private Transform poolParent;
+
+    void OnEnable()
+    {
+        // --- 1. GET THE TIER MULTIPLIER ---
+        float tierMultiplier = 1.0f;
+        if (StatMultiplierManager.Instance != null)
+        {
+            tierMultiplier = StatMultiplierManager.Instance.FlyMultiplier;
+        }
+
+        // --- 2. GET WAVE SCALING INFO FROM HEALTH SCRIPT ---
+        int wavesSurvived = 0;
+        int waveDamageBonus = 0;
+        FlyHealth healthScript = GetComponent<FlyHealth>();
+        if (healthScript != null)
+        {
+            if (healthScript.firstSpawnWave != -1)
+            {
+                wavesSurvived = ScoreDisplay.CurrentWaveNumber - healthScript.firstSpawnWave;
+                if (wavesSurvived < 0) wavesSurvived = 0;
+            }
+            waveDamageBonus = wavesSurvived * healthScript.damageIncreasePerWave;
+        }
+
+        // --- 3. APPLY ALL SCALING ---
+        projectileDamage = Mathf.RoundToInt(baseProjectileDamage * tierMultiplier) + waveDamageBonus;
+        explosionDamage = Mathf.RoundToInt(baseExplosionDamage * tierMultiplier) + waveDamageBonus;
+        // Also scale the V2 charged attack if it exists, giving it a bigger bonus
+        chargedProjectileDamage = Mathf.RoundToInt(baseChargedProjectileDamage * tierMultiplier) + (waveDamageBonus * 2);
+    }
     void Awake()
     {
         audioSource = GetComponent<AudioSource>();

@@ -219,8 +219,7 @@ public class InkHealth : MonoBehaviour, IDamageable
     public int damageIncreasePerWave = 4;
     // No speed increase for this enemy as it's stationary
 
-    // Internal memory for this specific ink instance
-    private int firstSpawnWave = -1;
+    public int firstSpawnWave { get; private set; } = -1;
     void Awake()
     {
         // Get or add the AudioSource component
@@ -267,36 +266,30 @@ public class InkHealth : MonoBehaviour, IDamageable
     }
     void OnEnable()
     {
-        // --- 1. THE SCALING LOGIC ---
-        if (firstSpawnWave == -1)
+        // --- 1. GET THE TIER MULTIPLIER ---
+        float tierMultiplier = 1.0f;
+        if (StatMultiplierManager.Instance != null)
         {
-            // This is the first time this ink enemy has ever spawned.
-            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
+            tierMultiplier = StatMultiplierManager.Instance.InkMultiplier;
         }
 
-        // Calculate how many waves this ink enemy has "survived".
+        // --- 2. WAVE SCALING LOGIC ---
+        if (firstSpawnWave == -1)
+        {
+            firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
+        }
         int wavesSurvived = ScoreDisplay.CurrentWaveNumber - firstSpawnWave;
         if (wavesSurvived < 0) wavesSurvived = 0;
 
-        // --- 2. CALCULATE AND APPLY NEW STATS ---
-        // Health (handled by this script)
-        maxHealth = baseMaxHealth + (wavesSurvived * healthIncreasePerWave);
+        // --- 3. APPLY ALL SCALING ---
+        maxHealth = Mathf.RoundToInt(baseMaxHealth * tierMultiplier) + (wavesSurvived * healthIncreasePerWave);
 
-        // Get a reference to the attack script
-        var attackScript = GetComponent<InkAttack>();
+        // The attack script will now set its own damage in its OnEnable.
 
-        // Damage (tell the attack script its new damage)
-        if (attackScript != null)
-        {
-            attackScript.inkBallDamage = attackScript.baseInkBallDamage + (wavesSurvived * damageIncreasePerWave);
-        }
-
-        // --- 3. YOUR EXISTING RESET LOGIC ---
-        // Call your master reset method.
+        // --- 4. YOUR EXISTING RESET LOGIC ---
         ResetEnemyState();
 
-        // The rest of your OnEnable logic can be simplified or moved to ResetEnemyState
-        // For now, we ensure the attack script is enabled.
+        var attackScript = GetComponent<InkAttack>();
         if (attackScript != null)
         {
             attackScript.enabled = true;

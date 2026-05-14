@@ -63,45 +63,30 @@ public class FleaHealth : MonoBehaviour, IPunObservable, IDamageable
     public float chaseSpeedIncreasePerWave = 0.5f;
 
     // Internal memory for this specific flea instance
-    private int firstSpawnWave = -1;
+    public int firstSpawnWave { get; private set; } = -1;
     void OnEnable()
     {
-        // --- 1. THE SCALING LOGIC ---
+        // --- 1. GET THE TIER MULTIPLIER ---
+        float tierMultiplier = 1.0f;
+        if (StatMultiplierManager.Instance != null)
+        {
+            tierMultiplier = StatMultiplierManager.Instance.FleaMultiplier;
+        }
+
+        // --- 2. WAVE SCALING LOGIC ---
         if (firstSpawnWave == -1)
         {
-            // This is the first time this flea has ever spawned.
-            // Record the current wave as its "birth" wave.
             firstSpawnWave = ScoreDisplay.CurrentWaveNumber;
         }
-
-        // Calculate how many waves this flea has "survived" since its first appearance.
         int wavesSurvived = ScoreDisplay.CurrentWaveNumber - firstSpawnWave;
-        if (wavesSurvived < 0) wavesSurvived = 0; // Safety check
+        if (wavesSurvived < 0) wavesSurvived = 0;
 
-        // --- 2. CALCULATE AND APPLY NEW STATS ---
-        // Health (handled by this script)
-        maxHealth = baseMaxHealth + (wavesSurvived * healthIncreasePerWave);
+        // --- 3. APPLY ALL SCALING ---
+        // Apply TIER multiplier to BASE health, then add the WAVE bonus.
+        maxHealth = Mathf.RoundToInt(baseMaxHealth * tierMultiplier) + (wavesSurvived * healthIncreasePerWave);
         currentHealth = maxHealth;
 
-        // Get references to the other scripts on this enemy
-        var followScript = GetComponent<FleaFollow>();
-        var attackScript = GetComponent<FleaChargeAttack>();
-
-        // Speed (tell the follow script its new speed)
-        if (followScript != null)
-        {
-            // We get the base speed from the script's range, then add the bonus.
-            float baseChaseSpeed = Random.Range(followScript.chaseSpeedRange.x, followScript.chaseSpeedRange.y);
-            followScript.chaseSpeed = baseChaseSpeed + (wavesSurvived * chaseSpeedIncreasePerWave);
-        }
-
-        // Damage (tell the attack script its new damage)
-        if (attackScript != null)
-        {
-            attackScript.attackDamage = attackScript.baseAttackDamage + (wavesSurvived * damageIncreasePerWave);
-        }
-
-        // --- 3. YOUR EXISTING RESET LOGIC ---
+        // --- 4. YOUR EXISTING RESET LOGIC (UNCHANGED) ---
         isKnockedBack = false;
         isFlashing = false;
         isStunned = false;
@@ -114,18 +99,19 @@ public class FleaHealth : MonoBehaviour, IPunObservable, IDamageable
         }
         Transform player = playerObject.transform;
 
+        var followScript = GetComponent<FleaFollow>();
         if (followScript != null)
         {
             followScript.enabled = true;
             followScript.InitializeAndReset(player);
         }
+        var attackScript = GetComponent<FleaChargeAttack>();
         if (attackScript != null)
         {
             attackScript.enabled = true;
-            attackScript.InitializeAndReset(player);
+            // The attack script will now set its own damage in its OnEnable.
         }
 
-        // Material reset logic
         if (spriteRenderers != null && originalMaterials != null && spriteRenderers.Length == originalMaterials.Length)
         {
             for (int i = 0; i < spriteRenderers.Length; i++)
